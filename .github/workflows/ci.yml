@@ -1,0 +1,121 @@
+name: CI
+
+# Builds and tests on a real Windows machine: compile, unit tests, then a UI smoke test that runs the
+# widget, clicks through it and checks the launch -> hide -> return loop. Screenshots and metrics are
+# uploaded as the "smoke-test" artifact, and (on pushes) also committed to the "ci-results/<branch>"
+# branch, so they can be read with plain git by reviewers and agents that can't download artifacts.
+
+on:
+  push:
+    branches-ignore:
+      - 'ci-results/**'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write   # only for pushing the ci-results/<branch> branch
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        run: |
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          dotnet build GameShelf.sln -c Release 2>&1 | Tee-Object artifacts/build.txt
+
+      # Test what ships: the published WinUI widget folder and the Native AOT watcher (publish.ps1).
+      - name: Publish
+        run: |
+          ./publish.ps1 -Output publish 2>&1 | Tee-Object artifacts/publish.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-ChildItem publish -File | ForEach-Object { '{0}: {1:N0} KB' -f $_.Name, ($_.Length / 1KB) } |
+            Tee-Object artifacts/publish-sizes.txt
+          # The built installer, so a manual test on a real PC needs no build tools: download it from the
+          # "smoke-test" artifact or the ci-results/<branch> branch.
+          Copy-Item publish/GameShelfSetup.exe artifacts/
+
+      - name: Unit tests
+        run: dotnet run --project tests/GameShelf.Tests -c Release 2>&1 | Tee-Object artifacts/unit-tests.txt
+
+      - name: Build stand-in game
+        run: dotnet build tests/FakeGame -c Release
+
+      - name: UI smoke test
+        shell: powershell
+        env:
+          WATCHER_BUILD: Native AOT
+        run: ./tests/smoke.ps1 -Exe publish/app/GameShelf.exe -FakeGame tests/FakeGame/out/FakeGame.exe
+
+      # The installer: install through its dialogs, update while the app and a watcher run, uninstall.
+      - name: Setup test
+        if: always()
+        shell: powershell
+        run: ./tests/setup-test.ps1 -Setup publish/GameShelfSetup.exe -Published publish/app
+
+      # Also prints the screenshots as base64 JPEGs into the log, for reviewers (and agents) that can read
+      # the job log but not download artifacts.
+      - name: Screenshots in log
+        if: always()
+        shell: powershell
+        run: |
+          Add-Type -AssemblyName System.Drawing
+          $jpeg = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object { $_.MimeType -eq 'image/jpeg' }
+          $params = New-Object System.Drawing.Imaging.EncoderParameters 1
+          $params.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter ([System.Drawing.Imaging.Encoder]::Quality, [long]75)
+          Get-ChildItem artifacts -Filter *.png -ErrorAction SilentlyContinue | ForEach-Object {
+            $img = [System.Drawing.Image]::FromFile($_.FullName)
+            $ms = New-Object System.IO.MemoryStream
+            $img.Save($ms, $jpeg, $params)
+            $img.Dispose()
+            Write-Host "BEGIN-SCREENSHOT $($_.BaseName)"
+            Write-Host ([Convert]::ToBase64String($ms.ToArray()))
+            Write-Host "END-SCREENSHOT $($_.BaseName)"
+          }
+
+      - name: Upload screenshots and metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test
+          path: artifacts/
+          if-no-files-found: ignore
+
+      # Readable without the Actions API: one commit with this run's screenshots, metrics and logs,
+      # force-pushed so the branch never grows.
+      - name: Publish results to ci-results branch
+        if: always() && github.event_name == 'push'
+        env:
+          BRANCH: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          JOB_STATUS: ${{ job.status }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $out = Join-Path $env:RUNNER_TEMP 'ci-results'
+          New-Item -ItemType Directory -Force $out | Out-Null
+          Copy-Item artifacts/* $out -Recurse -ErrorAction SilentlyContinue
+          @(
+            "# CI results for $env:BRANCH",
+            "",
+            "- Commit: $env:GITHUB_SHA",
+            "- Run: $env:RUN_URL",
+            "- Job status when published: $env:JOB_STATUS",
+            "- Time (UTC): $((Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm'))"
+          ) | Set-Content (Join-Path $out 'README.md')
+          Set-Location $out
+          git init -q -b results
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -q -m "CI results for $env:BRANCH at $env:GITHUB_SHA"
+          $auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:GH_TOKEN"))
+          git -c http.extraheader="AUTHORIZATION: basic $auth" push -q -f `
+            "https://github.com/$env:GITHUB_REPOSITORY.git" "results:refs/heads/ci-results/$env:BRANCH"
+
