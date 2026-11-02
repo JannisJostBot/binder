@@ -4,6 +4,8 @@ A lightweight Windows desktop widget that replaces game shortcuts on the desktop
 
 **Top priority: zero performance cost while gaming.** When a game is running, the widget process must not exist. Only a tiny watcher process may remain, blocked/sleeping.
 
+**Scope: a launcher, not a game toolbox.** A feature earns its place only if it helps the user start, find or manage their games, and it must feel like part of Windows. Think each one through and refine it before building; when an idea doesn't clearly pass, leave it out (or note it under "Not decided" in `docs/proposals.md`) instead of adding it.
+
 ## Guiding principle: minimal resource use everywhere
 
 This app must perform very well and consume as little CPU, RAM, disk I/O and GPU as possible for what it does, at all times, not just during gaming. Treat efficiency as a feature on equal footing with correctness:
