@@ -81,7 +81,7 @@ public sealed partial class DetailView
         EngineTagText.Foreground = Resource<Brush>(known ? "TextFillColorPrimaryBrush" : "TextFillColorSecondaryBrush");
         EngineGlyph.Visibility = known ? Visibility.Visible : Visibility.Collapsed;
         AutomationProperties.SetName(EngineTag, "Engine: " + EngineTagText.Text);
-        EngineText.Text = known ? "Suggested options" : "Add the arguments this game understands below.";
+        EngineText.Text = LaunchOptions.Suggestions(engine).Count > 0 ? "Suggested options" : "Add the arguments this game understands below.";
         _updatingArgs = true;
         try
         {

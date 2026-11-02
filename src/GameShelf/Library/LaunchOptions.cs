@@ -3,7 +3,13 @@ using GameShelf.Models;
 
 namespace GameShelf.Library;
 
-public enum GameEngine { Unknown, Unity, Unreal, Source, Source2, Godot }
+/// <summary>Game engines, in the order a scan prefers them. New values go at the end (stored as numbers).</summary>
+public enum GameEngine
+{
+    Unknown, Unity, Unreal, Source, Source2, Godot,
+    Frostbite, ReEngine, Anvil, Snowdrop, Dunia, CryEngine, IdTech, Glacier, Insomniac, Illusion,
+    GameMaker, Love, RenPy, RpgMaker,
+}
 
 /// <summary>
 /// One suggested launch option: a plain label and the real arguments. Options that share a
@@ -27,6 +33,20 @@ public static class LaunchOptions
         GameEngine.Source => "Source",
         GameEngine.Source2 => "Source 2",
         GameEngine.Godot => "Godot",
+        GameEngine.Frostbite => "Frostbite",
+        GameEngine.ReEngine => "RE Engine",
+        GameEngine.Anvil => "Anvil",
+        GameEngine.Snowdrop => "Snowdrop",
+        GameEngine.Dunia => "Dunia",
+        GameEngine.CryEngine => "CryEngine",
+        GameEngine.IdTech => "id Tech",
+        GameEngine.Glacier => "Glacier",
+        GameEngine.Insomniac => "Insomniac Engine",
+        GameEngine.Illusion => "Illusion Engine",
+        GameEngine.GameMaker => "GameMaker",
+        GameEngine.Love => "LÖVE",
+        GameEngine.RenPy => "Ren'Py",
+        GameEngine.RpgMaker => "RPG Maker",
         _ => "",
     };
 

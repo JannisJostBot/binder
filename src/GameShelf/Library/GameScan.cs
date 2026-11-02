@@ -35,7 +35,7 @@ public static class GameScan
         try
         {
             long exeTime = LaunchOptions.DirectExe(game) is { } exe && File.Exists(exe) ? File.GetLastWriteTimeUtc(exe).Ticks : 0;
-            return $"2:{game.SizeOnDisk}:{Directory.GetLastWriteTimeUtc(dir).Ticks}:{exeTime}";
+            return $"3:{game.SizeOnDisk}:{Directory.GetLastWriteTimeUtc(dir).Ticks}:{exeTime}";
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
@@ -47,6 +47,8 @@ public static class GameScan
     {
         bool unityPlayer = false, unityData = false, unreal = false, source = false, source2 = false, godot = false;
         var found = new List<AntiCheatKind>();
+        var engines = new HashSet<GameEngine>(); // the engines with markers of their own (see Detect)
+        bool toc = false, dag = false;
         void Found(AntiCheatKind kind) { if (!found.Contains(kind)) found.Add(kind); }
 
         if (folder.Contains("Riot Games", StringComparison.OrdinalIgnoreCase)) Found(AntiCheatKind.Vanguard);
@@ -57,6 +59,7 @@ public static class GameScan
         while (queue.Count > 0 && entries < MaxEntries)
         {
             var (dir, depth) = queue.Dequeue();
+            var dirName = Path.GetFileName(dir).ToLowerInvariant();
             bool dirUnityPlayer = false, dirUnityData = false;
             var exes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var packs = new List<string>();
@@ -80,6 +83,8 @@ public static class GameScan
                         if (name.EndsWith("_data")) dirUnityData = true;
                         // Unreal ships Engine\Binaries; CryEngine games also have an Engine folder, without it.
                         if (depth == 1 && name == "binaries" && string.Equals(Path.GetFileName(dir), "Engine", StringComparison.OrdinalIgnoreCase)) unreal = true;
+                        if (depth == 0 && name == "sds_retail") engines.Add(GameEngine.Illusion);
+                        if (depth == 0 && name == "renpy") engines.Add(GameEngine.RenPy);
                         switch (name)
                         {
                             case "easyanticheat" or "easyanticheat_eos": Found(AntiCheatKind.EasyAntiCheat); break;
@@ -100,6 +105,9 @@ public static class GameScan
                     else if (name == "gameinfo.gi") source2 = true;
                     else if (name.EndsWith(".pck")) packs.Add(Path.GetFileNameWithoutExtension(name));
                     if (name.EndsWith(".exe")) exes.Add(Path.GetFileNameWithoutExtension(name));
+                    if (depth == 0 && name == "toc") toc = true;
+                    if (depth == 0 && name == "dag") dag = true;
+                    if (Detect(name, dirName, depth, dir) is { } engineFound) engines.Add(engineFound);
 
                     if (name is "easyanticheat_eos_setup.exe" or "easyanticheat_setup.exe" or "start_protected_game.exe" or "easyanticheat_x64.dll")
                         Found(AntiCheatKind.EasyAntiCheat);
@@ -131,7 +139,38 @@ public static class GameScan
             : source ? GameEngine.Source
             : godot ? GameEngine.Godot
             : GameEngine.Unknown;
+        if (toc && dag) engines.Add(GameEngine.Insomniac);
+        if (engine == GameEngine.Unknown)
+            engine = Enum.GetValues<GameEngine>().FirstOrDefault(engines.Contains); // declaration order breaks ties
         return new GameScanResult(engine, found);
+    }
+
+    /// <summary>
+    /// Engines recognized from one file, by names their games ship (checked on real installs): Frostbite's
+    /// engine DLLs, RE Engine's chunk packs, Anvil's .forge archives, Snowdrop's .sdfdata, Dunia's .fat files
+    /// under data_final, CryEngine's Engine\*.pak, id Tech's base\*.resources, Glacier's Runtime\*.rpkg,
+    /// GameMaker's data.win, LÖVE's love.dll and RPG Maker's core script.
+    /// </summary>
+    private static GameEngine? Detect(string name, string dirName, int depth, string dir)
+    {
+        if (depth == 0)
+        {
+            if (name.StartsWith("engine.buildinfo") || name.StartsWith("engine.render.")) return GameEngine.Frostbite;
+            if (name == "re_chunk_000.pak") return GameEngine.ReEngine;
+            if (name.EndsWith(".forge")) return GameEngine.Anvil;
+            if (name == "data.win") return GameEngine.GameMaker;
+            if (name == "love.dll") return GameEngine.Love;
+        }
+        if (depth == 1)
+        {
+            if (dirName == "engine" && name is "engine.pak" or "shaders.pak") return GameEngine.CryEngine;
+            if (dirName == "base" && name.EndsWith(".resources")) return GameEngine.IdTech;
+            if (dirName == "runtime" && name.EndsWith(".rpkg")) return GameEngine.Glacier;
+        }
+        if (name.EndsWith(".sdfdata") || name.EndsWith(".sdftoc")) return GameEngine.Snowdrop;
+        if (name.EndsWith(".fat") && dir.Contains(@"\data_final\", StringComparison.OrdinalIgnoreCase)) return GameEngine.Dunia;
+        if (name is "rpg_core.js" or "rmmz_core.js") return GameEngine.RpgMaker;
+        return null;
     }
 
     /// <summary>The cached result when it's still current, else a fresh scan. Off the UI thread.</summary>
