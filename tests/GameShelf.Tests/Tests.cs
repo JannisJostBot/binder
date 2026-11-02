@@ -64,6 +64,7 @@ static class Tests
         PlacementTests();
         ShelfTests();
         PayloadTests();
+        LaunchTests(dir);
 
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");
@@ -296,6 +297,98 @@ static class Tests
     }
 
     /// <summary>The installer's file list: only plain relative paths inside the install folder are accepted.</summary>
+    /// <summary>Milestone 10: launch arguments, Steam links, "Start with" checks, engine and anti-cheat detection.</summary>
+    static void LaunchTests(string dir)
+    {
+        // Splitting follows the same rules a game's C runtime uses (checked against ParseArgv).
+        foreach (var text in new[] { "-novid -windowed", "\"two words\" -x", "a\\\"b c", "C:\\dir\\ next", "x\\\\\"y z\"", "  -a   -b  " })
+        {
+            var mine = LaunchOptions.Split(text);
+            var expected = ParseArgv(text);
+            Check(mine.SequenceEqual(expected), $"split matches argv rules: {text} -> [{string.Join("|", mine)}]");
+            Check(LaunchOptions.Split(LaunchOptions.Join(mine)).SequenceEqual(mine), $"join round-trips: {text}");
+        }
+        Check(LaunchOptions.Split("").Count == 0 && LaunchOptions.Split(null).Count == 0, "empty arguments split to nothing");
+
+        // Steam link: digits-only appid, arguments percent-encoded so they can't change the link.
+        Check(LaunchOptions.SteamRunUri("570", ["-novid", "-w", "1280"]) == "steam://run/570//-novid%20-w%201280/", "steam run link");
+        Check(LaunchOptions.SteamRunUri("570", ["/x", "a?b#c"])!.StartsWith("steam://run/570//%2Fx%20a%3Fb%23c/"), "slashes and ? # are encoded");
+        Check(LaunchOptions.SteamRunUri("570/../1", ["-x"]) is null && LaunchOptions.SteamRunUri(null, []) is null, "bad appid gives no link");
+
+        // Suggestions: ticking and unticking multi-word options.
+        var windowed = LaunchOptions.Suggestions(GameEngine.Unity).First(s => s.Args == "-screen-fullscreen 0");
+        var tokens = LaunchOptions.Split("-popupwindow -screen-fullscreen 0 -foo");
+        Check(LaunchOptions.IndexOf(tokens, windowed.Tokens) == 1, "multi-word suggestion found");
+        Check(LaunchOptions.Without(tokens, windowed).SequenceEqual(["-popupwindow", "-foo"]), "multi-word suggestion removed");
+
+        // "Start with" must stay inside the install folder.
+        var game = Path.Combine(dir, "ScanGame");
+        Directory.CreateDirectory(game);
+        Check(LaunchOptions.IsInside(Path.Combine(game, "bin", "x.exe"), game), "exe inside the folder accepted");
+        Check(!LaunchOptions.IsInside(Path.Combine(game, "..", "x.exe"), game), "exe outside via .. rejected");
+        Check(!LaunchOptions.IsInside(game + "Evil\\x.exe", game), "sibling folder with the same prefix rejected");
+        Check(!LaunchOptions.IsInside("x.exe", game), "relative path rejected");
+        File.WriteAllText(Path.Combine(game, "game.exe"), "");
+        var outside = Path.Combine(dir, "outside.exe");
+        File.WriteAllText(outside, "");
+        var g = new Game { Id = "manual:t", Source = GameSource.Manual, InstallDir = game, ExePath = Path.Combine(game, "game.exe"), ExeOverride = outside };
+        Check(LaunchOptions.ValidOverride(g) is null && LaunchOptions.DirectExe(g) == g.ExePath, "override outside the folder ignored");
+        g.ExeOverride = Path.Combine(game, "game.exe");
+        Check(LaunchOptions.ValidOverride(g) == g.ExeOverride, "override inside the folder used");
+        var epic = new Game { Id = "epic:x", Source = GameSource.Epic, LaunchUri = "com.epicgames.launcher://apps/x", InstallDir = game };
+        Check(LaunchOptions.RouteFor(epic) == LaunchOptions.Route.NotSupported, "Epic games take no arguments from us");
+        var steam = new Game { Id = "steam:570", Source = GameSource.Steam, StoreId = "570", LaunchUri = "steam://rungameid/570" };
+        Check(LaunchOptions.RouteFor(steam) == LaunchOptions.Route.Steam, "Steam games use the run link");
+
+        // Engine and anti-cheat detection from file names.
+        GameScanResult ScanOf(string name, params string[] paths)
+        {
+            var root = Path.Combine(dir, name);
+            foreach (var path in paths)
+            {
+                var full = Path.Combine(root, path);
+                if (path.EndsWith('\\')) Directory.CreateDirectory(full);
+                else { Directory.CreateDirectory(Path.GetDirectoryName(full)!); File.WriteAllText(full, ""); }
+            }
+            return GameScan.Scan(root);
+        }
+        Check(ScanOf("u", "UnityPlayer.dll", "Game_Data\\", "Game.exe").Engine == GameEngine.Unity, "Unity detected");
+        Check(ScanOf("u2", "UnityPlayer.dll", "Game.exe").Engine == GameEngine.Unknown, "UnityPlayer.dll alone isn't Unity");
+        Check(ScanOf("ue", "Game\\Binaries\\Win64\\Game-Win64-Shipping.exe").Engine == GameEngine.Unreal, "Unreal detected");
+        Check(ScanOf("ue2", "Engine\\Binaries\\ThirdParty\\", "Game.exe").Engine == GameEngine.Unreal, "Unreal detected from Engine\\Binaries");
+        Check(ScanOf("cry", "Engine\\Shaders.pak", "Bin\\Win64\\Game.exe").Engine == GameEngine.Unknown, "CryEngine's Engine folder isn't Unreal");
+        Check(ScanOf("s2", "game\\dota\\gameinfo.gi").Engine == GameEngine.Source2, "Source 2 detected");
+        Check(ScanOf("s1", "hl2\\gameinfo.txt").Engine == GameEngine.Source, "Source detected");
+        Check(ScanOf("gd", "Game.exe", "Game.pck").Engine == GameEngine.Godot, "Godot detected");
+        Check(ScanOf("gd2", "Other.exe", "Game.pck").Engine == GameEngine.Unknown, "a .pck without its exe isn't Godot");
+        var eac = ScanOf("eac", "EasyAntiCheat\\", "start_protected_game.exe");
+        Check(eac.AntiCheats.SequenceEqual([AntiCheatKind.EasyAntiCheat]), "Easy Anti-Cheat detected once");
+        Check(ScanOf("be", "Game_BE.exe").AntiCheats.Contains(AntiCheatKind.BattlEye), "BattlEye detected from *_BE.exe");
+        Check(ScanOf("none", "Game.exe").AntiCheats.Count == 0, "no anti-cheat in a plain game");
+        Check(ScanOf("deep", "a\\b\\c\\d\\e\\f\\EasyAntiCheat\\").AntiCheats.Count == 0, "scan depth is capped");
+
+        // A junction inside the game folder is never followed.
+        var target = Path.Combine(dir, "junction-target");
+        Directory.CreateDirectory(Path.Combine(target, "BattlEye"));
+        var junctionRoot = Path.Combine(dir, "junction-game");
+        Directory.CreateDirectory(junctionRoot);
+        try
+        {
+            Directory.CreateSymbolicLink(Path.Combine(junctionRoot, "link"), target);
+            Check(GameScan.Scan(junctionRoot).AntiCheats.Count == 0, "links inside the game folder aren't followed");
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            Console.WriteLine("SKIP link test (no symlink rights)");
+        }
+
+        // Requirements: Vanguard needs TPM and Secure Boot on Windows 11; Battlefield 6 adds Secure Boot.
+        var vanguard = AntiCheat.Requirements([AntiCheatKind.Vanguard], "VALORANT", windows11: true);
+        Check(vanguard.Contains(PcRequirement.Tpm20) && vanguard.Contains(PcRequirement.SecureBoot), "Vanguard needs TPM 2.0 and Secure Boot on Windows 11");
+        Check(!AntiCheat.Requirements([AntiCheatKind.EasyAntiCheat], "Some Game", true).Contains(PcRequirement.SecureBoot), "EAC baseline has no Secure Boot");
+        Check(AntiCheat.Requirements([AntiCheatKind.Javelin], "Battlefield 6", true).Contains(PcRequirement.SecureBoot), "Battlefield 6 exception adds Secure Boot");
+        Check(AntiCheat.Requirements([], "Battlefield 6", true).Count == 0, "no anti-cheat, no requirements");
+    }
     static void PayloadTests()
     {
         foreach (var bad in new[] { @"..\evil.exe", @"C:\Windows\x.exe", @"\x.exe", "a/b.exe", @"a\..\b.exe", "x.exe:stream",

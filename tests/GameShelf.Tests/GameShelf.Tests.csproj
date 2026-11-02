@@ -31,6 +31,9 @@
     <Compile Include="..\..\src\GameShelf\Services\ShellNotify.cs" Link="Linked\Services\ShellNotify.cs" />
     <Compile Include="..\..\src\GameShelf\Library\CoverColors.cs" Link="Linked\Library\CoverColors.cs" />
     <Compile Include="..\..\src\GameShelf\Library\ShelfOrder.cs" Link="Linked\Library\ShelfOrder.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\LaunchOptions.cs" Link="Linked\Library\LaunchOptions.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\GameScan.cs" Link="Linked\Library\GameScan.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\AntiCheat.cs" Link="Linked\Library\AntiCheat.cs" />
     <Compile Include="..\..\src\GameShelf\Views\Format.cs" Link="Linked\Views\Format.cs" />
     <Compile Include="..\..\src\GameShelf.Watcher\Program.cs" Link="Linked\Watcher\Program.cs" />
     <Compile Include="..\..\src\GameShelf.Setup\PayloadList.cs" Link="Linked\Setup\PayloadList.cs" />

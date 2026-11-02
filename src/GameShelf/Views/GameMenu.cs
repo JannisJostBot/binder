@@ -1,4 +1,4 @@
-﻿using GameShelf.Models;
+using GameShelf.Models;
 using GameShelf.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -7,7 +7,7 @@ using Windows.Foundation;
 
 namespace GameShelf.Views;
 
-public enum GameAction { Play, Details, OpenFolder, StorePage, VerifyFiles, Uninstall, ToggleFavorite, Hide }
+public enum GameAction { Play, Details, OpenFolder, StorePage, VerifyFiles, Uninstall, ToggleFavorite, Hide, TestLaunch }
 
 /// <summary>
 /// The per-game menu, on a cover's right-click (or Menu key / Shift+F10) and the detail view's "…" button: a

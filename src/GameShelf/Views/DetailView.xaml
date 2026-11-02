@@ -63,6 +63,13 @@
                                TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
                     <TextBlock x:Name="SubtitleText" Style="{StaticResource BodyTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <HyperlinkButton x:Name="AntiCheatLabel" Padding="0" Margin="0,-2,0,0" Visibility="Collapsed"
+                                     Click="OnAntiCheatLabelClick" ToolTipService.ToolTip="Show anti-cheat details">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon x:Name="AntiCheatGlyph" FontSize="12" />
+                            <TextBlock x:Name="AntiCheatLabelText" Style="{StaticResource CaptionTextBlockStyle}" />
+                        </StackPanel>
+                    </HyperlinkButton>
                 </StackPanel>
             </Grid>
 
@@ -191,6 +198,68 @@
                     </Grid>
                 </StackPanel>
             </Border>
+
+            <!-- Launch options: engine suggestions, extra arguments, another exe to start with -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="Launch options" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Start with" />
+                            <TextBlock x:Name="StartWithText" Style="{StaticResource RowDetail}" />
+                        </StackPanel>
+                        <DropDownButton x:Name="StartWithButton" Grid.Column="1" Content="Change" VerticalAlignment="Center"
+                                        AutomationProperties.Name="Change the program to start with">
+                            <DropDownButton.Flyout>
+                                <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                    <MenuFlyoutItem Text="Choose program…" Click="OnPickStartWith">
+                                        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8E5;" /></MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem x:Name="AutoStartWithItem" Text="Automatic" Click="OnAutoStartWith">
+                                        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE72C;" /></MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </DropDownButton.Flyout>
+                        </DropDownButton>
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <StackPanel Padding="0,12" Spacing="8">
+                        <TextBlock x:Name="EngineText" Style="{StaticResource RowDetail}" />
+                        <StackPanel x:Name="SuggestionList" AutomationProperties.Name="Suggested launch options" />
+                        <TextBox x:Name="ExtraArgsBox" Header="Extra arguments" PlaceholderText="For example -windowed"
+                                 MaxLength="1024" TextChanged="OnExtraArgsChanged" LostFocus="OnExtraArgsLostFocus"
+                                 AutomationProperties.Name="Extra arguments" IsSpellCheckEnabled="False" />
+                        <TextBlock x:Name="StartsAsText" Style="{StaticResource RowDetail}" IsTextSelectionEnabled="True" />
+                        <TextBlock x:Name="LaunchNoteText" Style="{StaticResource RowDetail}" Visibility="Collapsed" />
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                            <Button x:Name="TestLaunchButton" Content="Test launch" Click="OnTestLaunchClick"
+                                    ToolTipService.ToolTip="Start the game with these options and keep Game Shelf open" />
+                            <Button x:Name="ResetLaunchButton" Content="Reset" Click="OnResetLaunchClick"
+                                    ToolTipService.ToolTip="Start the game the normal way again" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Anti-cheat: what the game uses, what it needs from this PC, and programs it may refuse to run next to -->
+            <StackPanel x:Name="AntiCheatSection" Visibility="Collapsed">
+                <TextBlock Style="{StaticResource SectionLabel}" Text="Anti-cheat" />
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Padding="0,12" Spacing="10">
+                        <TextBlock x:Name="AntiCheatNames" Style="{StaticResource BodyStrongTextBlockStyle}" TextWrapping="Wrap" />
+                        <StackPanel x:Name="RequirementList" Spacing="6" AutomationProperties.Name="Requirements" />
+                        <StackPanel x:Name="ConflictList" Spacing="6" AutomationProperties.Name="Programs that may conflict" />
+                        <CheckBox x:Name="RemindCheck" Content="Remind me before launching" Click="OnRemindClick"
+                                  ToolTipService.ToolTip="When you press Play, offer to close programs this anti-cheat may refuse to run next to" />
+                        <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                                   Text="Requirements can change with game updates. Game Shelf only checks these settings and never changes them." />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
 
             <!-- Links -->
             <StackPanel Orientation="Horizontal" Margin="8,16,20,0">

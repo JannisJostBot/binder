@@ -738,6 +738,9 @@ public sealed partial class MainWindow : Window
             case GameAction.Hide:
                 HideGame(game);
                 break;
+            case GameAction.TestLaunch:
+                TestLaunch(game);
+                break;
         }
     }
 
@@ -785,7 +788,68 @@ public sealed partial class MainWindow : Window
         e.Handled = true;
     }
 
+    /// <summary>
+    /// Play, after asking to close conflicting programs when the game's anti-cheat reminder is on and one is
+    /// running (checked only now, on Play).
+    /// </summary>
     private void Play(Game game)
+    {
+        if (game.AntiCheatReminder && game.AntiCheats is { Count: > 0 } && PcChecks.RunningConflicts() is { Count: > 0 } conflicts)
+            _ = ConfirmConflictsAsync(game, conflicts);
+        else
+            Launch(game);
+    }
+
+    private async Task ConfirmConflictsAsync(Game game, List<PcChecks.Conflict> conflicts)
+    {
+        try
+        {
+            var names = string.Join(" and ", conflicts.Select(c => c.Name));
+            var antiCheat = string.Join(", ", game.AntiCheats!.Select(AntiCheat.Name));
+            var dialog = new ContentDialog
+            {
+                XamlRoot = Root.XamlRoot,
+                Style = (Style)Application.Current.Resources["DefaultContentDialogStyle"],
+                Title = $"Close {names} first?",
+                Content = $"{game.Name} uses {antiCheat}, which may refuse to start while {names} {(conflicts.Count == 1 ? "is" : "are")} running.",
+                PrimaryButtonText = "Close it and play",
+                SecondaryButtonText = "Play anyway",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Primary,
+            };
+            App.ModalDepth++; // click-away must not close the flyout under the dialog
+            ContentDialogResult result;
+            try
+            {
+                result = await dialog.ShowAsync();
+            }
+            finally
+            {
+                App.ModalDepth--;
+            }
+            if (result == ContentDialogResult.None) return;
+            if (result == ContentDialogResult.Primary)
+                foreach (var conflict in conflicts) PcChecks.AskToClose(conflict);
+            Launch(game);
+        }
+        catch (Exception e)
+        {
+            ErrorLog.Write(e, "anti-cheat reminder");
+            Launch(game);
+        }
+    }
+
+    /// <summary>Starts the game with its launch options and keeps the panel open (no watcher, no session).</summary>
+    private void TestLaunch(Game game)
+    {
+        App.Current.CancelCountdown();
+        if (Launcher.StartGame(game) is { } launchError)
+            ShowToast($"Couldn't start {game.Name}", launchError, "OK");
+        else
+            ShowToast($"Test launch: {game.Name}", "Starts as: " + Launcher.Describe(game) + ". Game Shelf stays open; this run isn't added to your playtime.", "OK");
+    }
+
+    private void Launch(Game game)
     {
         App.Current.CancelCountdown();
 

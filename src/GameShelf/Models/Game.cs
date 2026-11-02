@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using GameShelf.Library;
 
 namespace GameShelf.Models;
 
@@ -36,6 +37,20 @@ public sealed class Game
     public string? ProcessName { get; set; }
     public string? CustomCover { get; set; }
 
+    /// <summary>Arguments the game starts with (milestone 10), as typed: split by the Windows command-line rules.</summary>
+    public string? LaunchArgs { get; set; }
+
+    /// <summary>"Start with": another exe inside the install folder to run instead of the normal launch.</summary>
+    public string? ExeOverride { get; set; }
+
+    /// <summary>Ask to close conflicting programs (cheat tools, debuggers) before this game starts.</summary>
+    public bool AntiCheatReminder { get; set; }
+
+    // Install-folder scan (engine and anti-cheat), cached until the game's files change (see GameScan).
+    public string? ScanStamp { get; set; }
+    public GameEngine? Engine { get; set; }
+    public List<AntiCheatKind>? AntiCheats { get; set; }
+
     [JsonIgnore]
     public string SizeText => FormatSize(SizeOnDisk);
 
@@ -59,6 +74,15 @@ public sealed class Game
         HideDelaySeconds = from.HideDelaySeconds;
         ProcessName = from.ProcessName;
         CustomCover = from.CustomCover;
+        LaunchArgs = from.LaunchArgs;
+        ExeOverride = from.ExeOverride;
+        AntiCheatReminder = from.AntiCheatReminder;
+        if (ScanStamp is null)
+        {
+            ScanStamp = from.ScanStamp;
+            Engine = from.Engine;
+            AntiCheats = from.AntiCheats;
+        }
         AddedAt = from.AddedAt;
         CoverTint ??= from.CoverTint;
     }

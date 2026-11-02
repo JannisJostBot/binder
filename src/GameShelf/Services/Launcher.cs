@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using GameShelf.Library;
 using GameShelf.Models;
 
 namespace GameShelf.Services;
@@ -14,8 +15,16 @@ public static class Launcher
     /// <summary>Starts the game via its store URI or its exe. Returns an error message, or null on success.</summary>
     public static string? StartGame(Game game)
     {
+        var args = LaunchOptions.Split(game.LaunchArgs);
         ProcessStartInfo psi;
-        if (!string.IsNullOrEmpty(game.LaunchUri))
+        if (LaunchOptions.ValidOverride(game) is { } overrideExe)
+            psi = DirectStart(overrideExe, args);
+        else if (args.Count > 0 && LaunchOptions.RouteFor(game) == LaunchOptions.Route.Steam &&
+                 LaunchOptions.SteamRunUri(game.StoreId, args) is { } steamRun)
+            psi = new ProcessStartInfo(steamRun) { UseShellExecute = true };
+        else if (args.Count > 0 && LaunchOptions.DirectExe(game) is { } exe && File.Exists(exe))
+            psi = DirectStart(exe, args);
+        else if (!string.IsNullOrEmpty(game.LaunchUri))
             psi = new ProcessStartInfo(game.LaunchUri) { UseShellExecute = true };
         else if (!string.IsNullOrEmpty(game.ExePath) && File.Exists(game.ExePath))
             psi = new ProcessStartInfo(game.ExePath) { UseShellExecute = true, WorkingDirectory = Path.GetDirectoryName(game.ExePath)! };
@@ -31,6 +40,28 @@ public static class Launcher
         {
             return e.Message;
         }
+    }
+
+    /// <summary>Runs an exe from its own folder with arguments passed one by one (quoted by .NET, never re-parsed by a shell).</summary>
+    private static ProcessStartInfo DirectStart(string exe, List<string> args)
+    {
+        var psi = new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = Path.GetDirectoryName(exe)! };
+        foreach (var arg in args) psi.ArgumentList.Add(arg);
+        return psi;
+    }
+
+    /// <summary>What the game starts as, for the "Starts as" preview.</summary>
+    public static string Describe(Game game)
+    {
+        var args = LaunchOptions.Split(game.LaunchArgs);
+        var joined = LaunchOptions.Join(args);
+        if (LaunchOptions.ValidOverride(game) is { } overrideExe) return (Path.GetFileName(overrideExe) + " " + joined).Trim();
+        return LaunchOptions.RouteFor(game) switch
+        {
+            LaunchOptions.Route.Steam => args.Count > 0 ? "Steam, with " + joined : "Steam",
+            LaunchOptions.Route.Exe => (Path.GetFileName(LaunchOptions.DirectExe(game)) + " " + joined).Trim(),
+            _ => game.Source == GameSource.Shortcut ? "its shortcut" : $"the {game.SourceLabel} launcher",
+        };
     }
 
     /// <summary>

@@ -1,3 +1,4 @@
+using GameShelf.Library;
 using GameShelf.Models;
 using GameShelf.Services;
 using Microsoft.UI.Xaml;
@@ -54,6 +55,10 @@ public sealed partial class DetailView : UserControl
 
         ShowStats(game, sessions);
         UpdateSettingsRows();
+        if (!sameGame) _scan = null;
+        UpdateLaunchOptions();
+        UpdateAntiCheat();
+        _ = ScanAsync(game);
         if (!sameGame) Scroller.ChangeView(null, 0, null, disableAnimation: true);
     }
 
