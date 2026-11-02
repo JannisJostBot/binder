@@ -124,6 +124,31 @@
                 </Border>
             </Grid>
 
+            <!-- Playtime chart: hours per week (8 weeks) or per month (12 months), from our own sessions -->
+            <StackPanel x:Name="PlaytimeSection" Visibility="Collapsed">
+                <TextBlock Style="{StaticResource SectionLabel}" Text="Playtime" />
+                <Border Style="{StaticResource Card}">
+                    <StackPanel Padding="0,10,0,10" Spacing="12">
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="PeriodTotalText" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="18" />
+                                <TextBlock x:Name="PeriodDetailText" Style="{StaticResource RowDetail}" />
+                            </StackPanel>
+                            <SelectorBar x:Name="PeriodChoice" Grid.Column="1" VerticalAlignment="Center"
+                                         AutomationProperties.Name="Chart period" SelectionChanged="OnPeriodChanged">
+                                <SelectorBarItem x:Name="WeeksItem" Text="8 weeks" IsSelected="True" />
+                                <SelectorBarItem x:Name="MonthsItem" Text="12 months" />
+                            </SelectorBar>
+                        </Grid>
+                        <v:BarChart x:Name="PlaytimeChart" PlotHeight="88" BarWidth="14" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
             <!-- Recent sessions (tracked by the watcher) -->
             <TextBlock Style="{StaticResource SectionLabel}" Text="Recent sessions" />
             <Border Style="{StaticResource Card}">
@@ -228,7 +253,24 @@
                     </Grid>
                     <Border Style="{StaticResource RowDivider}" />
                     <StackPanel Padding="0,12" Spacing="8">
-                        <TextBlock x:Name="EngineText" Style="{StaticResource RowDetail}" />
+                        <Grid ColumnSpacing="10" MinHeight="28">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Engine" VerticalAlignment="Center" />
+                            <Border x:Name="EngineTag" Grid.Column="1" Padding="8,3,9,4" CornerRadius="10" BorderThickness="1"
+                                    VerticalAlignment="Center" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    Background="{ThemeResource SystemFillColorNeutralBackgroundBrush}">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <FontIcon x:Name="EngineGlyph" Glyph="&#xE7FC;" FontSize="11" VerticalAlignment="Center"
+                                              Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                    <TextBlock x:Name="EngineTagText" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                        <TextBlock x:Name="EngineText" Style="{StaticResource RowDetail}" Margin="0,6,0,0" />
+
                         <StackPanel x:Name="SuggestionList" AutomationProperties.Name="Suggested launch options" />
                         <TextBox x:Name="ExtraArgsBox" Header="Extra arguments" PlaceholderText="For example -windowed"
                                  MaxLength="1024" TextChanged="OnExtraArgsChanged" LostFocus="OnExtraArgsLostFocus"

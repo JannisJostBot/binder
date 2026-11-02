@@ -37,6 +37,8 @@ public sealed class Settings
     public SortBy SortBy { get; set; } = SortBy.RecentlyPlayed;
     public bool FavoritesFirst { get; set; } = true;
     public GridDensity GridDensity { get; set; } = GridDensity.Medium;
+    /// <summary>The "This week" card on the shelf: playtime per day from our own sessions.</summary>
+    public bool ShowWeeklySummary { get; set; } = true;
 
     public DisplayMode DisplayMode { get; set; } = DisplayMode.Flyout;
     public bool TrayIcon { get; set; } = true;

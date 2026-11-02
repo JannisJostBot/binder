@@ -65,6 +65,7 @@ static class Tests
         ShelfTests();
         PayloadTests();
         LaunchTests(dir);
+        PlaytimeTests();
 
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");
@@ -388,6 +389,38 @@ static class Tests
         Check(!AntiCheat.Requirements([AntiCheatKind.EasyAntiCheat], "Some Game", true).Contains(PcRequirement.SecureBoot), "EAC baseline has no Secure Boot");
         Check(AntiCheat.Requirements([AntiCheatKind.Javelin], "Battlefield 6", true).Contains(PcRequirement.SecureBoot), "Battlefield 6 exception adds Secure Boot");
         Check(AntiCheat.Requirements([], "Battlefield 6", true).Count == 0, "no anti-cheat, no requirements");
+    }
+    /// <summary>Milestone 10: "This week" and the playtime chart, split at midnight, week and month boundaries.</summary>
+    static void PlaytimeTests()
+    {
+        Session S(string id, DateTime start, double hours) =>
+            new() { GameId = id, Start = new DateTimeOffset(start), End = new DateTimeOffset(start.AddHours(hours)) };
+        var now = new DateTime(2026, 11, 4, 12, 0, 0, DateTimeKind.Local); // a Wednesday
+        Check(PlaytimeStats.WeekStart(now) == new DateTime(2026, 11, 2), "weeks start on Monday");
+        Check(PlaytimeStats.WeekStart(new DateTime(2026, 11, 8, 23, 0, 0)) == new DateTime(2026, 11, 2), "Sunday belongs to the week before");
+
+        var sessions = new List<Session>
+        {
+            S("a", new DateTime(2026, 11, 2, 23, 0, 0, DateTimeKind.Local), 2),   // Mon 23:00 to Tue 01:00
+            S("b", new DateTime(2026, 11, 3, 18, 0, 0, DateTimeKind.Local), 0.5),
+            S("a", new DateTime(2026, 11, 1, 23, 30, 0, DateTimeKind.Local), 1),  // Sun 23:30 last week, 30 min into Monday
+            S("c", new DateTime(2026, 10, 20, 20, 0, 0, DateTimeKind.Local), 3),  // two weeks ago
+        };
+        var week = PlaytimeStats.Week(sessions, now);
+        Check(week.Days[0].Time == TimeSpan.FromMinutes(90), $"Monday gets its share of a session over midnight ({week.Days[0].Time})");
+        Check(week.Days[1].Time == TimeSpan.FromMinutes(90), $"Tuesday gets the rest plus its own session ({week.Days[1].Time})");
+        Check(week.Total == TimeSpan.FromHours(3) && week.GameCount == 2 && week.TopGameId == "a", "week total, game count and most played");
+        Check(PlaytimeStats.Week([], now).Total == TimeSpan.Zero && PlaytimeStats.Week([], now).TopGameId is null, "empty week");
+
+        var weeks = PlaytimeStats.Weeks(sessions, now);
+        Check(weeks.Count == 8 && weeks[^1].Start == new DateTime(2026, 11, 2), "8 weeks, the last one is this week");
+        Check(weeks[^1].Time == TimeSpan.FromHours(3) && weeks[^2].Time == TimeSpan.FromMinutes(30) && weeks[^3].Time == TimeSpan.FromHours(3),
+            "weekly buckets split at the week boundary");
+        var months = PlaytimeStats.Months(sessions, now);
+        Check(months.Count == 12 && months[^1].Start == new DateTime(2026, 11, 1) && months[0].Start == new DateTime(2025, 12, 1), "12 months ending this month");
+        Check(months[^1].Time == TimeSpan.FromHours(3.5) && months[^2].Time == TimeSpan.FromHours(3), "monthly buckets");
+        Check(PlaytimeStats.WeekLabel(new DateTime(2026, 9, 14)) == "Sep 14" && PlaytimeStats.DayLetter(new DateTime(2026, 11, 2)) == "M",
+            "chart labels are English whatever the locale");
     }
     static void PayloadTests()
     {

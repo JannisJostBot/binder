@@ -142,6 +142,7 @@
             <!-- Shelf (board 9) -->
             <TextBlock Style="{StaticResource SectionLabel}" Text="Shelf" />
             <Border Style="{StaticResource Card}">
+                <StackPanel>
                 <Grid Style="{StaticResource SettingRow}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -156,6 +157,20 @@
                         <ComboBoxItem Content="List" Tag="List" />
                     </ComboBox>
                 </Grid>
+                <Border Style="{StaticResource RowDivider}" />
+                <Grid Style="{StaticResource SettingRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Style="{StaticResource RowText}">
+                        <TextBlock Style="{StaticResource RowTitle}" Text="Show this week's playtime" />
+                        <TextBlock Style="{StaticResource RowDetail}" Text="A card above the games with time played per day" />
+                    </StackPanel>
+                    <ToggleSwitch x:Name="WeekSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="Show this week's playtime" Toggled="OnWeekChanged" />
+                </Grid>
+                </StackPanel>
             </Border>
 
             <!-- Library -->

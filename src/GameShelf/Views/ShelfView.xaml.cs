@@ -91,6 +91,7 @@ public sealed partial class ShelfView : UserControl
         var hides = settings.HideDelaySeconds <= 0 ? "Hides when a game starts" : $"Hides {settings.HideDelaySeconds} s after a game starts";
         FooterText.Text = settings.ComeBackOnClose ? hides + " · comes back when it closes" : hides;
         UpdateContinueCard();
+        UpdateWeekCard(sessions);
         Resort();
     }
 
@@ -160,6 +161,34 @@ public sealed partial class ShelfView : UserControl
 
         // Hidden while searching.
         ContinueCard.Visibility = _continueGame is not null && query.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+        WeekCard.Visibility = _hasWeek && query.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private bool _hasWeek;
+
+    /// <summary>
+    /// "This week": total, how many games, the most played one and a bar per day, Monday to Sunday. Worked out
+    /// when the shelf gets its data (the panel opening, a session ending), never on a timer.
+    /// </summary>
+    private void UpdateWeekCard(IReadOnlyList<Session> sessions)
+    {
+        _hasWeek = false;
+        if (!_settings.ShowWeeklySummary) return;
+        var week = PlaytimeStats.Week(sessions, DateTime.Now);
+        if (week.Total <= TimeSpan.Zero) return;
+        _hasWeek = true;
+
+        WeekTotal.Text = Format.Duration(week.Total);
+        var games = week.GameCount == 1 ? "1 game" : $"{week.GameCount} games";
+        var top = week.TopGameId is { } id ? _games.FirstOrDefault(g => g.Id == id)?.Name : null;
+        WeekDetail.Text = top is null || week.GameCount == 1 ? (top is null ? games : top) : $"{games} · most: {top}";
+        ToolTipService.SetToolTip(WeekDetail, top is null ? null : $"Most played: {top}, {Format.Duration(week.TopGameTime)}");
+        WeekChart.Show(
+            week.Days.Select(d => new Bar(
+                PlaytimeStats.DayLetter(d.Start),
+                $"{PlaytimeStats.DayName(d.Start)}: {(d.Time > TimeSpan.Zero ? Format.Duration(d.Time) : "not played")}",
+                d.Time.TotalMinutes)).ToList(),
+            "Playtime this week");
     }
 
     /// <summary>The last played game, worked out when the data changes (not per keystroke).</summary>

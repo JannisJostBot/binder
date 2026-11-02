@@ -75,12 +75,13 @@ public sealed partial class DetailView
         AutoStartWithItem.IsEnabled = game.ExeOverride is not null;
 
         var engine = _scan?.Result?.Engine ?? game.Engine ?? GameEngine.Unknown;
-        EngineText.Text = engine != GameEngine.Unknown
-            ? $"Made with {LaunchOptions.EngineName(engine)}. Suggested options:"
-            : _scan is null && game.Engine is null && game.InstallDir is not null
-                ? "Looking at the game's files…"
-                : "Add the arguments this game understands below.";
-
+        bool scanning = _scan is null && game.Engine is null && game.InstallDir is not null;
+        bool known = engine != GameEngine.Unknown;
+        EngineTagText.Text = known ? LaunchOptions.EngineName(engine) : scanning ? "Checking…" : "Not recognized";
+        EngineTagText.Foreground = Resource<Brush>(known ? "TextFillColorPrimaryBrush" : "TextFillColorSecondaryBrush");
+        EngineGlyph.Visibility = known ? Visibility.Visible : Visibility.Collapsed;
+        AutomationProperties.SetName(EngineTag, "Engine: " + EngineTagText.Text);
+        EngineText.Text = known ? "Suggested options" : "Add the arguments this game understands below.";
         _updatingArgs = true;
         try
         {
@@ -326,22 +327,28 @@ public sealed partial class DetailView
         return row;
     }
 
-    /// <summary>A small tinted pill with an icon: green when fine, amber when it needs attention, neutral when unknown.</summary>
+    /// <summary>
+    /// A small pill with an icon. Solid status colors with the text-on-accent color (dark on green or yellow in
+    /// dark mode, white on deep green or amber in light mode) so it reads well over the acrylic; neutral and
+    /// outlined when the state is unknown.
+    /// </summary>
     private static Border StatusTag(string text, bool? good)
     {
-        var (glyph, foreground, background, stroke) = good switch
+        var (glyph, background) = good switch
         {
-            true => ("\uE73E", "SystemFillColorSuccessBrush", "SystemFillColorSuccessBackgroundBrush", "CardStrokeColorDefaultBrush"),
-            false => ("\uE7BA", "SystemFillColorCautionBrush", "SystemFillColorCautionBackgroundBrush", "CardStrokeColorDefaultBrush"),
-            null => ("\uE9CE", "TextFillColorSecondaryBrush", "SystemFillColorNeutralBackgroundBrush", "CardStrokeColorDefaultBrush"),
+            true => ("", "SystemFillColorSuccessBrush"),
+            false => ("", "SystemFillColorCautionBrush"),
+            null => ("", "SystemFillColorNeutralBackgroundBrush"),
         };
+        var foreground = Resource<Brush>(good is null ? "TextFillColorSecondaryBrush" : "TextOnAccentFillColorPrimaryBrush");
         var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 5 };
-        content.Children.Add(new FontIcon { Glyph = glyph, FontSize = 11, Foreground = Resource<Brush>(foreground), VerticalAlignment = VerticalAlignment.Center });
+        content.Children.Add(new FontIcon { Glyph = glyph, FontSize = 11, Foreground = foreground, VerticalAlignment = VerticalAlignment.Center });
         content.Children.Add(new TextBlock
         {
             Text = text,
             Style = Resource<Style>("CaptionTextBlockStyle"),
-            Foreground = Resource<Brush>(good is null ? "TextFillColorSecondaryBrush" : "TextFillColorPrimaryBrush"),
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+            Foreground = foreground,
             VerticalAlignment = VerticalAlignment.Center,
         });
         return new Border
@@ -350,8 +357,8 @@ public sealed partial class DetailView
             Padding = new Thickness(8, 3, 9, 4),
             CornerRadius = new CornerRadius(10),
             Background = Resource<Brush>(background),
-            BorderBrush = Resource<Brush>(stroke),
-            BorderThickness = new Thickness(1),
+            BorderBrush = Resource<Brush>(good is null ? "CardStrokeColorDefaultBrush" : "ControlStrokeColorDefaultBrush"),
+            BorderThickness = new Thickness(good is null ? 1 : 0),
             VerticalAlignment = VerticalAlignment.Center,
         };
     }

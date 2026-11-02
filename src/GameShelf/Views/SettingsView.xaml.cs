@@ -55,6 +55,7 @@ public sealed partial class SettingsView : UserControl
 
             Select(DelayBox, settings.HideDelaySeconds.ToString(CultureInfo.InvariantCulture));
             ComeBackSwitch.IsOn = settings.ComeBackOnClose;
+        WeekSwitch.IsOn = settings.ShowWeeklySummary;
             Select(DensityBox, settings.GridDensity.ToString());
             SteamCheck.IsChecked = settings.SteamEnabled;
             EpicCheck.IsChecked = settings.EpicEnabled;
@@ -196,6 +197,13 @@ public sealed partial class SettingsView : UserControl
     {
         if (_loading || SelectedTag(DensityBox) is not { } tag) return;
         _settings.GridDensity = Enum.Parse<GridDensity>(tag);
+        Change(SettingChange.Shelf);
+    }
+
+    private void OnWeekChanged(object sender, RoutedEventArgs e)
+    {
+        if (_loading) return;
+        _settings.ShowWeeklySummary = WeekSwitch.IsOn;
         Change(SettingChange.Shelf);
     }
 

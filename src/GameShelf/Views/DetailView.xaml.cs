@@ -102,8 +102,39 @@ public sealed partial class DetailView : UserControl
             SessionsList.Children.Add(row);
         }
         NoSessionsText.Visibility = mine.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        _mine = mine;
+        PlaytimeSection.Visibility = mine.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+        if (mine.Count > 0) ShowPlaytimeChart();
     }
 
+private List<Session> _mine = [];
+
+    /// <summary>Hours per week for 8 weeks, or per month for 12, with this period's total above the bars.</summary>
+    private void ShowPlaytimeChart()
+    {
+        bool months = MonthsItem.IsSelected;
+        var now = DateTime.Now;
+        var buckets = months ? PlaytimeStats.Months(_mine, now) : PlaytimeStats.Weeks(_mine, now);
+        var period = TimeSpan.FromTicks(buckets.Sum(b => b.Time.Ticks));
+        var current = buckets[^1].Time;
+
+        PeriodTotalText.Text = period > TimeSpan.Zero ? Format.Duration(period) : "Not played";
+        PeriodDetailText.Text = (months ? "in the last 12 months" : "in the last 8 weeks") +
+            $" · {(months ? "this month" : "this week")} {(current > TimeSpan.Zero ? Format.Duration(current) : "none yet")}";
+        PlaytimeChart.Show(
+            buckets.Select(b => new Bar(
+                months ? PlaytimeStats.MonthLabel(b.Start) : PlaytimeStats.WeekLabel(b.Start),
+                (months ? PlaytimeStats.MonthName(b.Start) : "Week of " + PlaytimeStats.WeekLabel(b.Start)) + ": " +
+                    (b.Time > TimeSpan.Zero ? Format.Duration(b.Time) : "not played"),
+                b.Time.TotalMinutes)).ToList(),
+            months ? "Playtime per month, last 12 months" : "Playtime per week, last 8 weeks");
+    }
+
+    private void OnPeriodChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+    {
+        if (_mine.Count > 0) ShowPlaytimeChart();
+    }
     private void UpdateFavorite()
     {
         if (_game is null) return;

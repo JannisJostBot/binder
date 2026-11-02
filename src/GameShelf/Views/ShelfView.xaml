@@ -51,8 +51,9 @@
             </DropDownButton>
         </Grid>
 
-        <!-- Continue playing -->
-        <Border x:Name="ContinueCard" Grid.Row="3" Padding="12" Visibility="Collapsed"
+        <!-- Continue playing, then this week's playtime (both hidden while searching) -->
+        <StackPanel Grid.Row="3" Spacing="10">
+        <Border x:Name="ContinueCard" Padding="12" Visibility="Collapsed"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
                 CornerRadius="{ThemeResource OverlayCornerRadius}">
@@ -84,7 +85,26 @@
                 </Button>
             </Grid>
         </Border>
-
+        <Border x:Name="WeekCard" Padding="14,10,14,8" Visibility="Collapsed"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+                CornerRadius="{ThemeResource OverlayCornerRadius}">
+            <Grid ColumnSpacing="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="210" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center" Spacing="1">
+                    <TextBlock Text="This week" Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock x:Name="WeekTotal" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="18" />
+                    <TextBlock x:Name="WeekDetail" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="NoWrap"
+                               TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+                <v:BarChart x:Name="WeekChart" Grid.Column="1" PlotHeight="40" BarWidth="10" VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+        </StackPanel>
         <!-- Count and sort (board 7) -->
         <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
