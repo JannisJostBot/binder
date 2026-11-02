@@ -252,6 +252,23 @@ public sealed partial class ShelfView : UserControl
         AutomationProperties.SetName(ContinuePlay, "Play " + _continueGame.Name);
     }
 
+    /// <summary>
+    /// How many items fit in the grid (or list) as laid out now, rounded up to whole rows: the covers that must
+    /// be drawn before the panel shows. 0 when the shelf isn't laid out (another page is open).
+    /// </summary>
+    public int VisibleItemCount()
+    {
+        if (Visibility != Visibility.Visible) return 0;
+        if (_listMode)
+            return Rows.ActualHeight > 0 ? (int)Math.Ceiling(Rows.ActualHeight / ListRowHeight) : 0;
+        if (Tiles.ActualHeight <= 0) return 0;
+        double rowHeight = _tileHeight + ItemPadding + 28; // as SizeTiles sets ItemHeight
+        return _columns * (int)Math.Ceiling(Tiles.ActualHeight / rowHeight);
+    }
+
+    /// <summary>A list row's height, near enough for <see cref="VisibleItemCount"/> (rounds the count up).</summary>
+    private const double ListRowHeight = 52;
+
     /// <summary>Cover size: Small = 5 columns, Medium = 4, Large = 3, or the list (board 11).</summary>
     private void ApplyDensity(GridDensity density)
     {

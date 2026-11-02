@@ -141,7 +141,9 @@
                       IsSwipeEnabled="False" CanDragItems="False">
                 <GridView.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <ItemsWrapGrid Orientation="Horizontal" />
+                        <!-- Half a screen of tiles above and below the view (the default is two screens each way,
+                             which realized and decoded every cover of a 70-game library on each open). -->
+                        <ItemsWrapGrid Orientation="Horizontal" CacheLength="1" />
                     </ItemsPanelTemplate>
                 </GridView.ItemsPanel>
                 <GridView.ItemContainerStyle>
@@ -162,6 +164,11 @@
                       AutomationProperties.Name="Games" ContainerContentChanging="OnRowContentChanging"
                       PreviewKeyDown="OnGridKeyDown" ContextRequested="OnItemContextRequested"
                       Visibility="Collapsed" CanDragItems="False">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsStackPanel CacheLength="1" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
                         <Setter Property="Padding" Value="8,0" />

@@ -129,28 +129,53 @@ public sealed partial class MainWindow : Window
     {
         PlaceOnScreen();
         if (IsFlyout) PrepareSlide();
-        // Hidden until WinUI has drawn its first frame: a new window is otherwise black for a moment.
+        // Hidden until WinUI has drawn the panel with the covers in view: a new window is otherwise black for a
+        // moment, and covers would pop in one by one while it slides.
         NativeWindow.Cloak(_hwnd, true);
+        CoverQueue.HoldFrom(0); // no grid covers until the first layout says which ones are in view
         Activate();
         CompositionTarget.Rendering += OnFirstFrame;
     }
 
+    /// <summary>Longest the panel waits for the covers in view before it shows anyway (slow disk, huge art).</summary>
+    private const double MaxCoverWaitMilliseconds = 250;
+
     private int _framesBeforeShowing = 2;
+    private int _framesAfterCovers = -1;
+    private System.Diagnostics.Stopwatch? _coverWait;
 
     /// <summary>
-    /// The first frame is drawn (Rendering runs before each frame, so the second call means one is done): show
-    /// the window, start the slide and, once per run, the library scan.
+    /// Runs before each frame while the panel is hidden. After the first frame (the layout is known) only the
+    /// covers in view load; once they're decoded and drawn, or after <see cref="MaxCoverWaitMilliseconds"/>, the
+    /// window shows complete, the slide starts and, once per run, the library scan. Covers below the fold load
+    /// after the slide.
     /// </summary>
     private void OnFirstFrame(object? sender, object e)
     {
         if (--_framesBeforeShowing > 0) return;
+        if (_coverWait is null)
+        {
+            CoverQueue.HoldFrom(Shelf.VisibleItemCount());
+            _coverWait = System.Diagnostics.Stopwatch.StartNew();
+        }
+        // Covers decoded: give them two frames to be drawn before showing.
+        if (_framesAfterCovers < 0 && CoverQueue.VisibleDone) _framesAfterCovers = 2;
+        bool drawn = _framesAfterCovers >= 0 && --_framesAfterCovers <= 0;
+        if (!drawn && _coverWait.Elapsed.TotalMilliseconds < MaxCoverWaitMilliseconds) return;
+
         CompositionTarget.Rendering -= OnFirstFrame;
         NativeWindow.Cloak(_hwnd, false);
-        _startSlide?.Invoke();
-        _startSlide = null;
+        if (_startSlide is { } slide)
+        {
+            _startSlide = null;
+            slide(); // releases the held covers when it ends
+        }
+        else
+        {
+            CoverQueue.ReleaseHold();
+        }
         if (!App.State.Scanned) _ = RescanAsync(); // once per run, not on every flyout open
     }
-
     // ---- Flyout (spec §5, board 6) -----------------------------------------------------------------------
 
     private const double SlideDistance = 40; // effective pixels, scaled to the monitor
@@ -192,7 +217,11 @@ public sealed partial class MainWindow : Window
                     if (t >= 1) break;
                     if (NativeWindow.WaitForCompositorFrame() != 0) Thread.Sleep(4);
                 }
-                _dispatcher.TryEnqueue(OpeningGate.Release);
+                _dispatcher.TryEnqueue(() =>
+                {
+                    OpeningGate.Release();
+                    CoverQueue.ReleaseHold(); // the covers below the fold
+                });
             }) { IsBackground = true, Name = "Flyout slide" };
             thread.Start();
         };
@@ -263,6 +292,7 @@ public sealed partial class MainWindow : Window
         }
         _slideCancelled = true;
         OpeningGate.Release();
+        CoverQueue.ReleaseHold();
         CompositionTarget.Rendering -= OnFirstFrame;
         App.Current.CountdownTick -= OnCountdownTick;
         _undoTimer?.Stop();
