@@ -345,7 +345,8 @@ try {
     $metrics += "Launcher badges on screen: $($badges.Count) ($((($badges | Group-Object | ForEach-Object { "$($_.Name) x$($_.Count)" }) -join ', ')))"
     if (-not ($badges -contains 'Steam')) { Fail 'No Steam launcher badge found on the covers' }
     if ($badges -contains 'Manual' -or $badges -contains 'Shortcut') { Fail 'A manually added game got a launcher badge' }
-    $iconCache = Join-Path $env:LOCALAPPDATA 'GameShelf\covers\manual_loop_icon.png'
+    # The file name carries a version suffix (manual_loop_icon2.png), so match any.
+    $iconCache = Join-Path $env:LOCALAPPDATA 'GameShelf\covers\manual_loop_icon*.png'
     Wait-Until { Test-Path $iconCache } 10 'generated icon cover cached for the manual game' | Out-Null
     $metrics += 'Generated cover: icon of the manual game cached'
 
