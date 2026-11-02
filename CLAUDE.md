@@ -141,7 +141,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 | Primary text | `#F3F3F5` |
 | Secondary text | `#A9A9B2` |
 | Accent | `#4CC2FF` (text on accent: `#0A1A24`) |
-| Radii | 12 panel, 8 cards and covers, 6 buttons |
+| Radii | 8 panel (system-drawn window corners via `DWMWCP_ROUND`, scaled with DPI like Start and the other shell flyouts; never clip the window to a custom radius), 8 cards and covers (`OverlayCornerRadius`), 4 buttons and other controls (`ControlCornerRadius`) |
 
 **Display modes (milestone 9)**
 - **Flyout** (default): a notification-area icon and a global shortcut (Win+Shift+G; Win+Shift+J, Ctrl+Alt+G or Off in Settings) open the panel next to the screen edge with a short slide-in (skipped when animations are off). It closes on Esc, click-away (unless pinned or a dialog is open), the icon or the shortcut again.
