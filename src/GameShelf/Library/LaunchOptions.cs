@@ -237,5 +237,15 @@ public static class LaunchOptions
         return $"steam://run/{appId}//{Uri.EscapeDataString(Join(args))}/";
     }
 
+    /// <summary>
+    /// The Steam link a Steam game starts with: the "run with arguments" link when it has arguments, else
+    /// steam://rungameid/{appid}. Built from the validated appid only, never from a stored link.
+    /// </summary>
+    public static string? SteamLink(string? appId, IReadOnlyList<string> args)
+    {
+        if (!IsSteamAppId(appId)) return null;
+        return args.Count > 0 ? SteamRunUri(appId, args) : "steam://rungameid/" + appId;
+    }
+
     private static bool IsSteamAppId(string? id) => !string.IsNullOrEmpty(id) && id.Length <= 10 && id.All(char.IsAsciiDigit);
 }

@@ -91,7 +91,7 @@ Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions
   - Find the Steam path in `HKCU\Software\Valve\Steam\SteamPath`.
   - Parse `steamapps\libraryfolders.vdf` for all library folders, then each `appmanifest_*.acf` (appid, name, installdir, SizeOnDisk). You'll need a small VDF parser.
   - Skip non-games: redistributables (e.g. appid 228980), Proton, SDKs, dedicated servers.
-  - Launch with `steam://rungameid/{appid}`.
+  - Launch with `steam://rungameid/{appid}`. When Steam isn't running (`HKCU\Software\Valve\Steam\ActiveProcess\pid`, checked against a live `steam` process), start `{SteamPath}\steam.exe -silent <link>` instead, so Steam starts in the notification area without opening its window.
   - Covers: the local Steam library cache first, else download `library_600x900` from the Steam CDN once and cache it.
 - **Epic**
   - Read `C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests\*.item` (JSON: DisplayName, InstallLocation, LaunchExecutable, AppName, CatalogNamespace, CatalogItemId).

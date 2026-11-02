@@ -19,9 +19,9 @@ public static class Launcher
         ProcessStartInfo psi;
         if (LaunchOptions.ValidOverride(game) is { } overrideExe)
             psi = DirectStart(overrideExe, args);
-        else if (args.Count > 0 && LaunchOptions.RouteFor(game) == LaunchOptions.Route.Steam &&
-                 LaunchOptions.SteamRunUri(game.StoreId, args) is { } steamRun)
-            psi = new ProcessStartInfo(steamRun) { UseShellExecute = true };
+        else if (LaunchOptions.RouteFor(game) == LaunchOptions.Route.Steam &&
+                 LaunchOptions.SteamLink(game.StoreId, args) is { } steamLink)
+            psi = SteamStart(steamLink);
         else if (args.Count > 0 && LaunchOptions.DirectExe(game) is { } exe && File.Exists(exe))
             psi = DirectStart(exe, args);
         else if (!string.IsNullOrEmpty(game.LaunchUri))
@@ -40,6 +40,23 @@ public static class Launcher
         {
             return e.Message;
         }
+    }
+
+    /// <summary>
+    /// Opens a Steam link. When Steam isn't running yet, starts steam.exe with -silent so Steam comes up in the
+    /// notification area instead of opening its main window first. When it is running, the link goes to it
+    /// as before (no new window appears then), and if steam.exe can't be found the link is opened normally.
+    /// </summary>
+    private static ProcessStartInfo SteamStart(string link)
+    {
+        if (!SteamSource.IsRunning() && SteamSource.SteamExe() is { } steam)
+        {
+            var psi = new ProcessStartInfo(steam) { UseShellExecute = false, WorkingDirectory = Path.GetDirectoryName(steam)! };
+            psi.ArgumentList.Add("-silent");
+            psi.ArgumentList.Add(link);
+            return psi;
+        }
+        return new ProcessStartInfo(link) { UseShellExecute = true };
     }
 
     /// <summary>Runs an exe from its own folder with arguments passed one by one (quoted by .NET, never re-parsed by a shell).</summary>
