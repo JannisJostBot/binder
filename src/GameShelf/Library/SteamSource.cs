@@ -29,6 +29,34 @@ public static class SteamSource
         return Directory.Exists(path) ? path : null;
     }
 
+    /// <summary>Steam's own steam.exe in the Steam folder, or null when it isn't there.</summary>
+    public static string? SteamExe()
+    {
+        if (FindSteamPath() is not { } dir) return null;
+        var exe = Path.Combine(dir, "steam.exe");
+        return File.Exists(exe) ? exe : null;
+    }
+
+    /// <summary>
+    /// True when Steam is running: Steam keeps its process id in ActiveProcess\pid (0 when closed). The id is
+    /// checked against a live steam process, since a crashed Steam leaves a stale one behind. One registry read
+    /// at launch time, no polling.
+    /// </summary>
+    public static bool IsRunning()
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam\ActiveProcess");
+        if (key?.GetValue("pid") is not int pid || pid <= 0) return false;
+        try
+        {
+            using var process = System.Diagnostics.Process.GetProcessById(pid);
+            return process.ProcessName.Equals("steam", StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception e) when (e is ArgumentException or InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
     public static List<Game> Scan()
     {
         var games = new List<Game>();

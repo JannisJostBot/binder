@@ -315,6 +315,9 @@ static class Tests
         Check(LaunchOptions.SteamRunUri("570", ["-novid", "-w", "1280"]) == "steam://run/570//-novid%20-w%201280/", "steam run link");
         Check(LaunchOptions.SteamRunUri("570", ["/x", "a?b#c"])!.StartsWith("steam://run/570//%2Fx%20a%3Fb%23c/"), "slashes and ? # are encoded");
         Check(LaunchOptions.SteamRunUri("570/../1", ["-x"]) is null && LaunchOptions.SteamRunUri(null, []) is null, "bad appid gives no link");
+        Check(LaunchOptions.SteamLink("570", []) == "steam://rungameid/570", "steam link without arguments");
+        Check(LaunchOptions.SteamLink("570", ["-novid"]) == "steam://run/570//-novid/", "steam link with arguments");
+        Check(LaunchOptions.SteamLink("570 -silent", []) is null && LaunchOptions.SteamLink(null, []) is null, "bad appid gives no steam link");
 
         // Suggestions: ticking and unticking multi-word options.
         var windowed = LaunchOptions.Suggestions(GameEngine.Unity).First(s => s.Args == "-screen-fullscreen 0");

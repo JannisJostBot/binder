@@ -4,6 +4,8 @@ A lightweight Windows desktop widget that replaces game shortcuts on the desktop
 
 **Top priority: zero performance cost while gaming.** When a game is running, the widget process must not exist. Only a tiny watcher process may remain, blocked/sleeping.
 
+**Scope: a launcher, not a game toolbox.** A feature earns its place only if it helps the user start, find or manage their games, and it must feel like part of Windows. Think each one through and refine it before building; when an idea doesn't clearly pass, leave it out (or note it under "Not decided" in `docs/proposals.md`) instead of adding it.
+
 ## Guiding principle: minimal resource use everywhere
 
 This app must perform very well and consume as little CPU, RAM, disk I/O and GPU as possible for what it does, at all times, not just during gaming. Treat efficiency as a feature on equal footing with correctness:
@@ -91,7 +93,7 @@ Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions
   - Find the Steam path in `HKCU\Software\Valve\Steam\SteamPath`.
   - Parse `steamapps\libraryfolders.vdf` for all library folders, then each `appmanifest_*.acf` (appid, name, installdir, SizeOnDisk). You'll need a small VDF parser.
   - Skip non-games: redistributables (e.g. appid 228980), Proton, SDKs, dedicated servers.
-  - Launch with `steam://rungameid/{appid}`.
+  - Launch with `steam://rungameid/{appid}`. When Steam isn't running (`HKCU\Software\Valve\Steam\ActiveProcess\pid`, checked against a live `steam` process), start `{SteamPath}\steam.exe -silent <link>` instead, so Steam starts in the notification area without opening its window.
   - Covers: the local Steam library cache first, else download `library_600x900` from the Steam CDN once and cache it.
 - **Epic**
   - Read `C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests\*.item` (JSON: DisplayName, InstallLocation, LaunchExecutable, AppName, CatalogNamespace, CatalogItemId).
@@ -141,7 +143,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 | Primary text | `#F3F3F5` |
 | Secondary text | `#A9A9B2` |
 | Accent | `#4CC2FF` (text on accent: `#0A1A24`) |
-| Radii | 12 panel, 8 cards and covers, 6 buttons |
+| Radii | 8 panel (system-drawn window corners via `DWMWCP_ROUND`, scaled with DPI like Start and the other shell flyouts; never clip the window to a custom radius), 8 cards and covers (`OverlayCornerRadius`), 4 buttons and other controls (`ControlCornerRadius`) |
 
 **Display modes (milestone 9)**
 - **Flyout** (default): a notification-area icon and a global shortcut (Win+Shift+G; Win+Shift+J, Ctrl+Alt+G or Off in Settings) open the panel next to the screen edge with a short slide-in (skipped when animations are off). It closes on Esc, click-away (unless pinned or a dialog is open), the icon or the shortcut again.
