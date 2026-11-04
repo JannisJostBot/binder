@@ -78,7 +78,52 @@ public static class SteamSource
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         }
+        foreach (var game in games) game.IconPath = IconFor(steamPath, game.StoreId!);
         return games;
+    }
+
+    private static readonly string[] UninstallKeys =
+    [
+        @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+        @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+    ];
+
+    /// <summary>
+    /// The game's icon, for its generated cover and the Free up space map (Steam games have store art, not an exe
+    /// we know): the .ico Steam names in the game's Settings › Apps entry ("Steam App {appid}", up to 256 px), else
+    /// the small icon in Steam's library cache. Only files inside Steam's own folders count.
+    /// </summary>
+    public static string? IconFor(string steamPath, string appId)
+    {
+        if (!IsAppId(appId)) return null;
+        var gamesDir = Path.Combine(steamPath, "steam", "games");
+        foreach (var path in UninstallKeys)
+        {
+            try
+            {
+                using var key = Registry.LocalMachine.OpenSubKey($@"{path}\Steam App {appId}");
+                if (key?.GetValue("DisplayIcon") is string icon && icon.EndsWith(".ico", StringComparison.OrdinalIgnoreCase) &&
+                    Path.IsPathFullyQualified(icon) && string.Equals(Path.GetDirectoryName(Path.GetFullPath(icon)), gamesDir, StringComparison.OrdinalIgnoreCase) &&
+                    File.Exists(icon))
+                    return Path.GetFullPath(icon);
+            }
+            catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException or ArgumentException) { }
+        }
+        try
+        {
+            // librarycache\{appid}\{sha1}.jpg (current Steam), or librarycache\{appid}_icon.jpg (older).
+            var cache = Path.Combine(steamPath, "appcache", "librarycache");
+            var folder = Path.Combine(cache, appId);
+            if (Directory.Exists(folder))
+                foreach (var file in Directory.EnumerateFiles(folder, "*.jpg"))
+                    if (Path.GetFileNameWithoutExtension(file) is { Length: 40 } name && name.All(char.IsAsciiHexDigit)) return file;
+            var old = Path.Combine(cache, appId + "_icon.jpg");
+            return File.Exists(old) ? old : null;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 
     private static bool IsAppId(string value) =>

@@ -44,6 +44,12 @@ static class Tests
         Check(Manifest("570", "..") is null, "installdir .. rejected");
         Check(Manifest("570", "C:\\\\Windows") is null, "absolute installdir rejected");
         Check(Manifest("570", "..\\\\..\\\\Windows") is null, "installdir with separators rejected");
+        var cacheIcon = Path.Combine(dir, "appcache", "librarycache", "999999991", new string('a', 40) + ".jpg");
+        Directory.CreateDirectory(Path.GetDirectoryName(cacheIcon)!);
+        File.WriteAllBytes(cacheIcon, [0xFF, 0xD8]);
+        File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(cacheIcon)!, "header.jpg"), [0xFF, 0xD8]);
+        Check(SteamSource.IconFor(dir, "999999991") == cacheIcon && SteamSource.IconFor(dir, "999999992") is null &&
+              SteamSource.IconFor(dir, "..\\x") is null, "Steam icon from the library cache, validated appid only");
         var big = Path.Combine(dir, "appmanifest_2.acf");
         File.WriteAllText(big, new string(' ', (int)Vdf.MaxFileBytes + 1));
         Check(read.Invoke(null, [big, Path.Combine(dir, "steamapps")]) is null, "oversized manifest rejected");

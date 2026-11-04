@@ -52,8 +52,10 @@ public sealed partial class FreeSpaceView : UserControl
     private List<DrivePlan> _plans = [];
     private int _best = -1;
     private bool _updating;
-    private bool _iconsRequested;
     private readonly Dictionary<string, Border> _iconBoxes = [];
+    // Icons loaded while the page is open (null: the game has none), and those on their way.
+    private readonly Dictionary<string, IconPixels?> _icons = [];
+    private readonly HashSet<string> _iconLoading = [];
 
     public FreeSpaceView()
     {
@@ -73,7 +75,6 @@ public sealed partial class FreeSpaceView : UserControl
         var installed = games.Where(g => SpacePlanner.DriveOf(g) is not null).ToList();
         _byDrive = SpacePlanner.ByDrive(installed, playtime, lastPlayed, DateTimeOffset.Now, RunningGames.Ids(installed));
         _drives = ReadDrives();
-        _iconsRequested = false;
 
         if (_state.Drive is null || !_drives.Any(d => d.Root == _state.Drive))
         {
@@ -98,6 +99,7 @@ public sealed partial class FreeSpaceView : UserControl
         PickedList.Children.Clear();
         DriveChoice.Items.Clear();
         _iconBoxes.Clear();
+        _icons.Clear();
         _byDrive = [];
         _plans = [];
         _drives = [];
@@ -372,38 +374,26 @@ public sealed partial class FreeSpaceView : UserControl
         var game = g.Game;
         bool on = chosen.Contains(game.Id);
         double w = Math.Max(0, r.W - Gap), h = Math.Max(0, r.H - Gap);
-        // Big tiles: picture and text. Short ones: text only. Small ones: the picture. Tiny ones: just the color.
-        bool tiny = w < 44 || h < 44, textOnly = !tiny && w >= 70 && h < 84, small = !textOnly && (w < 70 || h < 84);
+        // Every tile with room for one gets the game's picture: big tiles with the text under it, short wide ones
+        // with the text beside it, small ones centered. Only slivers under 20 px are just the color.
+        double side = Math.Min(w, h);
+        bool big = w >= 70 && h >= 84;
+        bool beside = !big && w >= 110 && h >= 34;
+        double iconSize = big ? (w > 150 && h > 110 ? 40 : 30) : beside ? Math.Min(28, h - 12) : Math.Min(32, side - 8);
+        bool showIcon = iconSize >= 14;
         var tint = TileBrush(game);
         var white = new SolidColorBrush(Colors.White);
 
         var content = new Grid();
-        if (!tiny && !textOnly)
+        if (showIcon)
         {
-            double size = w > 150 && h > 110 ? 40 : 28;
-            var box = new Border
-            {
-                Width = size,
-                Height = size,
-                CornerRadius = new CornerRadius(size > 30 ? 8 : 6),
-                HorizontalAlignment = small ? HorizontalAlignment.Center : HorizontalAlignment.Left,
-                VerticalAlignment = small ? VerticalAlignment.Center : VerticalAlignment.Top,
-                Background = new SolidColorBrush(Color.FromArgb(0x29, 255, 255, 255)),
-                BorderBrush = new SolidColorBrush(Color.FromArgb(0x38, 255, 255, 255)),
-                BorderThickness = new Thickness(1),
-                Child = new TextBlock
-                {
-                    Text = CoverColors.Initials(game.Name),
-                    FontSize = size > 30 ? 15 : 11,
-                    FontWeight = FontWeights.SemiBold,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                },
-            };
+            var box = IconBox(game, iconSize);
+            box.HorizontalAlignment = big || beside ? HorizontalAlignment.Left : HorizontalAlignment.Center;
+            box.VerticalAlignment = big ? VerticalAlignment.Top : VerticalAlignment.Center;
             _iconBoxes[game.Id] = box;
             content.Children.Add(box);
         }
-        if (!small && !tiny)
+        if (big || beside)
         {
             var title = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
             if (g.Favorite) title.Children.Add(new FontIcon { Glyph = "", FontSize = 10, Foreground = Resource<Brush>("FavoriteBrush") });
@@ -414,26 +404,35 @@ public sealed partial class FreeSpaceView : UserControl
                 FontSize = 12,
                 FontWeight = FontWeights.SemiBold,
                 TextTrimming = TextTrimming.CharacterEllipsis,
-                MaxWidth = Math.Max(0, w - 34),
+                MaxWidth = Math.Max(0, big ? w - 34 : w - iconSize - 46),
             });
-            var text = new StackPanel { VerticalAlignment = VerticalAlignment.Bottom, Spacing = 1 };
-            text.Children.Add(title);
-            text.Children.Add(new TextBlock
+            var text = new StackPanel
             {
-                Text = $"{Gb(g.Size)} GB · {Played(g)}",
-                FontSize = 11,
-                Foreground = new SolidColorBrush(Color.FromArgb(0xD9, 255, 255, 255)),
-                TextTrimming = TextTrimming.CharacterEllipsis,
-            });
+                VerticalAlignment = big ? VerticalAlignment.Bottom : VerticalAlignment.Center,
+                Margin = new Thickness(big || !showIcon ? 0 : iconSize + 8, 0, on && !big ? 18 : 0, 0),
+                Spacing = 1,
+            };
+            text.Children.Add(title);
+            if (big || h >= 50)
+            {
+                text.Children.Add(new TextBlock
+                {
+                    Text = $"{Gb(g.Size)} GB · {Played(g)}",
+                    FontSize = 11,
+                    Foreground = new SolidColorBrush(Color.FromArgb(0xD9, 255, 255, 255)),
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                });
+            }
             content.Children.Add(text);
         }
-        if (on && !tiny)
+        if (on && side >= 30)
         {
+            double mark = big ? 20 : 16;
             content.Children.Add(new Border
             {
-                Width = 20,
-                Height = 20,
-                CornerRadius = new CornerRadius(10),
+                Width = mark,
+                Height = mark,
+                CornerRadius = new CornerRadius(mark / 2),
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Top,
                 Background = Resource<Brush>("AccentFillColorDefaultBrush"),
@@ -447,7 +446,7 @@ public sealed partial class FreeSpaceView : UserControl
         {
             Width = w,
             Height = h,
-            Padding = new Thickness(tiny ? 0 : 8),
+            Padding = new Thickness(big || beside ? 8 : 0),
             CornerRadius = new CornerRadius(6),
             BorderThickness = new Thickness(2),
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
@@ -487,21 +486,70 @@ public sealed partial class FreeSpaceView : UserControl
         return new SolidColorBrush(Color.FromArgb(255, 0x44, 0x48, 0x4F));
     }
 
-    /// <summary>Puts each game's icon (the generated cover's, cached on disk) into its tile, once per page open.</summary>
+    /// <summary>A tile's picture: the game's icon when it's loaded, else its initials until it is.</summary>
+    private Border IconBox(Game game, double size)
+    {
+        var box = new Border
+        {
+            Width = size,
+            Height = size,
+            CornerRadius = new CornerRadius(size > 30 ? 8 : size > 20 ? 6 : 4),
+            Background = new SolidColorBrush(Color.FromArgb(0x29, 255, 255, 255)),
+            BorderBrush = new SolidColorBrush(Color.FromArgb(0x38, 255, 255, 255)),
+            BorderThickness = new Thickness(1),
+        };
+        SetIcon(box, game, _icons.GetValueOrDefault(game.Id));
+        return box;
+    }
+
+    private static void SetIcon(Border box, Game game, IconPixels? icon)
+    {
+        double size = box.Width;
+        box.Child = icon is not null
+            ? new Image { Source = CoverCache.IconImage(game, icon), Margin = new Thickness(size > 30 ? 6 : size > 20 ? 4 : 2) }
+            : new TextBlock
+            {
+                Text = CoverColors.Initials(game.Name) is { Length: > 1 } initials && size < 24 ? initials[..1] : CoverColors.Initials(game.Name),
+                FontSize = size > 30 ? 15 : size >= 24 ? 11 : 9,
+                FontWeight = FontWeights.SemiBold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+    }
+
+    /// <summary>
+    /// Loads the icons of the drive's games (the generated covers' icons, cached on disk after the first time),
+    /// a few at a time, and puts each into its tile as it arrives. Kept for the page's life, so the map's
+    /// rebuilds (typing, clicking tiles, other drives) show them at once.
+    /// </summary>
     private async void RequestIcons(List<SpaceGame> games)
     {
-        if (_iconsRequested) return;
-        _iconsRequested = true;
+        var missing = games.Where(g => !_icons.ContainsKey(g.Game.Id) && _iconLoading.Add(g.Game.Id)).Select(g => g.Game).ToList();
+        if (missing.Count == 0) return;
+        var view = _state;
         bool tintChanged = false;
-        foreach (var g in games)
+        using var gate = new SemaphoreSlim(4);
+        await Task.WhenAll(missing.Select(async game =>
         {
-            var hadTint = g.Game.CoverTint;
-            var art = await CoverCache.GetFallbackAsync(g.Game);
-            if (hadTint != g.Game.CoverTint) tintChanged = true;
-            if (art.Icon is { } icon && _iconBoxes.TryGetValue(g.Game.Id, out var box))
-                box.Child = new Image { Source = CoverCache.IconImage(g.Game, icon), Margin = new Thickness(box.Width > 30 ? 6 : 4) };
-        }
-        if (tintChanged && _plans.Count > 0) ShowMap(); // first time: the tiles take the icons' own colors
+            await gate.WaitAsync();
+            try
+            {
+                var hadTint = game.CoverTint;
+                var art = await CoverCache.GetFallbackAsync(game); // continues on the UI thread
+                if (view != _state) return; // the page closed or reopened meanwhile
+                if (hadTint != game.CoverTint) tintChanged = true;
+                _icons[game.Id] = art.Icon;
+                if (_iconBoxes.TryGetValue(game.Id, out var box)) SetIcon(box, game, art.Icon);
+            }
+            finally
+            {
+                gate.Release();
+                _iconLoading.Remove(game.Id);
+            }
+        }));
+        if (view != _state || _plans.Count == 0) return;
+        if (tintChanged) ShowMap(); // first time: tiles take their icons' colors
+        ShowSummary(); // the picked list's rows, built before the icons arrived
     }
 
     private void ShowUnknown(DrivePlan plan)
@@ -573,7 +621,7 @@ public sealed partial class FreeSpaceView : UserControl
 
     private static SpaceGame? FindChosen(List<SpaceGame> chosen, string id) => chosen.FirstOrDefault(g => g.Game.Id == id);
 
-    private static Grid PickedRow(SpaceGame g)
+    private Grid PickedRow(SpaceGame g)
     {
         var row = new Grid
         {
@@ -587,7 +635,11 @@ public sealed partial class FreeSpaceView : UserControl
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) });
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(56) });
 
-        row.Children.Add(new Border { Width = 24, Height = 32, CornerRadius = new CornerRadius(4), Background = TileBrush(g.Game), VerticalAlignment = VerticalAlignment.Center });
+        // The game's icon on its tile color, like on the map.
+        var picture = IconBox(g.Game, 28);
+        picture.Background = TileBrush(g.Game);
+        picture.VerticalAlignment = VerticalAlignment.Center;
+        row.Children.Add(picture);
         var name = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center };
         if (g.Favorite) name.Children.Add(new FontIcon { Glyph = "", FontSize = 12, Foreground = Resource<Brush>("FavoriteBrush") });
         else if (g.Recent) name.Children.Add(new FontIcon { Glyph = "", FontSize = 12 });

@@ -82,7 +82,7 @@ Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions
 
 ## Core flow: launch → hide → return
 
-1. The user clicks Play. `Launcher` starts the game: via the store URI (Steam/Epic) or by running the exe directly (GOG/manual/shortcut).
+1. The user clicks Play. `Launcher` starts the game: via the launcher's URI or command (Steam, Epic, EA, Ubisoft, Xbox, Rockstar) or by running the exe directly (GOG, manual, shortcut).
 2. The widget shows the in-panel **launch toast**: "Starting [Game]", a countdown (default 10 s, per-game override), and a **Keep open** button.
 3. The widget starts `GameShelf.Watcher.exe` with arguments: game id, install folder, optional explicit process name, and the timeout.
 4. When the countdown ends, the widget **exits completely** (process ends, not just hidden). If the user pressed Keep open, it stays and nothing else changes.
@@ -92,7 +92,7 @@ Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions
    - Once found, it **blocks** on the process handle (`Process.WaitForExitAsync` / `WaitForSingleObject`). No polling while the game runs.
    - Some games restart themselves (launcher → game exe). After an exit, re-check the install folder for ~5 s before deciding the game is really closed.
    - On exit it appends a session (start, end, game id) to `sessions.json`, relaunches `GameShelf.exe` if "Come back when the game closes" is on, and exits.
-6. Single instance: use a named mutex in the widget. A second launch focuses the existing one.
+6. Single instance: a named mutex in the widget. A second launch hands its arguments to the running one (see Display modes).
 
 ## Library sources
 
@@ -103,6 +103,7 @@ Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions
   - `LastPlayed` (Unix seconds, 0 = never) is kept as `Game.StoreLastPlayed`, so Free up space counts games played through Steam directly.
   - Launch with `steam://rungameid/{appid}`. When Steam isn't running (`HKCU\Software\Valve\Steam\ActiveProcess\pid`, checked against a live `steam` process), start `{SteamPath}\steam.exe -silent <link>` instead, so Steam starts in the notification area without opening its window.
   - Covers: the local Steam library cache first, else download `library_600x900` from the Steam CDN once and cache it.
+  - Icon (`SteamSource.IconFor`, for generated covers and the Free up space map): the `.ico` named by the game's `Steam App {appid}` uninstall entry (`DisplayIcon`, only inside `{SteamPath}\steam\games`, up to 256 px), else the small `.jpg` in `appcache\librarycache\{appid}\` (or the older `{appid}_icon.jpg`).
 - **Epic**
   - Read `C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests\*.item` (JSON: DisplayName, InstallLocation, LaunchExecutable, AppName, CatalogNamespace, CatalogItemId).
   - Launch with `com.epicgames.launcher://apps/{Namespace}%3A{CatalogItemId}%3A{AppName}?action=launch&silent=true`.
@@ -158,7 +159,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 **Display modes (milestone 9)**
 - **Flyout** (default): a notification-area icon and a global shortcut (Win+Shift+G; Win+Shift+J, Ctrl+Alt+G or Off in Settings) open the panel next to the screen edge with a short slide-in (skipped when animations are off). It closes on Esc, click-away (unless pinned or a dialog is open), the icon or the shortcut again.
 - **On the desktop**: the docked, always-visible panel on the desktop layer described below. The shortcut brings it in front for a moment.
-- `Program.Main` holds the single-instance mutex before WinUI starts; a second start forwards its arguments to the running instance's hidden `MessageWindow` (WM_COPYDATA) and exits. With no arguments that toggles the flyout. The message window also owns the tray icon (re-added on `TaskbarCreated`) and the hotkey. The icon is one monochrome card while closed; on open the back card fans out into the coloured logo (`Assets	ray-open-0..6.ico`, drawn by `tools/make-tray-icons.ps1`), played backwards on close, with a timer that exists only while it moves (skipped when animations are off).
+- `Program.Main` holds the single-instance mutex before WinUI starts; a second start forwards its arguments to the running instance's hidden `MessageWindow` (WM_COPYDATA) and exits. With no arguments that toggles the flyout. The message window also owns the tray icon (re-added on `TaskbarCreated`) and the hotkey. The icon is one monochrome card while closed; on open the back card fans out into the coloured logo (`Assets\tray-open-0..6.ico`, drawn by `tools/make-tray-icons.ps1`), played backwards on close, with a timer that exists only while it moves (skipped when animations are off).
 - **Stay ready** (on by default): closing the flyout destroys the window and releases covers, then compacts the GC heap, trims the working set and puts the process in efficiency mode (EcoQoS, very low memory priority) until it opens again. "While it's closed" (Settings, owner's choice): **Use less memory** (default) does the above; **Open faster** only hides the window, keeping it loaded (trimmed working set, efficiency mode), so it reopens in a few ms instead of ~180 ms. Neither affects games, since the process exits while one runs. Off: closing the flyout exits the process. Autostart uses `--background`, which starts straight into this state.
 - **First-run setup** (`SetupView`, shown until `SetupDone`): which launchers, tidy the desktop (the shortcut picker, embedded), how it opens and Start with Windows. Settings can run it again.
 
@@ -183,7 +184,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
   - **Continue playing:** a hero banner of the last played game (its hero art, loaded only while shown, with a bottom fade), title, last played and launcher, and a Play button.
   - **This week:** the total, game count, most played game and a bar per day.
   - The switch shows only when both have something to show; the slot hides while searching.
-- Cover grid (3:4 covers, the title below). Top-left: the launcher's own icon as a 24 px badge (read from the installed launcher's exe at runtime; manual games and shortcuts get none). Top-right: a star on favorites. Hovering lifts the cover slightly with an accent outline and a "Play" label, and shows a Details (i) button in its bottom-right corner (instant, no animation).
+- Cover grid (3:4 covers, the title below). Top-left: the launcher's own icon as a 28 px badge (read from the installed launcher's exe at runtime; manual games and shortcuts get none). Top-right: a star on favorites. Badges, the star and the 30 px Details (i) button are near-solid dark chips with a light edge (`BadgeBrush`, `BadgeStrokeBrush`), so they read on any cover. Hovering lifts the cover slightly with an accent outline and a "Play" label, and shows the Details button in its bottom-right corner (instant, no animation). Coming back from details focuses that cover programmatically, so no focus ring shows after a mouse click (keyboard keeps it).
 - Games without store art get a generated cover: the game's icon on its own muted color, or a monogram (`FallbackArt`, `CoverColors`). No network.
 - Clicking a cover (or a row in List) plays the game, like Enter and like the desktop shortcuts it replaces. Details open from the (i) button, Space, or right-click › Details. The (i) button stays in the UI Automation tree when not hovered, so screen readers can reach it.
 - Favorites are pinned first.
@@ -207,7 +208,9 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 - Start with Windows: an `HKCU\...\Run` entry.
 - Storage: "Free up space…" (milestone 15, `docs/proposals.md` §12).
   - The user types the new game's size in GB; each fixed drive gets a plan, and the best one is labelled "Best choice".
-  - A treemap of the chosen drive shows the games by size; clicking a tile adds or leaves out that game.
+  - A treemap of the chosen drive shows the games by size; clicking a tile adds or leaves out that game. Tiles show
+    the game's icon (the generated cover's icon, loaded a few at a time and kept for the page's life), with the
+    name beside or below it where the tile has room; the picked-games list shows the same icons.
   - "Uninstall N games…" hands each game to its own launcher, one at a time: Steam's uninstall link, GOG Galaxy's
     game page, the launcher itself, or Settings › Apps for Xbox games and missing launchers. Game Shelf never deletes
     game files.
@@ -256,7 +259,7 @@ rules: `docs/installer.md`. The version lives in `Directory.Build.props`.
 
 ## Security rules
 
-The widget runs as the normal user with no elevation, and must never ask for admin rights. Treat these as untrusted input: Steam/Epic/GOG manifests and registry entries (library folders can be on drives other users or devices can write to), desktop shortcuts, and downloaded images.
+The widget runs as the normal user with no elevation, and must never ask for admin rights. Treat these as untrusted input: every launcher's manifests, config files and registry entries (library folders can be on drives other users or devices can write to), desktop shortcuts, and downloaded images.
 
 - **Validate before use.** Store ids must match their expected shape (Steam appid and GOG id: digits only; Epic ids: letters, digits, `-`, `_`, `.`). Steam install folders must be a single folder name under `steamapps\common`. Every other install folder goes through `InstallFolder.Validate`: a full, existing path that isn't a drive root, isn't inside Windows, and isn't a shared folder itself (Program Files, the user profile, Desktop, …). A GOG exe must be inside its install folder. Reject the entry otherwise.
 - **Bounded parsing.** Parsers cap file size and nesting depth and fail with `FormatException`, never a crash. Downloads have a size cap.

@@ -8,8 +8,9 @@ comes back when the game closes.
 
 ## What it does
 
-- **Finds your games:** Steam, Epic Games and GOG, plus desktop shortcuts you import and games you add
-  yourself. Covers come from the store, or are generated from the game's icon.
+- **Finds your games:** Steam, Epic Games, GOG, EA app, Ubisoft Connect, the Xbox app (Game Pass) and the
+  Rockstar Games Launcher, plus desktop shortcuts you import and games you add yourself. Covers come from the
+  store, or are generated from the game's icon.
 - **Opens like part of Windows:** a flyout from the notification-area icon or **Win+Shift+G**. It can also sit
   docked on the desktop, behind your windows.
 - **Costs nothing while you play:** a few seconds after a game starts, Game Shelf exits completely. Only a tiny
@@ -17,9 +18,16 @@ comes back when the game closes.
   back.
 - **Tidies your desktop:** moves the game shortcuts you pick into its own folder. They're never deleted, and
   can be put back anytime.
-- **Shelf:** search, filters per launcher, favorites, "Continue playing", sorting, four cover sizes.
-- **Game details:** playtime, last played, size on disk, recent sessions, per-game hide delay, process to watch
+- **Shelf:** search, filters per launcher, favorites, "Continue playing" or "This week", sorting, four cover
+  sizes.
+- **Game details:** playtime with weekly and monthly charts, last played, size on disk, recent sessions, launch
+  options (with suggestions for the game's engine), an anti-cheat check, per-game hide delay, process to watch
   and custom cover.
+- **Crash detection:** when a game crashes, Game Shelf says so when it comes back, with the likely cause and
+  what to try, read from Windows' own event log.
+- **Free up space:** type the size of a game you want to install, and it suggests which games to remove on
+  which drive (the ones you play least first), shown as a map of what takes up the space. Each game is removed
+  through its own launcher, which asks first. Game Shelf never deletes game files itself.
 - **Light on your PC:** no background timers or polling. While it waits in the tray, it uses about 12 MB of
   memory and no CPU.
 
@@ -66,7 +74,7 @@ Steam settings with test data, and are meant for CI only.
 - The only network traffic is downloading cover art over HTTPS from the store CDNs (Steam). The app never
   checks for updates or contacts anything else.
 - Everything stays on your PC:
-  - Settings, library, play history and imported shortcuts: `%APPDATA%\GameShelf\`
+  - Settings, library, play history, crash notes and imported shortcuts: `%APPDATA%\GameShelf\`
   - Cover cache and error log: `%LOCALAPPDATA%\GameShelf\`
   - The app itself: `%LOCALAPPDATA%\Programs\GameShelf\`
 
@@ -86,15 +94,15 @@ Steam settings with test data, and are meant for CI only.
 ## Status
 
 Working:
-- Steam, Epic, GOG, shortcut import and manual add.
+- Steam, Epic, GOG, EA app, Ubisoft Connect, Xbox app and Rockstar Games Launcher; shortcut import and manual
+  add.
 - Launch → hide → return, with playtime tracking.
-- Shelf, details and settings.
+- Shelf, details (playtime charts, launch options, anti-cheat check) and settings.
+- Crash detection and Free up space.
 - Multi-monitor, the flyout with tray icon and shortcut, first-run setup, and the installer.
 
 Planned (see `docs/proposals.md`):
-- Playtime charts, launch options and anti-cheat checks.
-- Crash detection.
-- More launchers (Xbox, EA, Ubisoft, Battle.net and others).
+- More launchers (Battle.net, Riot, Amazon, itch.io, Humble, Meta).
 - Controller support.
 - An optional Game mode.
 
@@ -108,5 +116,6 @@ limited to, the warranties of merchantability, fitness for a particular purpose 
 event shall the author or anyone involved be liable for any claim, damages or other liability arising from, out
 of, or in connection with the software or its use. You use it at your own risk.
 
-Game Shelf isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Microsoft or any other
+Game Shelf isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Electronic Arts, Ubisoft,
+Rockstar Games, Microsoft or any other
 company whose launchers it works with. Their names and icons belong to their owners.

@@ -18,7 +18,8 @@ internal static class Installer
         "limited to, the warranties of merchantability, fitness for a particular purpose and non-infringement. In no event " +
         "shall the author or anyone involved be liable for any claim, damages or other liability arising from, out of, or " +
         "in connection with the software or its use. You use it at your own risk.\n\n" +
-        "Game Shelf isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Microsoft or any other " +
+        "Game Shelf isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Electronic Arts, Ubisoft, Rockstar Games, " +
+        "Microsoft or any other " +
         "company whose launchers it works with. Their names and icons belong to their owners.";
 
     public static int Run(Options options)
