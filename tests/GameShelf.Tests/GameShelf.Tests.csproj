@@ -24,6 +24,8 @@
     <Compile Include="..\..\src\GameShelf\Library\GogSource.cs" Link="Linked\Library\GogSource.cs" />
     <Compile Include="..\..\src\GameShelf\Library\EaSource.cs" Link="Linked\Library\EaSource.cs" />
     <Compile Include="..\..\src\GameShelf\Library\UbisoftSource.cs" Link="Linked\Library\UbisoftSource.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\XboxSource.cs" Link="Linked\Library\XboxSource.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\RockstarSource.cs" Link="Linked\Library\RockstarSource.cs" />
     <Compile Include="..\..\src\GameShelf\Library\ShortcutFile.cs" Link="Linked\Library\ShortcutFile.cs" />
     <Compile Include="..\..\src\GameShelf\Library\ShortcutImporter.cs" Link="Linked\Library\ShortcutImporter.cs" />
     <Compile Include="..\..\src\GameShelf\Services\Storage.cs" Link="Linked\Services\Storage.cs" />

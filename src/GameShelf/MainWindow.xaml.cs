@@ -446,7 +446,10 @@ public sealed partial class MainWindow : Window
         var current = new Dictionary<string, Game>(_games.Count);
         foreach (var game in _games) current.TryAdd(game.Id, game);
         foreach (var game in games)
+        {
             if (current.TryGetValue(game.Id, out var old) && !ReferenceEquals(old, game)) game.CopyUserData(old);
+            if (game.IconChanged) CoverCache.ForgetIcon(game);
+        }
 
         _games = games;
         App.State.Scanned = true;

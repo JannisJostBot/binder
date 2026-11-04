@@ -100,6 +100,8 @@ public sealed partial class LauncherBadge : Grid
         GameSource.Gog => "GOG",
         GameSource.Ea => "EA app",
         GameSource.Ubisoft => "Ubisoft Connect",
+        GameSource.Xbox => "Xbox app",
+        GameSource.Rockstar => "Rockstar Games Launcher",
         _ => source.ToString(),
     };
 

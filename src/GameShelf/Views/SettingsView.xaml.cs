@@ -64,6 +64,8 @@ public sealed partial class SettingsView : UserControl
             GogCheck.IsChecked = settings.GogEnabled;
             EaCheck.IsChecked = settings.EaEnabled;
             UbisoftCheck.IsChecked = settings.UbisoftEnabled;
+            XboxCheck.IsChecked = settings.XboxEnabled;
+            RockstarCheck.IsChecked = settings.RockstarEnabled;
             ShortcutsCheck.IsChecked = settings.ShortcutsEnabled;
             ShortcutsText.Text = importedShortcuts switch
             {
@@ -237,6 +239,8 @@ public sealed partial class SettingsView : UserControl
         _settings.GogEnabled = GogCheck.IsChecked == true;
         _settings.EaEnabled = EaCheck.IsChecked == true;
         _settings.UbisoftEnabled = UbisoftCheck.IsChecked == true;
+        _settings.XboxEnabled = XboxCheck.IsChecked == true;
+        _settings.RockstarEnabled = RockstarCheck.IsChecked == true;
         _settings.ShortcutsEnabled = ShortcutsCheck.IsChecked == true;
         Change(SettingChange.Sources);
     }

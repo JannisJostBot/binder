@@ -24,6 +24,12 @@ public static class Launcher
             psi = SteamStart(steamLink);
         else if (args.Count > 0 && LaunchOptions.DirectExe(game) is { } exe && File.Exists(exe))
             psi = DirectStart(exe, args);
+        else if (game.Source == GameSource.Rockstar && RockstarSource.IsTitleId(game.StoreId ?? ""))
+        {
+            // Through the Rockstar Games Launcher, which handles sign-in and updates, like the store links.
+            if (RockstarSource.LauncherExe() is not { } rockstar) return "The Rockstar Games Launcher wasn't found.";
+            psi = DirectStart(rockstar, ["-launchTitle=" + game.StoreId]);
+        }
         else if (!string.IsNullOrEmpty(game.LaunchUri))
             psi = new ProcessStartInfo(game.LaunchUri) { UseShellExecute = true };
         else if (!string.IsNullOrEmpty(game.ExePath) && File.Exists(game.ExePath))

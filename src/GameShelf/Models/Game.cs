@@ -3,7 +3,7 @@ using GameShelf.Library;
 
 namespace GameShelf.Models;
 
-public enum GameSource { Steam, Epic, Gog, Ea, Ubisoft, Shortcut, Manual }
+public enum GameSource { Steam, Epic, Gog, Ea, Ubisoft, Xbox, Rockstar, Shortcut, Manual }
 
 public sealed class Game
 {
@@ -12,7 +12,7 @@ public sealed class Game
     public GameSource Source { get; set; }
     public string Name { get; set; } = "";
 
-    /// <summary>Store-specific id (Steam appid, Epic AppName, GOG game id, EA content id, Ubisoft game id).</summary>
+    /// <summary>Store-specific id (Steam appid, Epic AppName, GOG game id, EA content id, Ubisoft game id, Xbox package family name, Rockstar title id).</summary>
     public string? StoreId { get; set; }
     public string? InstallDir { get; set; }
 
@@ -63,6 +63,8 @@ public sealed class Game
         GameSource.Gog => "GOG",
         GameSource.Ea => "EA",
         GameSource.Ubisoft => "Ubisoft",
+        GameSource.Xbox => "Xbox",
+        GameSource.Rockstar => "Rockstar",
         _ => "Other",
     };
 
@@ -84,8 +86,15 @@ public sealed class Game
             AntiCheats = from.AntiCheats;
         }
         AddedAt = from.AddedAt;
-        CoverTint ??= from.CoverTint;
+        // The cached icon and its color belong to the picture they were read from (an Xbox game's exe icon
+        // before its tile logo was used, say); a different one has to be read again.
+        if (string.Equals(IconSource, from.IconSource, StringComparison.OrdinalIgnoreCase)) CoverTint ??= from.CoverTint;
+        else IconChanged = true;
     }
+
+    /// <summary>A rescan found a different <see cref="IconSource"/> than the stored entry: its cached icon is stale.</summary>
+    [JsonIgnore]
+    public bool IconChanged { get; set; }
 
     /// <summary>The program to take the icon from: <see cref="IconPath"/>, else the exe the game runs as.</summary>
     [JsonIgnore]

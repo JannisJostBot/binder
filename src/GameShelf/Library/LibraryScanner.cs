@@ -35,6 +35,16 @@ public static class LibraryScanner
             scanned.AddRange(UbisoftSource.Scan());
             scannedSources.Add(GameSource.Ubisoft);
         }
+        if (settings.XboxEnabled)
+        {
+            scanned.AddRange(XboxSource.Scan());
+            scannedSources.Add(GameSource.Xbox);
+        }
+        if (settings.RockstarEnabled)
+        {
+            scanned.AddRange(RockstarSource.Scan());
+            scannedSources.Add(GameSource.Rockstar);
+        }
 
         var byId = new Dictionary<string, Game>(stored.Count);
         foreach (var game in stored) byId.TryAdd(game.Id, game);

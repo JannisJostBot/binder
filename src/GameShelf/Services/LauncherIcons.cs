@@ -75,10 +75,15 @@ public static class LauncherIcons
             GameSource.Gog => ProtocolHandler("goggalaxy"),
             GameSource.Ea => ProtocolHandler("origin2"),
             GameSource.Ubisoft => ProtocolHandler("uplay"),
+            GameSource.Rockstar => RockstarSource.LauncherExe(),
+            // A packaged app without a plain exe path: the shell item Start shows it as has its icon.
+            GameSource.Xbox => XboxAppItem,
             _ => null,
         };
-        return exe is not null && File.Exists(exe) ? exe : null;
+        return exe == XboxAppItem || exe is not null && File.Exists(exe) ? exe : null;
     }
+
+    private const string XboxAppItem = @"shell:AppsFolder\Microsoft.GamingApp_8wekyb3d8bbwe!Microsoft.Xbox.App";
 
     /// <summary>The exe in HKCR\{scheme}\shell\open\command, e.g. "C:\…\EpicGamesLauncher.exe" %1.</summary>
     internal static string? ProtocolHandler(string scheme)

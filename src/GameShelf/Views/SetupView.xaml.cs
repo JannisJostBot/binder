@@ -117,17 +117,7 @@ public sealed partial class SetupView : UserControl
 
     private void OnStep1Next(object sender, RoutedEventArgs e)
     {
-        foreach (var row in _launchers)
-        {
-            switch (row.Source)
-            {
-                case GameSource.Steam: _settings.SteamEnabled = row.Enabled; break;
-                case GameSource.Epic: _settings.EpicEnabled = row.Enabled; break;
-                case GameSource.Gog: _settings.GogEnabled = row.Enabled; break;
-                case GameSource.Ea: _settings.EaEnabled = row.Enabled; break;
-                case GameSource.Ubisoft: _settings.UbisoftEnabled = row.Enabled; break;
-            }
-        }
+        foreach (var row in _launchers) _settings.SetSourceEnabled(row.Source, row.Enabled);
         ShowStep(2);
     }
 

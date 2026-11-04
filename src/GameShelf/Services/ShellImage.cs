@@ -36,7 +36,8 @@ internal static unsafe partial class ShellImage
 
     private static IconPixels? GetIcon(string path, int size)
     {
-        if (!File.Exists(path)) return null;
+        // "shell:AppsFolder\…" names a packaged app (the Xbox app's badge), not a file.
+        if (!path.StartsWith("shell:", StringComparison.OrdinalIgnoreCase) && !File.Exists(path)) return null;
         // Programs and .ico files: read the icon resource directly. The Shell can hand back its generic
         // "application" icon for some big game exes (Battlefield V) although they have a proper 256 px icon.
         var ext = Path.GetExtension(path);

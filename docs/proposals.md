@@ -21,7 +21,7 @@ break the user's system.
 | 9 Window behavior | §5 flyout, tray, shortcut, stay ready; §6 first-run setup | Done |
 | 10 Detail additions | §7 "This week", §9 playtime chart, launch options, anti-cheat | Done. "This week" was later merged with "Continue playing" into one switchable slot (board 16, see `CLAUDE.md`) |
 | 11 Crash detection | §10 | Done. With "Come back" off the crash card shows the next time the panel opens instead of a toast (Game mode's "Restored" toast doesn't exist yet); memory is the installed amount (`GetPhysicallyInstalledSystemMemory`) |
-| 12 More launchers | §8 | **Next.** Partly: EA app and Ubisoft Connect are done; Xbox, Battle.net, Riot, Rockstar, Amazon, itch, Humble and Meta are not |
+| 12 More launchers | §8 | **In progress.** Done: EA app, Ubisoft Connect, Xbox app (tile logo as the cover picture) and Rockstar (tested with synthetic data only, no Rockstar game installed). Not yet: Battle.net, Riot, Amazon, itch, Humble and Meta |
 | 13 Controller | §4 | To do |
 | 14 Game mode | §11 | To do |
 | 15 Free up space | §12 | To do |
@@ -655,7 +655,7 @@ Signals:
    Measure and report.
 10. **Detail additions:** playtime chart and weekly card (§7, §9), launch options, anti-cheat (§9). *(Done.)*
 11. **Crash detection** (§10).
-12. **More launchers** (§8). Verify each one on the real PC. *(EA app and Ubisoft Connect done.)*
+12. **More launchers** (§8). Verify each one on the real PC. *(EA app, Ubisoft Connect, Xbox app and Rockstar done.)*
 13. **Controller** (§4).
 14. **Game mode:**
     - First the no-admin part: power, priority, apps, Game Bar, journal, toast.

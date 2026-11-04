@@ -205,7 +205,10 @@ public static class CoverCache
             {
                 DeleteQuietly(CachedFile(game, ArtKind.Cover, "_icon.png"));
                 game.CoverTint = null; // its color may come from the old icon: work it out again
-                icon = await ShellImage.GetIconAsync(exe, IconSize).ConfigureAwait(false);
+                // A .png (an Xbox game's tile logo) is the picture itself; for anything else, ask for its icon.
+                icon = exe.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                    ? await ShellImage.LoadPngAsync(exe).ConfigureAwait(false)
+                    : await ShellImage.GetIconAsync(exe, IconSize).ConfigureAwait(false);
                 if (icon is not null) await ShellImage.SavePngAsync(icon, cached).ConfigureAwait(false);
             }
         }
@@ -215,6 +218,18 @@ public static class CoverCache
             LoadingIcons.Remove(game.Id);
         }
         return icon;
+    }
+
+    /// <summary>Drops a game's cached icon (file and memory), so it's read again from its new source.</summary>
+    public static void ForgetIcon(Game game)
+    {
+        DeleteQuietly(CachedFile(game, ArtKind.Cover, "_icon2.png"));
+        lock (Sync)
+        {
+            Icons.Remove(game.Id);
+            IconImages.Remove(game.Id);
+        }
+        game.IconChanged = false;
     }
 
     private static void DeleteQuietly(string path)

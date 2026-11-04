@@ -23,6 +23,8 @@ public sealed class Settings
     public bool GogEnabled { get; set; } = true;
     public bool EaEnabled { get; set; } = true;
     public bool UbisoftEnabled { get; set; } = true;
+    public bool XboxEnabled { get; set; } = true;
+    public bool RockstarEnabled { get; set; } = true;
     public bool ShortcutsEnabled { get; set; } = true;
 
     public DockPosition Position { get; set; } = DockPosition.Right;
@@ -66,7 +68,24 @@ public sealed class Settings
         GameSource.Gog => GogEnabled,
         GameSource.Ea => EaEnabled,
         GameSource.Ubisoft => UbisoftEnabled,
+        GameSource.Xbox => XboxEnabled,
+        GameSource.Rockstar => RockstarEnabled,
         GameSource.Shortcut => ShortcutsEnabled,
         _ => true,
     };
+
+    public void SetSourceEnabled(GameSource source, bool on)
+    {
+        switch (source)
+        {
+            case GameSource.Steam: SteamEnabled = on; break;
+            case GameSource.Epic: EpicEnabled = on; break;
+            case GameSource.Gog: GogEnabled = on; break;
+            case GameSource.Ea: EaEnabled = on; break;
+            case GameSource.Ubisoft: UbisoftEnabled = on; break;
+            case GameSource.Xbox: XboxEnabled = on; break;
+            case GameSource.Rockstar: RockstarEnabled = on; break;
+            case GameSource.Shortcut: ShortcutsEnabled = on; break;
+        }
+    }
 }

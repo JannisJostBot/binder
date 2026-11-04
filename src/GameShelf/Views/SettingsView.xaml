@@ -199,6 +199,8 @@
                         <CheckBox x:Name="GogCheck" Style="{StaticResource SourceCheck}" Content="GOG" Click="OnSourceChanged" />
                         <CheckBox x:Name="EaCheck" Style="{StaticResource SourceCheck}" Content="EA app" Click="OnSourceChanged" />
                         <CheckBox x:Name="UbisoftCheck" Style="{StaticResource SourceCheck}" Content="Ubisoft Connect" Click="OnSourceChanged" />
+                        <CheckBox x:Name="XboxCheck" Style="{StaticResource SourceCheck}" Content="Xbox app (Game Pass)" Click="OnSourceChanged" />
+                        <CheckBox x:Name="RockstarCheck" Style="{StaticResource SourceCheck}" Content="Rockstar Games Launcher" Click="OnSourceChanged" />
                         <CheckBox x:Name="ShortcutsCheck" Style="{StaticResource SourceCheck}" Content="Imported desktop shortcuts"
                                   Click="OnSourceChanged" />
                     </StackPanel>

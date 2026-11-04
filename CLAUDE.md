@@ -49,7 +49,7 @@ Approved third-party dependencies:
 ```
 GameShelf.sln
   src/GameShelf/            WinUI 3 app
-    Library/                SteamSource, EpicSource, GogSource, InstallFolder (folder safety),
+    Library/                SteamSource, EpicSource, GogSource, EaSource, UbisoftSource, XboxSource, RockstarSource, InstallFolder (folder safety),
                             ShortcutFile (.lnk/.url reading), ShortcutImporter (import, restore, manual add),
                             LaunchOptions (arguments, Steam run links, "Start with"), GameScan (engine and anti-cheat
                             from file names, bounded, cached per game), AntiCheat (requirements and conflict tables),
@@ -106,6 +106,8 @@ Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions
 - **GOG**: Read `HKLM\SOFTWARE\WOW6432Node\GOG.com\Games\*` (gameName, path, exe) and launch the exe directly.
 - **EA app**: Settings → Apps entries (`HKLM\...\Uninstall\*`) whose uninstaller is EA's `EAInstaller\…\Cleanup.exe uninstall_game` (DisplayName, InstallLocation, DisplayIcon = the exe, EstimatedSize). The content id is the first `<contentID>` in `{InstallLocation}\__Installer\installerdata.xml`. Launch with `origin2://game/launch?offerIds={contentId}&autoDownload=1`, or the exe if there's no content id.
 - **Ubisoft Connect**: `HKLM\SOFTWARE\WOW6432Node\Ubisoft\Launcher\Installs\{id}` (InstallDir), named by the `Uplay Install {id}` uninstall entry (DisplayName, EstimatedSize, DisplayIcon .ico). Launch with `uplay://launch/{id}/0`. Entries whose folder no longer exists are skipped.
+- **Xbox app (Game Pass, Microsoft Store PC games)**: each fixed drive's `.GamingRoot` file ("RGBX", a count, UTF-16 folder names) names its `XboxGames` folder; each game folder has `Content\appxmanifest.xml` (Identity Name, Application Id) and `Content\MicrosoftGame.config` (ShellVisuals DefaultDisplayName and Square150x150Logo, Executable Name). Only packages registered for this user count (key names under `HKCU\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages` give the publisher id). Launch with `shell:AppsFolder\{Name_PublisherId}!{AppId}`. The generated cover uses the tile logo PNG (Xbox game exes often have no icon); the badge is the Xbox app's own icon.
+- **Rockstar Games Launcher**: uninstall entries whose UninstallString runs `Rockstar Games\Launcher\uninstall.exe -uninstall=<title>` (not `launcher`); launch with `{InstallFolder}\Launcher.exe -launchTitle=<title>` (`HKLM\SOFTWARE\WOW6432Node\Rockstar Games\Launcher`). Copies bought on Epic or Steam come from those sources.
 - **Desktop shortcuts (import)**
   - Scan the user's Desktop and the Public Desktop for `.lnk` and `.url` files. Show a picker so the user ticks which ones are games.
   - Move the chosen shortcuts into `%APPDATA%\GameShelf\Shortcuts\`. Never delete them, so the import is reversible, and offer "Restore to desktop".
@@ -195,7 +197,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 **Settings view**
 - Hide delay: Instantly / 5 s / 10 s / 30 s.
 - Come back when the game closes (toggle).
-- Library sources: Steam, Epic, GOG, EA app, Ubisoft Connect and Desktop shortcuts, each with a checkbox, plus "Add a game".
+- Library sources: Steam, Epic, GOG, EA app, Ubisoft Connect, Xbox app, Rockstar Games Launcher and Desktop shortcuts, each with a checkbox, plus "Add a game".
 - Position: Left / Right / Free.
 - Stay on the desktop layer (toggle).
 - Start with Windows: an `HKCU\...\Run` entry.
@@ -209,7 +211,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 
 ## Planned additions
 
-Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas; the open ones are on its "Still to build" page. **Read section 0 of that file before starting the next milestone** (its progress table says which one: milestones 8–10 are done, 11 Crash detection is next). It lists what is new, what changes existing code, and which owner decisions override this brief:
+Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas; the open ones are on its "Still to build" page. **Read section 0 of that file before starting the next milestone** (its progress table says which one: milestones 8–11 are done, 12 More launchers is in progress). It lists what is new, what changes existing code, and which owner decisions override this brief:
 
 - Game mode's separate elevated helper is an approved exception to "never ask for admin rights". The widget and the watcher still never elevate.
 - Cover badges show the launcher's icon instead of text, and manually added games get no badge.

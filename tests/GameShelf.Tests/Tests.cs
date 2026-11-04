@@ -252,6 +252,68 @@ static class Tests
         Check(UbisoftSource.Read("45/53", gameDir, "Fake Ubi", 0, null) is null, "Ubisoft id that isn't digits rejected");
         Check(UbisoftSource.Read("4553", gameDir, "Fake Ubi", 0, exe) is { IconPath: null }, "Ubisoft icon must be an .ico");
 
+        // Xbox app (milestone 12): .GamingRoot files, package records and a game folder.
+        byte[] GamingRoot(uint count, params string[] names) =>
+            [.. "RGBX"u8, .. BitConverter.GetBytes(count), .. names.SelectMany(n => Encoding.Unicode.GetBytes(n + "\0"))];
+        Check(XboxSource.ParseGamingRoot(GamingRoot(1, "XboxGames")).SequenceEqual(["XboxGames"]), ".GamingRoot parsed");
+        Check(XboxSource.ParseGamingRoot(GamingRoot(2, "Games", @"..\Windows")).SequenceEqual(["Games"]), ".GamingRoot can't point outside the drive root");
+        Check(XboxSource.ParseGamingRoot(GamingRoot(1, @"C:\Windows")).Count == 0 && XboxSource.ParseGamingRoot("XXXX\u0001"u8.ToArray()).Count == 0,
+            ".GamingRoot with a full path or a bad header rejected");
+        Check(XboxSource.FamilyOf("Microsoft.624F8B84B80_3.688.109.0_x64__8wekyb3d8bbwe") == ("Microsoft.624F8B84B80", "8wekyb3d8bbwe"), "package family from a full name");
+        Check(XboxSource.FamilyOf("Bad_Name_x64__8wekyb3d8bbwe_extra") is null && XboxSource.FamilyOf("Microsoft.App_1.0.0.0_x64__NOTVALID!") is null,
+            "malformed package names rejected");
+        var xboxGame = Directory.CreateDirectory(Path.Combine(dir, "XboxGames", "Forza Horizon 5")).FullName;
+        var xboxContent = Directory.CreateDirectory(Path.Combine(xboxGame, "Content")).FullName;
+        File.WriteAllBytes(Path.Combine(xboxContent, "ForzaHorizon5.exe"), [0x4D, 0x5A]);
+        const string XboxManifest = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10">
+              <Identity Name="Microsoft.624F8B84B80" Publisher="CN=Microsoft Corporation" Version="3.688.109.0" ProcessorArchitecture="x64" />
+              <Properties><DisplayName>ms-resource:ApplicationDisplayName</DisplayName></Properties>
+              <Applications><Application Id="Forzahorizon5" Executable="GameLaunchHelper.exe"><uap:VisualElements DisplayName="x" /></Application></Applications>
+            </Package>
+            """;
+        const string XboxConfig = """
+            <Game configVersion="0"><ExecutableList><Executable Name="ForzaHorizon5.exe" Id="Forzahorizon5" /></ExecutableList>
+            <ShellVisuals DefaultDisplayName="Forza Horizon 5 &amp; More" PublisherDisplayName="Microsoft Studios" /></Game>
+            """;
+        var registered = new Dictionary<string, string> { ["Microsoft.624F8B84B80"] = "8wekyb3d8bbwe" };
+        var forza = XboxSource.Read(xboxGame, XboxManifest, XboxConfig, registered);
+        Check(forza is { Id: "xbox:Microsoft.624F8B84B80", Source: GameSource.Xbox, Name: "Forza Horizon 5 & More",
+                         LaunchUri: @"shell:AppsFolder\Microsoft.624F8B84B80_8wekyb3d8bbwe!Forzahorizon5" } &&
+              forza.InstallDir == xboxGame && forza.IconPath == Path.Combine(xboxContent, "ForzaHorizon5.exe"),
+            "Xbox game: launch link from the registered family, name from MicrosoftGame.config, icon from its exe");
+        File.WriteAllBytes(Path.Combine(xboxContent, "Logo.png"), [0x89, 0x50]);
+        Check(XboxSource.Read(xboxGame, XboxManifest, XboxConfig.Replace("PublisherDisplayName", "Square150x150Logo=\"Logo.png\" PublisherDisplayName"), registered) is
+                  { IconPath: var logo } && logo == Path.Combine(xboxContent, "Logo.png"), "Xbox cover picture: the tile logo before the exe");
+        File.Delete(Path.Combine(xboxContent, "Logo.png"));
+        var rescanned = new Game { Id = "xbox:a", IconPath = @"C:\g\Content\Logo.png" };
+        rescanned.CopyUserData(new Game { Id = "xbox:a", IconPath = @"C:\g\Content\Game.exe", CoverTint = "#102030", Favorite = true });
+        Check(rescanned is { IconChanged: true, CoverTint: null, Favorite: true }, "new icon source: cached icon and its color dropped, user data kept");
+        var same = new Game { Id = "xbox:a", IconPath = @"C:\g\Content\Logo.png" };
+        same.CopyUserData(new Game { Id = "xbox:a", IconPath = @"c:\G\Content\logo.png", CoverTint = "#102030" });
+        Check(same is { IconChanged: false, CoverTint: "#102030" }, "same icon source: cached color kept");
+        Check(XboxSource.Read(xboxGame, XboxManifest, null, registered) is { Name: "Forza Horizon 5", IconPath: null },
+            "Xbox name falls back to the folder when the manifest only has a resource reference");
+        Check(XboxSource.Read(xboxGame, XboxManifest, XboxConfig, new Dictionary<string, string>()) is null, "Xbox game not registered for this user skipped");
+        Check(XboxSource.Read(xboxGame, XboxManifest.Replace("Forzahorizon5\"", "Forza!evil\""), XboxConfig, registered) is null, "Xbox app id with link characters rejected");
+        Check(XboxSource.Read(xboxGame, XboxManifest, XboxConfig.Replace("ForzaHorizon5.exe\" Id", @"..\..\evil.exe"" Id"), registered) is { IconPath: null },
+            "Xbox exe outside the Content folder not used");
+
+        // Rockstar Games Launcher (milestone 12): its per-game uninstall entries.
+        Check(RockstarSource.TitleOf("\"C:\\Program Files\\Rockstar Games\\Launcher\\uninstall.exe\" -uninstall=gta5") == "gta5", "Rockstar title from its uninstaller");
+        Check(RockstarSource.TitleOf("\"C:\\Program Files\\Rockstar Games\\Launcher\\uninstall.exe\" -enableFullMode -uninstall=launcher") is null,
+            "the Rockstar launcher's own entry isn't a game");
+        Check(RockstarSource.TitleOf("\"C:\\Other\\uninstall.exe\" -uninstall=gta5") is null &&
+              RockstarSource.TitleOf("\"C:\\Program Files\\Rockstar Games\\Launcher\\uninstall.exe\" -uninstall=gta5&calc") is null,
+            "other uninstallers and odd titles rejected");
+        Check(RockstarSource.Read("rdr2", "Red Dead Redemption 2", gameDir, $"\"{exe}\",0", 4096) is
+                  { Id: "rockstar:rdr2", Source: GameSource.Rockstar, StoreId: "rdr2", LaunchUri: null, SizeOnDisk: 4194304 } rdr && rdr.IconPath == exe,
+            "valid Rockstar entry accepted, icon from its exe");
+        Check(RockstarSource.Read("rdr2", "Fake", gameDir, $"\"{outside}\"", 0) is { IconPath: null }, "Rockstar icon outside the install folder not used");
+        Check(RockstarSource.Read("rdr2", "Fake", "", null, 0) is null && RockstarSource.Read("rd r2", "Fake", gameDir, null, 0) is null,
+            "Rockstar entry without a folder or with a bad title rejected");
+
         // Shortcut links.
         ShortcutFile Url(string url) => new(Path.Combine(dir, "x.url"), "x", null, url);
         Check(Url("steam://rungameid/570").SteamAppId == "570", "Steam link parsed");
