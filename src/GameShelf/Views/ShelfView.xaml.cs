@@ -148,7 +148,7 @@ public sealed partial class ShelfView : UserControl
             Tiles.ItemsSource = _listMode ? null : _visible;
             Rows.ItemsSource = _listMode ? _visible : null;
         }
-        VisibleCountText.Text = _visible.Count == 1 ? "1 game" : $"{_visible.Count} games";
+        SearchBox.PlaceholderText = _sorted.Count == 1 ? "Search 1 game" : $"Search {_sorted.Count} games";
         SortButton.Visibility = _filter == "Recent" ? Visibility.Collapsed : Visibility.Visible;
 
         EmptyState.Visibility = _visible.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -449,16 +449,24 @@ public sealed partial class ShelfView : UserControl
         _ => "Recently played",
     };
 
+    /// <summary>The sort button is an icon; its tooltip and screen-reader name say the current order.</summary>
+    private void ShowSort(SortBy sort)
+    {
+        var label = "Sort: " + SortLabel(sort);
+        ToolTipService.SetToolTip(SortButton, label);
+        AutomationProperties.SetName(SortButton, label);
+    }
+
     /// <summary>Sort menu (board 7): five orders as radio items, then "Favorites first".</summary>
     private void BuildSortMenu()
     {
-        SortText.Text = SortLabel(_settings.SortBy);
+        ShowSort(_settings.SortBy);
         SortMenu.Items.Clear();
         foreach (var sort in Enum.GetValues<SortBy>())
             GameMenu.AddChoice(SortMenu, SortLabel(sort), "Sort", _settings.SortBy == sort, () =>
             {
                 _settings.SortBy = sort;
-                SortText.Text = SortLabel(sort);
+                ShowSort(sort);
                 Resort();
                 ViewSettingsChanged?.Invoke();
             });

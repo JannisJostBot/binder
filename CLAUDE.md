@@ -169,10 +169,10 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 - Acrylic backdrop (owner's choice): WinUI's `DesktopAcrylicController` in a custom `SystemBackdrop` (`PanelBackdrop`), kept active while the panel isn't focused. Colors come from WinUI's theme resources (light, dark, high contrast and the accent color follow Windows live); the token table below is the dark design reference.
 
 **Shelf view (main)**
-- Header: a greeting for the time of day ("Good morning" / "Good afternoon" / "Good evening", set when the panel gets its data, never on a timer) and a settings button. The game count is shown above the grid.
-- Search box: focused on open, filters as you type.
-- Filter chips (below the slot, next to the count, sort and grid they filter; owner's choice): All, Favorites, Recent, then the launchers that have games (most games first) and "Other" for manual games and shortcuts; beyond three launcher chips the rest go under "More".
-- Sort menu above the grid (Recently played, Most played, Name, Recently added, Size on disk, plus "Favorites first"), saved in settings. Cover size in Settings: Small (5 columns), Medium (4), Large (3), List.
+- Header: a greeting for the time of day ("Good morning" / "Good afternoon" / "Good evening", set when the panel gets its data, never on a timer) and a settings button. The game count is in the search box's placeholder ("Search 72 games").
+- Search box: focused on open, filters as you type; its placeholder carries the game count.
+- Filter chips (below the slot, in one row with the sort button, right above the grid they filter; owner's choice): All, Favorites, Recent, then the launchers that have games (most games first) and "Other" for manual games and shortcuts; beyond three launcher chips the rest go under "More".
+- Sort menu: an icon button at the right end of the filter row (one toolbar row above the grid; its tooltip and screen-reader name say the current order) (Recently played, Most played, Name, Recently added, Size on disk, plus "Favorites first"), saved in settings. Cover size in Settings: Small (5 columns), Medium (4), Large (3), List.
 - One fixed-height slot (168 px) under the search box, switched with a small `SelectorBar` in its top-right corner and remembered (`SpotlightShowsWeek`), so switching never moves the grid:
   - **Continue playing:** a hero banner of the last played game (its hero art, loaded only while shown, with a bottom fade), title, last played and launcher, and a Play button.
   - **This week:** the total, game count, most played game and a bar per day.
