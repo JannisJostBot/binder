@@ -75,6 +75,17 @@ public static class LaunchOptions
             new("Borderless window", "-noborder"),
             new("Use Vulkan", "-vulkan"),
         ],
+        // id Tech 6–8 console variables (DOOM 2016, Eternal, The Dark Ages; the newer Wolfenstein games).
+        GameEngine.IdTech =>
+        [
+            new("Skip the intro videos (works in many games)", "+com_skipIntroVideo 1"),
+            new("No key press after loading screens (works in many games)", "+com_skipKeyPressOnLoadScreens 1"),
+        ],
+        // HITMAN (2016), 2 and World of Assassination open a settings launcher first.
+        GameEngine.Glacier =>
+        [
+            new("Skip the launcher window", "-skip_launcher"),
+        ],
         GameEngine.Godot =>
         [
             new("Use Vulkan", "--rendering-driver vulkan", "api"),

@@ -10,8 +10,8 @@ using Microsoft.UI.Xaml.Media;
 namespace GameShelf.Views;
 
 /// <summary>
-/// The launcher's icon in the top-left of a cover (spec §3): a 24 px dark translucent rounded square with
-/// the launcher's own 16 px icon, or a Fluent glyph if that can't be read. None for manual games and
+/// The launcher's icon in the top-left of a cover (spec §3): a 28 px near-solid dark rounded square with a thin
+/// light edge and the launcher's own 18 px icon, or a Fluent glyph if that can't be read. None for manual games and
 /// shortcuts. The name is in the tooltip and for screen readers, so identity never depends on the logo alone.
 /// </summary>
 public sealed partial class LauncherBadge : Grid
@@ -34,10 +34,12 @@ public sealed partial class LauncherBadge : Grid
 
     public LauncherBadge()
     {
-        Width = 24;
-        Height = 24;
-        CornerRadius = new CornerRadius(6);
+        Width = 28;
+        Height = 28;
+        CornerRadius = new CornerRadius(7);
         Background = (Brush)Application.Current.Resources["BadgeBrush"];
+        BorderBrush = (Brush)Application.Current.Resources["BadgeStrokeBrush"];
+        BorderThickness = new Thickness(1);
         HorizontalAlignment = HorizontalAlignment.Left;
         VerticalAlignment = VerticalAlignment.Top;
         Margin = new Thickness(6);
@@ -81,13 +83,13 @@ public sealed partial class LauncherBadge : Grid
         if (icon is not null)
         {
             if (!Images.TryGetValue(source, out var image)) Images[source] = image = Bitmaps.FromPixels(icon);
-            Child = new Image { Source = image, Width = 16, Height = 16 };
+            Child = new Image { Source = image, Width = 18, Height = 18 };
             return;
         }
         Child = new FontIcon
         {
             Glyph = "", // Game
-            FontSize = 13,
+            FontSize = 14,
             Foreground = new SolidColorBrush(Colors.White),
         };
     }

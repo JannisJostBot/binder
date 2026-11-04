@@ -387,6 +387,8 @@ static class Tests
         Check(LaunchOptions.SteamLink("570 -silent", []) is null && LaunchOptions.SteamLink(null, []) is null, "bad appid gives no steam link");
 
         // Suggestions: ticking and unticking multi-word options.
+        Check(LaunchOptions.Suggestions(GameEngine.IdTech)[0].Tokens is ["+com_skipIntroVideo", "1"], "id Tech console variable kept as two arguments");
+        Check(LaunchOptions.Suggestions(GameEngine.Glacier) is [{ Args: "-skip_launcher" }], "Glacier skips its launcher");
         var windowed = LaunchOptions.Suggestions(GameEngine.Unity).First(s => s.Args == "-screen-fullscreen 0");
         var tokens = LaunchOptions.Split("-popupwindow -screen-fullscreen 0 -foo");
         Check(LaunchOptions.IndexOf(tokens, windowed.Tokens) == 1, "multi-word suggestion found");

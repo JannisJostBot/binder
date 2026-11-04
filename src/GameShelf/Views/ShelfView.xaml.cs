@@ -528,20 +528,23 @@ public sealed partial class ShelfView : UserControl
         return element as SelectorItem;
     }
 
-    /// <summary>Puts keyboard focus on a game (e.g. when coming back from its detail view).</summary>
+    /// <summary>
+    /// Puts focus back on a game when coming back from its detail view. Programmatic, so WinUI draws the focus
+    /// ring only if the last input was the keyboard (Esc), not after clicking Back with the mouse.
+    /// </summary>
     public void FocusGame(Game game)
     {
         int index = _visible.FindIndex(g => g.Id == game.Id);
-        if (index >= 0) FocusIndex(index);
+        if (index >= 0) FocusIndex(index, FocusState.Programmatic);
         else FocusSearch();
     }
 
-    private void FocusIndex(int index)
+    private void FocusIndex(int index, FocusState how = FocusState.Keyboard)
     {
         ListViewBase list = _listMode ? Rows : Tiles;
         list.ScrollIntoView(_visible[index]);
         list.UpdateLayout();
-        if (list.ContainerFromIndex(index) is Control container) container.Focus(FocusState.Keyboard);
+        if (list.ContainerFromIndex(index) is Control container) container.Focus(how);
     }
 
     /// <summary>

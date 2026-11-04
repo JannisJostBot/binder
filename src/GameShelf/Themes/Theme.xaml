@@ -20,7 +20,12 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <!-- Drawn over cover art, so the same in light and dark mode. -->
-    <SolidColorBrush x:Key="BadgeBrush" Color="#99000000" />
+    <!-- Chips on cover art (launcher badge, favorite star, Details): near-solid dark with a thin light edge, so
+         they stand out on dark and light art alike, the way Fluent separates layered surfaces. Same in both themes:
+         they sit on the art, not on the panel. -->
+    <SolidColorBrush x:Key="BadgeBrush" Color="#E01C1C20" />
+    <SolidColorBrush x:Key="BadgeHoverBrush" Color="#F032323A" />
+    <SolidColorBrush x:Key="BadgeStrokeBrush" Color="#40FFFFFF" />
     <SolidColorBrush x:Key="CoverOverlayBrush" Color="#40000000" />
     <!-- The "Continue playing" banner: a fade at the bottom of the hero art so its light text reads on any image. -->
     <LinearGradientBrush x:Key="BannerScrimBrush" StartPoint="0,0" EndPoint="0,1">
@@ -104,14 +109,16 @@
 
     <!-- The round Details (i) button on a hovered cover. The cover itself plays. -->
     <Style x:Key="CoverDetailsButton" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
-        <Setter Property="Width" Value="28" />
-        <Setter Property="Height" Value="28" />
+        <Setter Property="Width" Value="30" />
+        <Setter Property="Height" Value="30" />
         <Setter Property="Padding" Value="0" />
-        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="CornerRadius" Value="15" />
         <Setter Property="Background" Value="{StaticResource BadgeBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BadgeStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
-        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontSize" Value="16" />
         <Setter Property="Content" Value="&#xE946;" />
         <Setter Property="IsTabStop" Value="False" />
     </Style>
