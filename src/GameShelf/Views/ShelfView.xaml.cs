@@ -364,11 +364,9 @@ public sealed partial class ShelfView : UserControl
         args.Handled = true;
     }
 
-    private static void Describe(SelectorItem container, Game game)
-    {
-        AutomationProperties.SetName(container, game.Name);
-        ToolTipService.SetToolTip(container, "Play " + game.Name); // a click plays (details: the (i) button, Space, right-click)
-    }
+    // No tooltip on the whole item: the hover "Play" label already says what a click does, and once one tooltip is
+    // open WinUI shows the next at once, so they'd follow the mouse across the grid. Cut-off titles get one (GameTile).
+    private static void Describe(SelectorItem container, Game game) => AutomationProperties.SetName(container, game.Name);
 
     /// <summary>
     /// All, Favorites, Recent, then the launchers that have games (most games first), "Other" for manual games

@@ -3,10 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:v="using:GameShelf.Views"
              IsTabStop="False">
-    <StackPanel Spacing="8">
+    <!-- Hover anywhere on the tile (cover, gap or title): a click on any of it plays. Transparent background so
+         the gap between cover and title is hit-testable too. -->
+    <StackPanel Spacing="8" Background="Transparent" PointerEntered="OnPointerEntered" PointerExited="OnPointerExited"
+                PointerCanceled="OnPointerExited" PointerCaptureLost="OnPointerExited">
         <!-- Clicking the cover plays (the grid's ItemClick); the (i) button opens details (board 15, option A). -->
-        <Grid x:Name="CoverArea" PointerEntered="OnPointerEntered" PointerExited="OnPointerExited"
-              PointerCanceled="OnPointerExited" PointerCaptureLost="OnPointerExited" RenderTransformOrigin="0.5,0.5">
+        <Grid x:Name="CoverArea" RenderTransformOrigin="0.5,0.5">
             <Grid.RenderTransform>
                 <ScaleTransform x:Name="Lift" />
             </Grid.RenderTransform>
@@ -39,7 +41,8 @@
                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0" IsHitTestVisible="False"
                     ToolTipService.ToolTip="Details" Click="OnDetailsClick" />
         </Grid>
-        <TextBlock x:Name="TitleText" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="NoWrap"
+        <!-- The full name as a tooltip only when it's cut off with "…", like File Explorer. -->
+        <TextBlock x:Name="TitleText" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="NoWrap" IsTextTrimmedChanged="OnTitleTrimmedChanged"
                    TextTrimming="CharacterEllipsis" />
     </StackPanel>
 </UserControl>

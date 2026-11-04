@@ -21,6 +21,9 @@ public sealed partial class GameTile : UserControl
         Cover.ImageChanged += hasImage => PlaceholderTitle.Visibility = hasImage ? Visibility.Collapsed : Visibility.Visible;
     }
 
+    private void OnTitleTrimmedChanged(TextBlock sender, IsTextTrimmedChangedEventArgs args) =>
+        ToolTipService.SetToolTip(sender, sender.IsTextTrimmed ? sender.Text : null);
+
     /// <summary>Called when the Details (i) button is pressed.</summary>
     public Action<Game>? DetailsRequested { get; set; }
 
@@ -41,6 +44,7 @@ public sealed partial class GameTile : UserControl
             Cover.Game = game;
         }
         TitleText.Text = game.Name;
+        if (TitleText.IsTextTrimmed) ToolTipService.SetToolTip(TitleText, game.Name); // recycled tile; a change of trimming fires the event
         PlaceholderTitle.Text = game.Name;
         PlaceholderTitle.Visibility = Cover.HasImage ? Visibility.Collapsed : Visibility.Visible;
         Badge.Source = game.Source;

@@ -151,6 +151,13 @@
                       AutomationProperties.Name="Games" ContainerContentChanging="OnTileContentChanging"
                       PreviewKeyDown="OnGridKeyDown" ContextRequested="OnItemContextRequested"
                       IsSwipeEnabled="False" CanDragItems="False">
+                <!-- The tile draws its own hover (lift, accent outline, "Play"), so the item's fill would only show
+                     as a second box with other corners behind it. -->
+                <GridView.Resources>
+                    <SolidColorBrush x:Key="GridViewItemBackgroundPointerOver" Color="Transparent" />
+                    <SolidColorBrush x:Key="GridViewItemBackgroundPressed" Color="Transparent" />
+                    <SolidColorBrush x:Key="GridViewItemPointerOverBorderBrush" Color="Transparent" />
+                </GridView.Resources>
                 <GridView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <!-- Half a screen of tiles above and below the view (the default is two screens each way,
@@ -162,6 +169,7 @@
                     <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
                         <Setter Property="Margin" Value="0" />
                         <Setter Property="Padding" Value="6" />
+                        <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                         <Setter Property="VerticalContentAlignment" Value="Top" />
                     </Style>
