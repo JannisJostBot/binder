@@ -2,7 +2,7 @@
 
 Status: **approved specs, not implemented yet.**
 - **Designs:** on the design canvas, https://claude.ai/artifact/9tZEP6HSrETxwGwpSbMg1Q, on the pages "Proposals" (boards 1–5)
-  and "More features" (boards 6–13). Board numbers are given in each section below.
+  and "More features" (boards 6–17). Board numbers are given in each section below.
 - **Baseline:** written against the code at `0eacc65` (branch `milestone-6-sources`: milestones 1–6 done).
 
 Every item follows the project brief: zero cost while idle or gaming, no third-party packages, nothing that can
@@ -40,6 +40,7 @@ break the user's system.
 | 9 | Detail: playtime chart, launch options with engine suggestions, anti-cheat label and check | Changes existing | `DetailView`, `Launcher`, `Game` |
 | 10 | Crash detection on return | Changes existing | Watcher (save exit code), `Session`, `MainWindow`, `DetailView` |
 | 11 | Game mode (power, priority, services, apps, network) with exact restore and a "Restored" toast | New, biggest item | new `GameShelf.Elevated` project, watcher hooks, new Settings sub-page |
+| 12 | Free up space: which games to uninstall for a new one, per drive, shown as a treemap | New | new `Library/SpacePlanner`, new `Views/FreeSpaceView`, `SettingsView`, `GameMenu` |
 
 ### Conflicts with `CLAUDE.md` to resolve while implementing
 
@@ -90,6 +91,22 @@ The ideas listed under "Not decided" at the bottom must **not** be built.
   - "Slow down background uploads" at **5 Mbit/s**.
   - "Limit Windows Update downloads".
 - **No** check for whole-PC crashes.
+
+**2026-11-03 – 11-04** (already built and in `CLAUDE.md`)
+- Native Windows 11 radii: 8 panel (system-drawn), 8 cards and covers, 4 controls.
+- Clicking a cover plays; details open from an (i) button on hover, Space or right-click.
+- Shelf header is a time-of-day greeting; "Continue playing" (hero banner) and "This week" share one switchable slot.
+- Steam starts with `-silent` when it isn't running.
+- Scope rule: a launcher, not a game toolbox. Engine versions and shader-cache tools were dropped under it.
+
+**2026-11-04**
+- **Free up space** approved (§12):
+  - The user enters the new game's total size; the planner picks the drive and the games.
+  - Order: least played first, the closest size fit within similar playtime, then games played in the last 14 days,
+    favorites last of all.
+  - Shown as a treemap with the games' icons; tiles can be added or removed by clicking.
+  - Uninstall goes through each launcher. Where there's no uninstall link, opening the launcher is fine.
+  - Reached from Settings and from the Detail view's "…" menu.
 
 ---
 
@@ -519,6 +536,69 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
 
 ---
 
+## 12. Free up space (board 17)
+
+A new game needs more room than a drive has. The user says how big it is; Game Shelf suggests which installed games
+to remove and on which drive, and hands each removal to the game's own launcher. It never deletes game files itself.
+
+### Where
+- **Settings:** a "Storage" row, "Free up space…".
+- **Detail view:** "Free up space…" in the "…" menu, opening with that game's drive selected.
+- A page inside the panel like Settings (back button, Esc). Nothing runs until it's opened.
+
+### Input
+- "How much space does the new game need?": a `NumberBox` in GB, the **total** size from the store page.
+- Drive free space comes from `DriveInfo.AvailableFreeSpace`, read when the page opens and after "Check again".
+  No watchers, no timers.
+
+### Which games count
+- Installed games on that drive (grouped by `Path.GetPathRoot(InstallDir)`), hidden ones included (they still use space).
+- Need a known size: Steam `SizeOnDisk`, Epic install size, EA / Ubisoft `EstimatedSize`. Games without one are shown
+  but never suggested. No folder measuring.
+- Manual games and shortcuts are left out: no launcher can uninstall them.
+- A game that's running right now is left out.
+
+### The plan, per drive
+1. `missing = need − free`. Zero or less: "It fits already".
+2. Candidates go in three **tiers**, used in order; a later tier only when the earlier ones aren't enough:
+   1. Everything else.
+   2. Played in the last 14 days.
+   3. Favorites.
+3. Within a tier, by **playtime band**: never played, under 1 h, under 5 h, under 20 h, more. Lower bands first.
+4. Within a band, the **closest fit**: the smallest game that covers what's still missing; if none does, the largest,
+   then repeat with what's left.
+5. Finally drop any picked game the plan doesn't need after all, biggest first.
+
+Signals:
+- Playtime: our own sessions.
+- Last played: the later of our sessions and Steam's `LastPlayed` in `appmanifest_*.acf` (already parsed), so a game
+  played through Steam directly isn't treated as unplayed. Verify the key on the real PC.
+
+**Best drive:** the plan with the least total playtime, then the fewest games, then the smallest overshoot. It gets a
+"Best choice" label; the user can pick another drive.
+
+### Showing it
+- One card per drive: name, a used-space bar, "N games to remove" or "fits already".
+- A **treemap** of the chosen drive (squarified, built once per change, static):
+  - One tile per game, sized by its size on disk, on the game's muted color (`CoverColors`) with its icon
+    (`FallbackArt`), or a monogram when there's none.
+  - Suggested games: full color, accent outline, a check mark. Kept games: dimmed. Free space: a dashed tile.
+  - Marks for "played recently" and favorites.
+  - Clicking a tile adds or removes it. Each tile is a focusable toggle with a screen-reader name (name, size,
+    playtime, suggested or not).
+- A summary: "Frees 80 GB of the 78 GB missing", then the chosen games with size and why (e.g. "Never played ·
+  8 months ago").
+
+### Uninstall
+- "Uninstall N games…" goes through them one at a time:
+  - Steam: `steam://uninstall/{appid}` (Steam asks first), as the existing "Uninstall in Steam…" does.
+  - Launchers without an uninstall link (Epic, EA app, Ubisoft Connect, GOG Galaxy, …): open the launcher, with a
+    toast naming the game to remove there. Where no launcher is installed, open Settings → Apps.
+- "Check again" re-reads free space and the library afterwards.
+- Security: only built-in links from validated ids; nothing deleted by Game Shelf.
+
+---
+
 ## Build order (after milestone 7)
 
 8. **Quick wins:**
@@ -536,6 +616,7 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
     - First the no-admin part: power, priority, apps, Game Bar, journal, toast.
     - Then the elevated helper, the installer step, the services and the network items.
     - Update the security rules in `CLAUDE.md` in the same milestone.
+15. **Free up space** (§12).
 
 ## Not decided (don't build)
 

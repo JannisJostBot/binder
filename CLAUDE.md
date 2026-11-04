@@ -222,7 +222,7 @@ Items under "Not decided" in that file must not be built.
 5. The settings view, autostart and the desktop-layer behavior. Include a way to show hidden games again (hiding currently only has an Undo in the toast).
 6. Epic, GOG, desktop-shortcut import and manual add.
 7. Polish: multi-monitor handling, empty states, the error toast, and a single-file publish script.
-8.–14. The approved additions, in the order given at the end of `docs/proposals.md`.
+8.–15. The approved additions, in the order given at the end of `docs/proposals.md`.
 
 ## Errors
 
