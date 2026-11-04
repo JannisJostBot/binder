@@ -58,7 +58,7 @@ GameShelf.sln
     Services/               Launcher, CoverCache, Storage, DesktopLayer, Autostart, GameActions,
                             Placement (pure pixel math), Monitors (displays, auto-hide taskbars), ShellNotify, ErrorLog,
                             PcChecks (Secure Boot, TPM, test signing, drivers, conflicting programs; read-only, no admin)
-    Views/                  ShelfView, DetailView, SettingsView, ImportView (the launch toast lives in MainWindow),
+    Views/                  ShelfView, DetailView, SettingsView, ImportView, SetupView (the launch toast lives in MainWindow),
                             BarChart (the playtime charts), ModePreview (display mode pictures)
   src/GameShelf.Watcher/    Program.cs only
   src/GameShelf.Setup/      GameShelfSetup.exe: per-user installer, updater and uninstaller (Native AOT, task dialogs)
@@ -205,7 +205,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 
 ## Planned additions
 
-Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas's "Proposals" and "More features" pages. **Read section 0 of that file before starting milestone 8.** It lists what is new, what changes existing code, and which owner decisions override this brief:
+Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas's "Proposals" and "More features" pages. **Read section 0 of that file before starting the next milestone** (its progress table says which one: milestones 8–10 are done, 11 Crash detection is next). It lists what is new, what changes existing code, and which owner decisions override this brief:
 
 - Game mode's separate elevated helper is an approved exception to "never ask for admin rights". The widget and the watcher still never elevate.
 - Cover badges show the launcher's icon instead of text, and manually added games get no badge.
