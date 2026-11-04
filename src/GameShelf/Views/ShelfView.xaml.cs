@@ -227,7 +227,8 @@ public sealed partial class ShelfView : UserControl
         WeekTotal.Text = Format.Duration(week.Total);
         var games = week.GameCount == 1 ? "1 game" : $"{week.GameCount} games";
         var top = week.TopGameId is { } id ? _games.FirstOrDefault(g => g.Id == id)?.Name : null;
-        WeekDetail.Text = top is null || week.GameCount == 1 ? (top is null ? games : top) : $"{games} · most: {top}";
+        var detail = top is null || week.GameCount == 1 ? (top is null ? games : top) : $"{games} · most: {top}";
+        WeekDetail.Text = "This week · " + detail;
         ToolTipService.SetToolTip(WeekDetail, top is null ? null : $"Most played: {top}, {Format.Duration(week.TopGameTime)}");
         WeekChart.Show(
             week.Days.Select(d => new Bar(

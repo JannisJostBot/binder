@@ -78,21 +78,20 @@
                     </Button>
                 </Grid>
             </Grid>
-            <Grid x:Name="WeekPane" Padding="16" ColumnSpacing="20" Visibility="Collapsed"
+            <!-- Total top-left (the switch sits top-right), the chart in its own full-width row below, so the two
+                 never meet. -->
+            <Grid x:Name="WeekPane" Padding="16,12,16,10" RowSpacing="6" Visibility="Collapsed"
                   Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel VerticalAlignment="Bottom" Spacing="1">
-                    <TextBlock Text="This week" Style="{StaticResource CaptionTextBlockStyle}"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <TextBlock x:Name="WeekTotal" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="26" />
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel Margin="0,0,230,0" Spacing="0">
+                    <TextBlock x:Name="WeekTotal" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="24" />
                     <TextBlock x:Name="WeekDetail" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="NoWrap"
                                TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
-                <!-- Fixed width (its columns share it equally); short enough to stay clear of the switch above it. -->
-                <v:BarChart x:Name="WeekChart" Grid.Column="1" Width="224" PlotHeight="60" BarWidth="16" VerticalAlignment="Bottom" />
+                <v:BarChart x:Name="WeekChart" Grid.Row="1" PlotHeight="44" BarWidth="16" VerticalAlignment="Bottom" />
             </Grid>
             <!-- The switch: WinUI's own SelectorBar (like the filters), on a solid surface so it reads over any art.
                  Shown only when both sides have something to show. -->
