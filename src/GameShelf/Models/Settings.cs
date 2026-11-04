@@ -46,6 +46,11 @@ public sealed class Settings
     public bool TrayIcon { get; set; } = true;
     /// <summary>Stay running (tiny, in efficiency mode) after the flyout closes, so it opens instantly.</summary>
     public bool StayReady { get; set; } = true;
+    /// <summary>
+    /// With <see cref="StayReady"/>: keep the closed flyout loaded (hidden) so it opens at once, instead of
+    /// freeing it down to a few MB. Either way the process exits while a game runs.
+    /// </summary>
+    public bool KeepPanelLoaded { get; set; }
     public bool CloseOnClickAway { get; set; } = true;
     public Hotkey Hotkey { get; set; } = Hotkey.WinShiftG;
     public bool SetupDone { get; set; }

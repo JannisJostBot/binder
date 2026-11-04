@@ -83,10 +83,26 @@
                         <StackPanel Style="{StaticResource RowText}">
                             <TextBlock Style="{StaticResource RowTitle}" Text="Stay ready in the background" />
                             <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
-                                       Text="Opens instantly. While closed it shrinks its memory and runs in efficiency mode." />
+                                       Text="Keeps running in efficiency mode after you close it, so it opens quickly" />
                         </StackPanel>
                         <ToggleSwitch x:Name="StayReadySwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
                                       AutomationProperties.Name="Stay ready in the background" Toggled="OnFlyoutOptionChanged" />
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="While it's closed" />
+                            <TextBlock x:Name="KeepLoadedDetail" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ComboBox x:Name="KeepLoadedBox" Grid.Column="1" Style="{StaticResource RowCombo}"
+                                  AutomationProperties.Name="While it's closed" SelectionChanged="OnFlyoutOptionChanged">
+                            <ComboBoxItem Content="Open faster" Tag="Fast" />
+                            <ComboBoxItem Content="Use less memory" Tag="Light" />
+                        </ComboBox>
                     </Grid>
                     <Border Style="{StaticResource RowDivider}" />
                     <Grid Style="{StaticResource SettingRow}">

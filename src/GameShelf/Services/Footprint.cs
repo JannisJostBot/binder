@@ -50,6 +50,17 @@ internal static class Footprint
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
     }
 
+    /// <summary>
+    /// "Open faster": the closed panel stays loaded, so nothing is collected. The working set is still trimmed:
+    /// with very low memory priority those pages are the first Windows reuses, and while it doesn't they come
+    /// back from RAM on open (measured: reopening takes ~3 ms either way).
+    /// </summary>
+    public static void Rest()
+    {
+        SetProcessWorkingSetSizeEx(GetCurrentProcess(), -1, -1, 0);
+        SetEfficiencyMode(true);
+    }
+
     /// <summary>Call when the panel opens.</summary>
     public static void Wake() => SetEfficiencyMode(false);
 

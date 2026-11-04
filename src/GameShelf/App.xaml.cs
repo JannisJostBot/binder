@@ -45,6 +45,7 @@ public sealed partial class App : Application
     private DispatcherQueue _dispatcher = null!;
     private MessageWindow? _messages;
     private MainWindow? _panel;
+    private MainWindow? _kept; // the closed flyout, hidden but loaded ("Open faster")
     private bool _quitting;
 
     // Clicking the tray icon first deactivates (and closes) the flyout, then reports the click: don't reopen.
@@ -184,10 +185,19 @@ public sealed partial class App : Application
         Footprint.Wake();
         if (_panel is null)
         {
-            _panel = new MainWindow();
-            _panel.Closed += OnPanelClosed;
-            _panel.Closing += () => _messages?.SetTrayActive(false);
-            _panel.Open();
+            if (_kept is { } kept)
+            {
+                _kept = null;
+                _panel = kept;
+                kept.Reopen();
+            }
+            else
+            {
+                _panel = new MainWindow();
+                _panel.Closed += OnPanelClosed;
+                _panel.Closing += () => _messages?.SetTrayActive(false);
+                _panel.Open();
+            }
             // The desktop panel is always there, so only the flyout lights the tray icon up.
             _messages?.SetTrayActive(Settings.DisplayMode == DisplayMode.Flyout);
         }
@@ -202,11 +212,28 @@ public sealed partial class App : Application
     {
         if (_panel is null || _panel != panel || _panel.IsClosing || Settings.DisplayMode == DisplayMode.Desktop) return;
         if (byClickAway) _closedByClickAwayAt = DateTime.UtcNow;
+        if (Settings.StayReady && Settings.KeepPanelLoaded && _panel.HideKept())
+        {
+            // Open faster: the panel stays loaded, hidden; only efficiency mode while it waits.
+            _kept = _panel;
+            _panel = null;
+            Footprint.Rest();
+            return;
+        }
         _panel.CloseAnimated();
+    }
+
+    /// <summary>Closes the kept (hidden) flyout, if any, so the next open builds a new one.</summary>
+    private void DropKept()
+    {
+        var kept = _kept;
+        _kept = null;
+        kept?.Close();
     }
 
     private void OnPanelClosed(object sender, WindowEventArgs e)
     {
+        if (ReferenceEquals(sender, _kept)) _kept = null;
         if (!ReferenceEquals(sender, _panel)) return;
         _panel = null;
         if (_quitting) return;
@@ -240,7 +267,7 @@ public sealed partial class App : Application
             _shrinkTimer.IsRepeating = false;
             _shrinkTimer.Tick += (_, _) =>
             {
-                if (_panel is null) Footprint.Shrink();
+                if (_panel is null && _kept is null) Footprint.Shrink();
             };
         }
         _shrinkTimer.Stop();
@@ -250,6 +277,7 @@ public sealed partial class App : Application
     /// <summary>Flyout ⇄ On the desktop: rebuild the panel window in the new mode.</summary>
     public void ApplyDisplayMode()
     {
+        DropKept();
         if (_panel is not null)
         {
             var panel = _panel;
@@ -314,6 +342,7 @@ public sealed partial class App : Application
         _quitting = true;
         CancelCountdown();
         _panel?.Close();
+        DropKept();
         _messages?.Dispose(); // removes the tray icon right away instead of leaving a ghost until hovered
         _messages = null;
         Exit();

@@ -51,6 +51,8 @@ public sealed partial class SettingsView : UserControl
                 : "Taken by another app: choose a different one";
             TraySwitch.IsOn = settings.TrayIcon;
             StayReadySwitch.IsOn = settings.StayReady;
+            Select(KeepLoadedBox, settings.KeepPanelLoaded ? "Fast" : "Light");
+            UpdateKeepLoaded();
             ClickAwaySwitch.IsOn = settings.CloseOnClickAway;
 
             Select(DelayBox, settings.HideDelaySeconds.ToString(CultureInfo.InvariantCulture));
@@ -180,8 +182,21 @@ public sealed partial class SettingsView : UserControl
     {
         if (_loading) return;
         _settings.StayReady = StayReadySwitch.IsOn;
+        _settings.KeepPanelLoaded = SelectedTag(KeepLoadedBox) == "Fast";
         _settings.CloseOnClickAway = ClickAwaySwitch.IsOn;
+        UpdateKeepLoaded();
         Change(SettingChange.Behavior);
+    }
+
+    /// <summary>The trade-off in words; the choice only matters while it stays ready in the background.</summary>
+    private void UpdateKeepLoaded()
+    {
+        KeepLoadedBox.IsEnabled = _settings.StayReady;
+        KeepLoadedDetail.Text = !_settings.StayReady
+            ? "Only while it stays ready in the background"
+            : _settings.KeepPanelLoaded
+                ? "Opens at once; stays loaded (up to ~200 MB, which Windows reclaims first). Games aren't affected: it exits while you play."
+                : "Frees all but a few MB, so it opens a moment slower. Games aren't affected: it exits while you play.";
     }
 
     private void OnSetupClick(object sender, RoutedEventArgs e) => SetupRequested?.Invoke();

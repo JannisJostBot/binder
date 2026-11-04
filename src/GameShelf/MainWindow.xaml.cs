@@ -143,6 +143,7 @@ public sealed partial class MainWindow : Window
     private int _framesBeforeShowing = 2;
     private int _framesAfterCovers = -1;
     private System.Diagnostics.Stopwatch? _coverWait;
+    private bool _shown; // uncloaked at least once
 
     /// <summary>
     /// Runs before each frame while the panel is hidden. After the first frame (the layout is known) only the
@@ -165,6 +166,7 @@ public sealed partial class MainWindow : Window
 
         CompositionTarget.Rendering -= OnFirstFrame;
         NativeWindow.Cloak(_hwnd, false);
+        _shown = true;
         if (_startSlide is { } slide)
         {
             _startSlide = null;
@@ -180,7 +182,7 @@ public sealed partial class MainWindow : Window
 
     private const double SlideDistance = 40; // effective pixels, scaled to the monitor
     private const double SlideMilliseconds = 300;
-    private volatile bool _slideCancelled;
+    private volatile int _slideGeneration; // bumped to stop a running slide (closing, or hiding to open again)
     private Action? _startSlide;
 
     /// <summary>
@@ -202,6 +204,7 @@ public sealed partial class MainWindow : Window
         NativeWindow.MoveTo(_hwnd, target.Left + dx, target.Top);
         OpeningGate.Hold(); // a library rescan that finishes mid-slide waits for it to end (see OpeningGate)
         var hwnd = _hwnd;
+        int generation = _slideGeneration;
         _startSlide = () =>
         {
             // One step per display refresh: DwmFlush waits for the compositor's next frame (240 per second on a
@@ -209,7 +212,7 @@ public sealed partial class MainWindow : Window
             var thread = new Thread(() =>
             {
                 var clock = System.Diagnostics.Stopwatch.StartNew();
-                while (!_slideCancelled)
+                while (generation == _slideGeneration)
                 {
                     double t = Math.Min(1, clock.Elapsed.TotalMilliseconds / SlideMilliseconds);
                     double eased = Decelerate(t);
@@ -283,6 +286,37 @@ public sealed partial class MainWindow : Window
         _dispatcher.TryEnqueue(DispatcherQueuePriority.Low, Close);
     }
 
+    /// <summary>
+    /// "Open faster": hides the panel but keeps it loaded, covers and all, for <see cref="Reopen"/>. False (and
+    /// nothing done) if it hasn't been on screen yet; close it instead then.
+    /// </summary>
+    public bool HideKept()
+    {
+        if (IsClosing || !_shown) return false;
+        IsClosing = true;
+        Closing?.Invoke();
+        _slideGeneration++;
+        AppWindow.Hide();
+        _wasActive = false;
+        // It comes back like a new panel would: on the grid, not on the last game or settings page.
+        if (Shelf.Visibility != Visibility.Visible && SetupPage.Visibility != Visibility.Visible) ShowShelf();
+        return true;
+    }
+
+    /// <summary>Shows a panel kept by <see cref="HideKept"/>: already drawn, so it only needs placing and sliding in.</summary>
+    public void Reopen()
+    {
+        IsClosing = false;
+        PlaceOnScreen();
+        if (IsFlyout) PrepareSlide();
+        Activate();
+        if (_startSlide is { } slide)
+        {
+            _startSlide = null;
+            slide();
+        }
+    }
+
     private void OnClosed(object sender, WindowEventArgs args)
     {
         if (!IsClosing)
@@ -290,7 +324,7 @@ public sealed partial class MainWindow : Window
             IsClosing = true;
             Closing?.Invoke();
         }
-        _slideCancelled = true;
+        _slideGeneration++;
         OpeningGate.Release();
         CoverQueue.ReleaseHold();
         CompositionTarget.Rendering -= OnFirstFrame;
