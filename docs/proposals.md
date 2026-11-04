@@ -1,8 +1,9 @@
 # Planned features (approved by the owner)
 
 Status: **approved specs. Milestones 8–10 are built; 11–15 are still to do** (see the progress table in §0).
-- **Designs:** on the design canvas, https://claude.ai/artifact/9tZEP6HSrETxwGwpSbMg1Q, on the pages "Proposals" (boards 1–5)
-  and "More features" (boards 6–17). Board numbers are given in each section below.
+- **Designs:** on the design canvas, https://claude.ai/artifact/9tZEP6HSrETxwGwpSbMg1Q. Pages by area ("Shelf",
+  "Game detail", "Window, setup & settings"), plus "Still to build" with the open milestones in build order. Board
+  numbers (1–17) are given in each section below and stay in the board titles, with "built" or the milestone.
 - **Baseline:** written against the code at `0eacc65` (branch `milestone-6-sources`: milestones 1–6 done).
 
 Every item follows the project brief: zero cost while idle or gaming, no third-party packages, nothing that can

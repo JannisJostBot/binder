@@ -19,7 +19,7 @@ This app must perform very well and consume as little CPU, RAM, disk I/O and GPU
 - Measure, don't assume: check CPU, memory and startup time after each milestone, and report the numbers. If a change regresses them, fix it before moving on.
 
 Design reference (owner's private canvas, open it in a browser): https://claude.ai/artifact/9tZEP6HSrETxwGwpSbMg1Q
-Boards: "Desktop with widget", "Game detail", "Settings", "Launch → hide → return".
+Pages: "Shelf", "Game detail", "Window, setup & settings" (built designs) and "Still to build" (open milestones, in build order). Board titles carry the board number used in `docs/proposals.md` and "built" or the milestone.
 
 ---
 
@@ -205,7 +205,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 
 ## Planned additions
 
-Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas's "Proposals" and "More features" pages. **Read section 0 of that file before starting the next milestone** (its progress table says which one: milestones 8–10 are done, 11 Crash detection is next). It lists what is new, what changes existing code, and which owner decisions override this brief:
+Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas; the open ones are on its "Still to build" page. **Read section 0 of that file before starting the next milestone** (its progress table says which one: milestones 8–10 are done, 11 Crash detection is next). It lists what is new, what changes existing code, and which owner decisions override this brief:
 
 - Game mode's separate elevated helper is an approved exception to "never ask for admin rights". The widget and the watcher still never elevate.
 - Cover badges show the launcher's icon instead of text, and manually added games get no badge.
