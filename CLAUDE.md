@@ -53,13 +53,16 @@ GameShelf.sln
                             ShortcutFile (.lnk/.url reading), ShortcutImporter (import, restore, manual add),
                             LaunchOptions (arguments, Steam run links, "Start with"), GameScan (engine and anti-cheat
                             from file names, bounded, cached per game), AntiCheat (requirements and conflict tables),
-                            PlaytimeStats (this week, weekly and monthly playtime from our sessions)
-    Models/                 Game, Session, Settings, ImportedShortcut
+                            PlaytimeStats (this week, weekly and monthly playtime from our sessions),
+                            CrashAnalysis (milestone 11: exit code + Windows events -> ending, culprit, advice, copied texts)
+    Models/                 Game, Session, Settings, ImportedShortcut, CrashRecord
     Services/               Launcher, CoverCache, Storage, DesktopLayer, Autostart, GameActions,
                             Placement (pure pixel math), Monitors (displays, auto-hide taskbars), ShellNotify, ErrorLog,
-                            PcChecks (Secure Boot, TPM, test signing, drivers, conflicting programs; read-only, no admin)
+                            PcChecks (Secure Boot, TPM, test signing, drivers, conflicting programs; read-only, no admin),
+                            CrashLog (event log 1000/1002/4101 for one session), CrashStore (crashes.json), PcInfo
+                            (Windows, graphics, memory; read only when copying), GameLogs (Unity/Unreal log files)
     Views/                  ShelfView, DetailView, SettingsView, ImportView, SetupView (the launch toast lives in MainWindow),
-                            BarChart (the playtime charts), ModePreview (display mode pictures)
+                            BarChart (the playtime charts), ModePreview (display mode pictures), CrashCard (shelf and detail)
   src/GameShelf.Watcher/    Program.cs only
   src/GameShelf.Setup/      GameShelfSetup.exe: per-user installer, updater and uninstaller (Native AOT, task dialogs)
   tests/GameShelf.Tests/    plain console unit tests for the non-UI code (no test framework packages)
@@ -72,7 +75,7 @@ GameShelf.sln
   docs/installer.md         how to build, install, update and uninstall, and how the installer works
 ```
 
-Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions.json`, `imported-shortcuts.json`, and the `Shortcuts\` folder imported shortcuts are moved into). Covers are cached in `%LOCALAPPDATA%\GameShelf\covers\`.
+Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions.json`, `imported-shortcuts.json`, `crashes.json`, and the `Shortcuts\` folder imported shortcuts are moved into). Covers are cached in `%LOCALAPPDATA%\GameShelf\covers\`.
 
 ## Core flow: launch → hide → return
 

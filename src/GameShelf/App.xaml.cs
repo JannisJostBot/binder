@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using GameShelf.Models;
 using GameShelf.Services;
 using Microsoft.UI.Dispatching;
@@ -10,6 +11,8 @@ public sealed class AppState
 {
     public List<Game> Games { get; set; } = [];
     public List<Session> Sessions { get; set; } = [];
+    /// <summary>Crash checks of sessions that ended with an error (crashes.json, milestone 11).</summary>
+    public List<CrashRecord> Crashes { get; set; } = [];
 
     /// <summary>The stores are scanned once per run (and on Refresh), not every time the flyout opens.</summary>
     public bool Scanned { get; set; }
@@ -84,6 +87,7 @@ public sealed partial class App : Application
         Autostart.UpdatePathIfEnabled(); // the app may have been moved, or the entry predates --background
         State.Games = Storage.LoadLibrary();
         State.Sessions = Storage.LoadSessions();
+        State.Crashes = Storage.LoadCrashes();
 
         _messages = new MessageWindow();
         _messages.Command += HandleCommand;
@@ -121,6 +125,7 @@ public sealed partial class App : Application
             if (Settings.DisplayMode == DisplayMode.Desktop) OpenPanel();
             else _panel?.Returned();
             if (firstStart && _panel is null) Footprint.Shrink();
+            _ = CheckCrashesAsync(returnedGame: notice.GameId);
             return;
         }
         if (notice is { NotDetected: true })
@@ -134,6 +139,32 @@ public sealed partial class App : Application
         else if (background && firstStart) Footprint.Shrink(); // started with Windows: wait in the tray
         else if (firstStart) OpenPanel(); // started from the Start menu or a pin: show it
         else TogglePanel();
+        if (firstStart) _ = CheckCrashesAsync(returnedGame: null); // sessions that ended while we weren't running
+    }
+
+    /// <summary>
+    /// Checks sessions that ended with an error against the Windows logs (milestone 11), off the UI thread, once
+    /// each. A problem with the game that just ended opens the panel with its crash card; any other unseen one
+    /// shows the next time the panel is open.
+    /// </summary>
+    private async Task CheckCrashesAsync(string? returnedGame)
+    {
+        var known = State.Crashes;
+        var sessions = State.Sessions;
+        var games = State.Games;
+        try
+        {
+            State.Crashes = await Task.Run(() => CrashStore.Update(known, sessions, games));
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ExternalException)
+        {
+            ErrorLog.Write(e, "crash check");
+            return;
+        }
+        if (_quitting) return;
+        var unseen = CrashStore.Unseen(State.Crashes, State.Sessions);
+        if (unseen is not null && unseen.GameId == returnedGame) OpenPanel();
+        _panel?.CrashesChecked(unseen);
     }
 
     /// <summary>

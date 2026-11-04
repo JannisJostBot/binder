@@ -13,6 +13,7 @@ namespace GameShelf.Services;
 [JsonSerializable(typeof(List<Session>))]
 [JsonSerializable(typeof(Settings))]
 [JsonSerializable(typeof(List<ImportedShortcut>))]
+[JsonSerializable(typeof(List<CrashRecord>))]
 internal sealed partial class StorageJsonContext : JsonSerializerContext;
 
 /// <summary>JSON persistence in %APPDATA%\GameShelf. Source-generated, no reflection.</summary>
@@ -28,6 +29,7 @@ public static class Storage
     private static string SettingsPath => Path.Combine(DataDir, "settings.json");
     private static string SessionsPath => Path.Combine(DataDir, "sessions.json");
     private static string ImportedPath => Path.Combine(DataDir, "imported-shortcuts.json");
+    private static string CrashesPath => Path.Combine(DataDir, "crashes.json");
 
     public static List<Game> LoadLibrary() => Load(LibraryPath, StorageJsonContext.Default.ListGame) ?? [];
     public static void SaveLibrary(List<Game> games) => Save(LibraryPath, games, StorageJsonContext.Default.ListGame);
@@ -36,6 +38,9 @@ public static class Storage
     public static void SaveSettings(Settings s) => Save(SettingsPath, s, StorageJsonContext.Default.Settings);
 
     public static List<Session> LoadSessions() => Load(SessionsPath, StorageJsonContext.Default.ListSession) ?? [];
+
+    public static List<CrashRecord> LoadCrashes() => Load(CrashesPath, StorageJsonContext.Default.ListCrashRecord) ?? [];
+    public static void SaveCrashes(List<CrashRecord> list) => Save(CrashesPath, list, StorageJsonContext.Default.ListCrashRecord);
 
     public static List<ImportedShortcut> LoadImportedShortcuts() =>
         Load(ImportedPath, StorageJsonContext.Default.ListImportedShortcut) ?? [];

@@ -70,6 +70,7 @@ static class Tests
         PayloadTests();
         LaunchTests(dir);
         PlaytimeTests();
+        CrashTests();
 
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");
@@ -404,6 +405,99 @@ static class Tests
         Check(AntiCheat.Requirements([AntiCheatKind.Javelin], "Battlefield 6", true).Contains(PcRequirement.SecureBoot), "Battlefield 6 exception adds Secure Boot");
         Check(AntiCheat.Requirements([], "Battlefield 6", true).Count == 0, "no anti-cheat, no requirements");
     }
+    /// <summary>Milestone 11: exit codes, classification, plain-words advice, the copied texts' privacy, event parsing.</summary>
+    static void CrashTests()
+    {
+        // Watcher: which exit code tells the most, and which processes are crash reporters.
+        Check(GameShelf.Watcher.Program.MostTelling([0, 1, 0xC0000005, 0]) == 2, "a failure code beats 0 and 1");
+        Check(GameShelf.Watcher.Program.MostTelling([0, 1]) == 1, "a nonzero code beats 0");
+        Check(GameShelf.Watcher.Program.MostTelling([]) == -1, "no processes, no exit code");
+        Check(GameShelf.Watcher.Program.IsCrashReporter("CrashReportClient.exe") && GameShelf.Watcher.Program.IsCrashReporter("UnityCrashHandler64.exe")
+              && GameShelf.Watcher.Program.IsCrashReporter("CrashSender1403.exe"), "engine crash reporters recognized");
+        Check(!GameShelf.Watcher.Program.IsCrashReporter("Game-Win64-Shipping.exe"), "the game itself isn't a crash reporter");
+
+        const string folder = @"C:\Users\Alice\Games\Space Game";
+        var start = new DateTimeOffset(2026, 11, 4, 20, 0, 0, TimeSpan.FromHours(1));
+        Session S(uint? code, double minutes, bool reporter = false) => new()
+        {
+            GameId = "steam:1", Start = start, End = start.AddMinutes(minutes), ExitCode = code, Exe = "SpaceGame.exe", CrashReporter = reporter,
+        };
+        WindowsEvent Crash(string app, string module, string code, string? modulePath = null, double atMinutes = 72) =>
+            new(1000, "Application Error", start.AddMinutes(atMinutes), new Dictionary<string, string>
+            {
+                ["AppName"] = Path.GetFileName(app), ["AppPath"] = app, ["ModuleName"] = module,
+                ["ModulePath"] = modulePath ?? @"C:\Windows\System32\" + module, ["ExceptionCode"] = code,
+            });
+        var gameExe = folder + @"\SpaceGame.exe";
+
+        var nvidia = CrashAnalysis.Analyze(S(0xC0000005, 72), folder, [Crash(gameExe, "nvwgf2umx.dll", "c0000005")]);
+        Check(nvidia.Ending == GameEnding.Crashed && nvidia.Culprit == CrashCulprit.NvidiaDriver && nvidia.ErrorCode == 0xC0000005,
+            "a crash in nvwgf2umx.dll is the NVIDIA driver");
+        Check(!CrashAnalysis.OffersAiPrompt(nvidia) && CrashAnalysis.Explanation(nvidia).Contains("NVIDIA"), "known culprits get advice, not the AI prompt");
+        Check(CrashAnalysis.Title("Space Game", nvidia) == "Space Game crashed after 1 h 12 min", "crash title with the play time");
+
+        var other = CrashAnalysis.Analyze(S(0xC0000005, 72), folder, [Crash(@"C:\Program Files\Other\Other.exe", "nvwgf2umx.dll", "c0000005")]);
+        Check(other.Ending == GameEnding.ClosedUnexpectedly && other.Culprit == CrashCulprit.Unknown, "another app's crash event isn't ours");
+        var late = CrashAnalysis.Analyze(S(0xC0000005, 72), folder, [Crash(gameExe, "nvwgf2umx.dll", "c0000005", atMinutes: 200)]);
+        Check(late.Ending == GameEnding.ClosedUnexpectedly, "an event long after the session isn't ours");
+
+        Check(CrashAnalysis.Analyze(S(1, 30), folder, []).Ending == GameEnding.Normal, "exit code 1 alone is a normal ending");
+        Check(CrashAnalysis.Analyze(S(0xC000013A, 30), folder, []).Ending == GameEnding.Normal, "a closed console window isn't a crash");
+        Check(CrashAnalysis.Analyze(S(0xC0000409, 30, reporter: true), folder, []).Ending == GameEnding.Crashed, "failure code plus crash reporter is a crash");
+        var unexpected = CrashAnalysis.Analyze(S(0xC0000409, 30), folder, []);
+        Check(unexpected.Ending == GameEnding.ClosedUnexpectedly && CrashAnalysis.OffersAiPrompt(unexpected), "a failure code alone is softer, with the AI prompt");
+
+        var runtime = CrashAnalysis.Analyze(S(0xC0000135, 0.05), folder, []);
+        Check(runtime.Ending == GameEnding.StartFailed && runtime.Culprit == CrashCulprit.MissingRuntime && CrashAnalysis.OffersRedist(runtime),
+            "a missing DLL right after starting points to the Visual C++ Redistributable");
+        Check(CrashAnalysis.Title("Space Game", runtime) == "Space Game closed right after starting", "start-failure title");
+
+        var reshade = CrashAnalysis.Analyze(S(0xC0000005, 72), folder, [Crash(gameExe, "dxgi.dll", "c0000005", folder + @"\dxgi.dll")]);
+        Check(reshade.Culprit == CrashCulprit.Overlay, "a dxgi.dll in the game folder is a mod");
+        var systemDxgi = CrashAnalysis.Analyze(S(0xC0000005, 72), folder, [Crash(gameExe, "dxgi.dll", "c0000005")]);
+        Check(systemDxgi.Culprit == CrashCulprit.Unknown, "Windows' own dxgi.dll isn't blamed on a mod");
+        var steamOverlay = CrashAnalysis.Analyze(S(0xC0000005, 72), folder, [Crash(gameExe, "GameOverlayRenderer64.dll", "c0000005")]);
+        Check(steamOverlay.Culprit == CrashCulprit.Overlay, "the Steam overlay is an overlay");
+        var reset = CrashAnalysis.Analyze(S(0x887A0006, 72), folder,
+            [new WindowsEvent(4101, "Display", start.AddMinutes(71), new Dictionary<string, string>())]);
+        Check(reset.Culprit == CrashCulprit.GraphicsDevice && reset.DriverReset && CrashAnalysis.AlsoAtThatTime(reset)!.Contains("display driver"),
+            "a display driver reset points to the graphics card");
+        var byName = CrashAnalysis.Analyze(S(0xC0000005, 72), null, [Crash(gameExe, "vcruntime140.dll", "c0000005")]);
+        Check(byName.Culprit == CrashCulprit.CppRuntime, "without an install folder the exe name matches");
+
+        Check(CrashAnalysis.NeedsCheck(S(0xC0000005, 60)) && CrashAnalysis.NeedsCheck(S(1, 0.02)) && !CrashAnalysis.NeedsCheck(S(0, 60))
+              && !CrashAnalysis.NeedsCheck(S(1, 60)) && !CrashAnalysis.NeedsCheck(S(null, 60)), "only sessions that ended with an error are checked");
+
+        Check(CrashAnalysis.Pattern([nvidia, null, reset]) == "2 crashes in the last 3 sessions, both in the graphics driver.", "pattern line names a shared cause");
+        Check(CrashAnalysis.Pattern([nvidia, null, steamOverlay]) == "2 crashes in the last 3 sessions.", "pattern line without a shared cause");
+        Check(CrashAnalysis.Pattern([nvidia, null, null]) is null, "one crash is no pattern");
+
+        // The copied texts: no user name, no paths, the facts that matter.
+        var pc = new PcFacts("Windows 11 Pro 24H2", ["NVIDIA GeForce RTX 5090 with driver 566.36"], 32);
+        var prompt = CrashAnalysis.AiPrompt("Space Game", unexpected, pc, 2, 10);
+        var report = CrashAnalysis.BugReport("Space Game", "Steam", reshade, pc, 1, 4);
+        foreach (var (text, name) in new[] { (prompt, "AI prompt"), (report, "bug report") })
+            Check(!text.Contains("Alice") && !text.Contains(@":\") && !text.Contains(@"\\"), $"{name} has no user name or paths");
+        Check(prompt.Contains("0xC0000409") && prompt.Contains("SpaceGame.exe") && prompt.Contains("32 GB") && prompt.Contains("2 times in my last 10 sessions")
+              && prompt.EndsWith("starting with the easiest fix?"), "AI prompt has the error, file, PC and how often");
+        Check(report.StartsWith("Game: Space Game (Steam version)") && report.Contains("in dxgi.dll") && report.Contains("first time in the last 4 sessions")
+              && report.EndsWith("No personal data or file paths included.)"), "bug report has the game, store, error file and how often");
+
+        Check(CrashAnalysis.DriverVersion("NVIDIA GeForce RTX 5090", "32.0.15.6636") == "566.36", "NVIDIA driver version as NVIDIA shows it");
+        Check(CrashAnalysis.DriverVersion("AMD Radeon(TM) Graphics", "31.0.24033.1003") == "31.0.24033.1003", "other driver versions unchanged");
+
+        // Event XML as EvtRender gives it (single quotes, entities), and bad input.
+        const string xml = "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Application Error' Guid='{a0e9b465}'/>" +
+            "<EventID>1000</EventID><TimeCreated SystemTime='2026-11-04T17:08:04.7863801Z'/></System><EventData>" +
+            "<Data Name='AppName'>R&amp;D.exe</Data><Data Name='ExceptionCode'>c000027b</Data><Data Name='PackageFullName'></Data><Data Name='Empty'/></EventData></Event>";
+        var parsed = CrashAnalysis.ParseEventXml(xml);
+        Check(parsed is { Id: 1000, Provider: "Application Error" } && parsed.Data["AppName"] == "R&D.exe" && parsed.Data["ExceptionCode"] == "c000027b"
+              && parsed.Data["Empty"] == "" && parsed.Time == new DateTimeOffset(2026, 11, 4, 17, 8, 4, TimeSpan.Zero).AddTicks(7863801),
+            "event XML parsed: provider, id, time, named values, entities");
+        Check(CrashAnalysis.ParseEventXml("<Event><System>") is null && CrashAnalysis.ParseEventXml("") is null
+              && CrashAnalysis.ParseEventXml(new string('x', 70000)) is null, "malformed or oversized event XML rejected");
+    }
+
     /// <summary>Milestone 10: "This week" and the playtime chart, split at midnight, week and month boundaries.</summary>
     static void PlaytimeTests()
     {

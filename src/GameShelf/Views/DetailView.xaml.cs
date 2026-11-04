@@ -29,6 +29,12 @@ public sealed partial class DetailView : UserControl
     public DetailView()
     {
         InitializeComponent();
+        SessionCrash.PlayRequested += _ => Raise(GameAction.Play);
+        SessionCrash.Dismissed += record =>
+        {
+            SessionCrash.Visibility = Visibility.Collapsed;
+            CrashStore.MarkSeen(App.State.Crashes, record);
+        };
     }
 
     /// <summary>The game being shown, or null.</summary>
@@ -83,25 +89,19 @@ public sealed partial class DetailView : UserControl
         LastPlayedText.Text = mine.Count == 0 ? "Never" : Format.RelativeDay(mine[0].End);
         SizeText.Text = game.SizeOnDisk > 0 ? game.SizeText : "—";
 
+        var crashes = App.State.Crashes;
+        if (SessionCrash.Record is { } open && open.GameId != game.Id) SessionCrash.Visibility = Visibility.Collapsed;
         SessionsList.Children.Clear();
         foreach (var session in mine.Take(RecentSessionCount))
         {
             if (SessionsList.Children.Count > 0) SessionsList.Children.Add(new Border { Style = (Style)Application.Current.Resources["RowDivider"] });
-            var row = new Grid { MinHeight = 40 };
-            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            row.Children.Add(new TextBlock { Text = Format.SessionStart(session.Start), VerticalAlignment = VerticalAlignment.Center });
-            var length = new TextBlock
-            {
-                Text = Format.Duration(session.End - session.Start),
-                VerticalAlignment = VerticalAlignment.Center,
-                Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
-            };
-            Grid.SetColumn(length, 1);
-            row.Children.Add(length);
-            SessionsList.Children.Add(row);
+            SessionsList.Children.Add(SessionRow(game, session, CrashStore.For(crashes, session), sessions, crashes));
         }
         NoSessionsText.Visibility = mine.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        var pattern = CrashAnalysis.Pattern(mine.Take(10).Select(s => CrashStore.For(crashes, s)).ToList());
+        CrashPatternText.Text = pattern ?? "";
+        CrashPatternText.Visibility = pattern is null ? Visibility.Collapsed : Visibility.Visible;
 
         _mine = mine;
         PlaytimeSection.Visibility = mine.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
@@ -109,6 +109,65 @@ public sealed partial class DetailView : UserControl
     }
 
 private List<Session> _mine = [];
+
+    /// <summary>
+    /// One session: a warning icon and a Details link when it crashed, a check when Game Shelf knows it ended
+    /// normally (sessions from before crash checks get neither), when it started and how long it lasted.
+    /// </summary>
+    private Grid SessionRow(Game game, Session session, CrashRecord? crash, IReadOnlyList<Session> sessions, IReadOnlyList<CrashRecord> crashes)
+    {
+        var secondary = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["TextFillColorSecondaryBrush"];
+        var row = new Grid { MinHeight = 40, ColumnSpacing = 10 };
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(16) });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        bool problem = crash is { IsProblem: true };
+        bool knownNormal = !problem && session.ExitCode is not null;
+        if (problem || knownNormal)
+        {
+            var icon = new FontIcon
+            {
+                Glyph = problem ? "" : "",
+                FontSize = 14,
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources[problem ? "SystemFillColorCautionBrush" : "SystemFillColorSuccessBrush"],
+            };
+            var label = !problem ? "Closed normally" : crash!.Ending switch
+            {
+                GameEnding.StartFailed => "Closed right after starting",
+                GameEnding.ClosedUnexpectedly => "Closed unexpectedly",
+                _ => "Crashed",
+            };
+            AutomationProperties.SetName(icon, label);
+            ToolTipService.SetToolTip(icon, label);
+            row.Children.Add(icon);
+        }
+
+        var start = new TextBlock { Text = Format.SessionStart(session.Start), VerticalAlignment = VerticalAlignment.Center };
+        Grid.SetColumn(start, 1);
+        row.Children.Add(start);
+
+        var length = new TextBlock { Text = Format.Duration(session.End - session.Start), VerticalAlignment = VerticalAlignment.Center, Foreground = secondary };
+        Grid.SetColumn(length, 2);
+        row.Children.Add(length);
+
+        if (problem)
+        {
+            var details = new HyperlinkButton { Content = "Details", Padding = new Thickness(6, 2, 6, 2), VerticalAlignment = VerticalAlignment.Center };
+            AutomationProperties.SetName(details, $"Details of the session on {Format.SessionStart(session.Start)}");
+            details.Click += (_, _) =>
+            {
+                SessionCrash.Show(game, crash!, sessions, crashes);
+                SessionCrash.Visibility = Visibility.Visible;
+                SessionCrash.StartBringIntoView();
+            };
+            Grid.SetColumn(details, 3);
+            row.Children.Add(details);
+        }
+        return row;
+    }
 
     /// <summary>Hours per week for 8 weeks, or per month for 12, with this period's total above the bars.</summary>
     private void ShowPlaytimeChart()

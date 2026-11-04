@@ -1,6 +1,6 @@
 # Planned features (approved by the owner)
 
-Status: **approved specs. Milestones 8–10 are built; 11–15 are still to do** (see the progress table in §0).
+Status: **approved specs. Milestones 8–11 are built; 12–15 are still to do** (see the progress table in §0).
 - **Designs:** on the design canvas, https://claude.ai/artifact/9tZEP6HSrETxwGwpSbMg1Q. Pages by area ("Shelf",
   "Game detail", "Window, setup & settings"), plus "Still to build" with the open milestones in build order. Board
   numbers (1–17) are given in each section below and stay in the board titles, with "built" or the milestone.
@@ -20,8 +20,8 @@ break the user's system.
 | 8 Quick wins | §1 app icon, §2 fallback covers, §3 launcher icons, §7 sort / Favorites chip / cover size | Done |
 | 9 Window behavior | §5 flyout, tray, shortcut, stay ready; §6 first-run setup | Done |
 | 10 Detail additions | §7 "This week", §9 playtime chart, launch options, anti-cheat | Done. "This week" was later merged with "Continue playing" into one switchable slot (board 16, see `CLAUDE.md`) |
-| 11 Crash detection | §10 | **Next.** Includes the "Copy AI prompt" and "Copy bug report" actions (board 13) |
-| 12 More launchers | §8 | Partly: EA app and Ubisoft Connect are done; Xbox, Battle.net, Riot, Rockstar, Amazon, itch, Humble and Meta are not |
+| 11 Crash detection | §10 | Done. With "Come back" off the crash card shows the next time the panel opens instead of a toast (Game mode's "Restored" toast doesn't exist yet); memory is the installed amount (`GetPhysicallyInstalledSystemMemory`) |
+| 12 More launchers | §8 | **Next.** Partly: EA app and Ubisoft Connect are done; Xbox, Battle.net, Riot, Rockstar, Amazon, itch, Humble and Meta are not |
 | 13 Controller | §4 | To do |
 | 14 Game mode | §11 | To do |
 | 15 Free up space | §12 | To do |
@@ -439,7 +439,7 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
     Shelf. No personal data or file paths included."
   - **Where the PC facts come from (no admin, no network):** Windows version from
     `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion` (`ProductName`, `DisplayVersion`); graphics card and driver
-    from the display adapter class key (`DriverDesc`, `DriverVersion`); memory from `GlobalMemoryStatusEx`.
+    from the display adapter class key (`DriverDesc`, `DriverVersion`); installed memory from `GetPhysicallyInstalledSystemMemory`.
   - **Privacy:** never include the user name, user-profile paths or full install paths (file names only), and no
     other running programs. Nothing is sent anywhere; the user decides where to paste.
 - **If "Come back" is off:** show a "Restored"-style toast (§11) with Details instead.

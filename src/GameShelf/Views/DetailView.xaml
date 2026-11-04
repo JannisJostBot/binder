@@ -151,6 +151,8 @@
 
             <!-- Recent sessions (tracked by the watcher) -->
             <TextBlock Style="{StaticResource SectionLabel}" Text="Recent sessions" />
+            <!-- A session's crash, opened from its "Details" link (milestone 11) -->
+            <v:CrashCard x:Name="SessionCrash" Margin="20,0,20,8" Visibility="Collapsed" />
             <Border Style="{StaticResource Card}">
                 <StackPanel>
                     <StackPanel x:Name="SessionsList" AutomationProperties.Name="Recent sessions" />
@@ -159,6 +161,8 @@
                                Text="No sessions yet. Playtime is tracked when you start the game from the shelf." />
                 </StackPanel>
             </Border>
+            <TextBlock x:Name="CrashPatternText" Margin="4,6,0,0" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" />
 
             <!-- Per-game settings -->
             <TextBlock Style="{StaticResource SectionLabel}" Text="This game only" />

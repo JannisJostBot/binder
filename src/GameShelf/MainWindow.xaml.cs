@@ -91,6 +91,13 @@ public sealed partial class MainWindow : Window
         };
         Shelf.SetFlyout(IsFlyout, App.Pinned);
         Shelf.SetData(_games, _sessions, App.Settings);
+        Shelf.CrashPlayRequested += game =>
+        {
+            CrashSeen();
+            Play(game);
+        };
+        Shelf.CrashDismissed += _ => CrashSeen();
+        if (CrashStore.Unseen(App.State.Crashes, _sessions) is { } crash) ShowCrash(crash);
         if (!App.Settings.SetupDone) ShowSetup();
 
         // The launch countdown runs in App (it survives the flyout closing); show it while we're open.
@@ -1015,6 +1022,27 @@ public sealed partial class MainWindow : Window
         ShowToast("Couldn't detect the game",
             $"{name} didn't appear to start, or runs from outside its install folder. Set its process in the game's settings.",
             "OK");
+    }
+
+    /// <summary>The crash check finished: refresh the session icons, and show the card of an unseen problem.</summary>
+    public void CrashesChecked(CrashRecord? unseen)
+    {
+        RefreshViews();
+        if (unseen is not null && !(Shelf.ShownCrash is { } shown && shown.GameId == unseen.GameId && shown.Start == unseen.Start))
+            ShowCrash(unseen);
+    }
+
+    private void ShowCrash(CrashRecord record)
+    {
+        if (FindGame(record.GameId) is not { } game) return;
+        Shelf.ShowCrash(game, record, _sessions, App.State.Crashes);
+    }
+
+    /// <summary>Dismissed or played again: the card goes and won't come back.</summary>
+    private void CrashSeen()
+    {
+        if (Shelf.ShownCrash is { } record) CrashStore.MarkSeen(App.State.Crashes, record);
+        Shelf.HideCrash();
     }
 
     /// <summary>A game ended while we were still open (e.g. after "Keep open"): show the new session.</summary>

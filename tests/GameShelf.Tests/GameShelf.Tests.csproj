@@ -35,6 +35,7 @@
     <Compile Include="..\..\src\GameShelf\Library\GameScan.cs" Link="Linked\Library\GameScan.cs" />
     <Compile Include="..\..\src\GameShelf\Library\AntiCheat.cs" Link="Linked\Library\AntiCheat.cs" />
     <Compile Include="..\..\src\GameShelf\Library\PlaytimeStats.cs" Link="Linked\Library\PlaytimeStats.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\CrashAnalysis.cs" Link="Linked\Library\CrashAnalysis.cs" />
     <Compile Include="..\..\src\GameShelf\Views\Format.cs" Link="Linked\Views\Format.cs" />
     <Compile Include="..\..\src\GameShelf.Watcher\Program.cs" Link="Linked\Watcher\Program.cs" />
     <Compile Include="..\..\src\GameShelf.Setup\PayloadList.cs" Link="Linked\Setup\PayloadList.cs" />

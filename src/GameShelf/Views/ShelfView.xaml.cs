@@ -176,6 +176,12 @@ public sealed partial class ShelfView : UserControl
     /// </summary>
     private void UpdateSpotlight(bool searching)
     {
+        if (_crashShown)
+        {
+            Crash.Visibility = searching ? Visibility.Collapsed : Visibility.Visible;
+            Spotlight.Visibility = Visibility.Collapsed;
+            return;
+        }
         bool hasContinue = _continueGame is not null;
         Spotlight.Visibility = !searching && (hasContinue || _hasWeek) ? Visibility.Visible : Visibility.Collapsed;
         if (Spotlight.Visibility == Visibility.Collapsed) return;
@@ -192,6 +198,38 @@ public sealed partial class ShelfView : UserControl
             _updatingSpotlight = false;
         }
         if (!showWeek && !ReferenceEquals(ContinueArt.Game, _continueGame)) ContinueArt.Game = _continueGame;
+    }
+
+    private bool _crashShown;
+
+    /// <summary>The crash card instead of the top slot, until <see cref="HideCrash"/> (dismissed or played again).</summary>
+    public void ShowCrash(Game game, CrashRecord record, IReadOnlyList<Session> sessions, IReadOnlyList<CrashRecord> records)
+    {
+        Crash.Show(game, record, sessions, records);
+        _crashShown = true;
+        UpdateSpotlight(searching: SearchBox.Text.Length > 0);
+    }
+
+    public void HideCrash()
+    {
+        if (!_crashShown) return;
+        _crashShown = false;
+        Crash.Visibility = Visibility.Collapsed;
+        UpdateSpotlight(searching: SearchBox.Text.Length > 0);
+    }
+
+    public CrashRecord? ShownCrash => _crashShown ? Crash.Record : null;
+
+    public event Action<Game>? CrashPlayRequested
+    {
+        add => Crash.PlayRequested += value;
+        remove => Crash.PlayRequested -= value;
+    }
+
+    public event Action<CrashRecord>? CrashDismissed
+    {
+        add => Crash.Dismissed += value;
+        remove => Crash.Dismissed -= value;
     }
 
     private void OnSpotlightChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)

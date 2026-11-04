@@ -49,6 +49,9 @@
             </DropDownButton>
         </Grid>
 
+        <!-- After a crash (milestone 11, board 13) the crash card takes the top slot until it's dismissed. -->
+        <v:CrashCard x:Name="Crash" Grid.Row="3" Visibility="Collapsed" />
+
         <!-- One fixed-height slot (board 16): the "Continue playing" hero banner or "This week", switched in the
              corner and remembered, so switching never moves the grid. Hidden while searching. -->
         <Grid x:Name="Spotlight" Grid.Row="3" Height="168" CornerRadius="{ThemeResource OverlayCornerRadius}"
