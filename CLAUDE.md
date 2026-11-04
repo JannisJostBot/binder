@@ -65,6 +65,7 @@ GameShelf.sln
   tests/GameShelf.Tests/    plain console unit tests for the non-UI code (no test framework packages)
   tests/smoke.ps1           Windows UI smoke test run by CI (see .github/workflows/ci.yml)
   tests/setup-test.ps1      CI test of the installer: install, update while running, uninstall
+  tools/make-tray-icons.ps1  draws the tray icon frames (run after changing the logo)
   publish.ps1               builds what ships into publish/: app\ (the WinUI widget folder and the Native AOT
                             watcher) and GameShelfSetup.exe with app\ inside (optional -CertificateThumbprint signing)
   README.md                 overview, install, build, privacy, disclaimer
@@ -148,7 +149,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 **Display modes (milestone 9)**
 - **Flyout** (default): a notification-area icon and a global shortcut (Win+Shift+G; Win+Shift+J, Ctrl+Alt+G or Off in Settings) open the panel next to the screen edge with a short slide-in (skipped when animations are off). It closes on Esc, click-away (unless pinned or a dialog is open), the icon or the shortcut again.
 - **On the desktop**: the docked, always-visible panel on the desktop layer described below. The shortcut brings it in front for a moment.
-- `Program.Main` holds the single-instance mutex before WinUI starts; a second start forwards its arguments to the running instance's hidden `MessageWindow` (WM_COPYDATA) and exits. With no arguments that toggles the flyout. The message window also owns the tray icon (re-added on `TaskbarCreated`) and the hotkey.
+- `Program.Main` holds the single-instance mutex before WinUI starts; a second start forwards its arguments to the running instance's hidden `MessageWindow` (WM_COPYDATA) and exits. With no arguments that toggles the flyout. The message window also owns the tray icon (re-added on `TaskbarCreated`) and the hotkey. The icon is one monochrome card while closed; on open the back card fans out into the coloured logo (`Assets	ray-open-0..6.ico`, drawn by `tools/make-tray-icons.ps1`), played backwards on close, with a timer that exists only while it moves (skipped when animations are off).
 - **Stay ready** (on by default): closing the flyout destroys the window and releases covers, then compacts the GC heap, trims the working set and puts the process in efficiency mode (EcoQoS, very low memory priority) until it opens again. "While it's closed" (Settings, owner's choice): **Use less memory** (default) does the above; **Open faster** only hides the window, keeping it loaded (trimmed working set, efficiency mode), so it reopens in a few ms instead of ~180 ms. Neither affects games, since the process exits while one runs. Off: closing the flyout exits the process. Autostart uses `--background`, which starts straight into this state.
 - **First-run setup** (`SetupView`, shown until `SetupDone`): which launchers, tidy the desktop (the shortcut picker, embedded), how it opens and Start with Windows. Settings can run it again.
 

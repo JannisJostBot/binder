@@ -20,7 +20,7 @@ internal sealed class MessageWindow : IDisposable
     public const int WM_COPYDATA = 0x004A;
     public static readonly IntPtr CopyDataCommand = new(0x47534846); // "GSHF"
 
-    private const int WM_HOTKEY = 0x0312, WM_SETTINGCHANGE = 0x001A, WM_CONTEXTMENU = 0x007B, WM_NULL = 0;
+    private const int WM_HOTKEY = 0x0312, WM_SETTINGCHANGE = 0x001A, WM_CONTEXTMENU = 0x007B, WM_NULL = 0, WM_TIMER = 0x0113;
     private const int TrayCallback = 0x8000 + 1; // WM_APP + 1
     private const int NIN_SELECT = 0x0400, NIN_KEYSELECT = 0x0401, WM_LBUTTONDBLCLK = 0x0203;
     private long _swallowSelectUntil;
@@ -90,31 +90,89 @@ internal sealed class MessageWindow : IDisposable
 
     private bool _trayActive;
 
-    /// <summary>The coloured logo while the flyout is open, the monochrome glyph while it's closed.</summary>
+    // Open: the back card slides out from behind the front one into the coloured logo (Assets\tray-open-0..6.ico,
+    // drawn by tools\make-tray-icons.ps1); close plays it backwards and ends on the monochrome card. A Win32 timer
+    // steps the frames and exists only while the icon moves.
+    private const int TrayFrameCount = 7;
+    private const uint TrayAnimationTimer = 1, TrayFrameMilliseconds = 30;
+    private int _trayFrame = -1; // the frame shown; -1 = the closed glyph
+    private readonly IntPtr[] _frameIcons = new IntPtr[TrayFrameCount];
+    private int _frameIconSize;
+    private IntPtr _glyphIcon;
+
+    /// <summary>Animates to the coloured logo while the flyout is open, back to the monochrome card when it closes.</summary>
     public void SetTrayActive(bool active)
     {
         if (active == _trayActive) return;
         _trayActive = active;
-        if (_trayShown) UpdateTrayImage();
+        if (!_trayShown) return;
+        if (!new Windows.UI.ViewManagement.UISettings().AnimationsEnabled)
+        {
+            _trayFrame = active ? TrayFrameCount - 1 : -1;
+            UpdateTrayImage();
+            return;
+        }
+        if (_trayFrame < 0) _trayFrame = 0; // the coloured card first, then it fans out
+        UpdateTrayImage();
+        SetTimer(_hwnd, (UIntPtr)TrayAnimationTimer, TrayFrameMilliseconds, IntPtr.Zero);
+    }
+
+    private void StepTrayAnimation()
+    {
+        int target = _trayActive ? TrayFrameCount - 1 : -1;
+        _trayFrame += Math.Sign(target - _trayFrame); // turns around if it's reopened or closed halfway
+        UpdateTrayImage();
+        if (_trayFrame == target) KillTimer(_hwnd, (UIntPtr)TrayAnimationTimer);
     }
 
     /// <summary>
-    /// The coloured logo while open; otherwise a white glyph on dark taskbars and a dark one on light taskbars,
-    /// at the small-icon size for this DPI.
+    /// The current animation frame, or the closed glyph: white on dark taskbars, dark on light ones. At the
+    /// small-icon size for this DPI.
     /// </summary>
     private void UpdateTrayImage()
     {
         int size = GetSystemMetricsForDpi(SM_CXSMICON, GetDpiForWindow(_hwnd));
-        var resource = _trayActive ? @"Assets\tray-active.ico"
-            : TaskbarIsLight() ? @"Assets\tray-light.ico" : @"Assets\tray-dark.ico";
-        var icon = IconFromResource(resource, size);
+        IntPtr icon;
+        if (_trayFrame >= 0)
+        {
+            icon = FrameIcon(_trayFrame, size);
+        }
+        else
+        {
+            icon = IconFromResource(TaskbarIsLight() ? @"Assets\tray-light.ico" : @"Assets\tray-dark.ico", size);
+            if (icon != IntPtr.Zero)
+            {
+                if (_glyphIcon != IntPtr.Zero) DestroyIcon(_glyphIcon); // the shell keeps its own copy
+                _glyphIcon = icon;
+            }
+        }
         if (icon == IntPtr.Zero) return;
-        if (_trayIcon != IntPtr.Zero) DestroyIcon(_trayIcon);
         _trayIcon = icon;
         if (_trayShown)
         {
             var data = TrayData(NIF_ICON);
             Shell_NotifyIconW(NIM_MODIFY, ref data);
+        }
+    }
+
+    /// <summary>The frames are read once per icon size (a few KB) and reused for every open and close.</summary>
+    private IntPtr FrameIcon(int frame, int size)
+    {
+        if (size != _frameIconSize)
+        {
+            DestroyFrameIcons();
+            _frameIconSize = size;
+        }
+        if (_frameIcons[frame] == IntPtr.Zero) _frameIcons[frame] = IconFromResource($@"Assets\tray-open-{frame}.ico", size);
+        return _frameIcons[frame];
+    }
+
+    private void DestroyFrameIcons()
+    {
+        for (int i = 0; i < _frameIcons.Length; i++)
+        {
+            if (_frameIcons[i] != IntPtr.Zero) DestroyIcon(_frameIcons[i]);
+            _frameIcons[i] = IntPtr.Zero;
         }
     }
 
@@ -246,14 +304,21 @@ internal sealed class MessageWindow : IDisposable
             }
             return IntPtr.Zero;
         }
+        if (msg == WM_TIMER && wParam == (IntPtr)TrayAnimationTimer)
+        {
+            StepTrayAnimation();
+            return IntPtr.Zero;
+        }
         if (msg == WM_SETTINGCHANGE) UpdateTrayImage(); // light/dark taskbar may have changed
         return DefWindowProcW(hwnd, msg, wParam, lParam);
     }
 
     public void Dispose()
     {
+        KillTimer(_hwnd, (UIntPtr)TrayAnimationTimer);
         RemoveTrayIcon();
-        if (_trayIcon != IntPtr.Zero) DestroyIcon(_trayIcon);
+        DestroyFrameIcons();
+        if (_glyphIcon != IntPtr.Zero) DestroyIcon(_glyphIcon);
         UnregisterHotKey(_hwnd, HotkeyId);
         if (_hwnd != IntPtr.Zero) DestroyWindow(_hwnd);
         _hwnd = IntPtr.Zero;
@@ -340,6 +405,13 @@ internal sealed class MessageWindow : IDisposable
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool DestroyIcon(IntPtr icon);
+
+    [DllImport("user32.dll")]
+    private static extern UIntPtr SetTimer(IntPtr hwnd, UIntPtr id, uint milliseconds, IntPtr callback);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool KillTimer(IntPtr hwnd, UIntPtr id);
 
     [DllImport("user32.dll")]
     private static extern int GetSystemMetricsForDpi(int index, uint dpi);

@@ -43,7 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\tray-dark.ico;Assets\tray-light.ico;Assets\tray-active.ico;Assets\app.ico">
+    <Content Include="Assets\tray-dark.ico;Assets\tray-light.ico;Assets\tray-open-*.ico;Assets\app.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="5" />
