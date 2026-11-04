@@ -1,0 +1,34 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameShelf", "src\GameShelf\GameShelf.csproj", "{6E1F7C2A-3B4D-4E5F-8A9B-1C2D3E4F5A61}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameShelf.Watcher", "src\GameShelf.Watcher\GameShelf.Watcher.csproj", "{7F2A8D3B-4C5E-4F60-9BAC-2D3E4F5A6B72}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameShelf.Setup", "src\GameShelf.Setup\GameShelf.Setup.csproj", "{8A3B9E4C-5D6F-4071-ACBD-3E4F5A6B7C83}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6E1F7C2A-3B4D-4E5F-8A9B-1C2D3E4F5A61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E1F7C2A-3B4D-4E5F-8A9B-1C2D3E4F5A61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E1F7C2A-3B4D-4E5F-8A9B-1C2D3E4F5A61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E1F7C2A-3B4D-4E5F-8A9B-1C2D3E4F5A61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F2A8D3B-4C5E-4F60-9BAC-2D3E4F5A6B72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F2A8D3B-4C5E-4F60-9BAC-2D3E4F5A6B72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F2A8D3B-4C5E-4F60-9BAC-2D3E4F5A6B72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F2A8D3B-4C5E-4F60-9BAC-2D3E4F5A6B72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A3B9E4C-5D6F-4071-ACBD-3E4F5A6B7C83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A3B9E4C-5D6F-4071-ACBD-3E4F5A6B7C83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A3B9E4C-5D6F-4071-ACBD-3E4F5A6B7C83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A3B9E4C-5D6F-4071-ACBD-3E4F5A6B7C83}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

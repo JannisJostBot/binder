@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Stand-in "game" for the CI smoke test of the launch -> hide -> return loop. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Its own folder: the watcher matches every process inside the game's install folder. -->
+    <OutputPath>$(MSBuildProjectDirectory)\out\</OutputPath>
+  </PropertyGroup>
+
+</Project>

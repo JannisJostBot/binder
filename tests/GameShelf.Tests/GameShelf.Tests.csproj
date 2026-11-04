@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Plain console test runner (no test framework packages, see Dependencies policy).
+       Compiles the non-UI sources directly; runs on Windows and Linux with "dotnet run" in this folder. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <StartupObject>GameShelf.Tests.Tests</StartupObject>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <!-- Keep test output out of the shared app folder (Directory.Build.props). -->
+    <OutputPath>$(MSBuildProjectDirectory)\out\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\GameShelf\Models\*.cs" Link="Linked\Models\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\GameShelf\Library\Vdf.cs" Link="Linked\Library\Vdf.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\SteamSource.cs" Link="Linked\Library\SteamSource.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\InstallFolder.cs" Link="Linked\Library\InstallFolder.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\EpicSource.cs" Link="Linked\Library\EpicSource.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\GogSource.cs" Link="Linked\Library\GogSource.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\EaSource.cs" Link="Linked\Library\EaSource.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\UbisoftSource.cs" Link="Linked\Library\UbisoftSource.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\ShortcutFile.cs" Link="Linked\Library\ShortcutFile.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\ShortcutImporter.cs" Link="Linked\Library\ShortcutImporter.cs" />
+    <Compile Include="..\..\src\GameShelf\Services\Storage.cs" Link="Linked\Services\Storage.cs" />
+    <Compile Include="..\..\src\GameShelf\Services\Placement.cs" Link="Linked\Services\Placement.cs" />
+    <Compile Include="..\..\src\GameShelf\Services\ShellNotify.cs" Link="Linked\Services\ShellNotify.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\CoverColors.cs" Link="Linked\Library\CoverColors.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\ShelfOrder.cs" Link="Linked\Library\ShelfOrder.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\LaunchOptions.cs" Link="Linked\Library\LaunchOptions.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\GameScan.cs" Link="Linked\Library\GameScan.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\AntiCheat.cs" Link="Linked\Library\AntiCheat.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\PlaytimeStats.cs" Link="Linked\Library\PlaytimeStats.cs" />
+    <Compile Include="..\..\src\GameShelf\Views\Format.cs" Link="Linked\Views\Format.cs" />
+    <Compile Include="..\..\src\GameShelf.Watcher\Program.cs" Link="Linked\Watcher\Program.cs" />
+    <Compile Include="..\..\src\GameShelf.Setup\PayloadList.cs" Link="Linked\Setup\PayloadList.cs" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    GameShelfSetup.exe: a per-user installer and uninstaller, no admin rights, no third-party packages.
+    publish.ps1 builds the widget and the watcher first and embeds them here (-p:PayloadDir=...), then
+    publishes this as Native AOT. A plain `dotnet build` has no payload and only refuses to install.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>GameShelf.Setup</RootNamespace>
+    <AssemblyName>GameShelfSetup</AssemblyName>
+    <Product>Game Shelf</Product>
+    <AssemblyTitle>Game Shelf Setup</AssemblyTitle>
+    <!-- asInvoker: without a manifest, Windows guesses that a file named "...Setup.exe" needs admin rights. -->
+    <ApplicationManifest>setup.manifest</ApplicationManifest>
+    <ApplicationIcon>..\GameShelf\Assets\app.ico</ApplicationIcon>
+
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+  </PropertyGroup>
+
+  <!-- The app being installed (app.zip: the widget's folder and the watcher), plus payload.txt (SHA-256 of each
+       file), made by publish.ps1. -->
+  <ItemGroup Condition="'$(PayloadDir)' != '' and Exists('$(PayloadDir)payload.txt')">
+    <EmbeddedResource Include="$(PayloadDir)payload.txt" LogicalName="payload.txt" />
+    <EmbeddedResource Include="$(PayloadDir)app.zip" LogicalName="app.zip" />
+  </ItemGroup>
+
+  <!-- DLL planting: an installer usually runs from Downloads, next to whatever else was downloaded. Load the
+       DLLs the exe imports from System32 only, never from the folder it runs in. -->
+  <ItemGroup Condition="'$(PublishAot)' == 'true'">
+    <LinkerArg Include="/DEPENDENTLOADFLAG:0x800" />
+  </ItemGroup>
+
+</Project>
