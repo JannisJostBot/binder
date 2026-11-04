@@ -123,6 +123,9 @@ internal static unsafe partial class Native
         public IntPtr pszButtonText;
     }
 
+    [LibraryImport("user32.dll", EntryPoint = "SendMessageW")]
+    public static partial IntPtr SendMessage(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam);
+
     [LibraryImport("comctl32.dll")]
     public static partial int TaskDialogIndirect(TASKDIALOGCONFIG* config, int* button, int* radioButton, int* verificationChecked);
 }

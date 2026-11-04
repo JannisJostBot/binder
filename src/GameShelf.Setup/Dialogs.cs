@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace GameShelf.Setup;
@@ -11,6 +12,8 @@ internal static unsafe class Dialogs
     private const int TDF_ALLOW_DIALOG_CANCELLATION = 0x0008;
     private const int TDF_VERIFICATION_FLAG_CHECKED = 0x0100;
     private const int TDF_SIZE_TO_CONTENT = 0x01000000;
+    private const int TDN_CREATED = 0, TDN_VERIFICATION_CLICKED = 8;
+    private const int TDM_ENABLE_BUTTON = 0x0400 + 111; // WM_USER + 111
     private const int AppIconId = 32512; // the SDK's resource id for <ApplicationIcon>
     // MAKEINTRESOURCEW(-2) and (-1): the 16-bit values 0xFFFE / 0xFFFF, not a 64-bit -1, which Windows would
     // read as a pointer to text (and crash on).
@@ -21,9 +24,14 @@ internal static unsafe class Dialogs
 
     public sealed record Result(int Button, bool Verified);
 
-    /// <summary>Shows a dialog; <paramref name="buttons"/> are custom (id ≥ 100) and come before the common ones.</summary>
+    /// <summary>
+    /// Shows a dialog; <paramref name="buttons"/> are custom (id ≥ 100) and come before the common ones.
+    /// <paramref name="details"/> goes in a "Show …" section below the content. With <paramref name="required"/>,
+    /// the first custom button stays disabled until the checkbox (<paramref name="verification"/>) is ticked.
+    /// </summary>
     public static Result Show(string instruction, string content, (int Id, string Text)[] buttons, int common,
-        int defaultButton, string? verification = null, bool verified = false, bool error = false, bool warning = false)
+        int defaultButton, string? verification = null, bool verified = false, bool error = false, bool warning = false,
+        (string Text, string Show, string Hide)? details = null, bool required = false)
     {
         var strings = new List<IntPtr>();
         IntPtr Str(string? s)
@@ -55,7 +63,15 @@ internal static unsafe class Dialogs
                     pButtons = buttons.Length > 0 ? (IntPtr)pButtons : IntPtr.Zero,
                     nDefaultButton = defaultButton,
                     pszVerificationText = Str(verification),
+                    pszExpandedInformation = Str(details?.Text),
+                    pszCollapsedControlText = Str(details?.Show),
+                    pszExpandedControlText = Str(details?.Hide),
                 };
+                if (required && buttons.Length > 0)
+                {
+                    config.pfCallback = (IntPtr)(delegate* unmanaged[Stdcall]<IntPtr, int, IntPtr, IntPtr, IntPtr, int>)&GateButton;
+                    config.lpCallbackData = buttons[0].Id;
+                }
                 int button = 0, radio = 0, check = 0;
                 Locations.Log($"dialog: {instruction}");
                 int hr = Native.TaskDialogIndirect(&config, &button, &radio, &check);
@@ -76,7 +92,19 @@ internal static unsafe class Dialogs
         {
             foreach (var p in strings) Marshal.FreeHGlobal(p);
         }
-        return Fallback(instruction, content, buttons, common, verified);
+        return Fallback(instruction, required ? content + "\n\nPressing OK means you've read and understood this." : content,
+            buttons, common, verified || required);
+    }
+
+    /// <summary>Enables the gated button (its id is the callback data) only while the checkbox is ticked.</summary>
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+    private static int GateButton(IntPtr hwnd, int notification, IntPtr wParam, IntPtr lParam, IntPtr buttonId)
+    {
+        if (notification == TDN_CREATED)
+            Native.SendMessage(hwnd, TDM_ENABLE_BUTTON, buttonId, 0);
+        else if (notification == TDN_VERIFICATION_CLICKED)
+            Native.SendMessage(hwnd, TDM_ENABLE_BUTTON, buttonId, wParam); // wParam: TRUE when ticked
+        return 0; // S_OK
     }
 
     /// <summary>Plain message box: OK/Cancel maps to the first custom button and Cancel; the checkbox keeps its default.</summary>

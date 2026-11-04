@@ -130,6 +130,18 @@ try {
     $metrics += "Setup dialog shown after $($sw.ElapsedMilliseconds) ms"
     Start-Sleep -Milliseconds 500
     Shot 'setup-1-install'
+    # The disclaimer: Install stays disabled until "I've read and understood the disclaimer" is ticked.
+    $named = { param($name) $dialog.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($UIA::NameProperty, $name))) }
+    $installButton = Wait-Until { & $named 'Install' } 5 'Install button'
+    if ($installButton.Current.IsEnabled) { Fail 'Install is enabled before the disclaimer is confirmed' }
+    $accept = Wait-Until { & $named "I've read and understood the disclaimer" } 5 'disclaimer checkbox'
+    if ($accept.GetCurrentPropertyValue($UIA::IsTogglePatternAvailableProperty)) {
+        $accept.GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern).Toggle()
+    } else {
+        $accept.SetFocus(); [Keys]::Press(0x20)
+    }
+    Wait-Until { $installButton.Current.IsEnabled } 5 'Install enabled after confirming the disclaimer' | Out-Null
+    $metrics += "Disclaimer: Install disabled until confirmed"
     $sw.Restart()
     Click $dialog 'Install'
     $done = Get-Dialog 'Game Shelf is installed'

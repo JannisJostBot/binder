@@ -10,6 +10,17 @@ internal static class Installer
 {
     private const int InstallButton = 100;
 
+    /// <summary>The full disclaimer, as in the README.</summary>
+    private const string Disclaimer =
+        "Game Shelf is vibe-coded. Its code was written by an AI (Anthropic's Claude), directed and tested by Jannis Jost, " +
+        "but not written or reviewed line by line by a human developer.\n\n" +
+        "The software is provided \"as is\", without warranty of any kind, express or implied. That includes, but isn't " +
+        "limited to, the warranties of merchantability, fitness for a particular purpose and non-infringement. In no event " +
+        "shall the author or anyone involved be liable for any claim, damages or other liability arising from, out of, or " +
+        "in connection with the software or its use. You use it at your own risk.\n\n" +
+        "Game Shelf isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Microsoft or any other " +
+        "company whose launchers it works with. Their names and icons belong to their owners.";
+
     public static int Run(Options options)
     {
         var version = Program.Version;
@@ -36,8 +47,14 @@ internal static class Installer
             var content = update
                 ? "Your games, play history and settings are kept. If Game Shelf is open, it closes and comes back afterwards."
                 : "Installs for your account only. No administrator rights needed.\n\nFolder: " + Locations.InstallDir;
+            // The README's disclaimer: short in the dialog, in full under "Show the full disclaimer". The install
+            // button stays disabled until it's confirmed (/S implies it: whoever scripts setup has read it).
+            content += "\n\nGame Shelf is vibe-coded: its code was written by an AI (Anthropic's Claude), directed and tested by " +
+                       "Jannis Jost, but not reviewed line by line by a human developer. It's provided as is, without " +
+                       "warranty of any kind, and you use it at your own risk.";
             var confirm = Dialogs.Show(instruction, content, [(InstallButton, button)], Dialogs.CommonCancel, InstallButton,
-                warning: installed > version);
+                verification: "I've read and understood the disclaimer", warning: installed > version, required: true,
+                details: (Disclaimer, "Show the full disclaimer", "Hide the full disclaimer"));
             if (confirm.Button != InstallButton) return ExitCode.Cancelled;
         }
         else if (installed > version && !options.AllowDowngrade)

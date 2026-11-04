@@ -235,7 +235,8 @@ Unexpected UI errors are logged to `%LOCALAPPDATA%\GameShelf\error.log` (rotated
 ## Installer
 
 `GameShelfSetup.exe` installs per user to `%LOCALAPPDATA%\Programs\GameShelf\` (no admin), adds the Start menu
-shortcut and the Settings → Apps entry, and updates in place: it quits a running widget (`--quit`) and restarts it,
+shortcut and the Settings → Apps entry. Its install/update dialog shows the README's disclaimer and enables its
+button only once "I've read and understood the disclaimer" is ticked (`/S` implies it). It updates in place: it quits a running widget (`--quit`) and restarts it,
 and moves an in-use watcher aside (`.old`) so a game in progress keeps being tracked. Uninstall restores imported
 shortcuts (`GameShelf.exe --restore-shortcuts`) and deletes data only when asked. Details and its own security
 rules: `docs/installer.md`. The version lives in `Directory.Build.props`.

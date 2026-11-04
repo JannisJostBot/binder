@@ -43,7 +43,9 @@ to use `publish.ps1`.
 
 ## Install
 
-Double-click `GameShelfSetup.exe` and click **Install**.
+Double-click `GameShelfSetup.exe`, read the disclaimer, tick **I've read and understood the disclaimer** and click
+**Install**. The button stays disabled until the box is ticked; the dialog shows the short version and **Show the
+full disclaimer** the full text from the README. Updates and reinstalls ask the same way.
 
 - It installs to `%LOCALAPPDATA%\Programs\GameShelf\` (your account only, no UAC prompt).
 - It adds **Game Shelf** to the Start menu and to **Settings → Apps → Installed apps**, with its icon, version
@@ -96,7 +98,7 @@ Settings → Apps → Game Shelf → **Uninstall** (or Start menu → right-clic
 | Command | What it does |
 |---|---|
 | `GameShelfSetup.exe` | Install or update, with dialogs. |
-| `GameShelfSetup.exe /S` | Silent install or update. Doesn't open the app, except to restart one that was running. |
+| `GameShelfSetup.exe /S` | Silent install or update. Doesn't open the app, except to restart one that was running. Running it silently counts as having read the disclaimer (README). |
 | `GameShelfSetup.exe /S /launch` | Silent, then start Game Shelf. |
 | `GameShelfSetup.exe /S /allowdowngrade` | Silent, even over a newer version (refused otherwise). |
 | `Uninstall.exe /uninstall` | Uninstall, with dialogs. |
@@ -126,7 +128,9 @@ it extracts only the files that list names.
 
 1. Read the payload.
 2. Read the installed version from the Settings → Apps entry and choose Install, Update, Reinstall or the
-   downgrade warning. In silent mode, refuse a downgrade unless `/allowdowngrade`.
+   downgrade warning. The dialog carries the disclaimer, and its button is enabled only while "I've read and
+   understood the disclaimer" is ticked (a task dialog callback, `TDM_ENABLE_BUTTON`). In silent mode, refuse a
+   downgrade unless `/allowdowngrade`.
 3. Refuse if `%LOCALAPPDATA%\Programs` or the install folder is a link (junction or symlink) to somewhere else.
 4. If the widget is running, send it `--quit` (the same WM_COPYDATA message a second start uses) and wait up to
    10 s. If a copy of *our* installed exe still hangs after that, end it.
@@ -215,7 +219,7 @@ helper is added on top:
 
 `tests/setup-test.ps1` runs on every push after the UI smoke test:
 
-1. Install through the dialogs, then check the files against the published ones, the Start menu shortcut and
+1. Install through the dialogs (Install must be disabled until the disclaimer box is ticked), then check the files against the published ones, the Start menu shortcut and
    the Settings → Apps entry.
 2. Update silently while the widget and a watcher are running. The widget restarts on the new files, the
    watcher keeps running, and its file was moved aside and replaced.
