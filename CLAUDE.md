@@ -171,9 +171,9 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 **Shelf view (main)**
 - Header: a greeting for the time of day ("Good morning" / "Good afternoon" / "Good evening", set when the panel gets its data, never on a timer) and a settings button. The game count is shown above the grid.
 - Search box: focused on open, filters as you type.
-- Filter chips: All, Favorites, Recent, then the launchers that have games (most games first) and "Other" for manual games and shortcuts; beyond three launcher chips the rest go under "More".
+- Filter chips (below the slot, next to the count, sort and grid they filter; owner's choice): All, Favorites, Recent, then the launchers that have games (most games first) and "Other" for manual games and shortcuts; beyond three launcher chips the rest go under "More".
 - Sort menu above the grid (Recently played, Most played, Name, Recently added, Size on disk, plus "Favorites first"), saved in settings. Cover size in Settings: Small (5 columns), Medium (4), Large (3), List.
-- One fixed-height slot (168 px) under the filters, switched with a small `SelectorBar` in its top-right corner and remembered (`SpotlightShowsWeek`), so switching never moves the grid:
+- One fixed-height slot (168 px) under the search box, switched with a small `SelectorBar` in its top-right corner and remembered (`SpotlightShowsWeek`), so switching never moves the grid:
   - **Continue playing:** a hero banner of the last played game (its hero art, loaded only while shown, with a bottom fade), title, last played and launcher, and a Play button.
   - **This week:** the total, game count, most played game and a bar per day.
   - The switch shows only when both have something to show; the slot hides while searching.

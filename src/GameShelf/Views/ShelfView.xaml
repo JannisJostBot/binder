@@ -34,27 +34,12 @@
                         AutomationProperties.Name="Search games" TextChanged="OnSearchChanged"
                         PreviewKeyDown="OnSearchKeyDown" />
 
-        <!-- Filters: All, Favorites, Recent, then the launchers that have games; the rest under More. Built in code. -->
-        <Grid Grid.Row="2" ColumnSpacing="8" Margin="-12,0,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <SelectorBar x:Name="Filters" AutomationProperties.Name="Filter" SelectionChanged="OnFilterChanged" />
-            <DropDownButton x:Name="MoreFilters" Grid.Column="1" Content="More" VerticalAlignment="Center"
-                            AutomationProperties.Name="More launchers" Visibility="Collapsed">
-                <DropDownButton.Flyout>
-                    <MenuFlyout x:Name="MoreMenu" Placement="BottomEdgeAlignedLeft" />
-                </DropDownButton.Flyout>
-            </DropDownButton>
-        </Grid>
-
         <!-- After a crash (milestone 11, board 13) the crash card takes the top slot until it's dismissed. -->
-        <v:CrashCard x:Name="Crash" Grid.Row="3" Visibility="Collapsed" />
+        <v:CrashCard x:Name="Crash" Grid.Row="2" Visibility="Collapsed" />
 
         <!-- One fixed-height slot (board 16): the "Continue playing" hero banner or "This week", switched in the
              corner and remembered, so switching never moves the grid. Hidden while searching. -->
-        <Grid x:Name="Spotlight" Grid.Row="3" Height="168" CornerRadius="{ThemeResource OverlayCornerRadius}"
+        <Grid x:Name="Spotlight" Grid.Row="2" Height="168" CornerRadius="{ThemeResource OverlayCornerRadius}"
               BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" Visibility="Collapsed">
             <Grid x:Name="ContinuePane">
                 <!-- The hero art loads only while this pane is shown (ShelfView.UpdateSpotlight). -->
@@ -123,6 +108,22 @@
                     </SelectorBarItem>
                 </SelectorBar>
             </Border>
+        </Grid>
+
+        <!-- Filters: All, Favorites, Recent, then the launchers that have games; the rest under More. Built in code.
+             Below the banner, next to the count, sort and grid they filter (owner's choice, law of proximity). -->
+        <Grid Grid.Row="3" ColumnSpacing="8" Margin="-12,8,0,-6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <SelectorBar x:Name="Filters" AutomationProperties.Name="Filter" SelectionChanged="OnFilterChanged" />
+            <DropDownButton x:Name="MoreFilters" Grid.Column="1" Content="More" VerticalAlignment="Center"
+                            AutomationProperties.Name="More launchers" Visibility="Collapsed">
+                <DropDownButton.Flyout>
+                    <MenuFlyout x:Name="MoreMenu" Placement="BottomEdgeAlignedLeft" />
+                </DropDownButton.Flyout>
+            </DropDownButton>
         </Grid>
 
         <!-- Count and sort (board 7) -->
