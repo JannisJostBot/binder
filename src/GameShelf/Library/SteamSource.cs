@@ -134,6 +134,10 @@ public static class SteamSource
         if (int.TryParse(app.Str("StateFlags"), out var flags) && (flags & 4) == 0) return null;
 
         long.TryParse(app.Str("SizeOnDisk"), out var size);
+        // Unix seconds; 0 when never played. Free up space counts games played through Steam directly too.
+        DateTimeOffset? lastPlayed = long.TryParse(app.Str("LastPlayed"), out var seconds) && seconds is > 0 and < 32503680000
+            ? DateTimeOffset.FromUnixTimeSeconds(seconds)
+            : null;
         return new Game
         {
             Id = "steam:" + appId,
@@ -143,6 +147,7 @@ public static class SteamSource
             InstallDir = Path.Combine(steamapps, "common", installDir),
             LaunchUri = "steam://rungameid/" + appId,
             SizeOnDisk = size,
+            StoreLastPlayed = lastPlayed,
         };
     }
 }

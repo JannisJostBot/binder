@@ -66,7 +66,7 @@ public static class LauncherIcons
 
 
     /// <summary>The installed launcher's exe: from its store path, or from the program registered for its links.</summary>
-    private static string? LauncherExe(GameSource source)
+    internal static string? LauncherExe(GameSource source)
     {
         string? exe = source switch
         {

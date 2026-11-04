@@ -34,7 +34,11 @@ static class Tests
             File.WriteAllText(p, $"\"AppState\" {{ \"appid\" \"{appid}\" \"name\" \"Game\" \"installdir\" \"{installdir}\" \"StateFlags\" \"4\" }}");
             return (Game?)read.Invoke(null, [p, Path.Combine(dir, "steamapps")]);
         }
-        Check(Manifest("570", "dota 2 beta") is { LaunchUri: "steam://rungameid/570" }, "valid manifest accepted");
+        Check(Manifest("570", "dota 2 beta") is { LaunchUri: "steam://rungameid/570", StoreLastPlayed: null }, "valid manifest accepted");
+        var played = Path.Combine(dir, "appmanifest_3.acf");
+        File.WriteAllText(played, "\"AppState\" { \"appid\" \"570\" \"name\" \"Game\" \"installdir\" \"x\" \"StateFlags\" \"4\" \"LastPlayed\" \"1753800705\" }");
+        Check(read.Invoke(null, [played, Path.Combine(dir, "steamapps")]) is Game { StoreLastPlayed: { } lp } && lp.ToUnixTimeSeconds() == 1753800705,
+            "Steam LastPlayed read (0 means never)");
         Check(Manifest("570 -applaunch evil", "x") is null, "appid with extra text rejected");
         Check(Manifest("../../etc", "x") is null, "appid path traversal rejected");
         Check(Manifest("570", "..") is null, "installdir .. rejected");
@@ -71,6 +75,7 @@ static class Tests
         LaunchTests(dir);
         PlaytimeTests();
         CrashTests();
+        SpaceTests();
 
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");
@@ -470,6 +475,73 @@ static class Tests
         Check(AntiCheat.Requirements([], "Battlefield 6", true).Count == 0, "no anti-cheat, no requirements");
     }
     /// <summary>Milestone 11: exit codes, classification, plain-words advice, the copied texts' privacy, event parsing.</summary>
+    /// <summary>Milestone 15: Free up space, which games to remove and on which drive.</summary>
+    static void SpaceTests()
+    {
+        const long G = SpacePlanner.GB;
+        var now = DateTimeOffset.Now;
+        SpaceGame Make(string id, long gb, double hours = 0, bool recent = false, bool fav = false) =>
+            new(new Game { Id = id, Name = id, Favorite = fav, SizeOnDisk = gb * G }, gb * G, TimeSpan.FromHours(hours),
+                recent ? now.AddDays(-2) : null, recent);
+        string Ids(IEnumerable<SpaceGame> games) => string.Join(",", games.Select(g => g.Game.Id));
+
+        Check(SpacePlanner.Band(TimeSpan.Zero) == 0 && SpacePlanner.Band(TimeSpan.FromMinutes(30)) == 1 &&
+              SpacePlanner.Band(TimeSpan.FromHours(4)) == 2 && SpacePlanner.Band(TimeSpan.FromHours(19)) == 3 &&
+              SpacePlanner.Band(TimeSpan.FromHours(20)) == 4, "playtime bands");
+
+        // The design board's drive: 120 GB needed, 42 GB free, so 78 GB missing.
+        var d = new List<SpaceGame>
+        {
+            Make("g1", 70, 2), Make("g2", 25), Make("g3", 180, 30, recent: true), Make("g4", 60), Make("g5", 150, 120, fav: true),
+            Make("g6", 85, 6), Make("g7", 110, 12), Make("g8", 20), Make("g9", 15, 25), Make("g10", 120, 45, fav: true),
+        };
+        // Never played first: g4 (60) covers nothing alone, so the largest; then 18 GB left, g8 (20) is the closest fit.
+        Check(Ids(SpacePlanner.Plan(d, 78 * G)) == "g4,g8", "never-played games first, closest fit");
+        Check(Ids(SpacePlanner.Plan(d, 20 * G)) == "g8", "the smallest game that covers it");
+        Check(SpacePlanner.Plan(d, 0).Count == 0 && SpacePlanner.Plan(d, -5 * G).Count == 0, "nothing to remove when it fits");
+        var keepFavorites = SpacePlanner.Plan(d, 500 * G);
+        Check(!keepFavorites.Any(g => g.Favorite) && keepFavorites.Any(g => g.Recent), "recent games before favorites");
+        Check(SpacePlanner.Plan(d, 900 * G).Any(g => g.Favorite), "favorites only when nothing else is enough");
+        // Two small never-played games go first, then z covers it alone: x and y aren't needed after all.
+        Check(Ids(SpacePlanner.Plan([Make("x", 10), Make("y", 10), Make("z", 100, 0.5)], 100 * G)) == "z",
+              "picks that aren't needed after all are dropped, biggest first");
+        Check(SpacePlanner.Plan([Make("big", 50), new(new Game { Id = "u", Name = "u" }, 0, TimeSpan.Zero, null, false)], 60 * G)
+              .All(g => g.SizeKnown), "games without a known size are never picked");
+
+        var full = new DriveSpace(@"D:\", "Games", 931 * G, 42 * G);
+        var roomy = new DriveSpace(@"E:\", "Big", 2000 * G, 500 * G);
+        var tight = new DriveSpace(@"C:\", "System", 476 * G, 18 * G);
+        var plans = new List<DrivePlan>
+        {
+            SpacePlanner.PlanDrive(tight, [Make("c1", 45, 3), Make("c2", 30)], 120 * G),
+            SpacePlanner.PlanDrive(full, d, 120 * G),
+        };
+        Check(SpacePlanner.Best(plans) == 1, "best drive: one that frees enough, with the least playtime removed");
+        plans.Add(SpacePlanner.PlanDrive(roomy, [], 120 * G));
+        Check(SpacePlanner.Best(plans) == 2 && plans[2].FitsAlready, "a drive where it fits already wins");
+
+        var games = new List<Game>
+        {
+            new() { Id = "s", Name = "s", Source = GameSource.Steam, InstallDir = @"d:\Steam\common\s", SizeOnDisk = 5 * G,
+                    StoreLastPlayed = now.AddDays(-3) },
+            new() { Id = "m", Name = "m", Source = GameSource.Manual, InstallDir = @"D:\Games\m", SizeOnDisk = 5 * G },
+            new() { Id = "r", Name = "r", Source = GameSource.Epic, InstallDir = @"D:\Epic\r", SizeOnDisk = 5 * G },
+            new() { Id = "h", Name = "h", Source = GameSource.Gog, InstallDir = @"C:\GOG\h", Hidden = true },
+        };
+        var byDrive = SpacePlanner.ByDrive(games, new Dictionary<string, TimeSpan>(), new Dictionary<string, DateTimeOffset>(), now,
+            new HashSet<string> { "r" });
+        Check(byDrive.Count == 2 && Ids(byDrive[@"D:\"]) == "s" && Ids(byDrive[@"C:\"]) == "h",
+              "by drive: manual games and running games left out, hidden ones kept");
+        Check(byDrive[@"D:\"][0].Recent, "a game played through Steam lately counts as recent");
+
+        var tiles = SpacePlanner.Squarify([6, 6, 4, 3, 2, 2, 1], 600, 400);
+        double area = tiles.Sum(t => t.W * t.H);
+        Check(Math.Abs(area - 240000) < 1 && tiles.All(t => t.X >= -0.01 && t.Y >= -0.01 && t.X + t.W <= 600.01 && t.Y + t.H <= 400.01),
+              "treemap fills the area exactly");
+        Check(Math.Abs(tiles[0].W * tiles[0].H - 60000) < 1, "treemap tile area follows its size");
+        Check(tiles.Max(t => Math.Max(t.W / t.H, t.H / t.W)) < 3.5, "treemap tiles stay roughly square");
+    }
+
     static void CrashTests()
     {
         // Watcher: which exit code tells the most, and which processes are crash reporters.

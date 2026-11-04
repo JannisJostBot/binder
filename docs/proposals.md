@@ -1,6 +1,6 @@
 # Planned features (approved by the owner)
 
-Status: **approved specs. Milestones 8–11 are built; 12–15 are still to do** (see the progress table in §0).
+Status: **approved specs. Milestones 8–11 and 15 are built; 12 is in progress; 13 and 14 are still to do** (see the progress table in §0).
 - **Designs:** on the design canvas, https://claude.ai/artifact/9tZEP6HSrETxwGwpSbMg1Q. Pages by area ("Shelf",
   "Game detail", "Window, setup & settings"), plus "Still to build" with the open milestones in build order. Board
   numbers (1–17) are given in each section below and stay in the board titles, with "built" or the milestone.
@@ -24,7 +24,7 @@ break the user's system.
 | 12 More launchers | §8 | **In progress.** Done: EA app, Ubisoft Connect, Xbox app (tile logo as the cover picture) and Rockstar (tested with synthetic data only, no Rockstar game installed). Not yet: Battle.net, Riot, Amazon, itch, Humble and Meta |
 | 13 Controller | §4 | To do |
 | 14 Game mode | §11 | To do |
-| 15 Free up space | §12 | To do |
+| 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 
 Also built since the baseline, outside these milestones (already in `CLAUDE.md`): native radii, click-to-play covers
 with a Details (i) button, greeting header, the switchable top slot, silent Steam start.
@@ -607,8 +607,8 @@ to remove and on which drive, and hands each removal to the game's own launcher.
 
 Signals:
 - Playtime: our own sessions.
-- Last played: the later of our sessions and Steam's `LastPlayed` in `appmanifest_*.acf` (already parsed), so a game
-  played through Steam directly isn't treated as unplayed. Verify the key on the real PC.
+- Last played: the later of our sessions and Steam's `LastPlayed` in `appmanifest_*.acf` (`Game.StoreLastPlayed`), so a
+  game played through Steam directly isn't treated as unplayed. Verified on the real PC.
 
 **Best drive:** the plan with the least total playtime, then the fewest games, then the smallest overshoot. It gets a
 "Best choice" label; the user can pick another drive.
@@ -661,7 +661,7 @@ Signals:
     - First the no-admin part: power, priority, apps, Game Bar, journal, toast.
     - Then the elevated helper, the installer step, the services and the network items.
     - Update the security rules in `CLAUDE.md` in the same milestone.
-15. **Free up space** (§12).
+15. **Free up space** (§12). *(Done.)*
 
 ## Not decided (don't build)
 

@@ -10,6 +10,7 @@
         <v:SettingsView x:Name="SettingsPage" Visibility="Collapsed" />
         <v:ImportView x:Name="ImportPage" Visibility="Collapsed" />
         <v:SetupView x:Name="SetupPage" Visibility="Collapsed" />
+        <v:FreeSpaceView x:Name="FreeSpacePage" Visibility="Collapsed" />
 
         <!-- In-panel launch toast: "Starting X", countdown, Keep open. Also used for notices. On a solid
              backing so covers don't show through the InfoBar's translucent fill. -->

@@ -1,3 +1,4 @@
+using GameShelf.Library;
 using GameShelf.Models;
 using GameShelf.Services;
 using Microsoft.UI.Xaml;
@@ -7,7 +8,7 @@ using Windows.Foundation;
 
 namespace GameShelf.Views;
 
-public enum GameAction { Play, Details, OpenFolder, StorePage, VerifyFiles, Uninstall, ToggleFavorite, Hide, TestLaunch }
+public enum GameAction { Play, Details, OpenFolder, StorePage, VerifyFiles, Uninstall, ToggleFavorite, Hide, TestLaunch, FreeUpSpace }
 
 /// <summary>
 /// The per-game menu, on a cover's right-click (or Menu key / Shift+F10) and the detail view's "…" button: a
@@ -63,6 +64,9 @@ public static class GameMenu
             Add("Verify game files", "", GameAction.VerifyFiles, "V");
             Add("Uninstall in Steam…", "", GameAction.Uninstall, "U");
         }
+        // The detail view's "…" menu: plan room for a new game on this game's drive (spec §12).
+        if (!includePlayAndDetails && SpacePlanner.DriveOf(game) is not null)
+            Add("Free up space…", "", GameAction.FreeUpSpace, "R");
         menu.Items.Add(new MenuFlyoutSeparator());
         Add(game.Favorite ? "Remove from favorites" : "Add to favorites", game.Favorite ? "" : "",
             GameAction.ToggleFavorite, "A");

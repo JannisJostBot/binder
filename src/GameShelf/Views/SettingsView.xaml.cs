@@ -25,6 +25,7 @@ public sealed partial class SettingsView : UserControl
     public event Action? RestoreRequested;
     public event Action? AddGameRequested;
     public event Action? SetupRequested;
+    public event Action? FreeSpaceRequested;
 
     private Settings _settings = new();
     private bool _loading; // true while controls are filled from the settings, so their events are ignored
@@ -252,6 +253,8 @@ public sealed partial class SettingsView : UserControl
     private void OnAddGameClick(object sender, RoutedEventArgs e) => AddGameRequested?.Invoke();
 
     private void OnRefreshClick(object sender, RoutedEventArgs e) => RefreshRequested?.Invoke();
+
+    private void OnFreeSpaceClick(object sender, RoutedEventArgs e) => FreeSpaceRequested?.Invoke();
 
     private void OnPositionChanged(object sender, SelectionChangedEventArgs e)
     {

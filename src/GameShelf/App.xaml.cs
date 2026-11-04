@@ -16,6 +16,9 @@ public sealed class AppState
 
     /// <summary>The stores are scanned once per run (and on Refresh), not every time the flyout opens.</summary>
     public bool Scanned { get; set; }
+
+    /// <summary>Free up space while it's open; mid-uninstall it survives the flyout closing (memory only).</summary>
+    public Views.FreeSpaceState? FreeSpace { get; set; }
 }
 
 /// <summary>

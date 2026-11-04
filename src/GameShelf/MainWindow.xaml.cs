@@ -74,6 +74,9 @@ public sealed partial class MainWindow : Window
         SettingsPage.RestoreRequested += RestoreShortcuts;
         SettingsPage.AddGameRequested += AddGame;
         SettingsPage.SetupRequested += ShowSetup;
+        SettingsPage.FreeSpaceRequested += () => ShowFreeSpace(new FreeSpaceState());
+        FreeSpacePage.BackRequested += LeaveFreeSpace;
+        FreeSpacePage.CheckAgainRequested += () => _ = CheckFreeSpaceAgainAsync();
         ImportPage.Cancelled += ShowSettings;
         ImportPage.ImportRequested += ImportShortcuts;
         SetupPage.Skipped += () => FinishSetup(null);
@@ -99,6 +102,7 @@ public sealed partial class MainWindow : Window
         Shelf.CrashDismissed += _ => CrashSeen();
         if (CrashStore.Unseen(App.State.Crashes, _sessions) is { } crash) ShowCrash(crash);
         if (!App.Settings.SetupDone) ShowSetup();
+        else if (App.State.FreeSpace is { Uninstalling: true } freeSpace) ShowFreeSpace(freeSpace); // back from a launcher
 
         // The launch countdown runs in App (it survives the flyout closing); show it while we're open.
         App.Current.CountdownTick += OnCountdownTick;
@@ -503,6 +507,40 @@ public sealed partial class MainWindow : Window
         SettingsPage.Visibility = page == SettingsPage ? Visibility.Visible : Visibility.Collapsed;
         ImportPage.Visibility = page == ImportPage ? Visibility.Visible : Visibility.Collapsed;
         SetupPage.Visibility = page == SetupPage ? Visibility.Visible : Visibility.Collapsed;
+        if (page != FreeSpacePage && FreeSpacePage.Visibility == Visibility.Visible)
+        {
+            FreeSpacePage.Release();
+            App.State.FreeSpace = null;
+        }
+        FreeSpacePage.Visibility = page == FreeSpacePage ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    /// <summary>
+    /// Free up space (spec §12), from Settings or a game's "…" menu (that game's drive selected). Mid-uninstall
+    /// a reopened panel comes back here with the same plan and fresh free-space numbers.
+    /// </summary>
+    private void ShowFreeSpace(FreeSpaceState state)
+    {
+        App.State.FreeSpace = state;
+        FreeSpacePage.Show(state, _games, _sessions);
+        ShowPage(FreeSpacePage);
+        FreeSpacePage.UpdateLayout();
+        FreeSpacePage.FocusFirst();
+    }
+
+    private void LeaveFreeSpace()
+    {
+        var returnTo = App.State.FreeSpace?.ReturnGameId is { } id ? FindGame(id) : null;
+        if (returnTo is not null && !returnTo.Hidden) ShowDetail(returnTo);
+        else ShowSettings();
+    }
+
+    /// <summary>"Check again", and after the last game was handed to its launcher: rescan, then re-plan.</summary>
+    private async Task CheckFreeSpaceAgainAsync()
+    {
+        await RescanAsync();
+        if (FreeSpacePage.Visibility == Visibility.Visible && App.State.FreeSpace is { } state)
+            FreeSpacePage.Show(state, _games, _sessions);
     }
 
     /// <summary>First-run setup (board 10). Also reachable from Settings → "Run first-time setup again".</summary>
@@ -804,6 +842,9 @@ public sealed partial class MainWindow : Window
             case GameAction.Uninstall:
                 if (GameActions.SteamCommand(game, "uninstall") is { } uninstall) GameActions.ShellOpen(uninstall);
                 break;
+            case GameAction.FreeUpSpace:
+                ShowFreeSpace(new FreeSpaceState { Drive = SpacePlanner.DriveOf(game), DrivePicked = true, ReturnGameId = game.Id });
+                break;
             case GameAction.ToggleFavorite:
                 game.Favorite = !game.Favorite;
                 SaveLibrary();
@@ -843,6 +884,7 @@ public sealed partial class MainWindow : Window
     {
         if (e.Key != Windows.System.VirtualKey.Escape) return;
         if (Detail.Visibility == Visibility.Visible || SettingsPage.Visibility == Visibility.Visible) ShowShelf();
+        else if (FreeSpacePage.Visibility == Visibility.Visible) LeaveFreeSpace();
         else if (ImportPage.Visibility == Visibility.Visible) ImportPage.CancelByEscape();
         else if (IsFlyout) App.Current.ClosePanel(this);
         else return;
@@ -852,7 +894,8 @@ public sealed partial class MainWindow : Window
     /// <summary>Type-to-search: printable keys typed anywhere outside a text box go to the search box.</summary>
     private void OnCharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs e)
     {
-        if (e.Handled || SetupPage.Visibility == Visibility.Visible) return; // no shelf to search behind the setup
+        // No shelf to search behind the setup; on Free up space a stray key mustn't throw the plan away.
+        if (e.Handled || SetupPage.Visibility == Visibility.Visible || FreeSpacePage.Visibility == Visibility.Visible) return;
         var focused = FocusManager.GetFocusedElement(Root.XamlRoot);
         if (focused is TextBox || char.IsControl(e.Character)) return;
         // Space activates a focused button, item or switch; leave it alone.

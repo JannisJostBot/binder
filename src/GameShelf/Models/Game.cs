@@ -21,6 +21,9 @@ public sealed class Game
     public string? ExePath { get; set; }
     public long SizeOnDisk { get; set; }
 
+    /// <summary>When the store last started the game (Steam's LastPlayed), for games played without Game Shelf.</summary>
+    public DateTimeOffset? StoreLastPlayed { get; set; }
+
     /// <summary>The program whose icon makes the generated cover (when there's no store art).</summary>
     public string? IconPath { get; set; }
 

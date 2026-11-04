@@ -54,15 +54,18 @@ GameShelf.sln
                             LaunchOptions (arguments, Steam run links, "Start with"), GameScan (engine and anti-cheat
                             from file names, bounded, cached per game), AntiCheat (requirements and conflict tables),
                             PlaytimeStats (this week, weekly and monthly playtime from our sessions),
-                            CrashAnalysis (milestone 11: exit code + Windows events -> ending, culprit, advice, copied texts)
+                            CrashAnalysis (milestone 11: exit code + Windows events -> ending, culprit, advice, copied texts),
+                            SpacePlanner (milestone 15: which games to remove on which drive, squarified treemap)
     Models/                 Game, Session, Settings, ImportedShortcut, CrashRecord
     Services/               Launcher, CoverCache, Storage, DesktopLayer, Autostart, GameActions,
                             Placement (pure pixel math), Monitors (displays, auto-hide taskbars), ShellNotify, ErrorLog,
                             PcChecks (Secure Boot, TPM, test signing, drivers, conflicting programs; read-only, no admin),
                             CrashLog (event log 1000/1002/4101 for one session), CrashStore (crashes.json), PcInfo
-                            (Windows, graphics, memory; read only when copying), GameLogs (Unity/Unreal log files)
+                            (Windows, graphics, memory; read only when copying), GameLogs (Unity/Unreal log files),
+                            RunningGames (games running right now, read once when Free up space opens)
     Views/                  ShelfView, DetailView, SettingsView, ImportView, SetupView (the launch toast lives in MainWindow),
-                            BarChart (the playtime charts), ModePreview (display mode pictures), CrashCard (shelf and detail)
+                            BarChart (the playtime charts), ModePreview (display mode pictures), CrashCard (shelf and detail),
+                            FreeSpaceView (Free up space, milestone 15)
   src/GameShelf.Watcher/    Program.cs only
   src/GameShelf.Setup/      GameShelfSetup.exe: per-user installer, updater and uninstaller (Native AOT, task dialogs)
   tests/GameShelf.Tests/    plain console unit tests for the non-UI code (no test framework packages)
@@ -97,6 +100,7 @@ Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions
   - Find the Steam path in `HKCU\Software\Valve\Steam\SteamPath`.
   - Parse `steamapps\libraryfolders.vdf` for all library folders, then each `appmanifest_*.acf` (appid, name, installdir, SizeOnDisk). You'll need a small VDF parser.
   - Skip non-games: redistributables (e.g. appid 228980), Proton, SDKs, dedicated servers.
+  - `LastPlayed` (Unix seconds, 0 = never) is kept as `Game.StoreLastPlayed`, so Free up space counts games played through Steam directly.
   - Launch with `steam://rungameid/{appid}`. When Steam isn't running (`HKCU\Software\Valve\Steam\ActiveProcess\pid`, checked against a live `steam` process), start `{SteamPath}\steam.exe -silent <link>` instead, so Steam starts in the notification area without opening its window.
   - Covers: the local Steam library cache first, else download `library_600x900` from the Steam CDN once and cache it.
 - **Epic**
@@ -188,7 +192,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 
 **Detail view** (replaces the grid inside the same panel; a back button returns)
 - Banner (Steam hero art), cover, title, store, and a favorite star. The developer isn't in the local store manifests, so it's left out unless a source provides it.
-- A big Play button, an open-folder button and a "…" menu.
+- A big Play button, an open-folder button and a "…" menu (it also has "Free up space…", opening with this game's drive).
 - Stat tiles: Playtime (from our own sessions), Last played, Size on disk.
 - Recent sessions list (last 3–5).
 - "This game only" settings: hide delay (Default / custom), process to watch (auto-detected or picked), and a custom cover.
@@ -201,6 +205,13 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 - Position: Left / Right / Free.
 - Stay on the desktop layer (toggle).
 - Start with Windows: an `HKCU\...\Run` entry.
+- Storage: "Free up space…" (milestone 15, `docs/proposals.md` §12).
+  - The user types the new game's size in GB; each fixed drive gets a plan, and the best one is labelled "Best choice".
+  - A treemap of the chosen drive shows the games by size; clicking a tile adds or leaves out that game.
+  - "Uninstall N games…" hands each game to its own launcher, one at a time: Steam's uninstall link, GOG Galaxy's
+    game page, the launcher itself, or Settings › Apps for Xbox games and missing launchers. Game Shelf never deletes
+    game files.
+  - Mid-uninstall the page's state lives in `App.State.FreeSpace` (memory only), so reopening the flyout continues there.
 
 ## Performance budgets (hard requirements)
 
@@ -211,7 +222,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 
 ## Planned additions
 
-Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas; the open ones are on its "Still to build" page. **Read section 0 of that file before starting the next milestone** (its progress table says which one: milestones 8–11 are done, 12 More launchers is in progress). It lists what is new, what changes existing code, and which owner decisions override this brief:
+Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas; the open ones are on its "Still to build" page. **Read section 0 of that file before starting the next milestone** (its progress table says which one: milestones 8–11 and 15 are done, 12 More launchers is in progress). It lists what is new, what changes existing code, and which owner decisions override this brief:
 
 - Game mode's separate elevated helper is an approved exception to "never ask for admin rights". The widget and the watcher still never elevate.
 - Cover badges show the launcher's icon instead of text, and manually added games get no badge.

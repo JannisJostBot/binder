@@ -250,6 +250,24 @@
                 </StackPanel>
             </Border>
 
+            <!-- Storage (spec §12) -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="Storage" />
+            <Border Style="{StaticResource Card}">
+                <Grid Style="{StaticResource SettingRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Style="{StaticResource RowText}">
+                        <TextBlock Style="{StaticResource RowTitle}" Text="Free up space" />
+                        <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                                   Text="See which games to remove to make room for a new one" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Free up space…" Click="OnFreeSpaceClick" VerticalAlignment="Center"
+                            AutomationProperties.Name="Free up space" />
+                </Grid>
+            </Border>
+
             <!-- Hidden games -->
             <TextBlock Style="{StaticResource SectionLabel}" Text="Hidden games" />
             <Border Style="{StaticResource Card}">
