@@ -19,7 +19,7 @@ This app must perform very well and consume as little CPU, RAM, disk I/O and GPU
 - Measure, don't assume: check CPU, memory and startup time after each milestone, and report the numbers. If a change regresses them, fix it before moving on.
 
 Design reference (owner's private canvas, open it in a browser): https://claude.ai/artifact/9tZEP6HSrETxwGwpSbMg1Q
-Boards: "Desktop with widget", "Game detail", "Settings", "Launch → hide → return".
+Pages: "Shelf", "Game detail", "Window, setup & settings" (built designs) and "Still to build" (open milestones, in build order). Board titles carry the board number used in `docs/proposals.md` and "built" or the milestone.
 
 ---
 
@@ -58,7 +58,7 @@ GameShelf.sln
     Services/               Launcher, CoverCache, Storage, DesktopLayer, Autostart, GameActions,
                             Placement (pure pixel math), Monitors (displays, auto-hide taskbars), ShellNotify, ErrorLog,
                             PcChecks (Secure Boot, TPM, test signing, drivers, conflicting programs; read-only, no admin)
-    Views/                  ShelfView, DetailView, SettingsView, ImportView (the launch toast lives in MainWindow),
+    Views/                  ShelfView, DetailView, SettingsView, ImportView, SetupView (the launch toast lives in MainWindow),
                             BarChart (the playtime charts), ModePreview (display mode pictures)
   src/GameShelf.Watcher/    Program.cs only
   src/GameShelf.Setup/      GameShelfSetup.exe: per-user installer, updater and uninstaller (Native AOT, task dialogs)
@@ -125,7 +125,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 - **System settings respected:** per-monitor DPI scaling, the Windows text size setting, "Animation effects" off (disable transitions), high contrast themes, and multiple monitors.
 - **Native behavior:**
   - Native right-click context menus on covers (Play, Open folder, Favorite, Hide).
-  - Full keyboard navigation (arrow keys in the grid, Enter to play, Esc to go back, type-to-search).
+  - Full keyboard navigation (arrow keys in the grid, Enter to play, Space for details, Esc to go back, type-to-search).
   - Proper tooltips, and screen-reader names (UI Automation) on all controls.
 - **Windows integration:**
   - Start with Windows via the standard Run key.
@@ -165,16 +165,20 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 - Acrylic backdrop (owner's choice): WinUI's `DesktopAcrylicController` in a custom `SystemBackdrop` (`PanelBackdrop`), kept active while the panel isn't focused. Colors come from WinUI's theme resources (light, dark, high contrast and the accent color follow Windows live); the token table below is the dark design reference.
 
 **Shelf view (main)**
-- Header: "Games", the installed count and a settings button.
+- Header: a greeting for the time of day ("Good morning" / "Good afternoon" / "Good evening", set when the panel gets its data, never on a timer) and a settings button. The game count is shown above the grid.
 - Search box: focused on open, filters as you type.
 - Filter chips: All, Favorites, Recent, then the launchers that have games (most games first) and "Other" for manual games and shortcuts; beyond three launcher chips the rest go under "More".
 - Sort menu above the grid (Recently played, Most played, Name, Recently added, Size on disk, plus "Favorites first"), saved in settings. Cover size in Settings: Small (5 columns), Medium (4), Large (3), List.
-- "Continue playing" card: the last played game with a Play button.
-- Cover grid (3:4 covers, the title below). Top-left: the launcher's own icon as a 24 px badge (read from the installed launcher's exe at runtime; manual games and shortcuts get none). Top-right: a star on favorites. Hovering shows a play overlay.
+- One fixed-height slot (168 px) under the filters, switched with a small `SelectorBar` in its top-right corner and remembered (`SpotlightShowsWeek`), so switching never moves the grid:
+  - **Continue playing:** a hero banner of the last played game (its hero art, loaded only while shown, with a bottom fade), title, last played and launcher, and a Play button.
+  - **This week:** the total, game count, most played game and a bar per day.
+  - The switch shows only when both have something to show; the slot hides while searching.
+- Cover grid (3:4 covers, the title below). Top-left: the launcher's own icon as a 24 px badge (read from the installed launcher's exe at runtime; manual games and shortcuts get none). Top-right: a star on favorites. Hovering lifts the cover slightly with an accent outline and a "Play" label, and shows a Details (i) button in its bottom-right corner (instant, no animation).
 - Games without store art get a generated cover: the game's icon on its own muted color, or a monogram (`FallbackArt`, `CoverColors`). No network.
-- Clicking a cover opens the Detail view. Clicking the hover Play button launches directly.
+- Clicking a cover (or a row in List) plays the game, like Enter and like the desktop shortcuts it replaces. Details open from the (i) button, Space, or right-click › Details. The (i) button stays in the UI Automation tree when not hovered, so screen readers can reach it.
 - Favorites are pinned first.
-- Footer hint: "Hides 10 s after a game starts · comes back when it closes".
+- Footer hint: "Hides 10 s after a game starts · comes back when it closes", shown until three sessions are recorded.
+- Empty states: a large Fluent icon, one plain sentence and the way forward (no games: Import desktop shortcuts / Add a game; no search match: Clear search / Add a game).
 
 **Detail view** (replaces the grid inside the same panel; a back button returns)
 - Banner (Steam hero art), cover, title, store, and a favorite star. The developer isn't in the local store manifests, so it's left out unless a source provides it.
@@ -201,7 +205,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 
 ## Planned additions
 
-Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas's "Proposals" and "More features" pages. **Read section 0 of that file before starting milestone 8.** It lists what is new, what changes existing code, and which owner decisions override this brief:
+Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas; the open ones are on its "Still to build" page. **Read section 0 of that file before starting the next milestone** (its progress table says which one: milestones 8–10 are done, 11 Crash detection is next). It lists what is new, what changes existing code, and which owner decisions override this brief:
 
 - Game mode's separate elevated helper is an approved exception to "never ask for admin rights". The widget and the watcher still never elevate.
 - Cover badges show the launcher's icon instead of text, and manually added games get no badge.
@@ -218,7 +222,7 @@ Items under "Not decided" in that file must not be built.
 5. The settings view, autostart and the desktop-layer behavior. Include a way to show hidden games again (hiding currently only has an Undo in the toast).
 6. Epic, GOG, desktop-shortcut import and manual add.
 7. Polish: multi-monitor handling, empty states, the error toast, and a single-file publish script.
-8.–14. The approved additions, in the order given at the end of `docs/proposals.md`.
+8.–15. The approved additions, in the order given at the end of `docs/proposals.md`.
 
 ## Errors
 

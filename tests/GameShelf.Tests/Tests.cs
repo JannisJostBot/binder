@@ -56,6 +56,10 @@ static class Tests
         }
         // Formatting used by the detail view.
         Check(Format.Duration(TimeSpan.FromSeconds(30)) == "< 1 min", "duration under a minute");
+        Check(Format.Greeting(new DateTime(2026, 1, 1, 4, 59, 0)) == "Good evening" &&
+              Format.Greeting(new DateTime(2026, 1, 1, 5, 0, 0)) == "Good morning" &&
+              Format.Greeting(new DateTime(2026, 1, 1, 12, 0, 0)) == "Good afternoon" &&
+              Format.Greeting(new DateTime(2026, 1, 1, 18, 0, 0)) == "Good evening", "greeting by time of day");
         Check(Format.Duration(TimeSpan.FromMinutes(155)) == "2 h 35 min", "duration with hours");
         Check(Format.Playtime(TimeSpan.FromHours(42.5)) == "42 h", "playtime over 10 h");
         Check(Format.Delay(0) == "Instantly" && Format.Delay(10) == "10 s", "hide delay labels");

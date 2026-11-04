@@ -39,6 +39,8 @@ public sealed class Settings
     public GridDensity GridDensity { get; set; } = GridDensity.Medium;
     /// <summary>The "This week" card on the shelf: playtime per day from our own sessions.</summary>
     public bool ShowWeeklySummary { get; set; } = true;
+    /// <summary>The shelf's top slot shows "This week" instead of "Continue playing" (the last choice is kept).</summary>
+    public bool SpotlightShowsWeek { get; set; }
 
     public DisplayMode DisplayMode { get; set; } = DisplayMode.Flyout;
     public bool TrayIcon { get; set; } = true;

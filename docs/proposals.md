@@ -1,8 +1,9 @@
 # Planned features (approved by the owner)
 
-Status: **approved specs, not implemented yet.**
-- **Designs:** on the design canvas, https://claude.ai/artifact/9tZEP6HSrETxwGwpSbMg1Q, on the pages "Proposals" (boards 1–5)
-  and "More features" (boards 6–13). Board numbers are given in each section below.
+Status: **approved specs. Milestones 8–10 are built; 11–15 are still to do** (see the progress table in §0).
+- **Designs:** on the design canvas, https://claude.ai/artifact/9tZEP6HSrETxwGwpSbMg1Q. Pages by area ("Shelf",
+  "Game detail", "Window, setup & settings"), plus "Still to build" with the open milestones in build order. Board
+  numbers (1–17) are given in each section below and stay in the board titles, with "built" or the milestone.
 - **Baseline:** written against the code at `0eacc65` (branch `milestone-6-sources`: milestones 1–6 done).
 
 Every item follows the project brief: zero cost while idle or gaming, no third-party packages, nothing that can
@@ -11,6 +12,22 @@ break the user's system.
 ---
 
 ## 0. Read this first (for the session that implements this)
+
+### Progress (keep this table current)
+
+| Milestone | Sections | Status |
+|---|---|---|
+| 8 Quick wins | §1 app icon, §2 fallback covers, §3 launcher icons, §7 sort / Favorites chip / cover size | Done |
+| 9 Window behavior | §5 flyout, tray, shortcut, stay ready; §6 first-run setup | Done |
+| 10 Detail additions | §7 "This week", §9 playtime chart, launch options, anti-cheat | Done. "This week" was later merged with "Continue playing" into one switchable slot (board 16, see `CLAUDE.md`) |
+| 11 Crash detection | §10 | **Next.** Includes the "Copy AI prompt" and "Copy bug report" actions (board 13) |
+| 12 More launchers | §8 | Partly: EA app and Ubisoft Connect are done; Xbox, Battle.net, Riot, Rockstar, Amazon, itch, Humble and Meta are not |
+| 13 Controller | §4 | To do |
+| 14 Game mode | §11 | To do |
+| 15 Free up space | §12 | To do |
+
+Also built since the baseline, outside these milestones (already in `CLAUDE.md`): native radii, click-to-play covers
+with a Details (i) button, greeting header, the switchable top slot, silent Steam start.
 
 ### Already in the code: don't rebuild
 
@@ -40,6 +57,7 @@ break the user's system.
 | 9 | Detail: playtime chart, launch options with engine suggestions, anti-cheat label and check | Changes existing | `DetailView`, `Launcher`, `Game` |
 | 10 | Crash detection on return | Changes existing | Watcher (save exit code), `Session`, `MainWindow`, `DetailView` |
 | 11 | Game mode (power, priority, services, apps, network) with exact restore and a "Restored" toast | New, biggest item | new `GameShelf.Elevated` project, watcher hooks, new Settings sub-page |
+| 12 | Free up space: which games to uninstall for a new one, per drive, shown as a treemap | New | new `Library/SpacePlanner`, new `Views/FreeSpaceView`, `SettingsView`, `GameMenu` |
 
 ### Conflicts with `CLAUDE.md` to resolve while implementing
 
@@ -90,6 +108,22 @@ The ideas listed under "Not decided" at the bottom must **not** be built.
   - "Slow down background uploads" at **5 Mbit/s**.
   - "Limit Windows Update downloads".
 - **No** check for whole-PC crashes.
+
+**2026-11-03 – 11-04** (already built and in `CLAUDE.md`)
+- Native Windows 11 radii: 8 panel (system-drawn), 8 cards and covers, 4 controls.
+- Clicking a cover plays; details open from an (i) button on hover, Space or right-click.
+- Shelf header is a time-of-day greeting; "Continue playing" (hero banner) and "This week" share one switchable slot.
+- Steam starts with `-silent` when it isn't running.
+- Scope rule: a launcher, not a game toolbox. Engine versions and shader-cache tools were dropped under it.
+
+**2026-11-04**
+- **Free up space** approved (§12):
+  - The user enters the new game's total size; the planner picks the drive and the games.
+  - Order: least played first, the closest size fit within similar playtime, then games played in the last 14 days,
+    favorites last of all.
+  - Shown as a treemap with the games' icons; tiles can be added or removed by clicking.
+  - Uninstall goes through each launcher. Where there's no uninstall link, opening the launcher is fine.
+  - Reached from Settings and from the Detail view's "…" menu.
 
 ---
 
@@ -251,7 +285,8 @@ Three steps, shown once (Settings has "Run first-time setup again"):
   - "Favorites first" checkbox (on by default).
   - "Recently added" needs a new `Game.AddedAt`, set the first time a game is seen.
 - **Favorites filter chip** with a star; a star badge on favorite covers (top-right).
-- **"This week" card** (optional, `Settings.ShowWeeklySummary`, on by default):
+- **"This week" card** (optional, `Settings.ShowWeeklySummary`, on by default). Built; it now shares one slot with
+  "Continue playing" (board 16, `CLAUDE.md` → Shelf view):
   - Total time, number of games, most played game, and 7 bars Mon–Sun.
   - Single series in the accent color: thin bars with 4 px rounded tops, a recessive baseline, a tooltip per bar,
     and an automation name with all values.
@@ -390,7 +425,23 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
   - Actions:
     - **Play again**.
     - **Open game log**: Unity `Player.log`, Unreal `Saved\Logs`, found via the engine detection.
-    - **Copy details**.
+    - **Copy bug report** (every crash card and the "didn't start" card).
+    - **Copy AI prompt**, only when the error isn't in the table above (the "Unknown" row): the card then says
+      "Game Shelf doesn't know this error" and offers both copy actions instead of advice (board 13, right column).
+- **The two texts** (plain language, no technical background needed; built locally; copied with the Windows
+  clipboard and confirmed with "Copied", with the text shown so the user sees what they paste):
+  - **AI prompt:** a question in the first person for any AI assistant: the game, how long it ran, the exception code
+    with its plain description and the faulting file, the PC (Windows version, graphics card and driver version,
+    memory), how many crashes in the last 10 sessions and after how long, ending with "I am not technical. What could
+    cause this, and what can I try, step by step, starting with the easiest fix?"
+  - **Bug report:** the same facts as a short report for the developer: game and store version (Steam, Epic, …),
+    play time before the crash, date and time, error code and file, how often, PC. Ends with "Report from Game
+    Shelf. No personal data or file paths included."
+  - **Where the PC facts come from (no admin, no network):** Windows version from
+    `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion` (`ProductName`, `DisplayVersion`); graphics card and driver
+    from the display adapter class key (`DriverDesc`, `DriverVersion`); memory from `GlobalMemoryStatusEx`.
+  - **Privacy:** never include the user name, user-profile paths or full install paths (file names only), and no
+    other running programs. Nothing is sent anywhere; the user decides where to paste.
 - **If "Come back" is off:** show a "Restored"-style toast (§11) with Details instead.
 - **Detail view:** a warning icon on crashed sessions, plus a pattern line when there is one ("2 crashes in the
   last 10 sessions, both in the graphics driver").
@@ -519,23 +570,98 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
 
 ---
 
+## 12. Free up space (board 17)
+
+A new game needs more room than a drive has. The user says how big it is; Game Shelf suggests which installed games
+to remove and on which drive, and hands each removal to the game's own launcher. It never deletes game files itself.
+
+### Where
+- **Settings:** a "Storage" row, "Free up space…".
+- **Detail view:** "Free up space…" in the "…" menu, opening with that game's drive selected.
+- A page inside the panel like Settings (back button, Esc). Nothing runs until it's opened.
+
+### Input
+- "How much space does the new game need?": a `NumberBox` with the unit "GB" inside the field on its right (you type
+  only the number; screen-reader name "gigabytes"), followed by "in total, as on its store page". Focused when the
+  page opens; the plan updates as you type.
+- Drive free space comes from `DriveInfo.AvailableFreeSpace`, read when the page opens and after "Check again".
+  No watchers, no timers.
+
+### Which games count
+- Installed games on that drive (grouped by `Path.GetPathRoot(InstallDir)`), hidden ones included (they still use space).
+- Need a known size: Steam `SizeOnDisk`, Epic install size, EA / Ubisoft `EstimatedSize`. Games without one are shown
+  but never suggested. No folder measuring.
+- Manual games and shortcuts are left out: no launcher can uninstall them.
+- A game that's running right now is left out.
+
+### The plan, per drive
+1. `missing = need − free`. Zero or less: "It fits already".
+2. Candidates go in three **tiers**, used in order; a later tier only when the earlier ones aren't enough:
+   1. Everything else.
+   2. Played in the last 14 days.
+   3. Favorites.
+3. Within a tier, by **playtime band**: never played, under 1 h, under 5 h, under 20 h, more. Lower bands first.
+4. Within a band, the **closest fit**: the smallest game that covers what's still missing; if none does, the largest,
+   then repeat with what's left.
+5. Finally drop any picked game the plan doesn't need after all, biggest first.
+
+Signals:
+- Playtime: our own sessions.
+- Last played: the later of our sessions and Steam's `LastPlayed` in `appmanifest_*.acf` (already parsed), so a game
+  played through Steam directly isn't treated as unplayed. Verify the key on the real PC.
+
+**Best drive:** the plan with the least total playtime, then the fewest games, then the smallest overshoot. It gets a
+"Best choice" label; the user can pick another drive.
+
+### Showing it
+- Drive letters always appear as a small tag with the Fluent drive glyph (e.g. `[drive D:]`), so "D:" reads as a
+  drive, not a typo.
+- One card per drive: the drive tag and its label, a used-space bar, "N games to remove" or "fits already".
+- Heading above the treemap: "What takes up space on `[drive D:]`" with an (i) button. One line under it: "Each tile
+  is one of your games: the bigger the tile, the more space it uses. The highlighted ones are suggested for removal.
+  Click a tile to add it or leave it out."
+- The (i) opens a `TeachingTip`, "How games are picked", with the three steps (least played first, closest fit
+  within similar playtime; then games played in the last 14 days; favorites last) and "Games that aren't needed
+  after all are left out again." The rules are **not** in the legend; the legend only explains the tiles
+  (suggested, kept, free now).
+- A **treemap** of the chosen drive (squarified, built once per change, static):
+  - One tile per game, sized by its size on disk, on the game's muted color (`CoverColors`) with its icon
+    (`FallbackArt`), or a monogram when there's none.
+  - Suggested games: full color, accent outline, a check mark. Kept games: dimmed. Free space: a dashed tile.
+  - Marks for "played recently" and favorites.
+  - Clicking a tile adds or removes it. Each tile is a focusable toggle with a screen-reader name (name, size,
+    playtime, suggested or not).
+- A summary: "Frees 80 GB of the 78 GB missing", then the chosen games with size and why (e.g. "Never played ·
+  8 months ago").
+
+### Uninstall
+- "Uninstall N games…" goes through them one at a time:
+  - Steam: `steam://uninstall/{appid}` (Steam asks first), as the existing "Uninstall in Steam…" does.
+  - Launchers without an uninstall link (Epic, EA app, Ubisoft Connect, GOG Galaxy, …): open the launcher, with a
+    toast naming the game to remove there. Where no launcher is installed, open Settings → Apps.
+- "Check again" re-reads free space and the library afterwards.
+- Security: only built-in links from validated ids; nothing deleted by Game Shelf.
+
+---
+
 ## Build order (after milestone 7)
 
-8. **Quick wins:**
+8. **Quick wins:** *(Done.)*
    - App icon (§1).
    - Launcher icons (§3).
    - Fallback covers (§2).
    - Sort, Favorites chip, cover size / list view (§7).
-9. **Window behavior:** flyout, tray icon, shortcut, stay-ready footprint (§5) and first-run setup (§6).
+9. **Window behavior:** flyout, tray icon, shortcut, stay-ready footprint (§5) and first-run setup (§6). *(Done.)*
    Measure and report.
-10. **Detail additions:** playtime chart and weekly card (§7, §9), launch options, anti-cheat (§9).
+10. **Detail additions:** playtime chart and weekly card (§7, §9), launch options, anti-cheat (§9). *(Done.)*
 11. **Crash detection** (§10).
-12. **More launchers** (§8). Verify each one on the real PC.
+12. **More launchers** (§8). Verify each one on the real PC. *(EA app and Ubisoft Connect done.)*
 13. **Controller** (§4).
 14. **Game mode:**
     - First the no-admin part: power, priority, apps, Game Bar, journal, toast.
     - Then the elevated helper, the installer step, the services and the network items.
     - Update the security rules in `CLAUDE.md` in the same milestone.
+15. **Free up space** (§12).
 
 ## Not decided (don't build)
 
@@ -548,6 +674,9 @@ Suggested but neither approved nor rejected yet:
 - "Surprise me"
 - Pin to Start / desktop shortcut from a cover
 - A taskbar jump list with recent games
+- Free up space, faster size entry (§12): fill the size from a pending install the launcher has written to disk
+  (Steam/Epic, check what Steam writes first), a "Paste" button that reads "Storage: 150 GB" from copied store
+  text, and quick picks (50/100/150/200 GB, last used)
 - Start menu search integration
 - Importing playtime from Steam
 - Session notes

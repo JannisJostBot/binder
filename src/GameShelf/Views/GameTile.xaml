@@ -4,8 +4,12 @@
              xmlns:v="using:GameShelf.Views"
              IsTabStop="False">
     <StackPanel Spacing="8">
+        <!-- Clicking the cover plays (the grid's ItemClick); the (i) button opens details (board 15, option A). -->
         <Grid x:Name="CoverArea" PointerEntered="OnPointerEntered" PointerExited="OnPointerExited"
-              PointerCanceled="OnPointerExited" PointerCaptureLost="OnPointerExited">
+              PointerCanceled="OnPointerExited" PointerCaptureLost="OnPointerExited" RenderTransformOrigin="0.5,0.5">
+            <Grid.RenderTransform>
+                <ScaleTransform x:Name="Lift" />
+            </Grid.RenderTransform>
             <v:CoverView x:Name="Cover" />
             <!-- Shown until (or unless) a cover image loads. -->
             <TextBlock x:Name="PlaceholderTitle" Margin="10" TextWrapping="Wrap" TextAlignment="Center"
@@ -18,12 +22,22 @@
                     Background="{StaticResource BadgeBrush}" ToolTipService.ToolTip="Favorite">
                 <FontIcon Glyph="&#xE735;" FontSize="12" Foreground="{ThemeResource FavoriteBrush}" />
             </Border>
-            <!-- Hover: dim the cover and offer Play (board 1). -->
-            <Border x:Name="Overlay" CornerRadius="8" Background="{StaticResource CoverOverlayBrush}" Visibility="Collapsed">
-                <Button x:Name="PlayButton" Style="{StaticResource CoverPlayButton}" Click="OnPlayClick">
-                    <FontIcon Glyph="&#xF5B0;" FontSize="16" />
-                </Button>
+            <!-- Hover: a light dim, an accent outline and a "Play" label, so it's clear what a click does. -->
+            <Border x:Name="Overlay" CornerRadius="8" Background="{StaticResource CoverOverlayBrush}"
+                    BorderBrush="{ThemeResource AccentFillColorDefaultBrush}" BorderThickness="2"
+                    IsHitTestVisible="False" Visibility="Collapsed">
+                <Border Height="30" Padding="12,0" CornerRadius="15" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Background="{ThemeResource AccentFillColorDefaultBrush}">
+                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <FontIcon Glyph="&#xF5B0;" FontSize="11" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                        <TextBlock Text="Play" FontWeight="SemiBold" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                    </StackPanel>
+                </Border>
             </Border>
+            <!-- Always in the tree so screen readers and UI Automation can reach it; seen and clickable on hover. -->
+            <Button x:Name="DetailsButton" Style="{StaticResource CoverDetailsButton}" Margin="6"
+                    HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0" IsHitTestVisible="False"
+                    ToolTipService.ToolTip="Details" Click="OnDetailsClick" />
         </Grid>
         <TextBlock x:Name="TitleText" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="NoWrap"
                    TextTrimming="CharacterEllipsis" />

@@ -20,8 +20,8 @@ public sealed partial class ShelfView : UserControl
     // pixel or so, and a column that doesn't fit exactly wraps).
     private double _gridWidth = 532;
 
-    /// <summary>The sort order or "favorites first" changed; the owner saves the settings.</summary>
-    public event Action? SortChanged;
+    /// <summary>A shelf choice kept in settings changed (sort order, favorites first, the top slot); the owner saves.</summary>
+    public event Action? ViewSettingsChanged;
 
     public event Action<Game>? PlayRequested;
     public event Action<Game>? OpenRequested;
@@ -57,8 +57,6 @@ public sealed partial class ShelfView : UserControl
     public ShelfView()
     {
         InitializeComponent();
-        ContinueCover.ImageChanged += hasImage =>
-            ContinuePlaceholder.Visibility = hasImage ? Visibility.Collapsed : Visibility.Visible;
         Tiles.Loaded += (_, _) => ApplyPanel();
         Tiles.SizeChanged += (_, e) =>
         {
@@ -88,6 +86,10 @@ public sealed partial class ShelfView : UserControl
         BuildChips();
         BuildSortMenu();
 
+        // Worked out when the panel gets its data (it opens, a session ends), never on a timer.
+        GreetingText.Text = Format.Greeting(DateTime.Now);
+        // The footer teaches hide and return; after a few games from the shelf it has done its job.
+        Footer.Visibility = sessions.Count < FooterHintSessions ? Visibility.Visible : Visibility.Collapsed;
         var hides = settings.HideDelaySeconds <= 0 ? "Hides when a game starts" : $"Hides {settings.HideDelaySeconds} s after a game starts";
         FooterText.Text = settings.ComeBackOnClose ? hides + " · comes back when it closes" : hides;
         UpdateContinueCard();
@@ -146,28 +148,72 @@ public sealed partial class ShelfView : UserControl
             Tiles.ItemsSource = _listMode ? null : _visible;
             Rows.ItemsSource = _listMode ? _visible : null;
         }
-        CountText.Text = $"{_games.Count} installed";
         VisibleCountText.Text = _visible.Count == 1 ? "1 game" : $"{_visible.Count} games";
         SortButton.Visibility = _filter == "Recent" ? Visibility.Collapsed : Visibility.Visible;
 
         EmptyState.Visibility = _visible.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        EmptyActions.Visibility = _games.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        bool noMatch = _games.Count > 0 && query.Length > 0;
+        EmptyIcon.Glyph = _games.Count == 0 ? "\uE7FC" : query.Length > 0 ? "\uE721" : _filter == "Favorites" ? "\uE734" : "\uE81C";
+        EmptyActions.Visibility = _games.Count == 0 || noMatch ? Visibility.Visible : Visibility.Collapsed;
+        EmptyClearButton.Visibility = noMatch ? Visibility.Visible : Visibility.Collapsed;
+        EmptyImportButton.Visibility = noMatch ? Visibility.Collapsed : Visibility.Visible;
         EmptyText.Text =
             _games.Count == 0 ? "No games found yet. Games from Steam, Epic, GOG, EA and Ubisoft show up here automatically, or bring in your own." :
-            query.Length > 0 ? $"No games match “{query}”." :
+            query.Length > 0 ? $"No games match “{query}”. Check the spelling, or add the game if it isn't installed through a launcher." :
             _filter == "Recent" ? "Games you play from the shelf show up here." :
             _filter == "Favorites" ? "No favorites yet. Star a game in its details or its right-click menu." :
             "No games from this store.";
 
-        // Hidden while searching.
-        ContinueCard.Visibility = _continueGame is not null && query.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
-        WeekCard.Visibility = _hasWeek && query.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+        UpdateSpotlight(searching: query.Length > 0);
+    }
+
+    private const int FooterHintSessions = 3;
+    private bool _updatingSpotlight;
+
+    /// <summary>
+    /// The top slot: "Continue playing" or "This week", whichever the user picked last; the switch only when both
+    /// have something to show. Hidden while searching. The hero art loads only while its pane is shown.
+    /// </summary>
+    private void UpdateSpotlight(bool searching)
+    {
+        bool hasContinue = _continueGame is not null;
+        Spotlight.Visibility = !searching && (hasContinue || _hasWeek) ? Visibility.Visible : Visibility.Collapsed;
+        if (Spotlight.Visibility == Visibility.Collapsed) return;
+
+        bool showWeek = _hasWeek && (!hasContinue || _settings.SpotlightShowsWeek);
+        WeekPane.Visibility = showWeek ? Visibility.Visible : Visibility.Collapsed;
+        ContinuePane.Visibility = showWeek ? Visibility.Collapsed : Visibility.Visible;
+        SpotlightSwitchSurface.Visibility = hasContinue && _hasWeek ? Visibility.Visible : Visibility.Collapsed;
+        var item = showWeek ? WeekItem : ContinueItem;
+        if (!ReferenceEquals(SpotlightSwitch.SelectedItem, item))
+        {
+            _updatingSpotlight = true;
+            SpotlightSwitch.SelectedItem = item;
+            _updatingSpotlight = false;
+        }
+        if (!showWeek && !ReferenceEquals(ContinueArt.Game, _continueGame)) ContinueArt.Game = _continueGame;
+    }
+
+    private void OnSpotlightChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+    {
+        if (_updatingSpotlight || sender.SelectedItem is null) return;
+        bool week = ReferenceEquals(sender.SelectedItem, WeekItem);
+        if (week == _settings.SpotlightShowsWeek) return;
+        _settings.SpotlightShowsWeek = week;
+        UpdateSpotlight(searching: false);
+        ViewSettingsChanged?.Invoke();
+    }
+
+    private void OnEmptyClearClick(object sender, RoutedEventArgs e)
+    {
+        SearchBox.Text = "";
+        FocusSearch();
     }
 
     private bool _hasWeek;
 
     /// <summary>
-    /// "This week": total, how many games, the most played one and a bar per day, Monday to Sunday. Worked out
+    /// "This week" in the top slot: total, how many games, the most played one and a bar per day, Monday to Sunday. Worked out
     /// when the shelf gets its data (the panel opening, a session ending), never on a timer.
     /// </summary>
     private void UpdateWeekCard(IReadOnlyList<Session> sessions)
@@ -181,7 +227,8 @@ public sealed partial class ShelfView : UserControl
         WeekTotal.Text = Format.Duration(week.Total);
         var games = week.GameCount == 1 ? "1 game" : $"{week.GameCount} games";
         var top = week.TopGameId is { } id ? _games.FirstOrDefault(g => g.Id == id)?.Name : null;
-        WeekDetail.Text = top is null || week.GameCount == 1 ? (top is null ? games : top) : $"{games} · most: {top}";
+        var detail = top is null || week.GameCount == 1 ? (top is null ? games : top) : $"{games} · most: {top}";
+        WeekDetail.Text = "This week · " + detail;
         ToolTipService.SetToolTip(WeekDetail, top is null ? null : $"Most played: {top}, {Format.Duration(week.TopGameTime)}");
         WeekChart.Show(
             week.Days.Select(d => new Bar(
@@ -198,11 +245,9 @@ public sealed partial class ShelfView : UserControl
             .Where(g => _lastPlayed.ContainsKey(g.Id))
             .MaxBy(g => _lastPlayed[g.Id]);
         if (_continueGame is null) return;
-        if (ReferenceEquals(ContinueCover.Game, _continueGame)) ContinueCover.Refresh(); // cover may have changed
-        else ContinueCover.Game = _continueGame;
+        // The art itself is set by UpdateSpotlight, only while the banner is shown.
+        if (ReferenceEquals(ContinueArt.Game, _continueGame)) ContinueArt.Refresh(); // its art may have changed
         ContinueTitle.Text = _continueGame.Name;
-        ContinuePlaceholder.Text = _continueGame.Name; // shown until (or unless) the cover loads
-        ContinuePlaceholder.Visibility = ContinueCover.HasImage ? Visibility.Collapsed : Visibility.Visible;
         ContinueDetail.Text = $"{Format.RelativeDay(_lastPlayed[_continueGame.Id])} · {_continueGame.SourceLabel}";
         AutomationProperties.SetName(ContinuePlay, "Play " + _continueGame.Name);
     }
@@ -245,7 +290,7 @@ public sealed partial class ShelfView : UserControl
         if (args.InRecycleQueue || args.Item is not Game game) return;
         if (args.ItemContainer.ContentTemplateRoot is GameTile tile)
         {
-            tile.PlayRequested ??= g => PlayRequested?.Invoke(g);
+            tile.DetailsRequested ??= g => OpenRequested?.Invoke(g);
             tile.Show(game, _tileWidth, _tileHeight, args.ItemIndex);
         }
         Describe(args.ItemContainer, game);
@@ -255,7 +300,11 @@ public sealed partial class ShelfView : UserControl
     private void OnRowContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
     {
         if (args.InRecycleQueue || args.Item is not Game game) return;
-        if (args.ItemContainer.ContentTemplateRoot is GameRow row) row.Show(game, args.ItemIndex);
+        if (args.ItemContainer.ContentTemplateRoot is GameRow row)
+        {
+            row.DetailsRequested ??= g => OpenRequested?.Invoke(g);
+            row.Show(game, args.ItemIndex);
+        }
         Describe(args.ItemContainer, game);
         args.Handled = true;
     }
@@ -263,7 +312,7 @@ public sealed partial class ShelfView : UserControl
     private static void Describe(SelectorItem container, Game game)
     {
         AutomationProperties.SetName(container, game.Name);
-        ToolTipService.SetToolTip(container, game.Name);
+        ToolTipService.SetToolTip(container, "Play " + game.Name); // a click plays (details: the (i) button, Space, right-click)
     }
 
     /// <summary>
@@ -358,7 +407,7 @@ public sealed partial class ShelfView : UserControl
                 _settings.SortBy = sort;
                 SortText.Text = SortLabel(sort);
                 Resort();
-                SortChanged?.Invoke();
+                ViewSettingsChanged?.Invoke();
             });
         SortMenu.Items.Add(new MenuFlyoutSeparator());
         var favoritesFirst = new ToggleMenuFlyoutItem { Text = "Favorites first", IsChecked = _settings.FavoritesFirst };
@@ -366,7 +415,7 @@ public sealed partial class ShelfView : UserControl
         {
             _settings.FavoritesFirst = favoritesFirst.IsChecked;
             Resort();
-            SortChanged?.Invoke();
+            ViewSettingsChanged?.Invoke();
         };
         SortMenu.Items.Add(favoritesFirst);
     }
@@ -388,9 +437,10 @@ public sealed partial class ShelfView : UserControl
         }
     }
 
+    /// <summary>Clicking a cover or row plays it, like Enter and like the desktop shortcuts it replaces.</summary>
     private void OnItemClick(object sender, ItemClickEventArgs e)
     {
-        if (e.ClickedItem is Game game) OpenRequested?.Invoke(game);
+        if (e.ClickedItem is Game game) PlayRequested?.Invoke(game);
     }
 
     /// <summary>The game menu on right-click, the Menu key or Shift+F10 on a cover or row.</summary>
@@ -433,7 +483,10 @@ public sealed partial class ShelfView : UserControl
         if (list.ContainerFromIndex(index) is Control container) container.Focus(FocusState.Keyboard);
     }
 
-    /// <summary>Enter plays the focused game; Up from the first row returns to search. Arrows are the grid's own.</summary>
+    /// <summary>
+    /// Enter plays the focused game and Space opens its details (handled here, before the grid would turn Space
+    /// into a click); Up from the first row returns to search. Arrows are the grid's own.
+    /// </summary>
     private void OnGridKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (sender is not ListViewBase list || FindContainer(e.OriginalSource as DependencyObject) is not { } container) return;
@@ -444,6 +497,10 @@ public sealed partial class ShelfView : UserControl
         {
             case VirtualKey.Enter:
                 PlayRequested?.Invoke(_visible[i]);
+                e.Handled = true;
+                break;
+            case VirtualKey.Space:
+                OpenRequested?.Invoke(_visible[i]);
                 e.Handled = true;
                 break;
             case VirtualKey.Up when i < columns:

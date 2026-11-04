@@ -7,6 +7,14 @@ public static class Format
 {
     private static CultureInfo Culture => CultureInfo.CurrentCulture;
 
+    /// <summary>The shelf's header: "Good morning" (5–12), "Good afternoon" (12–18), else "Good evening".</summary>
+    public static string Greeting(DateTime now) => now.Hour switch
+    {
+        >= 5 and < 12 => "Good morning",
+        >= 12 and < 18 => "Good afternoon",
+        _ => "Good evening",
+    };
+
     /// <summary>"Today", "Yesterday", "3 days ago", or a short date.</summary>
     public static string RelativeDay(DateTimeOffset when)
     {

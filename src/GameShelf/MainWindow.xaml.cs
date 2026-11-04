@@ -63,7 +63,7 @@ public sealed partial class MainWindow : Window
             Shelf.SetData(_games, _sessions, App.Settings); // e.g. a new cover shows on the tile too
         };
         Shelf.SettingsRequested += ShowSettings;
-        Shelf.SortChanged += SaveSettings;
+        Shelf.ViewSettingsChanged += SaveSettings;
         Shelf.ImportRequested += () => _ = ShowImportAsync();
         Shelf.AddGameRequested += AddGame;
         SettingsPage.BackRequested += ShowShelf;

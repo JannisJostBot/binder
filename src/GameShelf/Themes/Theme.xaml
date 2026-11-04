@@ -21,7 +21,13 @@
 
     <!-- Drawn over cover art, so the same in light and dark mode. -->
     <SolidColorBrush x:Key="BadgeBrush" Color="#99000000" />
-    <SolidColorBrush x:Key="CoverOverlayBrush" Color="#73000000" />
+    <SolidColorBrush x:Key="CoverOverlayBrush" Color="#40000000" />
+    <!-- The "Continue playing" banner: a fade at the bottom of the hero art so its light text reads on any image. -->
+    <LinearGradientBrush x:Key="BannerScrimBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0.25" Color="#00000000" />
+        <GradientStop Offset="1" Color="#D9000000" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="BannerSecondaryTextBrush" Color="#D6D6DC" />
 
     <!-- Section heading above a group of settings rows, as in Windows Settings. -->
     <Style x:Key="SectionLabel" TargetType="TextBlock" BasedOn="{StaticResource BodyStrongTextBlockStyle}">
@@ -96,14 +102,17 @@
         <Setter Property="FontSize" Value="16" />
     </Style>
 
-    <!-- The round Play button on a hovered cover. -->
-    <Style x:Key="CoverPlayButton" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
-        <Setter Property="Width" Value="48" />
-        <Setter Property="Height" Value="48" />
+    <!-- The round Details (i) button on a hovered cover. The cover itself plays. -->
+    <Style x:Key="CoverDetailsButton" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="28" />
         <Setter Property="Padding" Value="0" />
-        <Setter Property="CornerRadius" Value="24" />
-        <Setter Property="HorizontalAlignment" Value="Center" />
-        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Background" Value="{StaticResource BadgeBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Content" Value="&#xE946;" />
         <Setter Property="IsTabStop" Value="False" />
     </Style>
 </ResourceDictionary>

@@ -305,7 +305,14 @@
 
             <!-- Links -->
             <StackPanel Orientation="Horizontal" Margin="8,16,20,0">
-                <HyperlinkButton x:Name="StoreLink" Content="Store page" Click="OnStoreClick" />
+                <!-- Opens the store in the browser, so it carries the "opens outside the app" glyph. -->
+                <HyperlinkButton x:Name="StoreLink" Click="OnStoreClick" AutomationProperties.Name="Store page"
+                                 ToolTipService.ToolTip="Opens in your browser">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="Store page" />
+                        <FontIcon Glyph="&#xE8A7;" FontSize="12" VerticalAlignment="Center" />
+                    </StackPanel>
+                </HyperlinkButton>
                 <HyperlinkButton Content="Hide from shelf" Click="OnHideClick" />
             </StackPanel>
         </StackPanel>

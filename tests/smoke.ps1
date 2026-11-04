@@ -144,7 +144,8 @@ function Find-Button($root, [string] $name) {
     $byName = New-Object System.Windows.Automation.PropertyCondition($UIA::NameProperty, $name)
     $isButton = [System.Windows.Automation.OrCondition]::new([System.Windows.Automation.Condition[]] @(
         (New-Object System.Windows.Automation.PropertyCondition($UIA::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)),
-        (New-Object System.Windows.Automation.PropertyCondition($UIA::ControlTypeProperty, [System.Windows.Automation.ControlType]::ListItem))))
+        (New-Object System.Windows.Automation.PropertyCondition($UIA::ControlTypeProperty, [System.Windows.Automation.ControlType]::ListItem)),
+        (New-Object System.Windows.Automation.PropertyCondition($UIA::ControlTypeProperty, [System.Windows.Automation.ControlType]::Hyperlink))))   # HyperlinkButton, e.g. "Hide from shelf"
     $cond = [System.Windows.Automation.AndCondition]::new([System.Windows.Automation.Condition[]] @($byName, $isButton))
     Wait-Until { $root.FindFirst($Scope::Descendants, $cond) } 10 "button '$name'"
 }
@@ -326,7 +327,7 @@ try {
     if ($idleCpuMs -gt 200) { Write-Host "::warning::Idle CPU was $idleCpuMs ms over 10 s (budget: ~0)" }
 
     # --- 3. Detail view and a per-game action. ---
-    Invoke-Button $window 'Dota 2'
+    Invoke-Button $window 'Details for Dota 2'   # the cover itself would play
     Find-Button $window 'Back to all games' | Out-Null   # only exists on the detail view
     Start-Sleep -Seconds 2   # hero banner
     Assert-Running $widget 'opening the detail view'
@@ -369,12 +370,28 @@ try {
     Start-Sleep -Milliseconds 500
     Shot '15-sort-menu'
     $byName = Wait-Until { $UIA::RootElement.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($UIA::NameProperty, ('Name (A' + [char]0x2013 + 'Z)')))) } 5 'sort menu item'
-    $byName.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    # A radio menu item: depending on the WinUI version it offers Invoke, Toggle or SelectionItem.
+    $pattern = $null
+    if ($byName.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref] $pattern)) { $pattern.Invoke() }
+    elseif ($byName.TryGetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern, [ref] $pattern)) { $pattern.Toggle() }
+    elseif ($byName.TryGetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern, [ref] $pattern)) { $pattern.Select() }
+    else { Fail "Sort menu item 'Name' offers no Invoke, Toggle or SelectionItem pattern ($($byName.GetSupportedPatterns() | ForEach-Object { $_.ProgrammaticName }))" }
     Wait-Until { (Get-Content (Join-Path $dataDir 'settings.json') -Raw) -match '"SortBy":\s*"Name"' } 5 'sort order saved' | Out-Null
     $metrics += 'Cover size (List, Small, Medium) and sort by name: applied and saved'
 
+    # --- 3a. The top slot: switch from Continue playing to This week (a session this week exists); it's saved. ---
+    $weekItem = Wait-Until { $window.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($UIA::NameProperty, 'This week'))) } 10 "top slot switch 'This week'"
+    $pattern = $null
+    if ($weekItem.TryGetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern, [ref] $pattern)) { $pattern.Select() }
+    elseif ($weekItem.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref] $pattern)) { $pattern.Invoke() }
+    else { Fail "Top slot switch offers no SelectionItem or Invoke pattern ($($weekItem.GetSupportedPatterns() | ForEach-Object { $_.ProgrammaticName }))" }
+    Wait-Until { (Get-Content (Join-Path $dataDir 'settings.json') -Raw) -match '"SpotlightShowsWeek":\s*true' } 5 'top slot choice saved' | Out-Null
+    Start-Sleep -Milliseconds 300
+    Shot '16-top-slot-week'
+    $metrics += 'Top slot: switched to This week and saved'
+
     # --- 3b. Hide a game, then bring it back from Settings. Start with Windows writes a quoted Run entry. ---
-    Invoke-Button $window 'Team Fortress 2'
+    Invoke-Button $window 'Details for Team Fortress 2'
     Invoke-Button $window 'Hide from shelf'
     Wait-Until { (Get-Game 'steam:440').Hidden -eq $true } 5 'Team Fortress 2 hidden in library.json' | Out-Null
     Invoke-Button $window 'Settings'
@@ -416,7 +433,7 @@ try {
     $behind = [Win]::ZIndex($hwnd) -gt [Win]::ZIndex($otherHwnd)
     Shot '8-behind-window'
 
-    # A real mouse click on an empty, uncovered part of the widget (next to the "Games" header) activates it.
+    # A real mouse click on an empty, uncovered part of the widget (right of the greeting) activates it.
     $rect = $window.Current.BoundingRectangle
     [Win]::Click([int]($rect.Left + 250), [int]($rect.Top + 40))
     Start-Sleep -Seconds 1
@@ -484,8 +501,8 @@ try {
     $metrics += "Auto-hide taskbar: widget bottom $beforeBottom -> $autoHideBottom (screen $screenBottom, taskbar $trayHeight px), back to $(([Win]::Rect($hwnd)).Bottom) when turned off"
 
     # --- 4. Launch -> hide -> return, with the stand-in game (hide delay 0 for this game). ---
+    # Clicking the cover plays it (the detail view's Play button is the same Launcher path).
     Invoke-Button $window 'Loop Test'
-    Invoke-Button $window 'Play Loop Test'
     Wait-Until { $widget.Refresh(); $widget.HasExited } 10 'widget to exit after launching the game' | Out-Null
     $metrics += 'Widget exited after launch: yes'
 
