@@ -98,15 +98,24 @@
             <Border x:Name="SpotlightSwitchSurface" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Top"
                     Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
                     BorderThickness="1" CornerRadius="{ThemeResource ControlCornerRadius}" Visibility="Collapsed">
-                <SelectorBar x:Name="SpotlightSwitch" AutomationProperties.Name="Top card" SelectionChanged="OnSpotlightChanged">
+                <!-- Compact, as on board 16: 12 px text, ~11 px icons (the template draws icons at 0.8 of their
+                     size), 28 px items with the selection pill, and a subtle fill on the selected one. -->
+                <SelectorBar x:Name="SpotlightSwitch" Padding="2" AutomationProperties.Name="Top card" SelectionChanged="OnSpotlightChanged">
+                    <SelectorBar.Resources>
+                        <StaticResource x:Key="SelectorBarItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
+                        <Style TargetType="SelectorBarItem">
+                            <Setter Property="FontSize" Value="12" />
+                            <Setter Property="Padding" Value="10,5,10,3" />
+                        </Style>
+                    </SelectorBar.Resources>
                     <SelectorBarItem x:Name="ContinueItem" Text="Continue">
                         <SelectorBarItem.Icon>
-                            <FontIcon Glyph="&#xF5B0;" />
+                            <FontIcon Glyph="&#xF5B0;" FontSize="14" />
                         </SelectorBarItem.Icon>
                     </SelectorBarItem>
                     <SelectorBarItem x:Name="WeekItem" Text="This week">
                         <SelectorBarItem.Icon>
-                            <FontIcon Glyph="&#xE9D2;" />
+                            <FontIcon Glyph="&#xE9D2;" FontSize="14" />
                         </SelectorBarItem.Icon>
                     </SelectorBarItem>
                 </SelectorBar>
