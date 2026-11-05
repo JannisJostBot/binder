@@ -1,6 +1,6 @@
 # Planned features (approved by the owner)
 
-Status: **approved specs. Milestones 8–11 and 15 are built; 12 is in progress; 13, 14, 16 and 17 are still to do** (see the progress table in §0).
+Status: **approved specs. Milestones 8–11 and 15 are built; 12 is in progress; 13, 14, 16, 17 and 18 are still to do** (see the progress table in §0).
 - **Designs:** on the design canvas, https://claude.ai/artifact/9tZEP6HSrETxwGwpSbMg1Q. Pages by area ("Shelf",
   "Game detail", "Window, setup & settings"), plus "Still to build" with the open milestones in build order. Board
   numbers (1–17) are given in each section below and stay in the board titles, with "built" or the milestone.
@@ -27,6 +27,7 @@ break the user's system.
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | To do |
 | 17 Advanced: sources and artwork | §14 | To do |
+| 18 Performance | §15 | To do |
 
 Also built since the baseline, outside these milestones (already in `CLAUDE.md`): native radii, click-to-play covers
 with a Details (i) button, greeting header, the switchable top slot, silent Steam start.
@@ -62,6 +63,7 @@ with a Details (i) button, greeting header, the switchable top slot, silent Stea
 | 12 | Free up space: which games to uninstall for a new one, per drive, shown as a treemap | New | new `Library/SpacePlanner`, new `Views/FreeSpaceView`, `SettingsView`, `GameMenu` |
 | 13 | Look and moments: game logos on banners, the cover growing into the detail view, "Welcome back" after a session, shiny favourites, quiet playtime milestones | Changes existing | `ShelfView`, `DetailView`, `GameTile`, `CoverCache`, `Game`, `Settings` |
 | 14 | Advanced settings: where Binder finds games and artwork, so users can fix it if a launcher changes | Changes existing | new `Library/SourceDefaults`, every `*Source`, `CoverCache`, `SettingsView`, `Settings` |
+| 15 | Performance: the newest WinUI patch, pre-scaled cover copies, loading hidden UI only when needed, AOT compiler settings, CsWinRT 3.0 once stable | Changes existing | `GameShelf.csproj`, `CoverCache`, the XAML views |
 
 ### Conflicts with `CLAUDE.md` to resolve while implementing
 
@@ -137,6 +139,10 @@ The ideas listed under "Not decided" at the bottom must **not** be built.
   the panel taking the game's colour.
 - **Advanced settings** approved (§14): users can change where Binder looks for games and artwork, in case a
   launcher changes its files and Binder hasn't been updated yet.
+- **Performance** approved (§15): update WinUI to the newest patch, keep pre-scaled copies of covers, load hidden
+  parts of the UI only when they're needed, try the AOT compiler's optimization settings, and move to CsWinRT 3.0
+  once it's stable. Ruled out: ReadyToRun (Native AOT already does more), server GC (more memory), Win2D and
+  DirectStorage (extra dependencies for little gain), and newer CPU instruction sets (would crash on older PCs).
 
 ---
 
@@ -777,6 +783,57 @@ packages and `.GamingRoot`); those are Windows formats, not a launcher's.
   looked for again; pictures already cached stay.
 - Unit tests for the validation of each kind of value.
 
+## 15. Performance (milestone 18)
+
+Each item is measured on the real PC before and after, and kept only if it helps: time to the first window, reopen
+time with "Use less memory", memory with covers shown (Task Manager › Details, "Memory (private working set)"),
+smooth scrolling through the grid, and the published size. Report the numbers in the commit message and here.
+
+### a. The newest WinUI patch
+
+- `Microsoft.WindowsAppSDK.WinUI` 2.6.4 → the newest 2.6.x patch (2.6.5 was released on 2026-11-03). Update once it
+  has been out for about two weeks and its release notes show nothing that affects this app.
+- Pin the exact version, update the dependency list in `CLAUDE.md`, and let CI's build, smoke test and installer
+  test run.
+
+### b. Pre-scaled copies of covers
+
+- Today every cover is read and decoded from the full file (Steam: 600×900 JPEG) and scaled to the tile on decode
+  (`DecodePixelWidth`). The tile is about 120 px wide at 100 % scaling.
+- Instead, the first time a cover is shown, write a scaled copy into the cover cache (`covers\{id}_{width}.jpg`),
+  sized to the widest tile the current settings need in physical pixels (cover size and display scaling), rounded
+  up to a multiple of 64. Later loads read the small copy.
+- Encode with Windows' own `BitmapEncoder` (Windows.Graphics.Imaging), quality about 90, on a background thread, at
+  most two at a time, like the downloads. One write per cover, and only when the source is more than 1.5 times wider
+  than needed.
+- When the needed width grows (larger covers in Settings, a higher scaling), make a new copy and delete the old one.
+  Custom covers chosen by the user are scaled the same way; the original file is never touched.
+- Hero art (banners) and logos stay as they are: they're shown large.
+
+### c. Load hidden parts of the UI only when needed
+
+- Nothing in the XAML uses deferred loading yet (`x:Load`). Mark elements that aren't visible when a view first
+  shows, so WinUI builds them only when they're needed:
+  - the Settings page and its sections (it's only shown when opened);
+  - the Detail view's parts that are collapsed at first (crash card, launch options, anti-cheat details, the
+    "This game only" settings);
+  - the shelf's crash card and empty states.
+- Elements whose names are used in code-behind need a null check or a `FindName` call before first use; go through
+  each `x:Name` that gets `x:Load`.
+
+### d. AOT compiler settings
+
+- Try `OptimizationPreference` `Speed` and `Size` against the default, for the widget and the watcher, and keep
+  whichever is best on the measurements above. Add `IlcGenerateStackTraceData=false` only if the error log stays
+  readable without it.
+- Don't raise the instruction set (`IlcInstructionSet`, e.g. AVX2): Binder would crash on older processors.
+
+### e. CsWinRT 3.0, once it's stable
+
+- CsWinRT connects .NET to WinUI. Version 3.0 rewrites it for Native AOT (smaller and faster) but is only a preview
+  so far (3.0.0-preview in 2026-03). Move to it once there's a stable 3.0 that the stable Windows App SDK supports,
+  and only through the Windows App SDK's own version (no separate package).
+
 ## Build order (after milestone 7)
 
 8. **Quick wins:** *(Done.)*
@@ -800,6 +857,8 @@ packages and `.GamingRoot`); those are Windows formats, not a launcher's.
 17. **Advanced: sources and artwork** (§14): move the defaults into `SourceDefaults` first (no behaviour change,
     covered by the existing tests), then the settings page and the "Check" buttons. Update the network rule in
     `CLAUDE.md`.
+18. **Performance** (§15): the WinUI patch first, then pre-scaled covers, deferred loading and the AOT settings, each
+    measured on its own. CsWinRT 3.0 when it's stable.
 
 ## Not decided (don't build)
 

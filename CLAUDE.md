@@ -230,7 +230,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 
 ## Planned additions
 
-Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas; the open ones are on its "Still to build" page. **Read section 0 of that file before starting the next milestone** (its progress table says which one: milestones 8–11 and 15 are done, 12 More launchers is in progress; 13, 14, 16 Look and moments and 17 Advanced sources are to do). It lists what is new, what changes existing code, and which owner decisions override this brief:
+Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas; the open ones are on its "Still to build" page. **Read section 0 of that file before starting the next milestone** (its progress table says which one: milestones 8–11 and 15 are done, 12 More launchers is in progress; 13, 14, 16 Look and moments, 17 Advanced sources and 18 Performance are to do). It lists what is new, what changes existing code, and which owner decisions override this brief:
 
 - Game mode's separate elevated helper is an approved exception to "never ask for admin rights". The widget and the watcher still never elevate.
 - Cover badges show the launcher's icon instead of text, and manually added games get no badge.
