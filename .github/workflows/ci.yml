@@ -21,6 +21,24 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # check.ps1 compares with where the branch left origin/main
+
+      # The project's hard rules (AGENTS.md). On agent/* branches also the strict rules and the task card's file
+      # list; the card is found by the branch name (agent/T001 -> docs/tasks/T001-*.md). Build and tests run below.
+      - name: Rule check
+        shell: pwsh
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          $checkArgs = @{ SkipBuild = $true; Base = 'origin/main' }
+          if ($env:BRANCH -like 'agent/*') {
+            $id = $env:BRANCH.Substring(6)
+            $card = Get-ChildItem docs/tasks -Filter "$id-*.md" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if (-not $card) { Write-Host "No task card docs/tasks/$id-*.md for branch $env:BRANCH"; exit 1 }
+            $checkArgs.Task = $card.FullName
+          }
+          ./check.ps1 @checkArgs
 
       - uses: actions/setup-dotnet@v4
         with:

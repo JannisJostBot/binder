@@ -74,6 +74,9 @@ GameShelf.sln
   tools/make-tray-icons.ps1  draws the tray icon frames (run after changing the logo)
   publish.ps1               builds what ships into publish/: app\ (the WinUI widget folder and the Native AOT
                             watcher) and GameShelfSetup.exe with app\ inside (optional -CertificateThumbprint signing)
+  check.ps1                 the hard rules on a diff (packages, AOT, and with -Task the agent rules), then build + tests
+  AGENTS.md                 short rules for other coding agents doing task cards
+  docs/tasks/               small, exactly specified task cards for other agents (README has the workflow and template)
   README.md                 overview, install, build, privacy, disclaimer
   docs/installer.md         how to build, install, update and uninstall, and how the installer works
 ```
@@ -279,3 +282,7 @@ The widget runs as the normal user with no elevation, and must never ask for adm
 - Keep the watcher dependency-free and tiny.
 - Never add a third-party package without asking first (see Dependencies policy).
 - Commit at each milestone with a short message.
+- Routine work can go to other (cheaper) coding agents as task cards in `docs/tasks/` (see `AGENTS.md`). When a
+  session turns a plan into cards: one goal per card, exact files, exact insertion points and expected values
+  checked against the code, and a `./check.ps1 -Task` line under "Done when". Review agent branches before merging
+  and set the card to `done`. Keep `AGENTS.md`'s "Don't touch" list and `check.ps1`'s protected list in sync.
