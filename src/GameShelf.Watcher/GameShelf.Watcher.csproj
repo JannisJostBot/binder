@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Windowless: WinExe with no UI framework referenced. -->
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>GameShelf.Watcher</RootNamespace>
+    <!-- Self-contained like the widget: debug builds share its output folder, whose hostfxr.dll makes a
+         framework-dependent apphost treat that folder as the .NET install and fail ("You must install .NET"). -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <Product>Game Shelf</Product>
+
+    <!-- Native AOT is enabled by the publish script (-p:PublishAot=true): it needs the ILCompiler
+         packs from nuget.org, which plain `dotnet build` shouldn't depend on. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+  </PropertyGroup>
+
+</Project>

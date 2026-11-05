@@ -1,0 +1,348 @@
+<UserControl x:Class="GameShelf.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="using:GameShelf.Views"
+             AutomationProperties.Name="Settings">
+    <UserControl.Resources>
+        <Style x:Key="SourceCheck" TargetType="CheckBox" BasedOn="{StaticResource DefaultCheckBoxStyle}">
+            <Setter Property="Margin" Value="0,6" />
+        </Style>
+        <Style x:Key="RowCombo" TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
+            <Setter Property="MinWidth" Value="150" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer x:Name="Scroller">
+        <StackPanel Padding="0,20,0,24">
+            <!-- Header -->
+            <Grid Margin="16,0,20,0" ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Click="OnBackClick"
+                        ToolTipService.ToolTip="Back to all games (Esc)" AutomationProperties.Name="Back to all games" />
+                <TextBlock Grid.Column="1" Text="Settings" Style="{StaticResource SubtitleTextBlockStyle}" VerticalAlignment="Center" />
+            </Grid>
+
+            <!-- How Game Shelf appears (board 9) -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="How Game Shelf appears" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <RadioButtons x:Name="ModeChoice" Header="Show it as" Margin="0,12" MaxColumns="2"
+                                  SelectionChanged="OnModeChanged">
+                        <RadioButton Tag="Flyout">
+                            <StackPanel Width="190">
+                                <v:ModePreview HorizontalAlignment="Left" Width="160" Height="88" Margin="0,2,0,8" />
+                                <TextBlock Text="Flyout" />
+                                <TextBlock Text="Slides in from the tray icon, hides when you click away" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton Tag="Desktop">
+                            <StackPanel Width="190">
+                                <v:ModePreview HorizontalAlignment="Left" Width="160" IsDesktop="True" Height="88" Margin="0,2,0,8" />
+                                <TextBlock Text="On the desktop" />
+                                <TextBlock Text="Always there, behind your windows" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </RadioButton>
+                    </RadioButtons>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Keyboard shortcut" />
+                            <TextBlock x:Name="HotkeyStatus" Style="{StaticResource RowDetail}" />
+                        </StackPanel>
+                        <ComboBox x:Name="HotkeyBox" Grid.Column="1" Style="{StaticResource RowCombo}"
+                                  AutomationProperties.Name="Keyboard shortcut" SelectionChanged="OnHotkeyChanged" />
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Icon in the notification area" />
+                            <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                                       Text="Click to open or close, like the volume and network icons" />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="TraySwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
+                                      AutomationProperties.Name="Icon in the notification area" Toggled="OnTrayChanged" />
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Stay ready in the background" />
+                            <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                                       Text="Keeps running in efficiency mode after you close it, so it opens quickly" />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="StayReadySwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
+                                      AutomationProperties.Name="Stay ready in the background" Toggled="OnFlyoutOptionChanged" />
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="While it's closed" />
+                            <TextBlock x:Name="KeepLoadedDetail" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ComboBox x:Name="KeepLoadedBox" Grid.Column="1" Style="{StaticResource RowCombo}"
+                                  AutomationProperties.Name="While it's closed" SelectionChanged="OnFlyoutOptionChanged">
+                            <ComboBoxItem Content="Open faster" Tag="Fast" />
+                            <ComboBoxItem Content="Use less memory" Tag="Light" />
+                        </ComboBox>
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Hide when I click elsewhere" />
+                            <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                                       Text="Pin the flyout open from its header when you want it to stay" />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="ClickAwaySwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
+                                      AutomationProperties.Name="Hide when I click elsewhere" Toggled="OnFlyoutOptionChanged" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- When a game starts -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="When a game starts" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource RowTitle}" Text="Hide the widget" />
+                        <ComboBox x:Name="DelayBox" Grid.Column="1" Style="{StaticResource RowCombo}"
+                                  AutomationProperties.Name="Hide delay" SelectionChanged="OnDelayChanged">
+                            <ComboBoxItem Content="Instantly" Tag="0" />
+                            <ComboBoxItem Content="After 5 s" Tag="5" />
+                            <ComboBoxItem Content="After 10 s" Tag="10" />
+                            <ComboBoxItem Content="After 30 s" Tag="30" />
+                        </ComboBox>
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Come back when the game closes" />
+                            <TextBlock Style="{StaticResource RowDetail}" Text="Reopens the widget automatically" />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="ComeBackSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
+                                      AutomationProperties.Name="Come back when the game closes" Toggled="OnComeBackChanged" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Shelf (board 9) -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="Shelf" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                <Grid Style="{StaticResource SettingRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource RowTitle}" Text="Cover size" />
+                    <ComboBox x:Name="DensityBox" Grid.Column="1" Style="{StaticResource RowCombo}"
+                              AutomationProperties.Name="Cover size" SelectionChanged="OnDensityChanged">
+                        <ComboBoxItem Content="Small" Tag="Small" />
+                        <ComboBoxItem Content="Medium" Tag="Medium" />
+                        <ComboBoxItem Content="Large" Tag="Large" />
+                        <ComboBoxItem Content="List" Tag="List" />
+                    </ComboBox>
+                </Grid>
+                <Border Style="{StaticResource RowDivider}" />
+                <Grid Style="{StaticResource SettingRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Style="{StaticResource RowText}">
+                        <TextBlock Style="{StaticResource RowTitle}" Text="Show this week's playtime" />
+                        <TextBlock Style="{StaticResource RowDetail}" Text="A card above the games with time played per day" />
+                    </StackPanel>
+                    <ToggleSwitch x:Name="WeekSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="Show this week's playtime" Toggled="OnWeekChanged" />
+                </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Library -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="Library" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <StackPanel Margin="0,8">
+                        <CheckBox x:Name="SteamCheck" Style="{StaticResource SourceCheck}" Content="Steam" Click="OnSourceChanged" />
+                        <CheckBox x:Name="EpicCheck" Style="{StaticResource SourceCheck}" Content="Epic Games" Click="OnSourceChanged" />
+                        <CheckBox x:Name="GogCheck" Style="{StaticResource SourceCheck}" Content="GOG" Click="OnSourceChanged" />
+                        <CheckBox x:Name="EaCheck" Style="{StaticResource SourceCheck}" Content="EA app" Click="OnSourceChanged" />
+                        <CheckBox x:Name="UbisoftCheck" Style="{StaticResource SourceCheck}" Content="Ubisoft Connect" Click="OnSourceChanged" />
+                        <CheckBox x:Name="XboxCheck" Style="{StaticResource SourceCheck}" Content="Xbox app (Game Pass)" Click="OnSourceChanged" />
+                        <CheckBox x:Name="RockstarCheck" Style="{StaticResource SourceCheck}" Content="Rockstar Games Launcher" Click="OnSourceChanged" />
+                        <CheckBox x:Name="ShortcutsCheck" Style="{StaticResource SourceCheck}" Content="Imported desktop shortcuts"
+                                  Click="OnSourceChanged" />
+                    </StackPanel>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Desktop shortcuts" />
+                            <TextBlock x:Name="ShortcutsText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button x:Name="RestoreButton" Grid.Column="1" Content="Restore" Click="OnRestoreClick" VerticalAlignment="Center"
+                                AutomationProperties.Name="Restore shortcuts to desktop"
+                                ToolTipService.ToolTip="Put the imported shortcuts back on your desktop" />
+                        <Button Grid.Column="2" Content="Import…" Click="OnImportClick" VerticalAlignment="Center"
+                                AutomationProperties.Name="Import desktop shortcuts" />
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Add a game" />
+                            <TextBlock Style="{StaticResource RowDetail}" Text="A program (.exe) or a shortcut" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="Browse…" Click="OnAddGameClick" VerticalAlignment="Center"
+                                AutomationProperties.Name="Add a game" />
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Look for new games" />
+                            <TextBlock x:Name="LibraryText" Style="{StaticResource RowDetail}" />
+                        </StackPanel>
+                        <Button x:Name="RefreshButton" Grid.Column="1" Content="Refresh" Click="OnRefreshClick" VerticalAlignment="Center"
+                                AutomationProperties.Name="Refresh library" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Storage (spec §12) -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="Storage" />
+            <Border Style="{StaticResource Card}">
+                <Grid Style="{StaticResource SettingRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Style="{StaticResource RowText}">
+                        <TextBlock Style="{StaticResource RowTitle}" Text="Free up space" />
+                        <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                                   Text="See which games to remove to make room for a new one" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Free up space…" Click="OnFreeSpaceClick" VerticalAlignment="Center"
+                            AutomationProperties.Name="Free up space" />
+                </Grid>
+            </Border>
+
+            <!-- Hidden games -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="Hidden games" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <StackPanel x:Name="HiddenList" AutomationProperties.Name="Hidden games" />
+                    <TextBlock x:Name="NoHiddenText" Margin="0,14" TextWrapping="Wrap" Style="{StaticResource BodyTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="No hidden games. Hide one from its right-click menu or its details." />
+                </StackPanel>
+            </Border>
+
+            <!-- Widget -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="Widget" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Position" />
+                            <TextBlock x:Name="PositionText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ComboBox x:Name="PositionBox" Grid.Column="1" Style="{StaticResource RowCombo}"
+                                  AutomationProperties.Name="Position" SelectionChanged="OnPositionChanged">
+                            <ComboBoxItem Content="Left" Tag="Left" />
+                            <ComboBoxItem Content="Right" Tag="Right" />
+                            <ComboBoxItem Content="Free" Tag="Free" />
+                        </ComboBox>
+                    </Grid>
+                    <StackPanel x:Name="ScreenRow" Visibility="Collapsed">
+                        <Border Style="{StaticResource RowDivider}" />
+                        <Grid Style="{StaticResource SettingRow}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Style="{StaticResource RowText}">
+                                <TextBlock Style="{StaticResource RowTitle}" Text="Screen" />
+                                <TextBlock Style="{StaticResource RowDetail}" Text="Numbered from left to right" />
+                            </StackPanel>
+                            <ComboBox x:Name="ScreenBox" Grid.Column="1" Style="{StaticResource RowCombo}"
+                                      AutomationProperties.Name="Screen" SelectionChanged="OnScreenChanged" />
+                        </Grid>
+                    </StackPanel>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Stay on the desktop layer" />
+                            <TextBlock Style="{StaticResource RowDetail}" Text="Sits behind other windows, like desktop icons" />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="DesktopSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
+                                      AutomationProperties.Name="Stay on the desktop layer" Toggled="OnDesktopChanged" />
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Start with Windows" />
+                            <TextBlock x:Name="AutostartText" Style="{StaticResource RowDetail}" />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="AutostartSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
+                                      AutomationProperties.Name="Start with Windows" Toggled="OnAutostartChanged" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+            <HyperlinkButton Margin="8,16,20,0" Content="Run first-time setup again" Click="OnSetupClick" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

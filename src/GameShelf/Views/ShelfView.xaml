@@ -1,0 +1,224 @@
+<UserControl x:Class="GameShelf.Views.ShelfView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="using:GameShelf.Views"
+             AutomationProperties.Name="Game shelf">
+    <Grid Padding="20,20,20,16" RowSpacing="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header: a greeting for the time of day (board 14). The game count is above the grid. -->
+        <Grid ColumnSpacing="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="GreetingText" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center"
+                       TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" AutomationProperties.HeadingLevel="Level1" />
+            <!-- Flyout only: keep it open when clicking elsewhere (board 6). -->
+            <ToggleButton x:Name="PinButton" Grid.Column="1" Style="{StaticResource IconToggleButton}" Content="&#xE718;"
+                          Click="OnPinClick" Visibility="Collapsed" />
+            <Button Grid.Column="2" Style="{StaticResource IconButton}" Content="&#xE713;" Click="OnSettingsClick"
+                    ToolTipService.ToolTip="Settings" AutomationProperties.Name="Settings" />
+        </Grid>
+
+        <AutoSuggestBox x:Name="SearchBox" Grid.Row="1" PlaceholderText="Search games" QueryIcon="Find"
+                        AutomationProperties.Name="Search games" TextChanged="OnSearchChanged"
+                        PreviewKeyDown="OnSearchKeyDown" />
+
+        <!-- After a crash (milestone 11, board 13) the crash card takes the top slot until it's dismissed. -->
+        <v:CrashCard x:Name="Crash" Grid.Row="2" Visibility="Collapsed" />
+
+        <!-- One fixed-height slot (board 16): the "Continue playing" hero banner or "This week", switched in the
+             corner and remembered, so switching never moves the grid. Hidden while searching. -->
+        <Grid x:Name="Spotlight" Grid.Row="2" Height="168" CornerRadius="{ThemeResource OverlayCornerRadius}"
+              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" Visibility="Collapsed">
+            <Grid x:Name="ContinuePane">
+                <!-- The hero art loads only while this pane is shown (ShelfView.UpdateSpotlight). -->
+                <v:CoverView x:Name="ContinueArt" Kind="Hero" DecodeWidth="520" CornerRadius="0" />
+                <Border Background="{StaticResource BannerScrimBrush}" />
+                <!-- Over the art, so the same light text in light and dark mode (like the cover badges). -->
+                <Grid Margin="16,0,16,14" VerticalAlignment="Bottom" ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Bottom" Spacing="0">
+                        <TextBlock Text="Continue playing" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{StaticResource BannerSecondaryTextBrush}" />
+                        <TextBlock x:Name="ContinueTitle" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="22"
+                                   Foreground="White" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="ContinueDetail" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{StaticResource BannerSecondaryTextBrush}" />
+                    </StackPanel>
+                    <Button x:Name="ContinuePlay" Grid.Column="1" Style="{StaticResource AccentButtonStyle}" Click="OnContinuePlayClick"
+                            VerticalAlignment="Bottom" Padding="18,6">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xF5B0;" FontSize="12" />
+                            <TextBlock Text="Play" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Grid>
+            <!-- Total top-left (the switch sits top-right), the chart in its own full-width row below, so the two
+                 never meet. -->
+            <Grid x:Name="WeekPane" Padding="16,12,16,10" RowSpacing="6" Visibility="Collapsed"
+                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel Margin="0,0,230,0" Spacing="0">
+                    <TextBlock x:Name="WeekTotal" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="24" />
+                    <TextBlock x:Name="WeekDetail" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="NoWrap"
+                               TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+                <v:BarChart x:Name="WeekChart" Grid.Row="1" PlotHeight="44" BarWidth="16" VerticalAlignment="Bottom" />
+            </Grid>
+            <!-- The switch: WinUI's own SelectorBar (like the filters), on a solid surface so it reads over any art.
+                 Shown only when both sides have something to show. -->
+            <Border x:Name="SpotlightSwitchSurface" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
+                    BorderThickness="1" CornerRadius="{ThemeResource ControlCornerRadius}" Visibility="Collapsed">
+                <!-- Compact, as on board 16: 12 px text, ~11 px icons (the template draws icons at 0.8 of their
+                     size), 28 px items with the selection pill, and a subtle fill on the selected one. -->
+                <SelectorBar x:Name="SpotlightSwitch" Padding="2" AutomationProperties.Name="Top card" SelectionChanged="OnSpotlightChanged">
+                    <SelectorBar.Resources>
+                        <StaticResource x:Key="SelectorBarItemBackgroundSelected" ResourceKey="SubtleFillColorSecondaryBrush" />
+                        <Style TargetType="SelectorBarItem">
+                            <Setter Property="FontSize" Value="12" />
+                            <Setter Property="Padding" Value="10,5,10,3" />
+                        </Style>
+                    </SelectorBar.Resources>
+                    <SelectorBarItem x:Name="ContinueItem" Text="Continue">
+                        <SelectorBarItem.Icon>
+                            <FontIcon Glyph="&#xF5B0;" FontSize="14" />
+                        </SelectorBarItem.Icon>
+                    </SelectorBarItem>
+                    <SelectorBarItem x:Name="WeekItem" Text="This week">
+                        <SelectorBarItem.Icon>
+                            <FontIcon Glyph="&#xE9D2;" FontSize="14" />
+                        </SelectorBarItem.Icon>
+                    </SelectorBarItem>
+                </SelectorBar>
+            </Border>
+        </Grid>
+
+        <!-- One toolbar row right above the grid it acts on (owner's choice, law of proximity): the filters (All,
+             Favorites, Recent, then the launchers that have games, the rest under More; built in code) and the sort
+             menu (board 7) as a compact icon button. The game count is in the search box's placeholder. -->
+        <Grid Grid.Row="3" ColumnSpacing="8" Margin="-12,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <SelectorBar x:Name="Filters" AutomationProperties.Name="Filter" SelectionChanged="OnFilterChanged" />
+            <DropDownButton x:Name="MoreFilters" Grid.Column="1" Content="More" VerticalAlignment="Center"
+                            AutomationProperties.Name="More launchers" Visibility="Collapsed">
+                <DropDownButton.Flyout>
+                    <MenuFlyout x:Name="MoreMenu" Placement="BottomEdgeAlignedLeft" />
+                </DropDownButton.Flyout>
+            </DropDownButton>
+            <DropDownButton x:Name="SortButton" Grid.Column="3" VerticalAlignment="Center" Padding="8,6"
+                            Background="Transparent" BorderBrush="Transparent">
+                <FontIcon Glyph="&#xE8CB;" FontSize="14" />
+                <DropDownButton.Flyout>
+                    <MenuFlyout x:Name="SortMenu" Placement="BottomEdgeAlignedRight" />
+                </DropDownButton.Flyout>
+            </DropDownButton>
+        </Grid>
+
+        <!-- Cover grid and list view. Both virtualize; only the visible one has items. -->
+        <Grid Grid.Row="4" Margin="-6,0,-6,0">
+            <GridView x:Name="Tiles" SelectionMode="None" IsItemClickEnabled="True" ItemClick="OnItemClick"
+                      AutomationProperties.Name="Games" ContainerContentChanging="OnTileContentChanging"
+                      PreviewKeyDown="OnGridKeyDown" ContextRequested="OnItemContextRequested"
+                      IsSwipeEnabled="False" CanDragItems="False">
+                <!-- The tile draws its own hover (lift, accent outline, "Play"), so the item's fill would only show
+                     as a second box with other corners behind it. -->
+                <GridView.Resources>
+                    <SolidColorBrush x:Key="GridViewItemBackgroundPointerOver" Color="Transparent" />
+                    <SolidColorBrush x:Key="GridViewItemBackgroundPressed" Color="Transparent" />
+                    <SolidColorBrush x:Key="GridViewItemPointerOverBorderBrush" Color="Transparent" />
+                </GridView.Resources>
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <!-- Half a screen of tiles above and below the view (the default is two screens each way,
+                             which realized and decoded every cover of a 70-game library on each open). -->
+                        <ItemsWrapGrid Orientation="Horizontal" CacheLength="1" />
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
+                <GridView.ItemContainerStyle>
+                    <Style TargetType="GridViewItem" BasedOn="{StaticResource DefaultGridViewItemStyle}">
+                        <Setter Property="Margin" Value="0" />
+                        <Setter Property="Padding" Value="6" />
+                        <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="VerticalContentAlignment" Value="Top" />
+                    </Style>
+                </GridView.ItemContainerStyle>
+                <GridView.ItemTemplate>
+                    <DataTemplate>
+                        <v:GameTile />
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+            <ListView x:Name="Rows" SelectionMode="None" IsItemClickEnabled="True" ItemClick="OnItemClick"
+                      AutomationProperties.Name="Games" ContainerContentChanging="OnRowContentChanging"
+                      PreviewKeyDown="OnGridKeyDown" ContextRequested="OnItemContextRequested"
+                      Visibility="Collapsed" CanDragItems="False">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsStackPanel CacheLength="1" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                        <Setter Property="Padding" Value="8,0" />
+                        <Setter Property="Margin" Value="6,0" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <v:GameRow />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <StackPanel x:Name="EmptyState" Margin="24,48,24,24" MaxWidth="360" Visibility="Collapsed" HorizontalAlignment="Center" Spacing="12">
+                <!-- A large Fluent icon, one plain sentence and, where it helps, the way forward (board 14). -->
+                <Border Width="72" Height="72" CornerRadius="36" HorizontalAlignment="Center"
+                        Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                    <FontIcon x:Name="EmptyIcon" FontSize="32" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </Border>
+                <TextBlock x:Name="EmptyText" TextAlignment="Center" TextWrapping="Wrap" Style="{StaticResource BodyTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <!-- Nothing found: the ways to add games. No search match: clear it, or add the game. -->
+                <StackPanel x:Name="EmptyActions" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8"
+                            Margin="0,4,0,0" Visibility="Collapsed">
+                    <Button x:Name="EmptyClearButton" Content="Clear search" Click="OnEmptyClearClick" />
+                    <Button x:Name="EmptyImportButton" Content="Import desktop shortcuts" Click="OnEmptyImportClick" />
+                    <Button Content="Add a game" Click="OnEmptyAddClick" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <!-- Footer hint: teaches hide and return during the first few games, then steps aside (ShelfView.SetData). -->
+        <Grid x:Name="Footer" Grid.Row="5" ColumnSpacing="8" Padding="0,12,0,0" BorderThickness="0,1,0,0"
+              BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <FontIcon Glyph="&#xED1A;" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            <TextBlock x:Name="FooterText" Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Grid>
+    </Grid>
+</UserControl>

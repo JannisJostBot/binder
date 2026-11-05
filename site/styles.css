@@ -1,0 +1,51 @@
+/* Binder website. Colours come only from the variables below; the product shot in the hero is a picture of the
+   app and keeps its own fixed colours. Layout and spacing are inline in index.html, section by section. */
+
+:root {
+  --accent: #005FB8;              /* Windows' default light-theme accent */
+  --accent-hover: #003E92;
+  --accent-edge: rgba(0, 0, 0, 0.1);
+  --on-accent: #FFFFFF;           /* text and icons on the accent */
+  --accent-tint: #EAF2FB;         /* feature card pictures */
+  --accent-tint-mid: #D3E1F0;
+  --accent-tint-strong: #BFD3E8;
+
+  --bg: #FFFFFF;
+  --bg-alt: #F3F3F3;              /* alternating sections, footer */
+  --surface-2: #F7F7F7;           /* small mockups inside cards */
+  --text: #1B1B1B;
+  --text-2: #5D5D5D;              /* secondary text, 6.4:1 on white */
+  --border: #E5E5E5;
+  --border-strong: #CCCCCC;       /* the bottom edge of standard buttons */
+  --divider: #EBEBEB;
+  --bar: #C8C8C8;                 /* chart bars in the "You close the game" card */
+  --track: #D6D6D6;               /* the countdown track */
+
+  --caution-bg: #FFF4CE;          /* the "Built with AI" notice */
+  --caution-border: #F0E3B5;
+  --caution-icon: #9D5D00;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+.page {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  min-width: 0;
+}
+
+a { color: var(--accent); }
+a:hover { color: var(--accent-hover); }
+
+summary { cursor: pointer; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+
+.accent-stroke { stroke: var(--accent); }
+.accent-fill { fill: var(--accent); }
+.caution-fill { fill: var(--caution-icon); }

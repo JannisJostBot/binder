@@ -1,0 +1,406 @@
+using System.Globalization;
+using System.Text;
+using GameShelf.Models;
+using GameShelf.Views;
+
+namespace GameShelf.Library;
+
+/// <summary>One entry from the Windows event logs, reduced to what the crash check reads.</summary>
+public sealed record WindowsEvent(int Id, string Provider, DateTimeOffset Time, IReadOnlyDictionary<string, string> Data);
+
+/// <summary>The PC facts in a bug report or AI prompt (no user name, no paths).</summary>
+public sealed record PcFacts(string Windows, IReadOnlyList<string> Graphics, int MemoryGb);
+
+/// <summary>
+/// Milestone 11: decides how a session ended from the watcher's exit code and the Windows logs, and puts it in
+/// plain words. Pure (no I/O), so it's unit tested; the logs are read by <c>CrashLog</c>.
+/// </summary>
+public static class CrashAnalysis
+{
+    public const int ApplicationError = 1000, ApplicationHang = 1002, DisplayReset = 4101;
+
+    /// <summary>A session shorter than this that ended with an error "closed right after starting".</summary>
+    public static readonly TimeSpan StartWindow = TimeSpan.FromSeconds(5);
+
+    /// <summary>Windows writes the crash event around the moment the game dies; look a little past the end.</summary>
+    public static readonly TimeSpan EventSlack = TimeSpan.FromMinutes(2);
+
+    private const uint ControlCExit = 0xC000013A; // console window closed: not a crash
+
+    /// <summary>
+    /// A failure code: NTSTATUS errors (0xC…) and HRESULT failures (0x8…) both have the high bit set. Plain
+    /// nonzero codes (1, 2, …) aren't: plenty of games exit with them normally.
+    /// </summary>
+    public static bool IsFailureCode(uint code) => (code & 0x80000000) != 0 && code != ControlCExit;
+
+    /// <summary>Whether a session is worth reading the Windows logs for (most aren't, so most cost nothing).</summary>
+    public static bool NeedsCheck(Session s) =>
+        s.ExitCode is { } code && (IsFailureCode(code) || (code != 0 && s.End - s.Start < StartWindow)) || s.CrashReporter;
+
+    /// <summary>Classifies one session from its exit code and the events in its time window.</summary>
+    public static CrashRecord Analyze(Session s, string? installFolder, IReadOnlyList<WindowsEvent> events)
+    {
+        uint code = s.ExitCode ?? 0;
+        var from = s.Start - TimeSpan.FromSeconds(5);
+        var to = s.End + EventSlack;
+        var prefix = string.IsNullOrEmpty(installFolder) ? null : installFolder.TrimEnd('\\') + "\\";
+
+        bool Ours(WindowsEvent e, string pathKey)
+        {
+            if (prefix is not null && e.Data.TryGetValue(pathKey, out var path) && !string.IsNullOrEmpty(path))
+                return path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
+            return s.Exe is not null && e.Data.TryGetValue("AppName", out var app) &&
+                   app.Equals(s.Exe, StringComparison.OrdinalIgnoreCase);
+        }
+
+        var inWindow = events.Where(e => e.Time >= from && e.Time <= to).ToList();
+        var crash = inWindow.Where(e => e.Id == ApplicationError && e.Provider == "Application Error" && Ours(e, "AppPath"))
+            .OrderBy(e => e.Time).LastOrDefault();
+        bool hang = inWindow.Any(e => e.Id == ApplicationHang && e.Provider == "Application Hang" && Ours(e, "ExeFileName"));
+        bool driverReset = inWindow.Any(e => e.Id == DisplayReset && e.Time >= s.Start);
+
+        uint? error = null;
+        string? module = null;
+        if (crash is not null)
+        {
+            if (crash.Data.TryGetValue("ExceptionCode", out var hex) &&
+                uint.TryParse(hex.Replace("0x", "", StringComparison.OrdinalIgnoreCase), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var parsed))
+                error = parsed;
+            if (crash.Data.TryGetValue("ModuleName", out var name) && name.Length > 0) module = Path.GetFileName(name);
+        }
+        if (error is null && IsFailureCode(code)) error = code;
+
+        var duration = s.End - s.Start;
+        var ending =
+            code != 0 && !IsBenign(code) && duration < StartWindow ? GameEnding.StartFailed
+            : IsFailureCode(code) && (crash is not null || hang || s.CrashReporter) ? GameEnding.Crashed
+            : IsFailureCode(code) ? GameEnding.ClosedUnexpectedly
+            : GameEnding.Normal;
+
+        var culprit = ending == GameEnding.Normal ? CrashCulprit.None : CulpritOf(module, error, driverReset, ending, crash, prefix);
+
+        return new CrashRecord
+        {
+            GameId = s.GameId,
+            Start = s.Start,
+            End = s.End,
+            Ending = ending,
+            Culprit = culprit,
+            ExitCode = code,
+            ErrorCode = error,
+            Module = module,
+            Exe = s.Exe,
+            Hang = hang,
+            DriverReset = driverReset,
+            CrashReporter = s.CrashReporter,
+            Seen = ending == GameEnding.Normal,
+        };
+    }
+
+    private static bool IsBenign(uint code) => code == ControlCExit;
+
+    private static readonly uint[] MissingRuntimeCodes =
+    [
+        0xC0000135, // a DLL wasn't found
+        0xC000007B, // a 32/64-bit mismatch
+        0xC0000142, // a DLL failed to initialize
+        0xC0000139, // an entry point wasn't found
+    ];
+
+    private static CrashCulprit CulpritOf(string? module, uint? error, bool driverReset, GameEnding ending, WindowsEvent? crash, string? prefix)
+    {
+        if (error is { } e && MissingRuntimeCodes.Contains(e)) return CrashCulprit.MissingRuntime;
+        if (module is not null)
+        {
+            var m = module.ToLowerInvariant();
+            if (StartsWithAny(m, "nvwgf2um", "nvoglv", "nvd3dum", "nvgpucomp", "nvldumd", "nvlddmkm", "nvcuda")) return CrashCulprit.NvidiaDriver;
+            if (StartsWithAny(m, "amdxx", "amdxc", "amdvlk", "amdihk", "atiumd", "atidxx", "aticfx", "atio6axx")) return CrashCulprit.AmdDriver;
+            if (StartsWithAny(m, "igd", "igc64", "igvk", "igxelp", "intelocl")) return CrashCulprit.IntelDriver;
+            if (StartsWithAny(m, "gameoverlayrenderer", "discordhook", "discord_hook", "rtsshooks", "graphics-hook", "reshade", "eosovh", "overlay64"))
+                return CrashCulprit.Overlay;
+            // A dxgi.dll in the game's own folder is ReShade or another injected mod, not Windows' own.
+            if (m == "dxgi.dll" && prefix is not null && crash is not null &&
+                crash.Data.TryGetValue("ModulePath", out var path) && path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                return CrashCulprit.Overlay;
+            if (StartsWithAny(m, "vcruntime", "msvcp", "ucrtbase", "concrt")) return CrashCulprit.CppRuntime;
+        }
+        if (error is 0x887A0005 or 0x887A0006 or 0x887A0007 || driverReset) return CrashCulprit.GraphicsDevice;
+        return CrashCulprit.Unknown;
+    }
+
+    private static bool StartsWithAny(string value, params string[] prefixes)
+    {
+        foreach (var p in prefixes) if (value.StartsWith(p, StringComparison.Ordinal)) return true;
+        return false;
+    }
+
+    // ---- Plain words -----------------------------------------------------------------------------------
+
+    /// <summary>"[Game] crashed after 1 h 12 min", "… closed right after starting", …</summary>
+    public static string Title(string game, CrashRecord r) => r.Ending switch
+    {
+        GameEnding.StartFailed => $"{game} closed right after starting",
+        GameEnding.ClosedUnexpectedly => $"{game} closed unexpectedly after {Format.Duration(r.End - r.Start)}",
+        _ when r.Hang => $"{game} stopped responding after {Format.Duration(r.End - r.Start)}",
+        _ => $"{game} crashed after {Format.Duration(r.End - r.Start)}",
+    };
+
+    /// <summary>One or two sentences: what it points at and what usually helps. Nothing made up for unknown errors.</summary>
+    public static string Explanation(CrashRecord r) => r.Culprit switch
+    {
+        CrashCulprit.NvidiaDriver => "The crash happened inside the NVIDIA graphics driver. Updating the driver, or turning off a GPU overclock, often fixes this.",
+        CrashCulprit.AmdDriver => "The crash happened inside the AMD graphics driver. Updating the driver, or turning off a GPU overclock, often fixes this.",
+        CrashCulprit.IntelDriver => "The crash happened inside the Intel graphics driver. Updating the driver often fixes this.",
+        CrashCulprit.GraphicsDevice => "The graphics card stopped responding. Updating the graphics driver, or turning off a GPU overclock, often fixes this.",
+        CrashCulprit.Overlay => $"The crash happened in an overlay or mod ({r.Module}). Turning it off for this game often fixes this.",
+        CrashCulprit.CppRuntime => "The crash happened in Microsoft's Visual C++ runtime. Reinstalling the Visual C++ Redistributable often fixes this.",
+        CrashCulprit.MissingRuntime => "A file it needs is missing. This usually means the Microsoft Visual C++ Redistributable isn't installed.",
+        _ when r.Ending == GameEnding.ClosedUnexpectedly =>
+            "It ended with an error code, and Windows didn't record a crash. Some games do this when they close, so it may be nothing. If it keeps happening, the copied texts below can help.",
+        _ => "Game Shelf doesn't know this error. An AI assistant can usually explain it, or you can send a report to the game's developer. Both are ready to paste, no technical knowledge needed.",
+    };
+
+    /// <summary>The AI prompt is offered only when Game Shelf has no advice of its own.</summary>
+    public static bool OffersAiPrompt(CrashRecord r) => r.Culprit == CrashCulprit.Unknown;
+
+    /// <summary>The Visual C++ Redistributable download page, for the runtime cases.</summary>
+    public const string RedistUrl = "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist";
+
+    public static bool OffersRedist(CrashRecord r) => r.Culprit is CrashCulprit.MissingRuntime or CrashCulprit.CppRuntime;
+
+    /// <summary>"Access violation" for 0xC0000005, and so on; null when there's no plain name for it.</summary>
+    public static string? CodeName(uint code) => code switch
+    {
+        0xC0000005 => "Access violation",
+        0xC0000409 => "The program stopped itself after detecting a problem",
+        0xC0000374 => "Memory corruption",
+        0xC00000FD => "Stack overflow",
+        0xC0000017 or 0xC000009A => "Out of memory",
+        0xC000001D => "An instruction the processor doesn't support",
+        0xC0000094 => "Division by zero",
+        0x80000003 => "Breakpoint",
+        0xE06D7363 => "Unhandled C++ exception",
+        0xC000027B => "Unhandled app error",
+        0xC0000135 => "A required file (DLL) wasn't found",
+        0xC000007B => "A file is for the wrong system type (32/64-bit)",
+        0xC0000142 => "A required file (DLL) failed to start",
+        0xC0000139 => "A required function wasn't found in a DLL",
+        0x887A0005 => "The graphics card was removed or reset",
+        0x887A0006 => "The graphics card stopped responding",
+        0x887A0007 => "The graphics card was reset",
+        0xFFFFFFFF => "Exit code -1",
+        _ => null,
+    };
+
+    public static string Hex(uint code) => "0x" + code.ToString("X8", CultureInfo.InvariantCulture);
+
+    /// <summary>"Access violation (0xC0000005)", or just the code.</summary>
+    public static string WhatHappened(CrashRecord r)
+    {
+        if (r.Hang && r.ErrorCode is null) return "Stopped responding, and Windows closed it";
+        uint code = r.ErrorCode ?? r.ExitCode;
+        return CodeName(code) is { } name ? $"{name} ({Hex(code)})" : $"Error {Hex(code)}";
+    }
+
+    /// <summary>"nvwgf2umx.dll · NVIDIA graphics driver", the module alone, or the game's exe.</summary>
+    public static string? Where(CrashRecord r)
+    {
+        var place = r.Module ?? r.Exe;
+        if (place is null) return null;
+        return CulpritName(r.Culprit) is { } name && r.Module is not null ? $"{place} · {name}" : place;
+    }
+
+    public static string? CulpritName(CrashCulprit c) => c switch
+    {
+        CrashCulprit.NvidiaDriver => "NVIDIA graphics driver",
+        CrashCulprit.AmdDriver => "AMD graphics driver",
+        CrashCulprit.IntelDriver => "Intel graphics driver",
+        CrashCulprit.GraphicsDevice => "graphics card",
+        CrashCulprit.Overlay => "overlay or mod",
+        CrashCulprit.CppRuntime => "Visual C++ runtime",
+        CrashCulprit.MissingRuntime => "Visual C++ runtime",
+        _ => null,
+    };
+
+    /// <summary>The other signs at the time: a display driver reset, a hang, an engine crash reporter.</summary>
+    public static string? AlsoAtThatTime(CrashRecord r)
+    {
+        var parts = new List<string>();
+        if (r.DriverReset) parts.Add("The display driver stopped responding and recovered");
+        if (r.Hang && r.ErrorCode is not null) parts.Add("Windows reported that it stopped responding");
+        if (r.CrashReporter) parts.Add("The game's crash reporter opened");
+        return parts.Count == 0 ? null : string.Join(". ", parts);
+    }
+
+    /// <summary>The same kind of trouble in one family, for the pattern line.</summary>
+    private static string? Family(CrashCulprit c) => c switch
+    {
+        CrashCulprit.NvidiaDriver or CrashCulprit.AmdDriver or CrashCulprit.IntelDriver or CrashCulprit.GraphicsDevice => "the graphics driver",
+        CrashCulprit.Overlay => "an overlay or mod",
+        CrashCulprit.CppRuntime or CrashCulprit.MissingRuntime => "the Visual C++ runtime",
+        _ => null,
+    };
+
+    /// <summary>
+    /// "2 crashes in the last 10 sessions, both in the graphics driver." Null unless at least two of the
+    /// sessions (newest first, at most 10 used) ended badly.
+    /// </summary>
+    public static string? Pattern(IReadOnlyList<CrashRecord?> recent)
+    {
+        var last = recent.Take(10).ToList();
+        var bad = last.Where(r => r is { IsProblem: true }).Select(r => r!).ToList();
+        if (bad.Count < 2) return null;
+        var text = $"{bad.Count} crashes in the last {last.Count} sessions";
+        var family = Family(bad[0].Culprit);
+        if (family is not null && bad.All(r => Family(r.Culprit) == family))
+            text += $", {(bad.Count == 2 ? "both" : "all")} in {family}";
+        return text + ".";
+    }
+
+    // ---- The two texts to copy ---------------------------------------------------------------------------
+
+    private static string LongDuration(TimeSpan d) =>
+        d.TotalSeconds < 60 ? "a few seconds" :
+        d.TotalMinutes < 90 ? $"about {Math.Max(1, (int)Math.Round(d.TotalMinutes))} minutes" :
+        $"about {(int)Math.Round(d.TotalHours)} hours";
+
+    private static string CodeSentence(CrashRecord r)
+    {
+        uint code = r.ErrorCode ?? r.ExitCode;
+        var name = CodeName(code);
+        var where = r.Module ?? r.Exe;
+        var text = name is null ? $"error {Hex(code)}" : $"error {Hex(code)} ({char.ToLowerInvariant(name[0]) + name[1..]})";
+        return where is null ? text : $"{text} in the file {where}";
+    }
+
+    private static string Pc(PcFacts pc)
+    {
+        var parts = new List<string> { pc.Windows };
+        parts.AddRange(pc.Graphics);
+        if (pc.MemoryGb > 0) parts.Add($"{pc.MemoryGb} GB of memory");
+        return string.Join(", ", parts);
+    }
+
+    private static string HowOften(int problems, int sessions) =>
+        problems <= 1 ? $"the first time in my last {sessions} sessions" : $"{problems} times in my last {sessions} sessions";
+
+    /// <summary>A first-person question for any AI assistant (board 13). No user name, no paths.</summary>
+    public static string AiPrompt(string game, CrashRecord r, PcFacts pc, int problemsInRecent, int recentSessions)
+    {
+        var sb = new StringBuilder();
+        var played = r.End - r.Start;
+        sb.Append(r.Ending == GameEnding.StartFailed
+            ? $"My game \"{game}\" closed right after I started it on Windows."
+            : $"My game \"{game}\" {(r.Ending == GameEnding.ClosedUnexpectedly ? "closed unexpectedly" : "crashed")} on Windows after {LongDuration(played)} of play.");
+        sb.Append('\n').Append("Windows reported ").Append(CodeSentence(r)).Append('.');
+        if (AlsoAtThatTime(r) is { } also) sb.Append('\n').Append("At the same time: ").Append(also.ToLowerInvariant()[0]).Append(also[1..]).Append('.');
+        sb.Append('\n').Append("My PC: ").Append(Pc(pc)).Append('.');
+        sb.Append('\n').Append("This happened ").Append(HowOften(problemsInRecent, recentSessions)).Append('.');
+        sb.Append('\n').Append("I am not technical. What could cause this, and what can I try, step by step, starting with the easiest fix?");
+        return sb.ToString();
+    }
+
+    /// <summary>The same facts as a short report for the game's developer. No user name, no paths.</summary>
+    public static string BugReport(string game, string? store, CrashRecord r, PcFacts pc, int problemsInRecent, int recentSessions)
+    {
+        var when = r.End.ToLocalTime().ToString("MMM d, HH:mm", CultureInfo.InvariantCulture);
+        var what = r.Ending switch
+        {
+            GameEnding.StartFailed => $"the game closed right after starting ({when})",
+            GameEnding.ClosedUnexpectedly => $"the game closed unexpectedly after {Format.Duration(r.End - r.Start)} of play ({when})",
+            _ => $"the game {(r.Hang ? "stopped responding" : "crashed")} after {Format.Duration(r.End - r.Start)} of play ({when})",
+        };
+        var sb = new StringBuilder();
+        sb.Append("Game: ").Append(game).Append(store is null ? "" : $" ({store} version)").Append('\n');
+        sb.Append("What happened: ").Append(what).Append('\n');
+        sb.Append("Error: ").Append(CodeSentence(r).Replace("error ", "", StringComparison.Ordinal).Replace(" in the file ", " in ", StringComparison.Ordinal)).Append('\n');
+        if (AlsoAtThatTime(r) is { } also) sb.Append("Also: ").Append(also).Append('\n');
+        sb.Append("How often: ").Append(problemsInRecent <= 1 ? "first time" : $"{problemsInRecent} times")
+          .Append(" in the last ").Append(recentSessions).Append(" sessions\n");
+        sb.Append("PC: ").Append(string.Join(" · ", new[] { pc.Windows }.Concat(pc.Graphics).Concat(pc.MemoryGb > 0 ? [$"{pc.MemoryGb} GB memory"] : []))).Append('\n');
+        sb.Append("(Report from Game Shelf. No personal data or file paths included.)");
+        return sb.ToString();
+    }
+
+    // ---- Parsing what Windows gives us -----------------------------------------------------------------
+
+    /// <summary>
+    /// NVIDIA's Windows driver version 32.0.15.6636 is its own 566.36 (the last five digits). Others are shown as
+    /// Windows reports them.
+    /// </summary>
+    public static string DriverVersion(string adapter, string version)
+    {
+        if (!adapter.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase)) return version;
+        var parts = version.Split('.');
+        if (parts.Length != 4) return version;
+        var digits = parts[2] + parts[3].PadLeft(4, '0');
+        if (digits.Length < 5 || !digits.All(char.IsAsciiDigit)) return version;
+        var five = digits[^5..];
+        return $"{int.Parse(five[..3], CultureInfo.InvariantCulture)}.{five[3..]}";
+    }
+
+    private const int MaxEventXml = 64 * 1024;
+
+    /// <summary>
+    /// Reads one event as rendered by EvtRender (XML): provider, id, time and the named EventData values. Returns
+    /// null for anything malformed or oversized; never throws on bad input.
+    /// </summary>
+    public static WindowsEvent? ParseEventXml(string xml)
+    {
+        if (xml.Length > MaxEventXml) return null;
+        var provider = Attribute(xml, "<Provider ", "Name");
+        var time = Attribute(xml, "<TimeCreated ", "SystemTime");
+        var id = Element(xml, "EventID");
+        if (provider is null || time is null || id is null) return null;
+        if (!int.TryParse(id, NumberStyles.Integer, CultureInfo.InvariantCulture, out var eventId)) return null;
+        if (!DateTimeOffset.TryParse(time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var when)) return null;
+
+        var data = new Dictionary<string, string>(StringComparer.Ordinal);
+        int at = 0;
+        while (data.Count < 64 && (at = xml.IndexOf("<Data Name=", at, StringComparison.Ordinal)) >= 0)
+        {
+            int nameStart = at + 11;
+            if (nameStart >= xml.Length) break;
+            char quote = xml[nameStart];
+            int nameEnd = xml.IndexOf(quote, nameStart + 1);
+            if (nameEnd < 0) break;
+            var name = xml[(nameStart + 1)..nameEnd];
+            int close = xml.IndexOf('>', nameEnd);
+            if (close < 0) break;
+            if (xml[close - 1] == '/') { data[name] = ""; at = close; continue; } // <Data Name='x'/>
+            int end = xml.IndexOf("</Data>", close, StringComparison.Ordinal);
+            if (end < 0) break;
+            data[name] = Unescape(xml[(close + 1)..end]);
+            at = end;
+        }
+        return new WindowsEvent(eventId, Unescape(provider), when, data);
+    }
+
+    private static string? Attribute(string xml, string tag, string name)
+    {
+        int at = xml.IndexOf(tag, StringComparison.Ordinal);
+        if (at < 0) return null;
+        int end = xml.IndexOf('>', at);
+        if (end < 0) return null;
+        int attr = xml.IndexOf(name + "=", at, end - at, StringComparison.Ordinal);
+        if (attr < 0) return null;
+        int start = attr + name.Length + 1;
+        if (start >= end) return null;
+        char quote = xml[start];
+        int stop = xml.IndexOf(quote, start + 1);
+        return stop < 0 || stop > end ? null : xml[(start + 1)..stop];
+    }
+
+    private static string? Element(string xml, string name)
+    {
+        int at = xml.IndexOf("<" + name, StringComparison.Ordinal);
+        if (at < 0) return null;
+        int start = xml.IndexOf('>', at);
+        int end = xml.IndexOf("</" + name + ">", StringComparison.Ordinal);
+        return start < 0 || end < start ? null : xml[(start + 1)..end];
+    }
+
+    private static string Unescape(string s) => s.Contains('&')
+        ? s.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&quot;", "\"").Replace("&apos;", "'").Replace("&amp;", "&")
+        : s;
+}

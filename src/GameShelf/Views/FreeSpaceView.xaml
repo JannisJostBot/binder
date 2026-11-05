@@ -1,0 +1,133 @@
+<UserControl x:Class="GameShelf.Views.FreeSpaceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.Name="Free up space">
+    <!-- Free up space (spec §12, board 17): which games to remove, on which drive, so a new game fits. -->
+    <ScrollViewer x:Name="Scroller">
+        <StackPanel Padding="0,20,0,24" Spacing="16">
+            <!-- Header -->
+            <Grid Margin="16,0,20,0" ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Click="OnBackClick"
+                        ToolTipService.ToolTip="Back (Esc)" AutomationProperties.Name="Back" />
+                <TextBlock Grid.Column="1" Text="Free up space" Style="{StaticResource SubtitleTextBlockStyle}" VerticalAlignment="Center" />
+            </Grid>
+
+            <!-- How big the new game is -->
+            <Border Style="{StaticResource Card}" Padding="16,14">
+                <StackPanel Spacing="8">
+                    <TextBlock x:Name="NeedLabel" Text="How much space does the new game need?" Style="{StaticResource BodyTextBlockStyle}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Grid Width="120">
+                            <!-- The unit sits inside the field on its right; only the number is typed. -->
+                            <TextBox x:Name="NeedBox" InputScope="Number" MaxLength="5" Padding="10,5,34,6"
+                                     AutomationProperties.Name="Space the new game needs, in gigabytes"
+                                     BeforeTextChanging="OnNeedTextChanging" TextChanged="OnNeedChanged" Loaded="OnNeedBoxLoaded" />
+                            <TextBlock Text="GB" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,1"
+                                       IsHitTestVisible="False" AutomationProperties.AccessibilityView="Raw"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </Grid>
+                        <TextBlock Text="in total, as on its store page" VerticalAlignment="Center"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Drives -->
+            <StackPanel Margin="20,0" Spacing="8">
+                <Grid>
+                    <TextBlock Text="Install it on" Style="{StaticResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                    <Button x:Name="CheckButton" HorizontalAlignment="Right" Click="OnCheckAgainClick"
+                            ToolTipService.ToolTip="Read free space and your library again"
+                            AutomationProperties.Name="Check again">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE72C;" FontSize="14" />
+                            <TextBlock Text="Check again" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+                <RadioButtons x:Name="DriveChoice" MaxColumns="2" AutomationProperties.Name="Install it on"
+                              SelectionChanged="OnDriveChanged" />
+            </StackPanel>
+
+            <!-- Treemap of the chosen drive -->
+            <StackPanel Margin="20,0" Spacing="6">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="What takes up space on" Style="{StaticResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                    <ContentPresenter x:Name="MapDriveTag" VerticalAlignment="Center" />
+                    <Button x:Name="RulesButton" Style="{StaticResource IconButton}" Content="&#xE946;" Click="OnRulesClick"
+                            ToolTipService.ToolTip="How games are picked" AutomationProperties.Name="How games are picked" />
+                </StackPanel>
+                <TextBlock TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           Text="Each tile is one of your games: the bigger the tile, the more space it uses. The highlighted ones are suggested for removal. Click a tile to add it or leave it out." />
+                <TeachingTip x:Name="RulesTip" Target="{x:Bind RulesButton}" Title="How games are picked" IsLightDismissEnabled="True"
+                             PreferredPlacement="Bottom">
+                    <StackPanel Spacing="8">
+                        <TextBlock TextWrapping="Wrap" Text="1. Games you've played least go first. Between games with similar playtime, the one that best fits the space still missing." />
+                        <TextBlock TextWrapping="Wrap" Text="2. Games you played in the last 14 days, only if that isn't enough." />
+                        <TextBlock TextWrapping="Wrap" Text="3. Favorites last of all." />
+                        <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Text="Games that aren't needed after all are left out again. You can change the choice by clicking tiles." />
+                    </StackPanel>
+                </TeachingTip>
+                <Grid x:Name="MapHost" Height="280" Margin="0,4,0,0" CornerRadius="{ThemeResource OverlayCornerRadius}"
+                      Background="{ThemeResource ControlAltFillColorSecondaryBrush}" SizeChanged="OnMapSizeChanged">
+                    <Canvas x:Name="Map" AutomationProperties.Name="Games on the drive by size" />
+                    <TextBlock x:Name="MapEmptyText" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Margin="24" TextWrapping="Wrap" TextAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="No games from your launchers are installed on this drive." />
+                </Grid>
+                <!-- The legend explains the tiles only; the rules are in the (i) tip. -->
+                <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,2,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Border Width="12" Height="12" CornerRadius="3" Background="{ThemeResource ControlStrongFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource AccentFillColorDefaultBrush}" BorderThickness="2" />
+                        <TextBlock Text="Suggested to remove" Style="{StaticResource CaptionTextBlockStyle}"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Border Width="12" Height="12" CornerRadius="3" Background="{ThemeResource ControlStrongFillColorDefaultBrush}" Opacity="0.5" />
+                        <TextBlock Text="Kept" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Rectangle Width="12" Height="12" RadiusX="3" RadiusY="3" StrokeDashArray="2,2" StrokeThickness="1"
+                                   Stroke="{ThemeResource TextFillColorTertiaryBrush}" />
+                        <TextBlock Text="Free now" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </StackPanel>
+                <TextBlock x:Name="UnknownText" Visibility="Collapsed" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+
+            <!-- The plan -->
+            <Border x:Name="SummaryCard" Style="{StaticResource Card}" Padding="16,14">
+                <StackPanel Spacing="10">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="HeadlineText" Style="{StaticResource BodyStrongTextBlockStyle}" FontSize="18" TextWrapping="Wrap" />
+                        <TextBlock x:Name="StatusText" Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}" />
+                    </Grid>
+                    <StackPanel x:Name="PickedList" AutomationProperties.Name="Games to remove" />
+                    <InfoBar x:Name="StepBar" IsClosable="False" Severity="Informational" Visibility="Collapsed" IsOpen="True" />
+                    <Grid ColumnSpacing="12" Padding="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Text="Each game is removed by its own launcher, which asks first. Game Shelf never deletes game files itself." />
+                        <Button x:Name="UninstallButton" Grid.Column="1" Style="{StaticResource AccentButtonStyle}" VerticalAlignment="Center"
+                                Click="OnUninstallClick" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
