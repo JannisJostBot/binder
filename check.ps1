@@ -10,6 +10,7 @@
     - no new NuGet packages (<PackageReference>) unless -AllowPackages (the owner approved it)
     - no [DllImport] (use [LibraryImport]) and no [ComImport] (use [GeneratedComInterface]): Native AOT
     - no {Binding} in XAML (use x:Bind): Native AOT
+    - the website (site/) has no scripts and loads nothing from other servers
 
   Also checked with -Strict or -Task (work by agents from docs/tasks):
     - no changes to protected files (the watcher, the launcher, security checks, native code, the installer,
@@ -88,6 +89,10 @@ if (-not $AllowPackages) {
 Scan '\.cs$' '\[\s*DllImport' 'use [LibraryImport] instead of [DllImport] (Native AOT)'
 Scan '\.cs$' '\[\s*ComImport' 'use [GeneratedComInterface] instead of [ComImport] (Native AOT)'
 Scan '\.xaml$' '\{\s*Binding' 'use x:Bind instead of {Binding} (Native AOT)'
+# The website stays plain and private: no scripts, nothing loaded from other servers (links are fine).
+Scan '^site/.*\.html?$' '<\s*(script|iframe|embed|object)\b' 'no scripts or embedded pages on the website'
+Scan '^site/.*\.html?$' '<\s*(img|link|source|video|audio|track|image|use)\b[^>]*\b(src|href|srcset)\s*=\s*["'']?\s*(https?:)?//' 'the website loads nothing from other servers'
+Scan '^site/.*\.(html?|css)$' '(@import|url\(\s*["'']?\s*(https?:)?//)' 'the website loads nothing from other servers'
 
 # --- Rules for agent work -------------------------------------------------------------------------------
 if ($Strict) {

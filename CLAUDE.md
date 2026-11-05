@@ -77,6 +77,8 @@ GameShelf.sln
   check.ps1                 the hard rules on a diff (packages, AOT, and with -Task the agent rules), then build + tests
   AGENTS.md                 short rules for other coding agents doing task cards
   docs/tasks/               small, exactly specified task cards for other agents (README has the workflow and template)
+  site/                     the one-page website (plain HTML + CSS, no scripts, nothing loaded from other servers;
+                            published from this repo once it is public). Design: https://claude.ai/artifact/BzoYw1zPYHLeafpbdfZdQY
   README.md                 overview, install, build, privacy, disclaimer
   docs/installer.md         how to build, install, update and uninstall, and how the installer works
 ```

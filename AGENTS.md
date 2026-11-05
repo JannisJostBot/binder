@@ -60,6 +60,26 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
 | `src/GameShelf/Services/` | Launching, storage, Windows integration |
 | `src/GameShelf/Views/` | The UI (XAML + code-behind); `Format.cs` has the text formatting |
 | `tests/GameShelf.Tests/Tests.cs` | All unit tests: one console program, `Check(condition, "description")` per check |
+| `site/` | The website: `index.html`, `styles.css`, `logo.svg` (see "The website" below) |
+
+## The website (`site/`)
+
+The project's one-page website: `site/index.html`, `site/styles.css` and `site/logo.svg`. It will be published
+from this repo (for example with GitHub Pages) once the repo is public.
+
+- Plain HTML and CSS only. No JavaScript, no frameworks, no build step.
+- Nothing loaded from other servers: no web fonts, CDNs, analytics, embeds or tracking pixels. The page promises
+  privacy, so it must keep it. Links to other sites (`<a href="https://…">`) are fine. `check.ps1` enforces this.
+- Colours only through the variables at the top of `styles.css` (`var(--text)`, `var(--accent)`, …). The
+  product shot in the hero (`<figure>`) is a picture of the app and keeps its own fixed colours.
+- Layout and spacing are inline `style="…"` attributes, section by section. Copy the style of a neighbouring
+  element instead of inventing new values.
+- The text is factual and plain: only what the app really does, numbers only from the card, no marketing words
+  ("amazing", "seamless", "blazing fast"). Placeholders in square brackets (`[DOWNLOAD LINK]`) stay until a card
+  gives the real value.
+- Keep the "Before you download" section (the AI disclaimer and "Not affiliated") as it is.
+- Check your change by opening `site/index.html` in a browser, at full width and at about 390 px wide (phone):
+  nothing may overflow sideways. Say in your report that you did.
 
 ## Commands
 
