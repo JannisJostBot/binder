@@ -151,7 +151,7 @@ The ideas listed under "Not decided" at the bottom must **not** be built.
   settings, Free up space, Add a game and Refresh, and Game mode and Free up space in the tray menu. Not chosen: a
   row of action chips, a Game mode switch in the header.
 - The shelf shows "Game mode needs an update" with Update… when Game mode uses the admin helper and the helper is
-  from another version.
+  from another helper version (its own number, bumped only when the helper changes, not every app release).
 - A successful Game mode restore plays the Windows notification sound (its own setting).
 
 ---
@@ -556,6 +556,12 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
 - **One "Allow…" UAC prompt:**
   - Installs `GameShelf.Elevated.exe` to `%ProgramFiles%\GameShelf\`. Never in a user-writable folder.
   - Registers the scheduled tasks *GameShelf Apply* / *GameShelf Restore* with "Run with highest privileges".
+- **Helper version:** "Allow…" writes `ElevatedPart.HelperVersion` (a whole number, not the app version) into
+  `allowed-<SID>.txt`. Only another number there asks for "Update…" (one UAC prompt), so a Game Shelf update that
+  doesn't change the helper doesn't ask again. **Bump `HelperVersion` whenever `GameShelf.Elevated` changes**: what
+  it does, the request, journal or result format, or how its tasks and folders are set up. Markers from before it
+  hold the app version ("0.1.3") and update once more. Update replaces the copy in Program Files; the same exe
+  already there is left alone.
 - **Per game:** the watcher runs a task (`schtasks /run`) and waits on a named event with a timeout.
 - **The helper trusts nothing from the user side:**
   - It acts only on ids from its compiled-in allowlist.

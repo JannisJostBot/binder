@@ -815,6 +815,15 @@ static class Tests
               !GameShelf.Shared.ElevatedPart.IsUserSid("S-1-5-18") && !GameShelf.Shared.ElevatedPart.IsUserSid("S-1-5-21-1-") &&
               !GameShelf.Shared.ElevatedPart.IsUserSid("S-1-5-21-1 /f") && !GameShelf.Shared.ElevatedPart.IsUserSid("S-1-5-21-1\"x"),
             "only user SIDs name tasks and files");
+        Check(!GameShelf.Shared.ElevatedPart.IsOutdatedMarker(GameShelf.Shared.ElevatedPart.HelperVersion.ToString()) &&
+              !GameShelf.Shared.ElevatedPart.IsOutdatedMarker("1\r\n", current: 1) && !GameShelf.Shared.ElevatedPart.IsOutdatedMarker("7", current: 7),
+            "a marker with this helper version is current, whatever the app version");
+        Check(GameShelf.Shared.ElevatedPart.IsOutdatedMarker("1", current: 2) && GameShelf.Shared.ElevatedPart.IsOutdatedMarker("3", current: 2),
+            "another helper version needs an update");
+        Check(GameShelf.Shared.ElevatedPart.IsOutdatedMarker("0.1.3", current: 1) && GameShelf.Shared.ElevatedPart.IsOutdatedMarker("0.1.2") &&
+              GameShelf.Shared.ElevatedPart.IsOutdatedMarker("") && GameShelf.Shared.ElevatedPart.IsOutdatedMarker("-1", current: -1) &&
+              GameShelf.Shared.ElevatedPart.IsOutdatedMarker("+1", current: 1) && GameShelf.Shared.ElevatedPart.IsOutdatedMarker("1x", current: 1),
+            "old app-version markers and junk update once");
 
         var sid = "S-1-5-21-1004336348-1177238915-682003330-1001";
         var journal = new GameShelf.Elevated.Journal { Sid = sid, Session = request.Session, Started = new DateTimeOffset(2026, 11, 7, 22, 0, 0, TimeSpan.FromHours(1)) };

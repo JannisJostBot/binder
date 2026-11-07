@@ -80,12 +80,12 @@ internal static unsafe partial class GameModeService
     /// <summary>"Allow…" was done for this user and the helper is installed.</summary>
     public static bool Allowed => ElevatedPart.AllowedVersion(Sid) is not null;
 
-    /// <summary>The installed helper is from another version than this widget (Settings offers "Update…").</summary>
-    public static bool AllowedButOutdated => ElevatedPart.AllowedVersion(Sid) is { } v && v != ElevatedPart.BuildVersion;
+    /// <summary>The installed helper is another helper version than this widget's (Settings offers "Update…").</summary>
+    public static bool AllowedButOutdated => ElevatedPart.AllowedVersion(Sid) is { } v && ElevatedPart.IsOutdatedMarker(v);
 
     /// <summary>
     /// For the shelf's notice: Game mode is on (for all games or one) with items that need the helper, and the
-    /// helper is from another version, so it has to be updated (one UAC prompt) before they work again.
+    /// helper is another helper version, so it has to be updated (one UAC prompt) before they work again.
     /// </summary>
     public static bool HelperNeedsUpdate(Settings settings, IEnumerable<Game> games) =>
         settings.GameModeItems.Any(GameModeInfo.IsElevatedItem) &&
