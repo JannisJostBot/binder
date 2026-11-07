@@ -867,7 +867,16 @@ Suggested but neither approved nor rejected yet:
 - Showing uninstalled games
 - Emulator entries
 - Merging duplicates
-- Run something before or after a game
+- Run something before or after a game. Refined form for voice chat (suggested instead of a strip of app
+  buttons on the shelf, which fails the scope rule: the panel exits ~10 s after Play, Windows already pins apps,
+  and a permanent strip would shrink the grid):
+  - One setting, "Also open with games": Discord, TeamSpeak, Mumble (shown only when detected, reusing Game
+    mode's "kept smooth" detection, §11) plus "Add an app…" (file picker). Optionally per game under "This game
+    only".
+  - Runs once when Play is pressed, only if the app isn't already running, minimized where the app supports it
+    (Discord: `Update.exe --processStart Discord.exe --process-start-args --start-minimized`). No new shelf UI, no
+    idle cost.
+  - Paths go through the security rules (detected install folders validated, user-picked exes only).
 - "Surprise me"
 - Pin to Start / desktop shortcut from a cover
 - A taskbar jump list with recent games
