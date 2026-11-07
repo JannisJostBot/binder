@@ -116,7 +116,7 @@ internal static class Helper
 
         bool? Add(string name, string exe, int? dscp, ulong? bps)
         {
-            if (journal.Policies.Contains(name)) return null;
+            if (journal.Policies.Contains(name, StringComparer.OrdinalIgnoreCase)) return null;
             journal.Policies.Add(name);
             journal.Save();
             int result = qos.Create(name, exe, dscp, bps);
@@ -252,7 +252,8 @@ internal static class Helper
             Log($"Network: QoS isn't available (0x{hr:X8}); the policies go away with the next restart");
             return false;
         }
-        // Ours from the journal, and any other left over with our prefix (ActiveStore: nobody else's).
+        // Ours from the journal, and any other left over with our prefix. The ActiveStore also holds the user's
+        // own policies (Group Policy ones show up there too), which never have it.
         var ours = qos.Ours();
         if (ours is null)
         {
@@ -470,7 +471,7 @@ internal sealed class Journal
         foreach (var s in root.GetProperty("Services").EnumerateArray())
             if (s.GetString() is { } id && ElevatedPart.ServiceFor(id) is not null && !journal.Services.Contains(id)) journal.Services.Add(id);
         foreach (var p in root.GetProperty("Policies").EnumerateArray())
-            if (p.GetString() is { } name && name.StartsWith(Qos.Prefix, StringComparison.Ordinal) && journal.Policies.Count < 128)
+            if (p.GetString() is { } name && name.StartsWith(Qos.Prefix, StringComparison.OrdinalIgnoreCase) && journal.Policies.Count < 128)
                 journal.Policies.Add(name);
         if (root.TryGetProperty("Updates", out var u))
         {

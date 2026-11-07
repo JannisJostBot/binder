@@ -25,6 +25,7 @@ internal static class Program
     private const int RestartGraceMs = 5000;
     private const int RestartPollMs = 1000;
     private const int MaxWaitHandles = 64; // WaitForMultipleObjects limit
+    private const int SaveAttempts = 10, SaveRetryMs = 300;
 
     private static int Main(string[] args)
     {
@@ -113,8 +114,7 @@ internal static class Program
             gameMode?.GameFound(matcher.NamesOf(handles)); // it restarted itself, maybe as another exe
         }
 
-        try { AppendSession(gameId, start, end, exit, matcher.ReporterSeen); }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        SaveSession(gameId, start, end, exit, matcher.ReporterSeen);
 
         // Put back before the widget returns, so it shows the result.
         var result = ToastArgument(gameMode?.End(), toast);
@@ -264,6 +264,48 @@ internal static class Program
             if (_name is not null)
                 return Path.GetFileNameWithoutExtension(path).Equals(_name, StringComparison.OrdinalIgnoreCase);
             return path.StartsWith(_dirPrefix, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    /// <summary>
+    /// Saves the session, the crash check's only input. Another program (a virus scanner reading the new file,
+    /// an editor) can hold sessions.json for a moment, so it tries again for a few seconds; a session that still
+    /// can't be saved is written to error.log instead of being lost without a trace.
+    /// </summary>
+    private static void SaveSession(string gameId, DateTimeOffset start, DateTimeOffset end, GameExit exit, bool crashReporter)
+    {
+        for (int attempt = 1; ; attempt++)
+        {
+            try
+            {
+                AppendSession(gameId, start, end, exit, crashReporter);
+                return;
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                if (attempt < SaveAttempts)
+                {
+                    Thread.Sleep(SaveRetryMs);
+                    continue;
+                }
+                LogError($"Couldn't save the session of {gameId} ({start:O} to {end:O}, exit code {exit.Code}): {e.Message}");
+                return;
+            }
+        }
+    }
+
+    /// <summary>One line in %LOCALAPPDATA%\GameShelf\error.log, the widget's error log.</summary>
+    private static void LogError(string text)
+    {
+        try
+        {
+            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GameShelf");
+            Directory.CreateDirectory(dir);
+            File.AppendAllText(Path.Combine(dir, "error.log"), $"{DateTimeOffset.Now:O} [Watcher] {text}{Environment.NewLine}{Environment.NewLine}");
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // Nowhere left to report it.
         }
     }
 

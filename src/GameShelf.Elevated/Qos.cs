@@ -6,7 +6,8 @@ namespace GameShelf.Elevated;
 /// Policy-based QoS through WMI (<c>MSFT_NetQosPolicySettingData</c> in root\StandardCimv2, what
 /// <c>New-NetQosPolicy</c> uses), called over COM instead of starting PowerShell. Every policy goes into the
 /// temporary ActiveStore, which Windows empties on restart, so a crash can't leave one behind for long; the names
-/// all start with <see cref="Prefix"/>, and only those are ever removed. The COM calls go through the vtables
+/// all start with <see cref="Prefix"/>, and only those are ever removed (compared ignoring case: Windows keeps
+/// ActiveStore names lowercased, "gameshelf smooth discord.exe"). The COM calls go through the vtables
 /// directly (no interop wrappers to generate).
 /// </summary>
 internal sealed unsafe class Qos : IDisposable
@@ -144,7 +145,7 @@ internal sealed unsafe class Qos : IDisposable
                 if (returned == 0) break;
                 try
                 {
-                    if (GetString(item, "Name") is { } name && name.StartsWith(Prefix, StringComparison.Ordinal) &&
+                    if (GetString(item, "Name") is { } name && name.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase) &&
                         GetString(item, "__RELPATH") is { } relPath)
                         found.Add((name, relPath));
                 }
