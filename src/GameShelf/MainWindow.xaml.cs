@@ -109,8 +109,7 @@ public sealed partial class MainWindow : Window
 
         // The launch countdown runs in App (it survives the flyout closing); show it while we're open.
         App.Current.CountdownTick += OnCountdownTick;
-        if (App.Current.CountdownRunning) ShowCountdown();
-        Activated += OnActivated;
+        if (App.Current.CountdownRunning) ShowCountdown();        Activated += OnActivated;
         Closed += OnClosed;
 
         // Borderless (Windows still draws the thin border, rounded corners and shadow), not resizable, not in
@@ -1026,11 +1025,31 @@ public sealed partial class MainWindow : Window
     /// <summary>The launch countdown card, also when the flyout reopens while it's still counting.</summary>
     private void ShowCountdown()
     {
+        int remaining = App.Current.CountdownRemaining, total = Math.Max(1, App.Current.CountdownTotal);
         CountdownTitle.Text = App.Current.CountdownTitle;
-        CountdownBar.Maximum = Math.Max(1, App.Current.CountdownTotal);
-        UpdateCountdown(App.Current.CountdownRemaining);
+        UpdateCountdown(remaining);
         Countdown.Visibility = Visibility.Visible;
+
+        // The bar drains in one smooth, linear move to the end (compositor-run). With animations off it steps
+        // once a second instead (UpdateCountdown).
+        _countdownBar?.Stop();
+        _countdownBar = null;
+        CountdownScale.ScaleX = (double)remaining / total;
+        if (!new UISettings().AnimationsEnabled) return;
+        var drain = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+        {
+            From = (double)remaining / total,
+            To = 0,
+            Duration = TimeSpan.FromSeconds(remaining),
+        };
+        Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(drain, CountdownScale);
+        Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(drain, "ScaleX");
+        _countdownBar = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
+        _countdownBar.Children.Add(drain);
+        _countdownBar.Begin();
     }
+
+    private Microsoft.UI.Xaml.Media.Animation.Storyboard? _countdownBar;
 
     private void OnCountdownTick(int remaining)
     {
@@ -1040,10 +1059,15 @@ public sealed partial class MainWindow : Window
     private void UpdateCountdown(int remaining)
     {
         CountdownText.Text = $"Hiding in {remaining} s";
-        CountdownBar.Value = remaining; // drains as the time runs out
+        if (_countdownBar is null) CountdownScale.ScaleX = (double)remaining / Math.Max(1, App.Current.CountdownTotal);
     }
 
-    private void HideCountdown() => Countdown.Visibility = Visibility.Collapsed;
+    private void HideCountdown()
+    {
+        _countdownBar?.Stop();
+        _countdownBar = null;
+        Countdown.Visibility = Visibility.Collapsed;
+    }
 
     private void OnKeepOpenClick(object sender, RoutedEventArgs e)
     {
