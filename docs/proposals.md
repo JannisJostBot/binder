@@ -23,7 +23,7 @@ break the user's system.
 | 11 Crash detection | §10 | Done. With "Come back" off the crash card shows the next time the panel opens instead of a toast (Game mode's "Restored" toast doesn't exist yet); memory is the installed amount (`GetPhysicallyInstalledSystemMemory`) |
 | 12 More launchers | §8 | **In progress.** Done: EA app, Ubisoft Connect, Xbox app (tile logo as the cover picture) and Rockstar (tested with synthetic data only, no Rockstar game installed). Not yet: Battle.net, Riot, Amazon, itch, Humble and Meta |
 | 13 Controller | §4 | To do |
-| 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Restored toast and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\GameShelf\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `GameShelf.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `GameShelf Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\GameShelf\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing); **not yet tested live** with admin rights (the install needs the owner's UAC approval): check that the tasks register with their security descriptor, the user can `schtasks /run` them, QoS accepts the `PolicyStore` context value, and Delivery Optimization picks up the policy without a restart |
+| 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Game mode toast ("Game mode is on" after applying, while the widget is still up, and "Windows is back to normal" after the restore; animated badge) and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\GameShelf\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `GameShelf.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `GameShelf Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\GameShelf\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing); **not yet tested live** with admin rights (the install needs the owner's UAC approval): check that the tasks register with their security descriptor, the user can `schtasks /run` them, QoS accepts the `PolicyStore` context value, and Delivery Optimization picks up the policy without a restart |
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | To do |
 | 17 Advanced: sources and artwork | §14 | To do |
@@ -558,13 +558,18 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
 - **Restore:** after the watcher confirms the game closed (after the 5 s restart grace), before the widget returns.
 - **If the game is never detected:** restore immediately.
 
-### Restored toast (board 4)
+### Game mode toast (board 4)
 
-- **Style:** like the Windows 11 volume flyout, centered above the taskbar.
-- **Content:**
-  - "Restored successfully" (fades after 3 s), or
-  - "Restored 4 of 5 · Print Spooler didn't start" plus **Details** (stays until dismissed).
-- **Shown by:** `GameShelf.exe --restored <result>`. If "Come back" is off, it shows only the toast and exits.
+- **Style:** like the Windows 11 volume flyout, centered above the taskbar: a two-line card with a 36 px round
+  badge (accent; caution with "!" when something failed). The badge pops in and its checkmark draws itself once
+  (no idle cost; skipped with "Animation effects" off).
+- **After the restore** (`GameShelf.exe --restored <result>`; with "Come back" off only the toast shows, then it exits):
+  - "Windows is back to normal · Game mode put back 5 changes" (closes after 4 s), or
+  - "Restored 4 of 5 · Print Spooler couldn't be put back" plus **Details** (stays until dismissed).
+- **After it applied** (`--applied <result>`, forwarded to a widget that is still up: the countdown or Keep open;
+  a widget that isn't running never starts for it, so with "Instantly" it doesn't show):
+  - "Game mode is on · 3 changes · put back when the game closes", or "Windows was already set up for gaming"
+    (closes after 4 s); something that couldn't be changed is named (closes after 6 s).
 - **Accessibility:** UI Automation live region; honors "Animation effects" off.
 
 ### Settings sub-page (board 5) and model

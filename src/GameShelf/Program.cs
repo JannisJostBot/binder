@@ -38,6 +38,8 @@ internal static partial class Program
         }
 
         if (args.Contains("--quit") || args.Contains("--memory-report")) return 0; // nothing running to ask
+        // "Game mode is on" is only for a widget that is still up: never start WinUI for it while a game runs.
+        if (args.Contains("--applied")) return 0;
 
         App.StartArgs = args;
         WinRT.ComWrappersSupport.InitializeComWrappers();

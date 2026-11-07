@@ -29,6 +29,12 @@ internal sealed class GameMode
     private string? _sid;
     private bool _smoothGame;
 
+    /// <summary>What Begin changed and what it couldn't, for the "Game mode is on" toast.</summary>
+    public RestoreResult? Applied { get; private set; }
+
+    private int _applied;
+    private readonly List<string> _notApplied = [];
+
     /// <summary>Run the game "Above normal" (never higher).</summary>
     public bool RaisePriority { get; }
 
@@ -73,19 +79,30 @@ internal sealed class GameMode
         try
         {
             journal.Save(); // before the first change
-            if (chosen.Contains(GameModeInfo.Power)) mode.ApplyPower();
-            if (chosen.Contains(GameModeInfo.GameBar)) mode.ApplyGameBar();
+            if (chosen.Contains(GameModeInfo.Power)) mode.Count(mode.ApplyPower(), "Power mode");
+            if (chosen.Contains(GameModeInfo.GameBar)) mode.Count(mode.ApplyGameBar(), "Game Bar recording");
             if (closeApps.Count > 0) mode.CloseApps(closeApps);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
             // Can't keep a journal: change nothing more, and put back what was already changed.
             Log("Couldn't write the journal: " + e.Message);
+            mode._notApplied.Add("Game mode");
+            mode.Applied = mode.OwnApplied();
             return mode;
         }
-        mode.ApplyElevated(chosen, network ?? new NetworkOptions());
+        mode.Applied = mode.OwnApplied().Plus(mode.ApplyElevated(chosen, network ?? new NetworkOptions()));
         return mode;
     }
+
+    /// <summary>True: changed. False: couldn't be changed. Null: left as is (it already was that way).</summary>
+    private void Count(bool? outcome, string name)
+    {
+        if (outcome == true) _applied++;
+        else if (outcome == false) _notApplied.Add(name);
+    }
+
+    private RestoreResult OwnApplied() => new(_applied, _applied + _notApplied.Count, [.. _notApplied]);
 
     /// <summary>Puts everything back (the game closed, or was never detected).</summary>
     public RestoreResult End()
@@ -106,15 +123,18 @@ internal sealed class GameMode
 
     // ---- The admin part (the helper, through its scheduled tasks) ----------------------------------------
 
-    /// <summary>Pauses services, sets network priority and the Windows Update limit, if "Allow…" was done.</summary>
-    private void ApplyElevated(HashSet<string> chosen, NetworkOptions network)
+    /// <summary>
+    /// Pauses services, sets network priority and the Windows Update limit, if "Allow…" was done. What the helper
+    /// reports it changed, one failure if it didn't answer, or null if it wasn't asked.
+    /// </summary>
+    private RestoreResult? ApplyElevated(HashSet<string> chosen, NetworkOptions network)
     {
-        if (!chosen.Overlaps(GameModeInfo.ElevatedItems)) return;
+        if (!chosen.Overlaps(GameModeInfo.ElevatedItems)) return null;
         _sid = ElevatedPart.CurrentUserSid();
         if (ElevatedPart.AllowedVersion(_sid) is null)
         {
             Log("Admin part: not allowed yet (Settings › Game mode › Allow…), its items are skipped");
-            return;
+            return null;
         }
         var request = new ElevatedRequest
         {
@@ -130,9 +150,13 @@ internal sealed class GameMode
         if (_smoothGame) request.Smooth.AddRange(network.Smooth);
         if (chosen.Contains(GameModeInfo.Uploads)) request.Throttle.AddRange(network.Throttle);
         _elevated = request;
-        Log(ElevatedClient.Run(ElevatedPart.ApplyTask(_sid!), request, ElevatedClient.ApplyWaitMs)
-            ? "Admin part: applied (details in ProgramData\\GameShelf\\elevated.log)"
-            : "Admin part: the helper didn't answer in time");
+        if (ElevatedClient.Run(ElevatedPart.ApplyTask(_sid!), request, ElevatedClient.ApplyWaitMs))
+        {
+            Log("Admin part: applied (details in ProgramData\\GameShelf\\elevated.log)");
+            return ElevatedPart.ReadResult(_sid!, request.Event) ?? new RestoreResult(0, 0, []);
+        }
+        Log("Admin part: the helper didn't answer in time");
+        return new RestoreResult(0, 1, ["Services and network"]);
     }
 
     /// <summary>The game's processes were found: mark their exes too ("Game and voice chat first").</summary>
@@ -202,14 +226,14 @@ internal sealed class GameMode
 
     // ---- Apply ------------------------------------------------------------------------------------------
 
-    private void ApplyPower()
+    private bool? ApplyPower()
     {
         var plan = PowerMode.ActivePlan();
         var mode = plan == PowerMode.BalancedPlan ? PowerMode.ActiveMode() : null;
         if (PowerMode.IsFastest(plan, mode))
         {
             Log("Power: already at best performance, left as is");
-            return;
+            return null;
         }
         if (plan == PowerMode.BalancedPlan && mode is { } before)
         {
@@ -218,7 +242,7 @@ internal sealed class GameMode
             if (PowerMode.SetMode(PowerMode.BestPerformance) && PowerMode.ActiveMode() == PowerMode.BestPerformance)
             {
                 Log($"Power: mode {before} -> Best performance");
-                return;
+                return true;
             }
             _journal.Power = null;
             _journal.Save();
@@ -231,26 +255,28 @@ internal sealed class GameMode
             if (PowerMode.SetPlan(PowerMode.HighPerformancePlan))
             {
                 Log($"Power: plan {previous} -> High performance");
-                return;
+                return true;
             }
             _journal.Power = null;
             _journal.Save();
         }
         Log("Power: no way to switch on this PC, left as is");
+        return false;
     }
 
-    private void ApplyGameBar()
+    private bool? ApplyGameBar()
     {
         using var key = Registry.CurrentUser.OpenSubKey(GameDvrKey, writable: true);
         if (key?.GetValue(HistoricalCapture) is not int value || value == 0)
         {
             Log("Game Bar: background recording is already off");
-            return;
+            return null;
         }
         _journal.GameBarOff = true;
         _journal.Save();
         key.SetValue(HistoricalCapture, 0, RegistryValueKind.DWord);
         Log("Game Bar: background recording off");
+        return true;
     }
 
     /// <summary>
@@ -295,11 +321,13 @@ internal sealed class GameMode
             bool exited = windowsPerApp[i] > 0 && handles.TrueForAll(h => Native.WaitForSingleObject(h, 0) == Native.WAIT_OBJECT_0);
             if (exited)
             {
+                _applied++;
                 Log($"Apps: closed {Path.GetFileName(path)}");
             }
             else
             {
                 _journal.ClosedApps.Remove(path);
+                _notApplied.Add(Path.GetFileNameWithoutExtension(path));
                 Log($"Apps: {Path.GetFileName(path)} left open ({(windowsPerApp[i] == 0 ? "no window to close" : "didn't close within 5 s")})");
             }
             foreach (var h in handles) Native.CloseHandle(h);

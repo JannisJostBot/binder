@@ -1,0 +1,62 @@
+<Window x:Class="GameShelf.Views.GameModeToast"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Game Shelf">
+    <!-- Game mode's toast (board 4): "Game mode is on" after it applied, "Windows is back to normal" after the
+         restore. Like the volume flyout, centered above the taskbar; the window is sized to this content once it
+         has been laid out. The storyboard runs once when it shows (not at all when animations are off). -->
+    <Grid x:Name="Root" HorizontalAlignment="Left" VerticalAlignment="Top" Height="64" MinWidth="280" Padding="14,0,10,0" ColumnSpacing="12">
+        <Grid.Resources>
+            <Storyboard x:Name="ShowStoryboard">
+                <DoubleAnimation Storyboard.TargetName="BadgeScale" Storyboard.TargetProperty="ScaleX" From="0.5" To="1" Duration="0:0:0.3">
+                    <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="0.45" /></DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <DoubleAnimation Storyboard.TargetName="BadgeScale" Storyboard.TargetProperty="ScaleY" From="0.5" To="1" Duration="0:0:0.3">
+                    <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="0.45" /></DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <DoubleAnimation Storyboard.TargetName="Badge" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.15" />
+                <DoubleAnimation Storyboard.TargetName="Mark" Storyboard.TargetProperty="StrokeDashOffset" From="9" To="0"
+                                 BeginTime="0:0:0.15" Duration="0:0:0.35" EnableDependentAnimation="True">
+                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <DoubleAnimation Storyboard.TargetName="Body" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.25" BeginTime="0:0:0.05" />
+                <DoubleAnimation Storyboard.TargetName="BodyShift" Storyboard.TargetProperty="Y" From="8" To="0" Duration="0:0:0.3" BeginTime="0:0:0.05">
+                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+            </Storyboard>
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!-- The badge: a round accent dot whose checkmark draws itself (caution colour and "!" when something failed). -->
+        <Grid x:Name="Badge" Width="36" Height="36" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5"
+              AutomationProperties.AccessibilityView="Raw">
+            <Grid.RenderTransform><ScaleTransform x:Name="BadgeScale" /></Grid.RenderTransform>
+            <Ellipse x:Name="BadgeFill" Fill="{ThemeResource AccentFillColorDefaultBrush}" />
+            <Path x:Name="Mark" Data="M 11,18.5 L 15.5,23 L 25,13.5" StrokeThickness="2.25" StrokeDashArray="9 9"
+                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                  Stroke="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+            <TextBlock x:Name="Warning" Text="!" FontSize="20" FontWeight="Bold" Visibility="Collapsed"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,2"
+                       Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+        </Grid>
+
+        <StackPanel x:Name="Body" Grid.Column="1" VerticalAlignment="Center" Spacing="1" Margin="0,0,6,1" MaxWidth="360">
+            <StackPanel.RenderTransform><TranslateTransform x:Name="BodyShift" /></StackPanel.RenderTransform>
+            <TextBlock x:Name="TitleText" Style="{StaticResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis"
+                       AutomationProperties.LiveSetting="Assertive" />
+            <TextBlock x:Name="DetailText" Style="{StaticResource CaptionTextBlockStyle}" TextTrimming="CharacterEllipsis"
+                       TextWrapping="NoWrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+
+        <Button x:Name="DetailsButton" Grid.Column="2" Content="Details" VerticalAlignment="Center" Visibility="Collapsed"
+                Click="OnDetailsClick" ToolTipService.ToolTip="Open the Game mode log"
+                AutomationProperties.Name="Details: open the Game mode log" />
+        <Button x:Name="CloseButton" Grid.Column="3" Style="{StaticResource IconButton}" Content="&#xE711;" Visibility="Collapsed"
+                VerticalAlignment="Center" Click="OnCloseClick" ToolTipService.ToolTip="Dismiss" AutomationProperties.Name="Dismiss" />
+    </Grid>
+</Window>

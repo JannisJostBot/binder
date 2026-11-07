@@ -3,31 +3,36 @@ using GameShelf.Shared;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
 namespace GameShelf.Views;
 
 /// <summary>
-/// "Restored successfully" (gone after 3 s) or "Restored 4 of 5 · … couldn't be put back" with Details (stays
-/// until dismissed), after Game mode put Windows back (board 4). Shown without taking focus, centered above
-/// the taskbar of the main screen. Its one timer exists only while a success message is up.
+/// Game mode's toast (board 4), shown without taking focus, centered above the taskbar of the main screen:
+/// "Game mode is on" once it applied (while the widget is still up), "Windows is back to normal" once it put
+/// everything back. A restore that missed something stays until dismissed and offers Details. The badge pops in
+/// and draws its checkmark once; its one timer exists only while a message that closes by itself is up.
 /// </summary>
-public sealed partial class RestoredToast : Window
+public sealed partial class GameModeToast : Window
 {
-    private static readonly TimeSpan SuccessTimeout = TimeSpan.FromSeconds(3);
-    private const int Height = 52;
+    public enum Kind { Applied, Restored }
+
+    private static readonly TimeSpan SuccessTimeout = TimeSpan.FromSeconds(4);
+    private static readonly TimeSpan PartialTimeout = TimeSpan.FromSeconds(6);
+    private const int Height = 64;
     private const int MarginAboveTaskbar = 24;
 
     private readonly IntPtr _hwnd;
-    private readonly bool _success;
+    private readonly TimeSpan? _timeout;
     private DispatcherQueueTimer? _timer;
 
-    public RestoredToast(RestoreResult result)
+    public GameModeToast(Kind kind, RestoreResult result)
     {
         InitializeComponent();
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-        _success = result.Success;
 
         var presenter = OverlappedPresenter.Create();
         presenter.IsResizable = false;
@@ -42,19 +47,31 @@ public sealed partial class RestoredToast : Window
         if (PanelBackdrop.IsSupported) SystemBackdrop = new PanelBackdrop();
         else Root.Background = (Brush)Application.Current.Resources["SolidBackgroundFillColorBaseBrush"];
 
-        Message.Text = result.Summary();
-        if (!_success)
+        var (title, detail) = result.ToastText(applied: kind == Kind.Applied);
+        TitleText.Text = title;
+        DetailText.Text = detail;
+        AutomationProperties.SetName(TitleText, title + ". " + detail);
+        ToolTipService.SetToolTip(Body, detail); // the detail may be cut short
+
+        // A restore that missed something waits for the user; an apply that did is only a heads-up.
+        _timeout = result.Success ? SuccessTimeout : kind == Kind.Applied ? PartialTimeout : null;
+        if (!result.Success)
         {
-            Icon.Glyph = ""; // warning
-            Icon.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
+            BadgeFill.Fill = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
+            Mark.Visibility = Visibility.Collapsed;
+            Warning.Visibility = Visibility.Visible;
             DetailsButton.Visibility = GameModeService.HasLog ? Visibility.Visible : Visibility.Collapsed;
             CloseButton.Visibility = Visibility.Visible;
         }
         Root.SizeChanged += OnFirstLayout;
-        Closed += (_, _) => _timer?.Stop();
+        Closed += (_, _) =>
+        {
+            _timer?.Stop();
+            ShowStoryboard.Stop();
+        };
     }
 
-    /// <summary>Shows it without activating it (the user may be back in another app already).</summary>
+    /// <summary>Shows it without activating it (the user may be in another app, or the game starting).</summary>
     public void ShowQuietly()
     {
         // Laid out off to the side, hidden, then sized to its content and moved into place (OnFirstLayout).
@@ -79,14 +96,25 @@ public sealed partial class RestoredToast : Window
         int left = work.Left + (work.Width - width) / 2;
         int top = bottom - height - (int)Math.Round(MarginAboveTaskbar * scale);
         NativeWindow.SetBounds(_hwnd, new PixelRect(left, top, left + width, top + height));
+
+        // The storyboard's first frame (From values) is in place before the window shows; with animations off
+        // the XAML's values are already the final state.
+        bool animate = new Windows.UI.ViewManagement.UISettings().AnimationsEnabled;
+        if (animate)
+        {
+            Badge.Opacity = 0;
+            Body.Opacity = 0;
+            Mark.StrokeDashOffset = 9;
+        }
         NativeWindow.Cloak(_hwnd, false);
+        if (animate) ShowStoryboard.Begin();
 
         // Screen readers announce it like Windows' own notifications.
-        FrameworkElementAutomationPeer.CreatePeerForElement(Message)?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+        FrameworkElementAutomationPeer.CreatePeerForElement(TitleText)?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
 
-        if (!_success) return;
+        if (_timeout is not { } timeout) return;
         _timer = DispatcherQueue.CreateTimer();
-        _timer.Interval = SuccessTimeout;
+        _timer.Interval = timeout;
         _timer.IsRepeating = false;
         _timer.Tick += (_, _) => Close();
         _timer.Start();

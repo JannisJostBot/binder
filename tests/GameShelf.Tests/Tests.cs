@@ -691,6 +691,27 @@ static class Tests
               GameShelf.Watcher.Program.ToastArgument(new GameShelf.Shared.RestoreResult(0, 0, []), toast: true) is null &&
               GameShelf.Watcher.Program.ToastArgument(null, toast: true) is null,
             "toast only when something changed; problems shown even with the confirmation off");
+        Check(ok.ToastText(applied: false) == ("Windows is back to normal", "Game mode put back 3 changes") &&
+              partial.ToastText(applied: false) == ("Restored 2 of 3", "Spotify couldn't be put back") &&
+              new GameShelf.Shared.RestoreResult(1, 3, ["Power mode", "Spotify"]).ToastText(applied: false).Detail == "Power mode and Spotify couldn't be put back" &&
+              new GameShelf.Shared.RestoreResult(1, 4, ["A", "B", "C"]).ToastText(applied: false).Detail == "A and 2 more couldn't be put back",
+            "restored toast's two lines");
+        Check(ok.ToastText(applied: true) == ("Game mode is on", "3 changes · put back when the game closes") &&
+              new GameShelf.Shared.RestoreResult(1, 1, []).ToastText(applied: true).Detail == "1 change · put back when the game closes" &&
+              new GameShelf.Shared.RestoreResult(0, 0, []).ToastText(applied: true) == ("Game mode is on", "Windows was already set up for gaming") &&
+              partial.ToastText(applied: true) == ("Game mode is on", "Spotify couldn't be changed") &&
+              new GameShelf.Shared.RestoreResult(0, 1, ["Services and network"]).ToastText(applied: true).Title == "Game mode couldn't change Windows",
+            "applied toast's two lines");
+        Check(GameShelf.Watcher.Program.AppliedArgument(new GameShelf.Shared.RestoreResult(0, 0, []), toast: true) == "0/0" &&
+              GameShelf.Watcher.Program.AppliedArgument(ok, toast: false) is null &&
+              GameShelf.Watcher.Program.AppliedArgument(partial, toast: false) == "2/3|Spotify" &&
+              GameShelf.Watcher.Program.AppliedArgument(null, toast: true) is null,
+            "applied toast also when nothing needed changing; failures shown even with the confirmation off");
+        var tally = new GameShelf.Elevated.Helper.Tally();
+        tally.Add(true, "Windows Search");
+        tally.Add(null, "SysMain");
+        tally.Add(false, "Network priority");
+        Check(tally.Result() is { Restored: 1, Total: 2, Failed: ["Network priority"] }, "helper counts what it applied, not what it left alone");
 
         var app = OperatingSystem.IsWindows() ? @"C:\Program Files\Spotify\Spotify.exe" : "/opt/spotify/Spotify.exe";
         var journal = new GameShelf.Watcher.GameMode.Journal

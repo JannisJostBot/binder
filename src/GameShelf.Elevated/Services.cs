@@ -16,31 +16,34 @@ internal static unsafe class Services
     private const uint Access = ServiceState.SERVICE_QUERY_STATUS | ServiceState.SERVICE_QUERY_CONFIG |
                                 SERVICE_STOP | SERVICE_START | SERVICE_ENUMERATE_DEPENDENTS;
 
-    /// <summary>Stops one service if all the conditions hold; it's in the journal before it's stopped.</summary>
-    public static void Pause(string id, Journal journal)
+    /// <summary>
+    /// Stops one service if all the conditions hold; it's in the journal before it's stopped. True when it was
+    /// paused, false when stopping it failed, null when it was left alone on purpose (not running, not safe).
+    /// </summary>
+    public static bool? Pause(string id, Journal journal)
     {
-        if (ElevatedPart.ServiceFor(id) is not { } service) return;
+        if (ElevatedPart.ServiceFor(id) is not { } service) return null;
         using var h = Open(service.Service);
         if (h.Handle == IntPtr.Zero)
         {
             Helper.Log($"{service.Name}: not on this PC");
-            return;
+            return null;
         }
         var (state, accepted) = ServiceState.Status(h.Handle);
         if (state != ServiceState.SERVICE_RUNNING)
         {
             Helper.Log($"{service.Name}: not running, left as is");
-            return;
+            return null;
         }
         if ((accepted & SERVICE_ACCEPT_STOP) == 0)
         {
             Helper.Log($"{service.Name}: doesn't accept a stop now, left running");
-            return;
+            return null;
         }
         if (HasRunningDependents(h.Handle))
         {
             Helper.Log($"{service.Name}: other running services depend on it, left running");
-            return;
+            return null;
         }
 
         journal.Services.Add(id);
@@ -52,11 +55,12 @@ internal static unsafe class Services
             journal.Services.Remove(id);
             journal.Save();
             Helper.Log($"{service.Name}: couldn't stop it (error {error}), left running");
-            return;
+            return false;
         }
         Helper.Log(WaitFor(h.Handle, ServiceState.SERVICE_STOPPED)
             ? $"{service.Name}: paused"
             : $"{service.Name}: asked to stop, still stopping");
+        return true;
     }
 
     /// <summary>Starts a service we stopped, unless it runs again already or was disabled meanwhile. False if it didn't start.</summary>

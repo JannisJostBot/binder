@@ -67,7 +67,7 @@ GameShelf.sln
     Views/                  ShelfView, DetailView, SettingsView, ImportView, SetupView (the launch toast lives in MainWindow),
                             BarChart (the playtime charts), ModePreview (display mode pictures), CrashCard (shelf and detail),
                             FreeSpaceView (Free up space, milestone 15), GameModeView (Settings › Game mode),
-                            RestoredToast (Game mode's "Restored" toast, its own small window)
+                            GameModeToast (Game mode's "Game mode is on" / "Windows is back to normal" toast, its own small window)
   src/GameShelf.Watcher/    Program.cs, GameMode.cs (applies and restores Game mode, with its journal),
                             ElevatedClient.cs (runs the helper's tasks and waits on its event),
                             GameModeShared.cs (ids, files, restore result, power mode, the helper's request and paths;
@@ -105,7 +105,7 @@ Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions
    - Once found, it **blocks** on the process handle (`Process.WaitForExitAsync` / `WaitForSingleObject`). No polling while the game runs.
    - Some games restart themselves (launcher → game exe). After an exit, re-check the install folder for ~5 s before deciding the game is really closed.
    - On exit it appends a session (start, end, game id) to `sessions.json`, relaunches `GameShelf.exe` if "Come back when the game closes" is on, and exits.
-   - Game mode (milestone 14, when on for the game): the watcher applies it right after it starts (`--mode`, `--close`, `--toast`), raises the game to Above normal once found, and puts everything back before relaunching the widget, which shows the result (`--restored 4/5|Name`; with "Come back" off only the toast shows, then it exits). If the game is never detected, it restores at once. If "Allow…" was done, the admin items go through the helper: the watcher writes the request, runs the `GameShelf Apply <SID>` task with `schtasks /run` and waits on the event `Local\GameShelf.Elevated.<id>`; once the game is found it runs Apply again to add the game's exe to "Game and voice chat first"; at the end it runs `GameShelf Restore <SID>` and adds the helper's result to its own.
+   - Game mode (milestone 14, when on for the game): the watcher applies it right after it starts (`--mode`, `--close`, `--toast`) and tells a widget that is still up what it changed (`--applied 3/3`; the widget never starts just for that), raises the game to Above normal once found, and puts everything back before relaunching the widget, which shows the result (`--restored 4/5|Name`; with "Come back" off only the toast shows, then it exits). If the game is never detected, it restores at once. If "Allow…" was done, the admin items go through the helper: the watcher writes the request, runs the `GameShelf Apply <SID>` task with `schtasks /run` and waits on the event `Local\GameShelf.Elevated.<id>`; once the game is found it runs Apply again to add the game's exe to "Game and voice chat first"; at the end it runs `GameShelf Restore <SID>` and adds the helper's result to its own.
 6. Single instance: a named mutex in the widget. A second launch hands its arguments to the running one (see Display modes).
 
 ## Library sources

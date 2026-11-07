@@ -131,6 +131,14 @@ public sealed partial class App : Application
         }
         if (restored is not null) ShowRestored(restored, exitWhenClosed: false);
 
+        if (notice is null && StartupNotice.Applied(args) is { } applied)
+        {
+            // Game mode is on (from the watcher, while the countdown runs or the panel was kept open). Program
+            // doesn't start the widget for this alone, so this is always a forwarded start: no panel toggle.
+            if (Shared.RestoreResult.Parse(applied) is { } result) ShowGameModeToast(Views.GameModeToast.Kind.Applied, result);
+            return;
+        }
+
         if (notice is { NotDetected: false })
         {
             // A game ended (the watcher brought us back): pick up the session it wrote.
@@ -155,7 +163,7 @@ public sealed partial class App : Application
         if (firstStart) _ = CheckCrashesAsync(returnedGame: null); // sessions that ended while we weren't running
     }
 
-    private Views.RestoredToast? _restoredToast;
+    private Views.GameModeToast? _gameModeToast;
 
     /// <summary>Game mode's "Restored" toast (board 4), and the Game mode page's last result if it's open.</summary>
     private void ShowRestored(string encoded, bool exitWhenClosed)
@@ -166,14 +174,20 @@ public sealed partial class App : Application
             if (exitWhenClosed) Quit();
             return;
         }
-        _restoredToast?.Close();
-        var toast = new Views.RestoredToast(result);
+        ShowGameModeToast(Views.GameModeToast.Kind.Restored, result, exitWhenClosed);
+    }
+
+    /// <summary>One Game mode toast at a time; a newer one replaces it.</summary>
+    private void ShowGameModeToast(Views.GameModeToast.Kind kind, Shared.RestoreResult result, bool exitWhenClosed = false)
+    {
+        _gameModeToast?.Close();
+        var toast = new Views.GameModeToast(kind, result);
         toast.Closed += (_, _) =>
         {
-            if (ReferenceEquals(_restoredToast, toast)) _restoredToast = null;
+            if (ReferenceEquals(_gameModeToast, toast)) _gameModeToast = null;
             if (exitWhenClosed && !_quitting && _panel is null && _kept is null) Quit();
         };
-        _restoredToast = toast;
+        _gameModeToast = toast;
         toast.ShowQuietly();
     }
 
@@ -408,7 +422,7 @@ public sealed partial class App : Application
         _quitting = true;
         CancelCountdown();
         _panel?.Close();
-        _restoredToast?.Close();
+        _gameModeToast?.Close();
         DropKept();
         _messages?.Dispose(); // removes the tray icon right away instead of leaving a ghost until hovered
         _messages = null;
@@ -470,6 +484,13 @@ public sealed record StartupNotice(bool NotDetected, string GameId)
     public static string? Restored(string[] args)
     {
         int i = Array.IndexOf(args, "--restored");
+        return i >= 0 && i + 1 < args.Length ? args[i + 1] : null;
+    }
+
+    /// <summary>What Game mode changed when the game started ("--applied 3/3").</summary>
+    public static string? Applied(string[] args)
+    {
+        int i = Array.IndexOf(args, "--applied");
         return i >= 0 && i + 1 < args.Length ? args[i + 1] : null;
     }
 }

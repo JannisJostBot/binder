@@ -62,6 +62,9 @@ internal static class Program
 
         // Game mode: applied now, while the game starts; put back once it's closed (or never showed up).
         var gameMode = modeItems is null ? null : GameMode.Begin(gameId, modeItems, closeApps, network);
+        // "Game mode is on": only for a widget that is still up (the countdown, or Keep open); one that isn't
+        // running doesn't start for it, since it's gone while a game runs.
+        if (AppliedArgument(gameMode?.Applied, toast) is { } applied) StartWidget("--applied", applied);
         var matcher = new Matcher(dir, processName) { RaisePriority = gameMode?.RaisePriority == true };
 
         // Detection phase: the store app may start first, so poll for a while.
@@ -127,6 +130,14 @@ internal static class Program
     /// </summary>
     internal static string? ToastArgument(RestoreResult? result, bool toast) =>
         result is null || result.Total == 0 || (result.Success && !toast) ? null : result.Encode();
+
+    /// <summary>
+    /// What Game mode changed for the widget's "Game mode is on" toast, or null for none: Game mode is off, or all
+    /// went well and the confirmation is turned off. Unlike a restore, nothing changed is still worth a word
+    /// ("Windows was already set up for gaming"), and something that couldn't be changed is always shown.
+    /// </summary>
+    internal static string? AppliedArgument(RestoreResult? result, bool toast) =>
+        result is null || (result.Success && !toast) ? null : result.Encode();
 
     private static void CloseAll(List<IntPtr> handles)
     {

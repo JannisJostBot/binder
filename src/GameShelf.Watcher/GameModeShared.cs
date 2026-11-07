@@ -104,6 +104,33 @@ public sealed record RestoreResult(int Restored, int Total, List<string> Failed)
     public RestoreResult Plus(RestoreResult? other) =>
         other is null ? this : new RestoreResult(Restored + other.Restored, Total + other.Total, [.. Failed, .. other.Failed]);
 
+    /// <summary>
+    /// The Game mode toast's two lines: after a restore (<paramref name="applied"/> false) "Windows is back to
+    /// normal" or "Restored 4 of 5"; after Begin "Game mode is on", with what it changed or couldn't change.
+    /// </summary>
+    public (string Title, string Detail) ToastText(bool applied)
+    {
+        string changes = Restored == 1 ? "1 change" : $"{Restored} changes";
+        if (!applied)
+            return Success
+                ? ("Windows is back to normal", $"Game mode put back {changes}")
+                : ($"Restored {Restored} of {Total}", $"{Names()} couldn't be put back");
+        if (!Success)
+            return (Restored > 0 ? "Game mode is on" : "Game mode couldn't change Windows", $"{Names()} couldn't be changed");
+        return ("Game mode is on", Restored == 0
+            ? "Windows was already set up for gaming"
+            : $"{changes} · put back when the game closes");
+    }
+
+    /// <summary>"Spotify", "Spotify and Discord", "Spotify and 2 more".</summary>
+    private string Names() => Failed.Count switch
+    {
+        0 => "",
+        1 => Failed[0],
+        2 => Failed[0] + " and " + Failed[1],
+        _ => Failed[0] + $" and {Failed.Count - 1} more",
+    };
+
     /// <summary>"Restored successfully", or "Restored 4 of 5 · Spotify couldn't be put back".</summary>
     public string Summary()
     {

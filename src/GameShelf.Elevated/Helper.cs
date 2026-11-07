@@ -25,6 +25,7 @@ internal static class Helper
             return 2;
         }
         using var gate = Lock();
+        RestoreResult? result = null;
         try
         {
             if (!DataFolder.IsOurs())
@@ -47,46 +48,87 @@ internal static class Helper
             journal ??= new Journal { Sid = sid, Session = request.Session, Started = DateTimeOffset.Now };
             journal.Save(); // before the first change
 
+            // What this run changed, for the "Game mode is on" toast: each service, network priority, the upload
+            // limit and the Windows Update limit count as one change each.
+            var tally = new Tally();
             foreach (var id in request.Services)
-                if (!journal.Services.Contains(id)) Services.Pause(id, journal);
-            if (request.Smooth.Count > 0 || request.Throttle.Count > 0) ApplyQos(request, journal);
-            if (request.LimitUpdates && journal.Updates is null) ApplyUpdateLimit(journal);
+            {
+                if (journal.Services.Contains(id)) continue;
+                tally.Add(Services.Pause(id, journal), ElevatedPart.ServiceFor(id)?.Name ?? id);
+            }
+            if (request.Smooth.Count > 0 || request.Throttle.Count > 0)
+            {
+                var (smooth, uploads) = ApplyQos(request, journal);
+                tally.Add(smooth, "Network priority");
+                tally.Add(uploads, "Upload limit");
+            }
+            if (request.LimitUpdates && journal.Updates is null) tally.Add(ApplyUpdateLimit(journal), "Windows Update limit");
+            result = tally.Result();
 
             if (journal.IsEmpty) Journal.Delete(); // nothing was changed: nothing to put back
             return 0;
         }
         finally
         {
-            Finish(sid, request.Event, null);
+            Finish(sid, request.Event, result);
         }
     }
 
-    private static void ApplyQos(ElevatedRequest request, Journal journal)
+    /// <summary>Counts what an apply changed and names what it couldn't.</summary>
+    internal sealed class Tally
+    {
+        private int _applied;
+        private readonly List<string> _failed = [];
+
+        /// <summary>True: changed. False: couldn't be changed. Null: left alone (nothing to do, or not safe to).</summary>
+        public void Add(bool? outcome, string name)
+        {
+            if (outcome == true) _applied++;
+            else if (outcome == false) _failed.Add(name);
+        }
+
+        public RestoreResult Result() => new(_applied, _applied + _failed.Count, [.. _failed]);
+    }
+
+    /// <summary>
+    /// Adds the policies not added yet. For each group (kept smooth, slowed uploads): true if any was added, false
+    /// if some failed and none was added, null if there was nothing new to add.
+    /// </summary>
+    private static (bool? Smooth, bool? Uploads) ApplyQos(ElevatedRequest request, Journal journal)
     {
         using var qos = Qos.Connect(out int hr);
         if (qos is null)
         {
             Log($"Network: QoS isn't available (0x{hr:X8}), left as is");
-            return;
+            return (request.Smooth.Count > 0 ? false : null, request.Throttle.Count > 0 ? false : null);
         }
-        foreach (var exe in request.Smooth) Add(Qos.Prefix + "smooth " + exe, exe, DscpGame, null);
+        bool? smooth = null, uploads = null;
+        foreach (var exe in request.Smooth) Merge(ref smooth, Add(Qos.Prefix + "smooth " + exe, exe, DscpGame, null));
         ulong limit = (ulong)request.UploadLimitMbps * 1_000_000;
-        foreach (var exe in request.Throttle) Add(Qos.Prefix + "upload " + exe, exe, null, limit);
+        foreach (var exe in request.Throttle) Merge(ref uploads, Add(Qos.Prefix + "upload " + exe, exe, null, limit));
+        return (smooth, uploads);
 
-        void Add(string name, string exe, int? dscp, ulong? bps)
+        static void Merge(ref bool? group, bool? one)
         {
-            if (journal.Policies.Contains(name)) return;
+            if (one == true) group = true;
+            else if (one == false && group is null) group = false;
+        }
+
+        bool? Add(string name, string exe, int? dscp, ulong? bps)
+        {
+            if (journal.Policies.Contains(name)) return null;
             journal.Policies.Add(name);
             journal.Save();
             int result = qos.Create(name, exe, dscp, bps);
             if (result >= 0)
             {
                 Log(dscp is not null ? $"Network: {exe} first (DSCP {dscp})" : $"Network: {exe} uploads at most {bps / 1_000_000} Mbit/s");
-                return;
+                return true;
             }
             journal.Policies.Remove(name);
             journal.Save();
             Log($"Network: couldn't add the policy for {exe} (0x{result:X8})");
+            return false;
         }
     }
 
@@ -94,25 +136,27 @@ internal static class Helper
     private const string UpdatePolicyKey = @"SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization";
     private const string UpdatePolicyValue = "DOPercentageMaxBackgroundBandwidth";
 
-    private static void ApplyUpdateLimit(Journal journal)
+    /// <summary>True when the limit was set, null when it was left as is.</summary>
+    private static bool? ApplyUpdateLimit(Journal journal)
     {
         using var existing = Registry.LocalMachine.OpenSubKey(UpdatePolicyKey);
         var before = existing?.GetValue(UpdatePolicyValue);
         if (before is not null and not int)
         {
             Log("Windows Update: its bandwidth policy has an unexpected type, left as is");
-            return;
+            return null;
         }
         if (before is int current && current is > 0 and <= ElevatedPart.UpdatePercent)
         {
             Log($"Windows Update: already limited to {current}%, left as is");
-            return;
+            return null;
         }
         journal.Updates = new UpdateChange(before as int?, ElevatedPart.UpdatePercent, KeyCreated: existing is null);
         journal.Save();
         using var key = Registry.LocalMachine.CreateSubKey(UpdatePolicyKey, writable: true);
         key.SetValue(UpdatePolicyValue, ElevatedPart.UpdatePercent, RegistryValueKind.DWord);
         Log($"Windows Update: background downloads limited to {ElevatedPart.UpdatePercent}% (was {(before is int b ? b + "%" : "not set")})");
+        return true;
     }
 
     // ---- Restore ------------------------------------------------------------------------------------------
