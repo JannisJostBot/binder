@@ -42,6 +42,8 @@ public sealed partial class GameModeView : UserControl
             UploadsSwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.Uploads);
             UpdatesSwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.Updates);
             ToastSwitch.IsOn = settings.ShowRestoreToast;
+            SoundSwitch.IsOn = settings.RestoreSound;
+            SoundSwitch.IsEnabled = settings.ShowRestoreToast;
             int limit = Array.IndexOf(ElevatedPart.UploadLimits, settings.UploadLimitMbps);
             LimitBox.SelectedIndex = limit >= 0 ? limit : Array.IndexOf(ElevatedPart.UploadLimits, ElevatedPart.DefaultUploadLimit);
         }
@@ -344,6 +346,14 @@ public sealed partial class GameModeView : UserControl
     {
         if (_loading) return;
         _settings.ShowRestoreToast = ToastSwitch.IsOn;
+        SoundSwitch.IsEnabled = ToastSwitch.IsOn; // the sound comes with the confirmation
+        Changed?.Invoke();
+    }
+
+    private void OnSoundToggled(object sender, RoutedEventArgs e)
+    {
+        if (_loading) return;
+        _settings.RestoreSound = SoundSwitch.IsOn;
         Changed?.Invoke();
     }
 

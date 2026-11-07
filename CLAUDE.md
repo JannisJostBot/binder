@@ -63,7 +63,8 @@ GameShelf.sln
                             CrashLog (event log 1000/1002/4101 for one session), CrashStore (crashes.json), PcInfo
                             (Windows, graphics, memory; read only when copying), GameLogs (Unity/Unreal log files),
                             RunningGames (games running right now, read once when Free up space opens),
-                            GameModeService (milestone 14: the watcher's Game mode arguments, recovery, page state)
+                            GameModeService (milestone 14: the watcher's Game mode arguments, recovery, page state),
+                            Sound (the soft chime after a successful restore: the Windows notification sound)
     Views/                  ShelfView, DetailView, SettingsView, ImportView, SetupView (the launch toast lives in MainWindow),
                             BarChart (the playtime charts), ModePreview (display mode pictures), CrashCard (shelf and detail),
                             FreeSpaceView (Free up space, milestone 15), GameModeView (Settings › Game mode),

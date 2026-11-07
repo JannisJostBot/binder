@@ -208,6 +208,20 @@
                                       AutomationProperties.Name="Show a Restored confirmation" Toggled="OnToastToggled" />
                     </Grid>
                     <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Play a sound with it" />
+                            <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                                       Text="Your Windows notification sound, once everything is back. Quiet while notifications are held back." />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="SoundSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
+                                      AutomationProperties.Name="Play a sound with the Restored confirmation" Toggled="OnSoundToggled" />
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
                     <Grid Style="{StaticResource SettingRow}" ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />

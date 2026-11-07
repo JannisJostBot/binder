@@ -68,6 +68,8 @@ public sealed class Settings
     public List<string> GameModeCloseApps { get; set; } = [];
     /// <summary>Show "Restored successfully" when the game closes (problems are always shown).</summary>
     public bool ShowRestoreToast { get; set; } = true;
+    /// <summary>Play the Windows notification sound with "Windows is back to normal" (not when something failed).</summary>
+    public bool RestoreSound { get; set; } = true;
     /// <summary>Exe names the user added to "kept smooth" (the game and installed voice chat apps always are).</summary>
     public List<string> KeepSmoothApps { get; set; } = [];
     /// <summary>Exe names whose uploads are slowed down while a game runs.</summary>

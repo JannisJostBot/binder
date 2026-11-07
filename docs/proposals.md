@@ -564,7 +564,9 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
   badge (accent; caution with "!" when something failed). The badge pops in and its checkmark draws itself once
   (no idle cost; skipped with "Animation effects" off).
 - **After the restore** (`GameShelf.exe --restored <result>`; with "Come back" off only the toast shows, then it exits):
-  - "Windows is back to normal · Game mode put back 5 changes" (closes after 4 s), or
+  - "Windows is back to normal · Game mode put back 5 changes" (closes after 4 s), with the user's Windows notification
+    sound ("Play a sound with it", on by default; `PlaySound` alias `Notification.Default`, system volume, skipped
+    while `SHQueryUserNotificationState` says notifications are held back), or
   - "Restored 4 of 5 · Print Spooler couldn't be put back" plus **Details** (stays until dismissed).
 - **After it applied** (`--applied <result>`, forwarded to a widget that is still up: the countdown or Keep open;
   a widget that isn't running never starts for it, so with "Instantly" it doesn't show):

@@ -175,6 +175,7 @@ public sealed partial class App : Application
             return;
         }
         ShowGameModeToast(Views.GameModeToast.Kind.Restored, result, exitWhenClosed);
+        if (result.Success && Settings.RestoreSound) Services.Sound.PlayRestored(); // a soft chime, never for a problem
     }
 
     /// <summary>One Game mode toast at a time; a newer one replaces it.</summary>
