@@ -204,6 +204,8 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 - Clicking a cover (or a row in List) plays the game, like Enter and like the desktop shortcuts it replaces. Details open from the (i) button, Space, or right-click › Details. The (i) button stays in the UI Automation tree when not hovered, so screen readers can reach it.
 - Favorites are pinned first.
 - Footer hint: "Hides 10 s after a game starts · comes back when it closes", shown until three sessions are recorded.
+- "Game mode needs an update" (an `InfoBar` above the search box, with Update…): shown when Game mode is on with items
+  that need the admin helper and the helper is from another version; checked when the shelf gets its data.
 - Empty states: a large Fluent icon, one plain sentence and the way forward (no games: Import desktop shortcuts / Add a game; no search match: Clear search / Add a game).
 
 **Detail view** (replaces the grid inside the same panel; a back button returns)

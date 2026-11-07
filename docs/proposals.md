@@ -23,7 +23,8 @@ break the user's system.
 | 11 Crash detection | §10 | Done. With "Come back" off the crash card shows the next time the panel opens instead of a toast (Game mode's "Restored" toast doesn't exist yet); memory is the installed amount (`GetPhysicallyInstalledSystemMemory`) |
 | 12 More launchers | §8 | **In progress.** Done: EA app, Ubisoft Connect, Xbox app (tile logo as the cover picture) and Rockstar (tested with synthetic data only, no Rockstar game installed). Not yet: Battle.net, Riot, Amazon, itch, Humble and Meta |
 | 13 Controller | §4 | To do |
-| 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Game mode toast ("Game mode is on" after applying, while the widget is still up, and "Windows is back to normal" after the restore; animated badge) and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\GameShelf\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `GameShelf.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `GameShelf Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\GameShelf\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing); **not yet tested live** with admin rights (the install needs the owner's UAC approval): check that the tasks register with their security descriptor, the user can `schtasks /run` them, QoS accepts the `PolicyStore` context value, and Delivery Optimization picks up the policy without a restart |
+| 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Game mode toast ("Game mode is on" after applying, while the widget is still up, and "Windows is back to normal" after the restore; animated badge) and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\GameShelf\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `GameShelf.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `GameShelf Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\GameShelf\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing). Tested live on the owner's PC on 2026-11-07: the tasks register and run, the Print Spooler is paused and restarted, the QoS policies and the Windows Update limit are applied and restored. Windows keeps ActiveStore policy names lowercased, so ours are matched ignoring case. The shelf shows "Game mode needs an update" with Update… when Game mode uses the helper and it's from another version. Still to check: Delivery Optimization picks up the policy without a restart |
+| 19 Quick actions | §16 | To do |
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | To do |
 | 17 Advanced: sources and artwork | §14 | To do |
@@ -64,6 +65,7 @@ with a Details (i) button, greeting header, the switchable top slot, silent Stea
 | 13 | Look and moments: game logos on banners, the cover growing into the detail view, "Welcome back" after a session, shiny favourites, quiet playtime milestones | Changes existing | `ShelfView`, `DetailView`, `GameTile`, `CoverCache`, `Game`, `Settings` |
 | 14 | Advanced settings: where Binder finds games and artwork, so users can fix it if a launcher changes | Changes existing | new `Library/SourceDefaults`, every `*Source`, `CoverCache`, `SettingsView`, `Settings` |
 | 15 | Performance: the newest WinUI patch, pre-scaled cover copies, loading hidden UI only when needed, AOT compiler settings, CsWinRT 3.0 once stable | Changes existing | `GameShelf.csproj`, `CoverCache`, the XAML views |
+| 16 | Quick actions: a "…" menu in the shelf header (Game mode on/off, Game mode settings, Free up space, Add a game, Refresh) and the same Game mode and Free up space items in the tray menu | Changes existing | `ShelfView`, `MainWindow`, `App` (tray menu), `Settings` |
 
 ### Conflicts with `CLAUDE.md` to resolve while implementing
 
@@ -143,6 +145,14 @@ The ideas listed under "Not decided" at the bottom must **not** be built.
   parts of the UI only when they're needed, try the AOT compiler's optimization settings, and move to CsWinRT 3.0
   once it's stable. Ruled out: ReadyToRun (Native AOT already does more), server GC (more memory), Win2D and
   DirectStorage (extra dependencies for little gain), and newer CPU instruction sets (would crash on older PCs).
+
+**2026-11-07**
+- **Quick actions** approved (§16, board 18): a "…" menu in the shelf header with Game mode on/off, Game mode
+  settings, Free up space, Add a game and Refresh, and Game mode and Free up space in the tray menu. Not chosen: a
+  row of action chips, a Game mode switch in the header.
+- The shelf shows "Game mode needs an update" with Update… when Game mode uses the admin helper and the helper is
+  from another version.
+- A successful Game mode restore plays the Windows notification sound (its own setting).
 
 ---
 
@@ -841,6 +851,50 @@ smooth scrolling through the grid, and the published size. Report the numbers in
   so far (3.0.0-preview in 2026-03). Move to it once there's a stable 3.0 that the stable Windows App SDK supports,
   and only through the Windows App SDK's own version (no separate package).
 
+## 16. Quick actions (board 18, milestone 19)
+
+Free up space is three clicks deep (Settings › Storage › Free up space…) and Game mode two plus a page. Both get a
+shorter way in, without taking room from the grid.
+
+### a. The "…" button in the shelf header
+
+- An icon button between Keep open (flyout only) and Settings: Segoe Fluent "More" (`E712`), tooltip and
+  screen-reader name "More actions". The gear stays, so Settings is still one click.
+- It opens a `MenuFlyout` (the same native menu as the cover's right-click menu), built in its `Opening` handler,
+  not when the shelf loads, so it costs nothing until it's used:
+  1. **Game mode**, a `ToggleMenuFlyoutItem` (`Ctrl+G`): turns `Settings.GameModeEnabled` on or off and saves.
+     A game set to On or Off in its own settings keeps that. When the admin helper needs an update
+     (`GameModeService.HelperNeedsUpdate`), the item reads "Game mode (needs update)" and opens the Game mode page
+     instead of switching.
+  2. **Game mode settings…**: the Game mode page.
+  3. Separator.
+  4. **Free up space…**: the Free up space page with the fixed drive that has the least free space selected (the
+     detail menu's entry keeps selecting the game's drive).
+  5. **Add a game…**: the standard file picker, as in Settings.
+  6. **Refresh library** (`F5`): the same rescan as Settings' refresh button.
+- While Game mode is on, a small accent dot sits on the "…" button (top-right, 7 px). It isn't the only signal:
+  the button's screen-reader name becomes "More actions, Game mode on", and the menu item is checked.
+- `Ctrl+G` and `F5` work while the shelf has focus. Neither types a character, so type-to-search is unaffected.
+
+### b. The same items in the tray menu
+
+- Today: Open Game Shelf, Settings, Quit. New: Open Game Shelf, separator, **Game mode** (checked while on;
+  `MF_CHECKED`), **Free up space…**, separator, Settings, Quit.
+- Game mode switches without opening the panel (the setting is saved straight away). With the helper out of date,
+  it opens the panel on the Game mode page, like the header item.
+- Free up space opens the panel on that page.
+
+### Not chosen
+
+- A row of action chips under the header: permanent space taken from the grid for occasional actions.
+- A Game mode switch directly in the header: fastest, but easy to hit by accident, and it doesn't fit the calm
+  header.
+
+### Touches
+
+`ShelfView` (button, menu, accelerators), `MainWindow` (the actions), `App` and `MessageWindow` (tray items, a
+checked item), `FreeSpaceView` (choosing the drive). No new settings.
+
 ## Build order (after milestone 7)
 
 8. **Quick wins:** *(Done.)*
@@ -866,6 +920,7 @@ smooth scrolling through the grid, and the published size. Report the numbers in
     `CLAUDE.md`.
 18. **Performance** (§15): the WinUI patch first, then pre-scaled covers, deferred loading and the AOT settings, each
     measured on its own. CsWinRT 3.0 when it's stable.
+19. **Quick actions** (§16): the header menu first, then the tray items.
 
 ## Not decided (don't build)
 
