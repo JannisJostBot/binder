@@ -100,11 +100,14 @@ Working:
 - Shelf, details (playtime charts, launch options, anti-cheat check) and settings.
 - Crash detection and Free up space.
 - Multi-monitor, the flyout with tray icon and shortcut, first-run setup, and the installer.
+- Game mode, the part without admin rights (off by default): Best performance power mode, the game at Above
+  normal priority, Game Bar background recording paused and chosen apps closed, all put back when the game
+  closes.
 
 Planned (see `docs/proposals.md`):
 - More launchers (Battle.net, Riot, Amazon, itch.io, Humble, Meta).
 - Controller support.
-- An optional Game mode.
+- The rest of Game mode: pausing background services and the network options (needs admin rights once).
 
 ## Disclaimer
 

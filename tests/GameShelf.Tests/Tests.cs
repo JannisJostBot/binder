@@ -82,6 +82,7 @@ static class Tests
         PlaytimeTests();
         CrashTests();
         SpaceTests();
+        GameModeTests();
 
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");
@@ -672,6 +673,69 @@ static class Tests
         Check(PlaytimeStats.WeekLabel(new DateTime(2026, 9, 14)) == "Sep 14" && PlaytimeStats.DayLetter(new DateTime(2026, 11, 2)) == "M",
             "chart labels are English whatever the locale");
     }
+    /// <summary>Milestone 14: Game mode's restore result, journal and the apps it may close.</summary>
+    static void GameModeTests()
+    {
+        var ok = new GameShelf.Shared.RestoreResult(3, 3, []);
+        var partial = new GameShelf.Shared.RestoreResult(2, 3, ["Spotify"]);
+        Check(ok.Encode() == "3/3" && partial.Encode() == "2/3|Spotify", "restore result encoding");
+        Check(GameShelf.Shared.RestoreResult.Parse("2/3|Spotify") is { Restored: 2, Total: 3, Failed: ["Spotify"] }, "restore result round-trip");
+        Check(GameShelf.Shared.RestoreResult.Parse("4/3") is null && GameShelf.Shared.RestoreResult.Parse("x/3") is null &&
+              GameShelf.Shared.RestoreResult.Parse("") is null && GameShelf.Shared.RestoreResult.Parse("1") is null &&
+              GameShelf.Shared.RestoreResult.Parse(new string('1', 3000)) is null, "malformed restore results rejected");
+        Check(ok.Summary() == "Restored successfully" && partial.Summary() == "Restored 2 of 3 · Spotify couldn't be put back" &&
+              new GameShelf.Shared.RestoreResult(1, 3, ["Power mode", "Spotify"]).Summary() == "Restored 1 of 3 · Power mode and 1 more couldn't be put back",
+            "toast texts");
+        Check(GameShelf.Watcher.Program.ToastArgument(ok, toast: true) == "3/3" && GameShelf.Watcher.Program.ToastArgument(ok, toast: false) is null &&
+              GameShelf.Watcher.Program.ToastArgument(partial, toast: false) == "2/3|Spotify" &&
+              GameShelf.Watcher.Program.ToastArgument(new GameShelf.Shared.RestoreResult(0, 0, []), toast: true) is null &&
+              GameShelf.Watcher.Program.ToastArgument(null, toast: true) is null,
+            "toast only when something changed; problems shown even with the confirmation off");
+
+        var app = OperatingSystem.IsWindows() ? @"C:\Program Files\Spotify\Spotify.exe" : "/opt/spotify/Spotify.exe";
+        var journal = new GameShelf.Watcher.GameMode.Journal
+        {
+            GameId = "steam:570",
+            Started = new DateTimeOffset(2026, 11, 7, 21, 0, 0, TimeSpan.FromHours(1)),
+            Power = new GameShelf.Watcher.GameMode.PowerChange("mode", Guid.Empty, GameShelf.Shared.PowerMode.BestPerformance),
+            GameBarOff = true,
+        };
+        journal.ClosedApps.Add(app);
+        var back = GameShelf.Watcher.GameMode.Journal.Parse(journal.ToJson());
+        Check(back.GameId == "steam:570" && back.Started == journal.Started && back.Power == journal.Power && back.GameBarOff &&
+              back.ClosedApps.SequenceEqual([app]), "journal round-trip");
+        var bare = GameShelf.Watcher.GameMode.Journal.Parse(Encoding.UTF8.GetBytes("{\"GameId\":\"a\",\"Started\":\"2026-11-07T21:00:00+01:00\"}"));
+        Check(bare.Power is null && !bare.GameBarOff && bare.ClosedApps.Count == 0, "journal with nothing changed");
+        try
+        {
+            GameShelf.Watcher.GameMode.Journal.Parse(Encoding.UTF8.GetBytes(
+                "{\"GameId\":\"a\",\"Started\":\"2026-11-07T21:00:00+01:00\",\"Power\":{\"Kind\":\"service\",\"Before\":\"" + Guid.Empty + "\",\"Set\":\"" + Guid.Empty + "\"}}"));
+            Check(false, "unknown power change in the journal rejected");
+        }
+        catch (FormatException) { Check(true, "unknown power change in the journal rejected"); }
+        var hostile = GameShelf.Watcher.GameMode.Journal.Parse(Encoding.UTF8.GetBytes(
+            "{\"GameId\":\"a\",\"Started\":\"2026-11-07T21:00:00+01:00\",\"ClosedApps\":[\"cmd.exe\",\"C:\\\\x\\\\..\\\\y.exe\",\"C:\\\\Program Files\\\\WindowsApps\\\\a.exe\",\"C:\\\\a.bat\"]}"));
+        Check(hostile.ClosedApps.Count == 0, "journal apps that aren't plain full exe paths are never reopened");
+
+        Check(!GameShelf.Watcher.GameMode.IsClosableApp("notepad.exe") && !GameShelf.Watcher.GameMode.IsClosableApp(@"C:\Apps\run.bat") &&
+              !GameShelf.Watcher.GameMode.IsClosableApp(Path.Combine(AppContext.BaseDirectory, "GameShelf.exe")),
+            "relative paths, non-exes and Game Shelf itself aren't closed");
+        if (OperatingSystem.IsWindows())
+        {
+            var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            Check(!GameShelf.Watcher.GameMode.IsClosableApp(Path.Combine(windows, "explorer.exe")) &&
+                  GameShelf.Watcher.GameMode.IsClosableApp(@"C:\Program Files\Spotify\Spotify.exe"), "Windows' own programs are never closed");
+        }
+
+        Check(GameShelf.Shared.PowerMode.IsFastest(GameShelf.Shared.PowerMode.BalancedPlan, GameShelf.Shared.PowerMode.BestPerformance) &&
+              GameShelf.Shared.PowerMode.IsFastest(GameShelf.Shared.PowerMode.HighPerformancePlan, null) &&
+              !GameShelf.Shared.PowerMode.IsFastest(GameShelf.Shared.PowerMode.BalancedPlan, Guid.Empty),
+            "already at best performance is left alone");
+        var settings = new Settings();
+        Check(!settings.GameModeEnabled && settings.GameModeItems.SequenceEqual(["power", "priority"]) && settings.ShowRestoreToast,
+            "Game mode is opt-in; power and priority on by default");
+    }
+
     static void PayloadTests()
     {
         foreach (var bad in new[] { @"..\evil.exe", @"C:\Windows\x.exe", @"\x.exe", "a/b.exe", @"a\..\b.exe", "x.exe:stream",

@@ -43,6 +43,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Game mode's ids, files and restore result, shared with the watcher that applies and restores it. -->
+    <Compile Include="..\GameShelf.Watcher\GameModeShared.cs" Link="Shared\GameModeShared.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Assets\tray-dark.ico;Assets\tray-light.ico;Assets\tray-open-*.ico;Assets\app.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

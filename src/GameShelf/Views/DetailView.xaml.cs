@@ -219,6 +219,12 @@ private List<Session> _mine = [];
             int selected = _game.HideDelaySeconds ?? -1;
             HideDelayBox.SelectedItem = HideDelayBox.Items.OfType<ComboBoxItem>().FirstOrDefault(i => (int)i.Tag == selected)
                 ?? HideDelayBox.Items[0];
+
+            GameModeBox.Items.Clear();
+            GameModeBox.Items.Add(new ComboBoxItem { Content = $"Default ({(_settings.GameModeEnabled ? "on" : "off")})", Tag = "default" });
+            GameModeBox.Items.Add(new ComboBoxItem { Content = "On", Tag = "on" });
+            GameModeBox.Items.Add(new ComboBoxItem { Content = "Off", Tag = "off" });
+            GameModeBox.SelectedIndex = _game.GameMode switch { null => 0, true => 1, false => 2 };
         }
         finally
         {
@@ -263,6 +269,13 @@ private List<Session> _mine = [];
     {
         if (_loading || _game is null || HideDelayBox.SelectedItem is not ComboBoxItem { Tag: int seconds }) return;
         _game.HideDelaySeconds = seconds < 0 ? null : seconds;
+        Edited(_game);
+    }
+
+    private void OnGameModeChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loading || _game is null || GameModeBox.SelectedItem is not ComboBoxItem { Tag: string choice }) return;
+        _game.GameMode = choice switch { "on" => true, "off" => false, _ => null };
         Edited(_game);
     }
 

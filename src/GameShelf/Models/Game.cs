@@ -49,6 +49,9 @@ public sealed class Game
     /// <summary>Ask to close conflicting programs (cheat tools, debuggers) before this game starts.</summary>
     public bool AntiCheatReminder { get; set; }
 
+    /// <summary>Game mode for this game: null = the default from Settings, else always on or off.</summary>
+    public bool? GameMode { get; set; }
+
     // Install-folder scan (engine and anti-cheat), cached until the game's files change (see GameScan).
     public string? ScanStamp { get; set; }
     public GameEngine? Engine { get; set; }
@@ -82,6 +85,7 @@ public sealed class Game
         LaunchArgs = from.LaunchArgs;
         ExeOverride = from.ExeOverride;
         AntiCheatReminder = from.AntiCheatReminder;
+        GameMode = from.GameMode;
         if (ScanStamp is null)
         {
             ScanStamp = from.ScanStamp;

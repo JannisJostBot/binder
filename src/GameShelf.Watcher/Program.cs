@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using GameShelf.Shared;
 
 // All interop below is blittable; no runtime marshalling stubs needed (smaller AOT image).
 [assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling]
@@ -14,6 +15,8 @@ namespace GameShelf.Watcher;
 /// records the session and brings the widget back. Uses only kernel waits once the game is found.
 ///
 /// Args: --game &lt;id&gt; --dir &lt;install folder&gt; [--process &lt;name&gt;] [--timeout &lt;s&gt;] [--return 0|1]
+///       [--mode &lt;game mode items, comma-separated&gt; [--close &lt;app exe&gt;]… [--toast 0|1]]
+/// Or:   --restore (put back Game mode changes left by a session that didn't end normally)
 /// </summary>
 internal static class Program
 {
@@ -24,9 +27,18 @@ internal static class Program
 
     private static int Main(string[] args)
     {
-        string? gameId = null, dir = null, processName = null;
+        if (args is ["--restore"])
+        {
+            // From the widget (its start, or "Restore now"), which is running and shows the result.
+            if (GameMode.RecoverPending() is not { } recovered) return 3;
+            StartWidget("--restored", recovered.Encode());
+            return 0;
+        }
+
+        string? gameId = null, dir = null, processName = null, modeItems = null;
         int timeoutSeconds = 180;
-        bool comeBack = true;
+        bool comeBack = true, toast = true;
+        var closeApps = new List<string>();
         for (int i = 0; i + 1 < args.Length; i += 2)
         {
             switch (args[i])
@@ -36,11 +48,16 @@ internal static class Program
                 case "--process": processName = args[i + 1]; break;
                 case "--timeout": int.TryParse(args[i + 1], out timeoutSeconds); break;
                 case "--return": comeBack = args[i + 1] != "0"; break;
+                case "--mode": modeItems = args[i + 1]; break;
+                case "--close": if (closeApps.Count < 32) closeApps.Add(args[i + 1]); break;
+                case "--toast": toast = args[i + 1] != "0"; break;
             }
         }
         if (gameId is null || (dir is null && processName is null)) return 2;
 
-        var matcher = new Matcher(dir, processName);
+        // Game mode: applied now, while the game starts; put back once it's closed (or never showed up).
+        var gameMode = modeItems is null ? null : GameMode.Begin(gameId, modeItems, closeApps);
+        var matcher = new Matcher(dir, processName) { RaisePriority = gameMode?.RaisePriority == true };
 
         // Detection phase: the store app may start first, so poll for a while.
         var handles = new List<IntPtr>();
@@ -51,7 +68,9 @@ internal static class Program
             if (handles.Count > 0) break;
             if (Environment.TickCount64 >= deadline)
             {
-                StartWidget("--not-detected", gameId);
+                var restored = ToastArgument(gameMode?.End(), toast);
+                if (restored is null) StartWidget("--not-detected", gameId);
+                else StartWidget("--not-detected", gameId, "--restored", restored);
                 return 1;
             }
             Thread.Sleep(PollIntervalMs);
@@ -84,9 +103,20 @@ internal static class Program
         try { AppendSession(gameId, start, end, exit, matcher.ReporterSeen); }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
 
-        if (comeBack) StartWidget("--returned", gameId);
+        // Put back before the widget returns, so it shows the result.
+        var result = ToastArgument(gameMode?.End(), toast);
+        if (comeBack && result is not null) StartWidget("--returned", gameId, "--restored", result);
+        else if (comeBack) StartWidget("--returned", gameId);
+        else if (result is not null) StartWidget("--restored", result); // just the toast, then it exits
         return 0;
     }
+
+    /// <summary>
+    /// The restore result for the widget's "Restored" toast, or null for no toast: nothing was changed, or all
+    /// went well and the confirmation is turned off. Something that couldn't be put back is always shown.
+    /// </summary>
+    internal static string? ToastArgument(RestoreResult? result, bool toast) =>
+        result is null || result.Total == 0 || (result.Success && !toast) ? null : result.Encode();
 
     private static void CloseAll(List<IntPtr> handles)
     {
@@ -138,6 +168,11 @@ internal static class Program
         private readonly uint _self = (uint)Environment.ProcessId;
         private readonly Dictionary<IntPtr, string> _names = [];
 
+        private readonly HashSet<uint> _raised = [];
+
+        /// <summary>Game mode: runs each matched game process "Above normal" once, if it's at Normal (never higher).</summary>
+        public bool RaisePriority { get; init; }
+
         /// <summary>While set (after the game exited), a matching crash reporter sets <see cref="ReporterSeen"/>.</summary>
         public bool NoteReporters { get; set; }
         public bool ReporterSeen { get; private set; }
@@ -164,12 +199,28 @@ internal static class Program
                     }
                     handles.Add(h);
                     _names[h] = fileName.ToString();
+                    if (RaisePriority && _raised.Add(pid)) Raise(pid, _names[h]);
                 }
                 else
                 {
                     Native.CloseHandle(h);
                 }
             }
+        }
+
+        private static void Raise(uint pid, string name)
+        {
+            var h = Native.OpenProcess(Native.PROCESS_QUERY_LIMITED_INFORMATION | Native.PROCESS_SET_INFORMATION, false, pid);
+            if (h == IntPtr.Zero)
+            {
+                GameMode.Log($"Priority: {name} can't be changed (protected by the game or its anti-cheat)");
+                return;
+            }
+            // A game that already chose its own priority keeps it.
+            if (Native.GetPriorityClass(h) == Native.NORMAL_PRIORITY_CLASS &&
+                Native.SetPriorityClass(h, Native.ABOVE_NORMAL_PRIORITY_CLASS))
+                GameMode.Log($"Priority: {name} runs Above normal");
+            Native.CloseHandle(h);
         }
 
         /// <summary>Reads the exit codes of the processes that just ended (their handles are still open).</summary>
@@ -254,20 +305,26 @@ internal static class Program
         sb.Append('"');
     }
 
-    private static void StartWidget(string flag, string gameId)
+    private static void StartWidget(params string[] args) =>
+        StartProcess(Path.Combine(AppContext.BaseDirectory, "GameShelf.exe"), args);
+
+    /// <summary>Starts an exe from its own folder; each argument is quoted on its own. False if it couldn't start.</summary>
+    internal static bool StartProcess(string exe, string[] args)
     {
-        var exe = Path.Combine(AppContext.BaseDirectory, "GameShelf.exe");
         var sb = new StringBuilder();
         AppendArgument(sb, exe);
-        sb.Append(' ').Append(flag).Append(' ');
-        AppendArgument(sb, gameId);
+        foreach (var arg in args)
+        {
+            sb.Append(' ');
+            AppendArgument(sb, arg);
+        }
         var cmd = sb.Append('\0').ToString().ToCharArray();
         var si = new Native.STARTUPINFOW { cb = Marshal.SizeOf<Native.STARTUPINFOW>() };
-        if (Native.CreateProcessW(exe, cmd, IntPtr.Zero, IntPtr.Zero, false, 0, IntPtr.Zero, AppContext.BaseDirectory, ref si, out var pi))
-        {
-            Native.CloseHandle(pi.hProcess);
-            Native.CloseHandle(pi.hThread);
-        }
+        if (!Native.CreateProcessW(exe, cmd, IntPtr.Zero, IntPtr.Zero, false, 0, IntPtr.Zero, Path.GetDirectoryName(exe)!, ref si, out var pi))
+            return false;
+        Native.CloseHandle(pi.hProcess);
+        Native.CloseHandle(pi.hThread);
+        return true;
     }
 }
 

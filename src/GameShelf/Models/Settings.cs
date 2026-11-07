@@ -60,6 +60,15 @@ public sealed class Settings
     public bool StayOnDesktop { get; set; } = true;
     public bool StartWithWindows { get; set; }
 
+    /// <summary>Game mode (spec §11): optimize Windows while a game runs, put back when it closes. Opt-in.</summary>
+    public bool GameModeEnabled { get; set; }
+    /// <summary>Which Game mode items are on (ids from <see cref="Shared.GameModeInfo.Items"/>).</summary>
+    public List<string> GameModeItems { get; set; } = [.. Shared.GameModeInfo.DefaultItems];
+    /// <summary>Apps (full exe paths) asked to close while a game runs and reopened after.</summary>
+    public List<string> GameModeCloseApps { get; set; } = [];
+    /// <summary>Show "Restored successfully" when the game closes (problems are always shown).</summary>
+    public bool ShowRestoreToast { get; set; } = true;
+
     /// <summary>Whether games from this source show on the shelf. Manually added games always do.</summary>
     public bool IsSourceEnabled(GameSource source) => source switch
     {

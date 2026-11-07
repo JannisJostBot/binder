@@ -1,0 +1,141 @@
+<UserControl x:Class="GameShelf.Views.GameModeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.Name="Game mode">
+    <!-- Game mode settings (spec §11, board 5): the part that needs no admin rights. -->
+    <ScrollViewer x:Name="Scroller">
+        <StackPanel Padding="0,20,0,24">
+            <!-- Header -->
+            <Grid Margin="16,0,20,0" ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Click="OnBackClick"
+                        ToolTipService.ToolTip="Back to settings (Esc)" AutomationProperties.Name="Back to settings" />
+                <TextBlock Grid.Column="1" Text="Game mode" Style="{StaticResource SubtitleTextBlockStyle}" VerticalAlignment="Center" />
+            </Grid>
+
+            <!-- Master switch -->
+            <Border Style="{StaticResource Card}" Margin="20,16,20,0">
+                <Grid Style="{StaticResource SettingRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Style="{StaticResource RowText}">
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Optimize Windows while I play" />
+                        <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                                   Text="Everything below is put back exactly as it was when the game closes." />
+                    </StackPanel>
+                    <ToggleSwitch x:Name="MasterSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="Optimize Windows while I play" Toggled="OnMasterToggled" />
+                </Grid>
+            </Border>
+
+            <!-- Performance -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="Performance" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Best performance power mode" />
+                            <TextBlock x:Name="PowerText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="PowerSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="power"
+                                      AutomationProperties.Name="Best performance power mode" Toggled="OnItemToggled" />
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Give the game priority" />
+                            <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                                       Text="Runs the game &#x201C;Above normal&#x201D; so background work waits its turn." />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="PrioritySwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="priority"
+                                      AutomationProperties.Name="Give the game priority" Toggled="OnItemToggled" />
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Pause Game Bar background recording" />
+                            <TextBlock x:Name="GameBarText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="GameBarSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="gamebar"
+                                      AutomationProperties.Name="Pause Game Bar background recording" Toggled="OnItemToggled" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Close apps while playing -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="Close apps while playing" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel Padding="0,4,0,12">
+                    <StackPanel x:Name="AppList" AutomationProperties.Name="Apps closed while playing" />
+                    <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" Margin="0,10,0,10"
+                               Text="Apps are asked to close politely and reopened after the game. If one wants to save something first, or has no window to close, it's left open." />
+                    <Button x:Name="AddAppButton" Click="OnAddAppClick" HorizontalAlignment="Left"
+                            AutomationProperties.Name="Add a running app">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE710;" FontSize="14" />
+                            <TextBlock Text="Add a running app" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- When the game closes -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="When the game closes" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Show a &#x201C;Restored&#x201D; confirmation" />
+                            <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                                       Text="Anything that couldn't be put back is always shown." />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="ToastSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
+                                      AutomationProperties.Name="Show a Restored confirmation" Toggled="OnToastToggled" />
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}" ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon x:Name="LastIcon" Glyph="&#xE930;" FontSize="18" VerticalAlignment="Center"
+                                  Foreground="{ThemeResource SystemFillColorSuccessBrush}" AutomationProperties.AccessibilityView="Raw" />
+                        <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
+                            <TextBlock x:Name="LastTitle" Style="{StaticResource RowTitle}" />
+                            <TextBlock x:Name="LastDetail" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button x:Name="LogButton" Grid.Column="2" Content="View log" Click="OnLogClick" VerticalAlignment="Center"
+                                AutomationProperties.Name="View the Game mode log" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+            <Button x:Name="RestoreButton" Margin="20,10,20,0" Click="OnRestoreClick" HorizontalAlignment="Left"
+                    AutomationProperties.Name="Restore now" />
+
+            <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" Margin="20,16,20,0"
+                       Text="You can turn Game mode on or off for one game in its details, under &#x201C;This game only&#x201D;." />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

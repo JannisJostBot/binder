@@ -119,6 +119,7 @@ public static class Launcher
         psi.ArgumentList.Add(DetectionTimeoutSeconds.ToString());
         psi.ArgumentList.Add("--return");
         psi.ArgumentList.Add(comeBack ? "1" : "0");
+        GameModeService.AddWatcherArguments(psi.ArgumentList, game, App.Settings);
 
         try
         {

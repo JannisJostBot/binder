@@ -75,6 +75,9 @@ public sealed partial class MainWindow : Window
         SettingsPage.AddGameRequested += AddGame;
         SettingsPage.SetupRequested += ShowSetup;
         SettingsPage.FreeSpaceRequested += () => ShowFreeSpace(new FreeSpaceState());
+        SettingsPage.GameModeRequested += ShowGameMode;
+        GameModePage.BackRequested += ShowSettings;
+        GameModePage.Changed += SaveSettings;
         FreeSpacePage.BackRequested += LeaveFreeSpace;
         FreeSpacePage.CheckAgainRequested += () => _ = CheckFreeSpaceAgainAsync();
         ImportPage.Cancelled += ShowSettings;
@@ -507,6 +510,7 @@ public sealed partial class MainWindow : Window
         SettingsPage.Visibility = page == SettingsPage ? Visibility.Visible : Visibility.Collapsed;
         ImportPage.Visibility = page == ImportPage ? Visibility.Visible : Visibility.Collapsed;
         SetupPage.Visibility = page == SetupPage ? Visibility.Visible : Visibility.Collapsed;
+        GameModePage.Visibility = page == GameModePage ? Visibility.Visible : Visibility.Collapsed;
         if (page != FreeSpacePage && FreeSpacePage.Visibility == Visibility.Visible)
         {
             FreeSpacePage.Release();
@@ -526,6 +530,21 @@ public sealed partial class MainWindow : Window
         ShowPage(FreeSpacePage);
         FreeSpacePage.UpdateLayout();
         FreeSpacePage.FocusFirst();
+    }
+
+    /// <summary>Settings › Game mode (spec §11, board 5).</summary>
+    private void ShowGameMode()
+    {
+        GameModePage.Show(App.Settings, _games);
+        ShowPage(GameModePage);
+        GameModePage.UpdateLayout();
+        GameModePage.FocusFirst();
+    }
+
+    /// <summary>Game mode put Windows back (the toast is showing): update its page if it's open.</summary>
+    public void GameModeRestored()
+    {
+        if (GameModePage.Visibility == Visibility.Visible) GameModePage.UpdateLastRestore();
     }
 
     private void LeaveFreeSpace()
@@ -885,6 +904,7 @@ public sealed partial class MainWindow : Window
         if (e.Key != Windows.System.VirtualKey.Escape) return;
         if (Detail.Visibility == Visibility.Visible || SettingsPage.Visibility == Visibility.Visible) ShowShelf();
         else if (FreeSpacePage.Visibility == Visibility.Visible) LeaveFreeSpace();
+        else if (GameModePage.Visibility == Visibility.Visible) ShowSettings();
         else if (ImportPage.Visibility == Visibility.Visible) ImportPage.CancelByEscape();
         else if (IsFlyout) App.Current.ClosePanel(this);
         else return;

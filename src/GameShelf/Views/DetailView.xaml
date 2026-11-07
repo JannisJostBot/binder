@@ -184,6 +184,20 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Game mode" />
+                            <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                                       Text="Optimizes Windows while this game runs (Settings › Game mode)" />
+                        </StackPanel>
+                        <ComboBox x:Name="GameModeBox" Grid.Column="1" VerticalAlignment="Center" MinWidth="150"
+                                  AutomationProperties.Name="Game mode for this game" SelectionChanged="OnGameModeChanged" />
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
                             <TextBlock Style="{StaticResource RowTitle}" Text="Process to watch" />
                             <TextBlock x:Name="ProcessText" Style="{StaticResource RowDetail}" />
                         </StackPanel>

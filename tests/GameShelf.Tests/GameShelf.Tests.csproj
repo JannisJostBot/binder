@@ -41,6 +41,8 @@
     <Compile Include="..\..\src\GameShelf\Library\SpacePlanner.cs" Link="Linked\Library\SpacePlanner.cs" />
     <Compile Include="..\..\src\GameShelf\Views\Format.cs" Link="Linked\Views\Format.cs" />
     <Compile Include="..\..\src\GameShelf.Watcher\Program.cs" Link="Linked\Watcher\Program.cs" />
+    <Compile Include="..\..\src\GameShelf.Watcher\GameMode.cs" Link="Linked\Watcher\GameMode.cs" />
+    <Compile Include="..\..\src\GameShelf.Watcher\GameModeShared.cs" Link="Linked\Watcher\GameModeShared.cs" />
     <Compile Include="..\..\src\GameShelf.Setup\PayloadList.cs" Link="Linked\Setup\PayloadList.cs" />
   </ItemGroup>
 

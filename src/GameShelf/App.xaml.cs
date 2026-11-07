@@ -91,6 +91,7 @@ public sealed partial class App : Application
         State.Games = Storage.LoadLibrary();
         State.Sessions = Storage.LoadSessions();
         State.Crashes = Storage.LoadCrashes();
+        GameModeService.RecoverIfNeeded(); // Game mode changes left by a session that didn't end normally
 
         _messages = new MessageWindow();
         _messages.Command += HandleCommand;
@@ -120,6 +121,15 @@ public sealed partial class App : Application
         }
         var notice = StartupNotice.Parse(args);
         bool background = args.Contains("--background");
+        var restored = StartupNotice.Restored(args);
+
+        if (notice is null && restored is not null)
+        {
+            // Game mode was put back: with "Come back" off (first start) only the toast shows, then we exit.
+            ShowRestored(restored, exitWhenClosed: firstStart);
+            return;
+        }
+        if (restored is not null) ShowRestored(restored, exitWhenClosed: false);
 
         if (notice is { NotDetected: false })
         {
@@ -143,6 +153,28 @@ public sealed partial class App : Application
         else if (firstStart) OpenPanel(); // started from the Start menu or a pin: show it
         else TogglePanel();
         if (firstStart) _ = CheckCrashesAsync(returnedGame: null); // sessions that ended while we weren't running
+    }
+
+    private Views.RestoredToast? _restoredToast;
+
+    /// <summary>Game mode's "Restored" toast (board 4), and the Game mode page's last result if it's open.</summary>
+    private void ShowRestored(string encoded, bool exitWhenClosed)
+    {
+        _panel?.GameModeRestored();
+        if (Shared.RestoreResult.Parse(encoded) is not { } result)
+        {
+            if (exitWhenClosed) Quit();
+            return;
+        }
+        _restoredToast?.Close();
+        var toast = new Views.RestoredToast(result);
+        toast.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_restoredToast, toast)) _restoredToast = null;
+            if (exitWhenClosed && !_quitting && _panel is null && _kept is null) Quit();
+        };
+        _restoredToast = toast;
+        toast.ShowQuietly();
     }
 
     /// <summary>
@@ -376,6 +408,7 @@ public sealed partial class App : Application
         _quitting = true;
         CancelCountdown();
         _panel?.Close();
+        _restoredToast?.Close();
         DropKept();
         _messages?.Dispose(); // removes the tray icon right away instead of leaving a ghost until hovered
         _messages = null;
@@ -425,5 +458,12 @@ public sealed record StartupNotice(bool NotDetected, string GameId)
         if (args.Length >= 2 && args[0] == "--not-detected") return new StartupNotice(true, args[1]);
         if (args.Length >= 2 && args[0] == "--returned") return new StartupNotice(false, args[1]);
         return null;
+    }
+
+    /// <summary>Game mode's restore result ("--restored 5/5"), on its own or after the notice.</summary>
+    public static string? Restored(string[] args)
+    {
+        int i = Array.IndexOf(args, "--restored");
+        return i >= 0 && i + 1 < args.Length ? args[i + 1] : null;
     }
 }

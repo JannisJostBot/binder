@@ -26,6 +26,7 @@ public sealed partial class SettingsView : UserControl
     public event Action? AddGameRequested;
     public event Action? SetupRequested;
     public event Action? FreeSpaceRequested;
+    public event Action? GameModeRequested;
 
     private Settings _settings = new();
     private bool _loading; // true while controls are filled from the settings, so their events are ignored
@@ -57,6 +58,9 @@ public sealed partial class SettingsView : UserControl
             ClickAwaySwitch.IsOn = settings.CloseOnClickAway;
 
             Select(DelayBox, settings.HideDelaySeconds.ToString(CultureInfo.InvariantCulture));
+            GameModeText.Text = settings.GameModeEnabled
+                ? "On: optimizes Windows while you play, and puts it back after"
+                : "Off: optimize Windows while you play, and put it back after";
             ComeBackSwitch.IsOn = settings.ComeBackOnClose;
         WeekSwitch.IsOn = settings.ShowWeeklySummary;
             Select(DensityBox, settings.GridDensity.ToString());
@@ -255,6 +259,8 @@ public sealed partial class SettingsView : UserControl
     private void OnRefreshClick(object sender, RoutedEventArgs e) => RefreshRequested?.Invoke();
 
     private void OnFreeSpaceClick(object sender, RoutedEventArgs e) => FreeSpaceRequested?.Invoke();
+
+    private void OnGameModeClick(object sender, RoutedEventArgs e) => GameModeRequested?.Invoke();
 
     private void OnPositionChanged(object sender, SelectionChangedEventArgs e)
     {

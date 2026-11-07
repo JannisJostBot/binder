@@ -41,6 +41,23 @@ internal static unsafe partial class RunningGames
         return running;
     }
 
+    /// <summary>The full exe path of a running process, or null (ended, or not ours to query).</summary>
+    public static string? ImagePath(uint processId)
+    {
+        var handle = OpenProcess(ProcessQueryLimitedInformation, false, processId);
+        if (handle == IntPtr.Zero) return null;
+        try
+        {
+            var buffer = stackalloc char[1024];
+            int size = 1024;
+            return QueryFullProcessImageNameW(handle, 0, buffer, ref size) ? new string(buffer, 0, size) : null;
+        }
+        finally
+        {
+            CloseHandle(handle);
+        }
+    }
+
     private const uint ProcessQueryLimitedInformation = 0x1000;
 
     [LibraryImport("kernel32.dll")]

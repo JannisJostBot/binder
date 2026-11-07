@@ -62,11 +62,14 @@ GameShelf.sln
                             PcChecks (Secure Boot, TPM, test signing, drivers, conflicting programs; read-only, no admin),
                             CrashLog (event log 1000/1002/4101 for one session), CrashStore (crashes.json), PcInfo
                             (Windows, graphics, memory; read only when copying), GameLogs (Unity/Unreal log files),
-                            RunningGames (games running right now, read once when Free up space opens)
+                            RunningGames (games running right now, read once when Free up space opens),
+                            GameModeService (milestone 14: the watcher's Game mode arguments, recovery, page state)
     Views/                  ShelfView, DetailView, SettingsView, ImportView, SetupView (the launch toast lives in MainWindow),
                             BarChart (the playtime charts), ModePreview (display mode pictures), CrashCard (shelf and detail),
-                            FreeSpaceView (Free up space, milestone 15)
-  src/GameShelf.Watcher/    Program.cs only
+                            FreeSpaceView (Free up space, milestone 15), GameModeView (Settings › Game mode),
+                            RestoredToast (Game mode's "Restored" toast, its own small window)
+  src/GameShelf.Watcher/    Program.cs, GameMode.cs (applies and restores Game mode, with its journal),
+                            GameModeShared.cs (ids, files, restore result, power mode; also compiled into the widget)
   src/GameShelf.Setup/      GameShelfSetup.exe: per-user installer, updater and uninstaller (Native AOT, task dialogs)
   tests/GameShelf.Tests/    plain console unit tests for the non-UI code (no test framework packages)
   tests/smoke.ps1           Windows UI smoke test run by CI (see .github/workflows/ci.yml)
@@ -83,7 +86,7 @@ GameShelf.sln
   docs/installer.md         how to build, install, update and uninstall, and how the installer works
 ```
 
-Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions.json`, `imported-shortcuts.json`, `crashes.json`, and the `Shortcuts\` folder imported shortcuts are moved into). Covers are cached in `%LOCALAPPDATA%\GameShelf\covers\`.
+Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions.json`, `imported-shortcuts.json`, `crashes.json`, and the `Shortcuts\` folder imported shortcuts are moved into). Covers are cached in `%LOCALAPPDATA%\GameShelf\covers\`. Game mode keeps `gamemode-journal.json` (only while changes are applied), `gamemode.log` and `gamemode-last.txt` in `%LOCALAPPDATA%\GameShelf\`.
 
 ## Core flow: launch → hide → return
 
@@ -97,6 +100,7 @@ Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions
    - Once found, it **blocks** on the process handle (`Process.WaitForExitAsync` / `WaitForSingleObject`). No polling while the game runs.
    - Some games restart themselves (launcher → game exe). After an exit, re-check the install folder for ~5 s before deciding the game is really closed.
    - On exit it appends a session (start, end, game id) to `sessions.json`, relaunches `GameShelf.exe` if "Come back when the game closes" is on, and exits.
+   - Game mode (milestone 14, when on for the game): the watcher applies it right after it starts (`--mode`, `--close`, `--toast`), raises the game to Above normal once found, and puts everything back before relaunching the widget, which shows the result (`--restored 4/5|Name`; with "Come back" off only the toast shows, then it exits). If the game is never detected, it restores at once.
 6. Single instance: a named mutex in the widget. A second launch hands its arguments to the running one (see Display modes).
 
 ## Library sources
@@ -273,6 +277,7 @@ The widget runs as the normal user with no elevation, and must never ask for adm
 - **Installer.** `asInvoker`, fixed paths computed from known folders (never read back from the registry), deletes only the files it wrote and never through links, hashes each file after writing it, ends only processes running from its own install folder. See `docs/installer.md`.
 - **Autostart (milestone 5).** Write the Run key value with the exe path in quotes, and point it at the actual install location.
 - **Shortcut import.** Read `.lnk` targets with the Shell API (`IShellLinkW`, load only, never `Resolve`) and `.url` files as plain INI. Never execute a shortcut while scanning. Only launch what the user ticked in the picker. Moves stay reversible; where the shared desktop can't be changed without admin rights, copy instead and leave the original.
+- **Game mode, no-admin part (milestone 14).** Every change is journaled (flushed) before it's made, and put back only if it's still the value we set. Apps are closed only with WM_CLOSE to their visible windows, never ended; only full paths to an `.exe` outside Windows, Store apps and our own folder are closed or reopened (checked in the widget, the watcher and when reading the journal), and only the exe recorded in the journal is reopened, without arguments. Priority goes to Above normal at most, never lowered or set High/Realtime.
 - **Files we own vs. the user's.** Only delete files inside our own AppData folders. Never follow paths from data files to delete or overwrite anything outside them.
 - **Network.** HTTPS to the store CDNs only, for artwork. No telemetry, no other outbound calls.
 

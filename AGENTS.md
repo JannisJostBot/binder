@@ -44,7 +44,7 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
 - `Program.cs`, `MessageWindow.cs`, `app.manifest`
 - `Services/Launcher.cs` and the services that call into Windows directly (`Native*`, `DesktopLayer`,
   `Monitors`, `Footprint`, `ShellImage*`, `ShellNotify`, `PcChecks`, `PcInfo`, `CrashLog`, `Autostart`,
-  `CoverCache`, `Storage`, `RunningGames`, `GameLogs`) and `Views/PanelBackdrop.cs`
+  `CoverCache`, `Storage`, `RunningGames`, `GameLogs`, `GameModeService`) and `Views/PanelBackdrop.cs`
 - The library sources and security checks: `Library/*Source.cs`, `InstallFolder.cs`, `ShortcutFile.cs`,
   `ShortcutImporter.cs`, `Vdf.cs`, `LibraryScanner.cs`
 - Project and build files (`*.csproj`, `*.sln`, `*.props`), `publish.ps1`, `check.ps1`, `.github/`, `tools/`,

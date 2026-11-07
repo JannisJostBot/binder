@@ -152,6 +152,20 @@
                         <ToggleSwitch x:Name="ComeBackSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
                                       AutomationProperties.Name="Come back when the game closes" Toggled="OnComeBackChanged" />
                     </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <!-- Game mode (spec §11): its own page -->
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Game mode" />
+                            <TextBlock x:Name="GameModeText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="Game mode…" Click="OnGameModeClick" VerticalAlignment="Center"
+                                AutomationProperties.Name="Game mode settings" />
+                    </Grid>
                 </StackPanel>
             </Border>
 

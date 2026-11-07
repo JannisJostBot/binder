@@ -1,0 +1,553 @@
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.Json;
+using GameShelf.Shared;
+using Microsoft.Win32;
+
+namespace GameShelf.Watcher;
+
+/// <summary>
+/// Game mode's no-admin part (milestone 14, spec §11): Best performance power mode, Game Bar background
+/// recording off and closing chosen apps, put back exactly when the game closes. Every change is written to
+/// the journal before it's made, so a crash can't lose track of it: the next watcher, the widget's start and
+/// "Restore now" put a left-over journal back. Only what is still the way we set it is changed back.
+/// (The game's Above normal priority needs no restore; the <see cref="Program"/> matcher sets it.)
+/// </summary>
+internal sealed class GameMode
+{
+    private const int CloseWaitMs = 5000;
+    private const long MaxJournalBytes = 64 * 1024;
+    private const long MaxLogBytes = 256 * 1024;
+    private const string GameDvrKey = @"Software\Microsoft\Windows\CurrentVersion\GameDVR";
+    private const string HistoricalCapture = "HistoricalCaptureEnabled";
+
+    private readonly Mutex _mutex;
+    private readonly Journal _journal;
+
+    /// <summary>Run the game "Above normal" (never higher).</summary>
+    public bool RaisePriority { get; }
+
+    private GameMode(Mutex mutex, Journal journal, bool raisePriority)
+    {
+        _mutex = mutex;
+        _journal = journal;
+        RaisePriority = raisePriority;
+    }
+
+    /// <summary>
+    /// Applies the chosen items (comma-separated ids). Null when another game's changes are still applied
+    /// (two games started with "Keep open"): the first one's restore stays in charge.
+    /// </summary>
+    public static GameMode? Begin(string gameId, string items, List<string> closeApps)
+    {
+        var mutex = TryTakeMutex();
+        if (mutex is null)
+        {
+            Log($"{gameId}: skipped, another game's changes are still applied");
+            return null;
+        }
+        if (Journal.Load() is { } leftOver)
+        {
+            Log("Putting back changes left from an earlier session");
+            Restore(leftOver);
+        }
+
+        var chosen = new HashSet<string>(items.Split(','), StringComparer.Ordinal);
+        var journal = new Journal { GameId = gameId, Started = DateTimeOffset.Now };
+        var mode = new GameMode(mutex, journal, chosen.Contains(GameModeInfo.Priority));
+        Log($"{gameId}: on ({items}{(closeApps.Count > 0 ? $", closing {closeApps.Count} app(s)" : "")})");
+        try
+        {
+            journal.Save(); // before the first change
+            if (chosen.Contains(GameModeInfo.Power)) mode.ApplyPower();
+            if (chosen.Contains(GameModeInfo.GameBar)) mode.ApplyGameBar();
+            if (closeApps.Count > 0) mode.CloseApps(closeApps);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // Can't keep a journal: change nothing more, and put back what was already changed.
+            Log("Couldn't write the journal: " + e.Message);
+        }
+        return mode;
+    }
+
+    /// <summary>Puts everything back (the game closed, or was never detected).</summary>
+    public RestoreResult End()
+    {
+        try
+        {
+            return Restore(_journal);
+        }
+        finally
+        {
+            _mutex.ReleaseMutex();
+            _mutex.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// <c>--restore</c>: puts back a journal left by a session that didn't end normally. Null when there is
+    /// nothing to do, or a running watcher still owns the changes.
+    /// </summary>
+    public static RestoreResult? RecoverPending()
+    {
+        using var mutex = TryTakeMutex();
+        if (mutex is null) return null;
+        try
+        {
+            if (Journal.Load() is not { } journal) return null;
+            Log("Restore of changes left from an earlier session");
+            return Restore(journal);
+        }
+        finally
+        {
+            mutex.ReleaseMutex();
+        }
+    }
+
+    private static Mutex? TryTakeMutex()
+    {
+        var mutex = new Mutex(false, GameModeInfo.MutexName);
+        try
+        {
+            if (mutex.WaitOne(0)) return mutex;
+        }
+        catch (AbandonedMutexException)
+        {
+            return mutex; // its watcher ended without restoring: ours now, and the journal tells what to put back
+        }
+        mutex.Dispose();
+        return null;
+    }
+
+    // ---- Apply ------------------------------------------------------------------------------------------
+
+    private void ApplyPower()
+    {
+        var plan = PowerMode.ActivePlan();
+        var mode = plan == PowerMode.BalancedPlan ? PowerMode.ActiveMode() : null;
+        if (PowerMode.IsFastest(plan, mode))
+        {
+            Log("Power: already at best performance, left as is");
+            return;
+        }
+        if (plan == PowerMode.BalancedPlan && mode is { } before)
+        {
+            _journal.Power = new PowerChange(PowerChange.Mode, before, PowerMode.BestPerformance);
+            _journal.Save();
+            if (PowerMode.SetMode(PowerMode.BestPerformance) && PowerMode.ActiveMode() == PowerMode.BestPerformance)
+            {
+                Log($"Power: mode {before} -> Best performance");
+                return;
+            }
+            _journal.Power = null;
+            _journal.Save();
+            Log("Power: couldn't switch the power mode, trying the High performance plan");
+        }
+        if (plan is { } previous)
+        {
+            _journal.Power = new PowerChange(PowerChange.Plan, previous, PowerMode.HighPerformancePlan);
+            _journal.Save();
+            if (PowerMode.SetPlan(PowerMode.HighPerformancePlan))
+            {
+                Log($"Power: plan {previous} -> High performance");
+                return;
+            }
+            _journal.Power = null;
+            _journal.Save();
+        }
+        Log("Power: no way to switch on this PC, left as is");
+    }
+
+    private void ApplyGameBar()
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(GameDvrKey, writable: true);
+        if (key?.GetValue(HistoricalCapture) is not int value || value == 0)
+        {
+            Log("Game Bar: background recording is already off");
+            return;
+        }
+        _journal.GameBarOff = true;
+        _journal.Save();
+        key.SetValue(HistoricalCapture, 0, RegistryValueKind.DWord);
+        Log("Game Bar: background recording off");
+    }
+
+    /// <summary>
+    /// Asks each app to close the way its close button would (WM_CLOSE to its visible windows) and waits up to
+    /// ~5 s. An app that is still running then (it asked to save something, has no window, or runs as admin)
+    /// is left open, and won't be reopened.
+    /// </summary>
+    private void CloseApps(List<string> paths)
+    {
+        var targets = new List<(string Path, List<IntPtr> Handles)>();
+        foreach (var path in paths)
+        {
+            if (!IsClosableApp(path) || targets.Exists(t => t.Path.Equals(path, StringComparison.OrdinalIgnoreCase))) continue;
+            var handles = Processes.Find(path, Native.SYNCHRONIZE);
+            if (handles.Count == 0)
+            {
+                Log($"Apps: {Path.GetFileName(path)} isn't running");
+                continue;
+            }
+            targets.Add((path, handles));
+        }
+        if (targets.Count == 0) return;
+
+        foreach (var (path, _) in targets) _journal.ClosedApps.Add(path);
+        _journal.Save(); // before closing: a crash now must still reopen them
+
+        var all = new List<IntPtr>();
+        var windowsPerApp = new int[targets.Count];
+        for (int i = 0; i < targets.Count; i++)
+        {
+            var pids = new HashSet<uint>();
+            foreach (var h in targets[i].Handles) pids.Add(Native.GetProcessId(h));
+            windowsPerApp[i] = Windows.PostClose(pids);
+            if (windowsPerApp[i] > 0) all.AddRange(targets[i].Handles);
+        }
+        if (all.Count > 0)
+            Native.WaitForMultipleObjects((uint)Math.Min(all.Count, 64), all.ToArray(), true, CloseWaitMs);
+
+        for (int i = 0; i < targets.Count; i++)
+        {
+            var (path, handles) = targets[i];
+            bool exited = windowsPerApp[i] > 0 && handles.TrueForAll(h => Native.WaitForSingleObject(h, 0) == Native.WAIT_OBJECT_0);
+            if (exited)
+            {
+                Log($"Apps: closed {Path.GetFileName(path)}");
+            }
+            else
+            {
+                _journal.ClosedApps.Remove(path);
+                Log($"Apps: {Path.GetFileName(path)} left open ({(windowsPerApp[i] == 0 ? "no window to close" : "didn't close within 5 s")})");
+            }
+            foreach (var h in handles) Native.CloseHandle(h);
+        }
+        _journal.Save();
+    }
+
+    /// <summary>
+    /// A full path to an exe that isn't part of Windows, a Store app or Game Shelf (the list comes from
+    /// settings.json; the widget checks the same).
+    /// </summary>
+    internal static bool IsClosableApp(string path)
+    {
+        if (!Path.IsPathFullyQualified(path) || !path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ||
+            path.Contains("..", StringComparison.Ordinal) || path.Contains(@"\WindowsApps\", StringComparison.OrdinalIgnoreCase)) return false;
+        var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        if (!string.IsNullOrEmpty(windows) && path.StartsWith(Path.TrimEndingDirectorySeparator(windows) + "\\", StringComparison.OrdinalIgnoreCase))
+            return false;
+        return !path.StartsWith(AppContext.BaseDirectory, StringComparison.OrdinalIgnoreCase);
+    }
+
+    // ---- Restore ----------------------------------------------------------------------------------------
+
+    /// <summary>In reverse order; only what still is the way we set it; then checks, logs and deletes the journal.</summary>
+    private static RestoreResult Restore(Journal journal)
+    {
+        int total = 0, restored = 0;
+        var failed = new List<string>();
+
+        foreach (var path in journal.ClosedApps)
+        {
+            total++;
+            var name = AppName(path);
+            var running = Processes.Find(path, 0);
+            foreach (var h in running) Native.CloseHandle(h);
+            if (running.Count > 0)
+            {
+                restored++;
+                Log($"Apps: {name} is already running again");
+            }
+            else if (File.Exists(path) && Program.StartProcess(path, []))
+            {
+                restored++;
+                Log($"Apps: reopened {name}");
+            }
+            else
+            {
+                failed.Add(name);
+                Log($"Apps: couldn't reopen {name}");
+            }
+        }
+
+        if (journal.GameBarOff)
+        {
+            total++;
+            try
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(GameDvrKey, writable: true);
+                if (key?.GetValue(HistoricalCapture) is int value && value == 0) key.SetValue(HistoricalCapture, 1, RegistryValueKind.DWord);
+                if (key?.GetValue(HistoricalCapture) is int now && now != 0) Log("Game Bar: background recording on again");
+                else Log("Game Bar: changed meanwhile, left as is");
+                restored++;
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+            {
+                failed.Add("Game Bar recording");
+                Log("Game Bar: couldn't turn background recording back on: " + e.Message);
+            }
+        }
+
+        if (journal.Power is { } power)
+        {
+            total++;
+            bool isMode = power.Kind == PowerChange.Mode;
+            var current = isMode ? PowerMode.ActiveMode() : PowerMode.ActivePlan();
+            if (current != power.Set)
+            {
+                restored++;
+                Log("Power: changed meanwhile, left as is");
+            }
+            else if ((isMode ? PowerMode.SetMode(power.Before) : PowerMode.SetPlan(power.Before)) &&
+                     (isMode ? PowerMode.ActiveMode() : PowerMode.ActivePlan()) == power.Before)
+            {
+                restored++;
+                Log($"Power: {(isMode ? "mode" : "plan")} back to {power.Before}");
+            }
+            else
+            {
+                failed.Add("Power mode");
+                Log("Power: couldn't switch back");
+            }
+        }
+
+        var result = new RestoreResult(restored, total, failed);
+        Log($"Restored {restored} of {total}" + (failed.Count > 0 ? ": " + string.Join(", ", failed) + " not put back" : ""));
+        try
+        {
+            File.Delete(GameModeInfo.JournalPath);
+            if (total > 0) File.WriteAllLines(GameModeInfo.LastResultPath, [DateTimeOffset.Now.ToString("o"), result.Encode()]);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            Log("Couldn't clear the journal: " + e.Message);
+        }
+        return result;
+    }
+
+    /// <summary>An app's name for the toast: its file name without ".exe".</summary>
+    private static string AppName(string path) => Path.GetFileNameWithoutExtension(path);
+
+    // ---- Log --------------------------------------------------------------------------------------------
+
+    /// <summary>One line in gamemode.log ("View log" in Settings), kept under ~256 KB.</summary>
+    public static void Log(string text)
+    {
+        try
+        {
+            Directory.CreateDirectory(GameModeInfo.Dir);
+            var info = new FileInfo(GameModeInfo.LogPath);
+            if (info.Exists && info.Length > MaxLogBytes) File.Move(GameModeInfo.LogPath, GameModeInfo.LogPath + ".old", overwrite: true);
+            File.AppendAllText(GameModeInfo.LogPath, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}  {text}\r\n");
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+    }
+
+    // ---- Journal ----------------------------------------------------------------------------------------
+
+    internal sealed record PowerChange(string Kind, Guid Before, Guid Set)
+    {
+        public const string Mode = "mode", Plan = "plan";
+    }
+
+    /// <summary>What was changed and what it was before, flushed to disk before each change.</summary>
+    internal sealed class Journal
+    {
+        public string GameId { get; set; } = "";
+        public DateTimeOffset Started { get; set; }
+        public PowerChange? Power { get; set; }
+        public bool GameBarOff { get; set; }
+        public List<string> ClosedApps { get; } = [];
+
+        public void Save()
+        {
+            Directory.CreateDirectory(GameModeInfo.Dir);
+            var tmp = GameModeInfo.JournalPath + ".tmp";
+            using (var file = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough))
+            {
+                file.Write(ToJson());
+                file.Flush(flushToDisk: true);
+            }
+            File.Move(tmp, GameModeInfo.JournalPath, overwrite: true);
+        }
+
+        internal byte[] ToJson()
+        {
+            var buffer = new System.Buffers.ArrayBufferWriter<byte>(256);
+            using (var w = new Utf8JsonWriter(buffer, new JsonWriterOptions { Indented = true }))
+            {
+                w.WriteStartObject();
+                w.WriteNumber("Version", 1);
+                w.WriteString("GameId", GameId);
+                w.WriteString("Started", Started);
+                if (Power is { } power)
+                {
+                    w.WriteStartObject("Power");
+                    w.WriteString("Kind", power.Kind);
+                    w.WriteString("Before", power.Before);
+                    w.WriteString("Set", power.Set);
+                    w.WriteEndObject();
+                }
+                if (GameBarOff) w.WriteBoolean("GameBarOff", true);
+                w.WriteStartArray("ClosedApps");
+                foreach (var app in ClosedApps) w.WriteStringValue(app);
+                w.WriteEndArray();
+                w.WriteEndObject();
+            }
+            return buffer.WrittenSpan.ToArray();
+        }
+
+        /// <summary>The journal on disk, or null. An unreadable one is kept aside (.bad) and logged, never acted on.</summary>
+        public static Journal? Load()
+        {
+            var path = GameModeInfo.JournalPath;
+            try
+            {
+                var info = new FileInfo(path);
+                if (!info.Exists) return null;
+                if (info.Length > MaxJournalBytes) throw new FormatException("too large");
+                return Parse(File.ReadAllBytes(path));
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                Log("Couldn't read the journal: " + e.Message);
+                return null;
+            }
+            catch (Exception e) when (e is FormatException or JsonException or InvalidOperationException or KeyNotFoundException)
+            {
+                Log("The journal is damaged, kept as gamemode-journal.json.bad: " + e.Message);
+                try { File.Move(path, path + ".bad", overwrite: true); }
+                catch (Exception moveError) when (moveError is IOException or UnauthorizedAccessException) { }
+                return null;
+            }
+        }
+
+        internal static Journal Parse(byte[] json)
+        {
+            using var doc = JsonDocument.Parse(json, new JsonDocumentOptions { MaxDepth = 8 });
+            var root = doc.RootElement;
+            var journal = new Journal
+            {
+                GameId = root.GetProperty("GameId").GetString() ?? "",
+                Started = root.GetProperty("Started").GetDateTimeOffset(),
+            };
+            if (root.TryGetProperty("Power", out var power))
+            {
+                var kind = power.GetProperty("Kind").GetString();
+                if (kind is not (PowerChange.Mode or PowerChange.Plan)) throw new FormatException("unknown power change");
+                journal.Power = new PowerChange(kind, power.GetProperty("Before").GetGuid(), power.GetProperty("Set").GetGuid());
+            }
+            journal.GameBarOff = root.TryGetProperty("GameBarOff", out var gameBar) && gameBar.GetBoolean();
+            if (root.TryGetProperty("ClosedApps", out var apps))
+            {
+                foreach (var app in apps.EnumerateArray())
+                {
+                    // Reopened only if it's still a plain app path (see IsClosableApp), and at most 32 of them.
+                    if (app.GetString() is { } p && IsClosableApp(p) && journal.ClosedApps.Count < 32) journal.ClosedApps.Add(p);
+                }
+            }
+            return journal;
+        }
+    }
+
+    // ---- Processes and windows --------------------------------------------------------------------------
+
+    private static class Processes
+    {
+        private static readonly uint[] Pids = new uint[4096];
+        private static readonly char[] Buffer = new char[1024];
+
+        /// <summary>Handles to every process running from exactly this exe (caller closes them).</summary>
+        public static List<IntPtr> Find(string exe, uint extraAccess)
+        {
+            var found = new List<IntPtr>();
+            if (!Native.EnumProcesses(Pids, (uint)(Pids.Length * sizeof(uint)), out var bytes)) return found;
+            int count = (int)(bytes / sizeof(uint));
+            uint self = (uint)Environment.ProcessId;
+            for (int i = 0; i < count && found.Count < 64; i++)
+            {
+                if (Pids[i] == 0 || Pids[i] == self) continue;
+                var h = Native.OpenProcess(Native.PROCESS_QUERY_LIMITED_INFORMATION | extraAccess, false, Pids[i]);
+                if (h == IntPtr.Zero) continue;
+                uint len = (uint)Buffer.Length;
+                if (Native.QueryFullProcessImageNameW(h, 0, Buffer, ref len) &&
+                    Buffer.AsSpan(0, (int)len).Equals(exe, StringComparison.OrdinalIgnoreCase))
+                    found.Add(h);
+                else
+                    Native.CloseHandle(h);
+            }
+            return found;
+        }
+    }
+
+    private static unsafe class Windows
+    {
+        private static HashSet<uint>? s_pids;
+        private static List<IntPtr>? s_found;
+
+        /// <summary>Posts WM_CLOSE to the visible top-level windows of these processes. Returns how many.</summary>
+        public static int PostClose(HashSet<uint> pids)
+        {
+            s_pids = pids;
+            s_found = [];
+            Native.EnumWindows(&OnWindow, IntPtr.Zero);
+            foreach (var hwnd in s_found) Native.PostMessageW(hwnd, Native.WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+            int count = s_found.Count;
+            s_pids = null;
+            s_found = null;
+            return count;
+        }
+
+        [UnmanagedCallersOnly]
+        private static int OnWindow(IntPtr hwnd, IntPtr lParam)
+        {
+            Native.GetWindowThreadProcessId(hwnd, out uint pid);
+            if (s_pids!.Contains(pid) && Native.IsWindowVisible(hwnd) && Native.GetWindow(hwnd, Native.GW_OWNER) == IntPtr.Zero)
+                s_found!.Add(hwnd);
+            return 1; // keep enumerating
+        }
+    }
+}
+
+internal static unsafe partial class Native
+{
+    public const uint PROCESS_SET_INFORMATION = 0x0200;
+    public const uint NORMAL_PRIORITY_CLASS = 0x20;
+    public const uint ABOVE_NORMAL_PRIORITY_CLASS = 0x8000;
+    public const uint WAIT_OBJECT_0 = 0;
+    public const uint WM_CLOSE = 0x0010;
+    public const uint GW_OWNER = 4;
+
+    [LibraryImport("kernel32.dll")]
+    public static partial uint GetPriorityClass(IntPtr process);
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool SetPriorityClass(IntPtr process, uint priorityClass);
+
+    [LibraryImport("kernel32.dll")]
+    public static partial uint GetProcessId(IntPtr process);
+
+    [LibraryImport("kernel32.dll")]
+    public static partial uint WaitForSingleObject(IntPtr handle, uint ms);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool EnumWindows(delegate* unmanaged<IntPtr, IntPtr, int> callback, IntPtr lParam);
+
+    [LibraryImport("user32.dll")]
+    public static partial uint GetWindowThreadProcessId(IntPtr hwnd, out uint processId);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool IsWindowVisible(IntPtr hwnd);
+
+    [LibraryImport("user32.dll")]
+    public static partial IntPtr GetWindow(IntPtr hwnd, uint command);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool PostMessageW(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam);
+}
