@@ -14,15 +14,43 @@ public static class ShortcutImporter
 {
     public static string Folder => Path.Combine(Storage.DataDir, "Shortcuts");
 
-    /// <summary>The library entry a store link duplicates (steam://rungameid/570 → steam:570), or null.</summary>
+    /// <summary>
+    /// The library entry a shortcut duplicates, or null: a store link (steam://rungameid/570 → steam:570), or a
+    /// shortcut to a store game's own exe (the EA app's "Battlefield 6.lnk" → bf6.exe). Other programs in a game's
+    /// folder (a mod loader, a benchmark) stay games of their own.
+    /// </summary>
     public static Game? ExistingFor(ShortcutFile shortcut, IReadOnlyList<Game> library)
     {
         string? id = shortcut.SteamAppId is { } appId ? "steam:" + appId
             : shortcut.EpicAppName is { } app ? "epic:" + app
             : shortcut.UbisoftId is { } ubisoft ? "ubisoft:" + ubisoft
             : null;
-        return id is null ? null : library.FirstOrDefault(g => g.Id == id);
+        if (id is not null) return library.FirstOrDefault(g => g.Id == id);
+        return shortcut.TargetPath is { } target ? StoreGameWithExe(target, library) : null;
     }
+
+    /// <summary>
+    /// Takes out shortcut games that duplicate a store game (their target is its exe; <see cref="CreateGame"/>
+    /// keeps the target as the icon path), left by imports made before <see cref="ExistingFor"/> knew them. A
+    /// favorite carries over; the shortcut file stays in our folder, so "Restore to desktop" still puts it back.
+    /// True if any were taken out.
+    /// </summary>
+    public static bool RemoveDuplicates(List<Game> games)
+    {
+        var stores = games.Where(IsStoreGame).ToList();
+        int removed = games.RemoveAll(g =>
+        {
+            if (g.Source != GameSource.Shortcut || g.IconPath is not { } target || StoreGameWithExe(target, stores) is not { } store) return false;
+            store.Favorite |= g.Favorite;
+            return true;
+        });
+        return removed > 0;
+    }
+
+    private static bool IsStoreGame(Game g) => g.Source is not (GameSource.Shortcut or GameSource.Manual);
+
+    private static Game? StoreGameWithExe(string exe, IReadOnlyList<Game> library) =>
+        library.FirstOrDefault(g => IsStoreGame(g) && string.Equals(g.ExePath, exe, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>Pre-ticked in the picker: store links, and programs inside a known game's folder.</summary>
     public static bool LooksLikeGame(ShortcutFile shortcut, IReadOnlyList<Game> library)

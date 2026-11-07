@@ -339,6 +339,19 @@ static class Tests
         File.WriteAllText(urlFile, "[{000214A0-0000-0000-C000-000000000046}]\r\nProp3=19,0\r\n[InternetShortcut]\r\nIDList=\r\nURL=steam://rungameid/570\r\nIconIndex=0\r\n");
         Check(ShortcutFile.ReadUrlFile(urlFile) == "steam://rungameid/570", ".url file read");
 
+        // A shortcut to a store game's own exe (EA's desktop .lnk) is that game; another exe in its folder isn't.
+        var bf = new Game { Id = "ea:1", Source = GameSource.Ea, Name = "Battlefield 6", ExePath = @"A:\Games\Battlefield 6\bf6.exe", InstallDir = @"A:\Games\Battlefield 6" };
+        var lib = new List<Game>
+        {
+            bf,
+            new() { Id = "shortcut:a", Source = GameSource.Shortcut, Name = "Battlefield 6", IconPath = @"A:\GAMES\Battlefield 6\BF6.exe", Favorite = true },
+            new() { Id = "shortcut:b", Source = GameSource.Shortcut, Name = "BF6 benchmark", IconPath = @"A:\Games\Battlefield 6\bench.exe" },
+            new() { Id = "shortcut:c", Source = GameSource.Shortcut, Name = "Some link" },
+        };
+        Check(ShortcutImporter.RemoveDuplicates(lib) && lib.Select(g => g.Id).SequenceEqual(["ea:1", "shortcut:b", "shortcut:c"]) && bf.Favorite,
+            "shortcut duplicating a store game's exe taken out, its favorite kept");
+        Check(!ShortcutImporter.RemoveDuplicates(lib), "nothing more to take out");
+
         // Restoring a shortcut puts it back, next to a same-named file if needed.
         var desktop = Directory.CreateDirectory(Path.Combine(dir, "Desktop")).FullName;
         var stored = Directory.CreateDirectory(Path.Combine(dir, "Stored")).FullName;
@@ -572,6 +585,11 @@ static class Tests
                 ["ModulePath"] = modulePath ?? @"C:\Windows\System32\" + module, ["ExceptionCode"] = code,
             });
         var gameExe = folder + @"\SpaceGame.exe";
+
+        // 0xDEAD (57005): a deliberate exit on a fatal error, not a normal quit.
+        Check(CrashAnalysis.NeedsCheck(S(0xDEAD, 94)) && CrashAnalysis.Analyze(S(0xDEAD, 94), folder, []).Ending == GameEnding.ClosedUnexpectedly,
+            "exit code 0xDEAD counts as closed unexpectedly");
+        Check(!CrashAnalysis.NeedsCheck(S(1, 94)), "a plain exit code 1 isn't checked");
 
         var nvidia = CrashAnalysis.Analyze(S(0xC0000005, 72), folder, [Crash(gameExe, "nvwgf2umx.dll", "c0000005")]);
         Check(nvidia.Ending == GameEnding.Crashed && nvidia.Culprit == CrashCulprit.NvidiaDriver && nvidia.ErrorCode == 0xC0000005,

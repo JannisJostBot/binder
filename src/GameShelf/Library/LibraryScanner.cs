@@ -58,6 +58,7 @@ public static class LibraryScanner
         // Keep entries the scan doesn't own (manual adds, imported shortcuts, disabled sources).
         foreach (var game in stored)
             if (!scannedSources.Contains(game.Source)) scanned.Add(game);
+        ShortcutImporter.RemoveDuplicates(scanned); // shortcuts to a store game's own exe, from earlier imports
 
         scanned.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.CurrentCultureIgnoreCase));
         return scanned;

@@ -26,12 +26,14 @@ public static class CrashAnalysis
     public static readonly TimeSpan EventSlack = TimeSpan.FromMinutes(2);
 
     private const uint ControlCExit = 0xC000013A; // console window closed: not a crash
+    private const uint DeadExit = 0xDEAD; // 57005: a deliberate exit on a fatal error (seen from Wardogs)
 
     /// <summary>
-    /// A failure code: NTSTATUS errors (0xC…) and HRESULT failures (0x8…) both have the high bit set. Plain
-    /// nonzero codes (1, 2, …) aren't: plenty of games exit with them normally.
+    /// A failure code: NTSTATUS errors (0xC…) and HRESULT failures (0x8…) both have the high bit set, and 0xDEAD
+    /// is what some games exit with on a fatal error. Other plain nonzero codes (1, 2, …) aren't: plenty of
+    /// games exit with them normally.
     /// </summary>
-    public static bool IsFailureCode(uint code) => (code & 0x80000000) != 0 && code != ControlCExit;
+    public static bool IsFailureCode(uint code) => ((code & 0x80000000) != 0 && code != ControlCExit) || code == DeadExit;
 
     /// <summary>Whether a session is worth reading the Windows logs for (most aren't, so most cost nothing).</summary>
     public static bool NeedsCheck(Session s) =>
