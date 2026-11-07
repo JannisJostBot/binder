@@ -35,13 +35,146 @@ internal static unsafe partial class GameModeService
         }
         args.Add("--toast");
         args.Add(settings.ShowRestoreToast ? "1" : "0");
+
+        // The admin part's apps (exe names); the watcher passes them on only if "Allow…" was done.
+        if (items.Contains(GameModeInfo.Smooth))
+        {
+            foreach (var exe in SmoothApps(settings))
+            {
+                args.Add("--smooth");
+                args.Add(exe);
+            }
+        }
+        if (items.Contains(GameModeInfo.Uploads))
+        {
+            foreach (var exe in settings.ThrottledUploadApps.Where(ElevatedPart.IsAppName).Distinct(StringComparer.OrdinalIgnoreCase).Take(32))
+            {
+                args.Add("--throttle");
+                args.Add(exe);
+            }
+            args.Add("--limit");
+            args.Add(settings.UploadLimitMbps.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
     }
+
+    /// <summary>The installed voice chat apps' exes plus the user's own "kept smooth" ones.</summary>
+    public static List<string> SmoothApps(Settings settings) =>
+        ElevatedPart.InstalledVoiceApps().SelectMany(a => a.Exes)
+            .Concat(settings.KeepSmoothApps.Where(ElevatedPart.IsAppName))
+            .Distinct(StringComparer.OrdinalIgnoreCase).Take(32).ToList();
 
     private static bool IsPartOf(string path, Game game) =>
         Launcher.WatchFolder(game) is { } folder && LaunchOptions.IsInside(path, folder);
 
     /// <summary>Changes are applied and not put back yet (a game is running, or a session didn't end normally).</summary>
-    public static bool Pending => File.Exists(GameModeInfo.JournalPath);
+    public static bool Pending => File.Exists(GameModeInfo.JournalPath) || ElevatedPending;
+
+    /// <summary>The admin part's journal is there and "Allow…" was done for this user (its Restore task can run).</summary>
+    private static bool ElevatedPending => File.Exists(ElevatedPart.JournalPath) && Allowed;
+
+    // ---- The admin part ------------------------------------------------------------------------------------
+
+    private static string? s_sid;
+    private static string? Sid => s_sid ??= ElevatedPart.CurrentUserSid();
+
+    /// <summary>"Allow…" was done for this user and the helper is installed.</summary>
+    public static bool Allowed => ElevatedPart.AllowedVersion(Sid) is not null;
+
+    /// <summary>The installed helper is from another version than this widget (Settings offers "Update…").</summary>
+    public static bool AllowedButOutdated => ElevatedPart.AllowedVersion(Sid) is { } v && v != ElevatedPart.BuildVersion;
+
+    /// <summary>
+    /// Only accounts in the Administrators group can approve it for themselves (a standard account's tasks would
+    /// run without admin rights, so they'd do nothing).
+    /// </summary>
+    public static bool CanAllow
+    {
+        get
+        {
+            const int TokenElevationType = 18; // 1 default, 2 full, 3 limited (an admin under UAC)
+            int type = 0;
+            if (!GetTokenInformation(-4, TokenElevationType, &type, sizeof(int), out _)) return false;
+            return type is 2 or 3;
+        }
+    }
+
+    /// <summary>
+    /// "Allow…" (the one UAC prompt, the owner-approved exception): runs the helper shipped next to the widget
+    /// elevated; it copies itself to Program Files and registers this user's tasks. Returns its exit code, 1223
+    /// if the prompt was declined, or -1.
+    /// </summary>
+    public static Task<int> AllowAsync() =>
+        RunElevatedAsync(Path.Combine(AppContext.BaseDirectory, ElevatedPart.ExeName), "--install");
+
+    /// <summary>Removes this user's tasks (and the helper, with the last user) through the installed copy.</summary>
+    public static Task<int> RemoveAsync() => RunElevatedAsync(ElevatedPart.InstalledExe, "--uninstall");
+
+    private static Task<int> RunElevatedAsync(string exe, string action)
+    {
+        if (Sid is not { } sid || !File.Exists(exe)) return Task.FromResult(-1);
+        return Task.Run(() =>
+        {
+            fixed (char* verb = "runas")
+            fixed (char* file = exe)
+            fixed (char* parameters = $"{action} --user {sid}")
+            {
+                var info = new SHELLEXECUTEINFOW
+                {
+                    cbSize = sizeof(SHELLEXECUTEINFOW),
+                    fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC,
+                    lpVerb = verb,
+                    lpFile = file,
+                    lpParameters = parameters,
+                };
+                if (!ShellExecuteExW(&info)) return Marshal.GetLastPInvokeError() == 1223 ? 1223 : -1;
+                if (info.hProcess == IntPtr.Zero) return -1;
+                WaitForSingleObject(info.hProcess, 120_000);
+                int code = GetExitCodeProcess(info.hProcess, out uint exit) ? (int)exit : -1;
+                CloseHandle(info.hProcess);
+                return code;
+            }
+        });
+    }
+
+    private const uint SEE_MASK_NOCLOSEPROCESS = 0x40, SEE_MASK_NOASYNC = 0x100;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct SHELLEXECUTEINFOW
+    {
+        public int cbSize;
+        public uint fMask;
+        public IntPtr hwnd;
+        public char* lpVerb, lpFile, lpParameters, lpDirectory;
+        public int nShow;
+        public IntPtr hInstApp, lpIDList;
+        public char* lpClass;
+        public IntPtr hkeyClass;
+        public uint dwHotKey;
+        public IntPtr hIconOrMonitor, hProcess;
+    }
+
+    [LibraryImport("shell32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool ShellExecuteExW(SHELLEXECUTEINFOW* info);
+
+    [LibraryImport("advapi32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetTokenInformation(nint token, int infoClass, void* info, int length, out int returned);
+
+    [LibraryImport("kernel32.dll")]
+    private static partial uint WaitForSingleObject(IntPtr handle, uint ms);
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetExitCodeProcess(IntPtr process, out uint code);
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool CloseHandle(IntPtr handle);
+
+    /// <summary>A service's state now, for its row on the Settings page.</summary>
+    public static ServiceState.Kind ServiceStateOf(string id) =>
+        ElevatedPart.ServiceFor(id) is { } s ? ServiceState.Of(s.Service) : ServiceState.Kind.Missing;
 
     /// <summary>A watcher is running a Game mode session right now (it holds the mutex).</summary>
     private static bool SessionRunning()

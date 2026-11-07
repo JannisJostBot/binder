@@ -40,6 +40,7 @@ You need Windows 10 or 11 (x64). Nothing else: the app carries its own runtimes.
 
 1. Build `GameShelfSetup.exe` (see below), or use a copy someone built for you.
 2. Run it and click **Install**. It installs for your account only and never asks for administrator rights.
+   (Only Game mode's service and network options do, once, if you choose to allow them in its settings.)
 3. Game Shelf opens and walks you through a short first-time setup.
 
 To **update**, run a newer `GameShelfSetup.exe`. It works even while Game Shelf or a game is running. To
@@ -100,15 +101,15 @@ Working:
 - Shelf, details (playtime charts, launch options, anti-cheat check) and settings.
 - Crash detection and Free up space.
 - Multi-monitor, the flyout with tray icon and shortcut, first-run setup, and the installer.
-- Game mode, the part without admin rights (off by default): Best performance power mode, the game at Above
-  normal priority, Game Bar background recording paused and chosen apps closed, all put back when the game
-  closes.
+- Game mode (off by default): Best performance power mode, the game at Above normal priority, Game Bar
+  background recording paused and chosen apps closed, all put back when the game closes. With admin rights
+  allowed once: Windows Search, SysMain, telemetry and (optionally) Print Spooler paused, the game and voice
+  chat marked as urgent on the network, cloud uploads slowed down and Windows Update downloads limited. Not
+  yet tested with admin rights on a real PC.
 
 Planned (see `docs/proposals.md`):
 - More launchers (Battle.net, Riot, Amazon, itch.io, Humble, Meta).
 - Controller support.
-- The rest of Game mode: pausing background services and the network options (needs admin rights once).
-
 ## Disclaimer
 
 **Game Shelf is vibe-coded.** Its code was written by an AI (Anthropic's Claude), directed and tested by

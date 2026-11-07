@@ -68,6 +68,12 @@ public sealed class Settings
     public List<string> GameModeCloseApps { get; set; } = [];
     /// <summary>Show "Restored successfully" when the game closes (problems are always shown).</summary>
     public bool ShowRestoreToast { get; set; } = true;
+    /// <summary>Exe names the user added to "kept smooth" (the game and installed voice chat apps always are).</summary>
+    public List<string> KeepSmoothApps { get; set; } = [];
+    /// <summary>Exe names whose uploads are slowed down while a game runs.</summary>
+    public List<string> ThrottledUploadApps { get; set; } = [.. Shared.ElevatedPart.DefaultThrottledApps];
+    /// <summary>Their upload limit in Mbit/s: 1, 5 or 20.</summary>
+    public int UploadLimitMbps { get; set; } = Shared.ElevatedPart.DefaultUploadLimit;
 
     /// <summary>Whether games from this source show on the shelf. Manually added games always do.</summary>
     public bool IsSourceEnabled(GameSource source) => source switch

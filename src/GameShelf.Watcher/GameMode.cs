@@ -24,6 +24,11 @@ internal sealed class GameMode
     private readonly Mutex _mutex;
     private readonly Journal _journal;
 
+    /// <summary>The admin part's request for this session (null: not allowed, or no admin item is on).</summary>
+    private ElevatedRequest? _elevated;
+    private string? _sid;
+    private bool _smoothGame;
+
     /// <summary>Run the game "Above normal" (never higher).</summary>
     public bool RaisePriority { get; }
 
@@ -34,11 +39,20 @@ internal sealed class GameMode
         RaisePriority = raisePriority;
     }
 
+    /// <summary>The network items' apps, from the widget (exe names; the helper checks them again).</summary>
+    internal sealed class NetworkOptions
+    {
+        /// <summary>Voice chat and the user's own "kept smooth" apps (the game is added once it's found).</summary>
+        public List<string> Smooth { get; } = [];
+        public List<string> Throttle { get; } = [];
+        public int UploadLimitMbps { get; set; } = ElevatedPart.DefaultUploadLimit;
+    }
+
     /// <summary>
     /// Applies the chosen items (comma-separated ids). Null when another game's changes are still applied
     /// (two games started with "Keep open"): the first one's restore stays in charge.
     /// </summary>
-    public static GameMode? Begin(string gameId, string items, List<string> closeApps)
+    public static GameMode? Begin(string gameId, string items, List<string> closeApps, NetworkOptions? network = null)
     {
         var mutex = TryTakeMutex();
         if (mutex is null)
@@ -49,7 +63,7 @@ internal sealed class GameMode
         if (Journal.Load() is { } leftOver)
         {
             Log("Putting back changes left from an earlier session");
-            Restore(leftOver);
+            WriteLastResult(Restore(leftOver)); // the helper puts back its own left-overs before it applies
         }
 
         var chosen = new HashSet<string>(items.Split(','), StringComparer.Ordinal);
@@ -67,7 +81,9 @@ internal sealed class GameMode
         {
             // Can't keep a journal: change nothing more, and put back what was already changed.
             Log("Couldn't write the journal: " + e.Message);
+            return mode;
         }
+        mode.ApplyElevated(chosen, network ?? new NetworkOptions());
         return mode;
     }
 
@@ -76,13 +92,71 @@ internal sealed class GameMode
     {
         try
         {
-            return Restore(_journal);
+            var result = Restore(_journal);
+            if (_elevated is not null && _sid is not null) result = result.Plus(RestoreElevated(_sid));
+            WriteLastResult(result);
+            return result;
         }
         finally
         {
             _mutex.ReleaseMutex();
             _mutex.Dispose();
         }
+    }
+
+    // ---- The admin part (the helper, through its scheduled tasks) ----------------------------------------
+
+    /// <summary>Pauses services, sets network priority and the Windows Update limit, if "Allow…" was done.</summary>
+    private void ApplyElevated(HashSet<string> chosen, NetworkOptions network)
+    {
+        if (!chosen.Overlaps(GameModeInfo.ElevatedItems)) return;
+        _sid = ElevatedPart.CurrentUserSid();
+        if (ElevatedPart.AllowedVersion(_sid) is null)
+        {
+            Log("Admin part: not allowed yet (Settings › Game mode › Allow…), its items are skipped");
+            return;
+        }
+        var request = new ElevatedRequest
+        {
+            Event = ElevatedRequest.NewId(),
+            Session = ElevatedRequest.NewId(),
+            UploadLimitMbps = Array.IndexOf(ElevatedPart.UploadLimits, network.UploadLimitMbps) >= 0
+                ? network.UploadLimitMbps : ElevatedPart.DefaultUploadLimit,
+            LimitUpdates = chosen.Contains(GameModeInfo.Updates),
+        };
+        foreach (var (id, _, _) in ElevatedPart.Services)
+            if (chosen.Contains(id)) request.Services.Add(id);
+        _smoothGame = chosen.Contains(GameModeInfo.Smooth);
+        if (_smoothGame) request.Smooth.AddRange(network.Smooth);
+        if (chosen.Contains(GameModeInfo.Uploads)) request.Throttle.AddRange(network.Throttle);
+        _elevated = request;
+        Log(ElevatedClient.Run(ElevatedPart.ApplyTask(_sid!), request, ElevatedClient.ApplyWaitMs)
+            ? "Admin part: applied (details in ProgramData\\GameShelf\\elevated.log)"
+            : "Admin part: the helper didn't answer in time");
+    }
+
+    /// <summary>The game's processes were found: mark their exes too ("Game and voice chat first").</summary>
+    public void GameFound(List<string> exeNames)
+    {
+        if (_elevated is not { } request || !_smoothGame || _sid is null) return;
+        int before = request.Smooth.Count;
+        foreach (var name in exeNames)
+            if (ElevatedPart.IsAppName(name) && !request.Smooth.Contains(name, StringComparer.OrdinalIgnoreCase)) request.Smooth.Add(name);
+        if (request.Smooth.Count == before) return;
+        request.Event = ElevatedRequest.NewId(); // same session: the helper only adds the new ones
+        ElevatedClient.Run(ElevatedPart.ApplyTask(_sid), request, ElevatedClient.ApplyWaitMs);
+    }
+
+    /// <summary>Asks the helper to put back what it changed; its result, or one failure if it didn't answer.</summary>
+    private static RestoreResult? RestoreElevated(string sid)
+    {
+        if (!File.Exists(ElevatedPart.JournalPath)) return null; // the helper changed nothing (it keeps no empty journal)
+        var request = new ElevatedRequest { Event = ElevatedRequest.NewId(), Session = ElevatedRequest.NewId() };
+        if (ElevatedClient.Run(ElevatedPart.RestoreTask(sid), request, ElevatedClient.RestoreWaitMs) &&
+            ElevatedPart.ReadResult(sid, request.Event) is { } result)
+            return result;
+        Log("Admin part: the helper didn't report back; see ProgramData\\GameShelf\\elevated.log");
+        return new RestoreResult(0, 1, ["Services and network"]);
     }
 
     /// <summary>
@@ -95,9 +169,15 @@ internal sealed class GameMode
         if (mutex is null) return null;
         try
         {
-            if (Journal.Load() is not { } journal) return null;
+            var journal = Journal.Load();
+            var sid = File.Exists(ElevatedPart.JournalPath) ? ElevatedPart.CurrentUserSid() : null;
+            if (sid is not null && ElevatedPart.AllowedVersion(sid) is null) sid = null;
+            if (journal is null && sid is null) return null;
             Log("Restore of changes left from an earlier session");
-            return Restore(journal);
+            var result = journal is null ? new RestoreResult(0, 0, []) : Restore(journal);
+            if (sid is not null) result = result.Plus(RestoreElevated(sid));
+            WriteLastResult(result);
+            return result;
         }
         finally
         {
@@ -318,13 +398,26 @@ internal sealed class GameMode
         try
         {
             File.Delete(GameModeInfo.JournalPath);
-            if (total > 0) File.WriteAllLines(GameModeInfo.LastResultPath, [DateTimeOffset.Now.ToString("o"), result.Encode()]);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
             Log("Couldn't clear the journal: " + e.Message);
         }
         return result;
+    }
+
+    /// <summary>For "Last restore" in Settings: only when something was changed.</summary>
+    private static void WriteLastResult(RestoreResult result)
+    {
+        if (result.Total == 0) return;
+        try
+        {
+            File.WriteAllLines(GameModeInfo.LastResultPath, [DateTimeOffset.Now.ToString("o"), result.Encode()]);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            Log("Couldn't save the result: " + e.Message);
+        }
     }
 
     /// <summary>An app's name for the toast: its file name without ".exe".</summary>

@@ -69,14 +69,19 @@ GameShelf.sln
                             FreeSpaceView (Free up space, milestone 15), GameModeView (Settings › Game mode),
                             RestoredToast (Game mode's "Restored" toast, its own small window)
   src/GameShelf.Watcher/    Program.cs, GameMode.cs (applies and restores Game mode, with its journal),
-                            GameModeShared.cs (ids, files, restore result, power mode; also compiled into the widget)
+                            ElevatedClient.cs (runs the helper's tasks and waits on its event),
+                            GameModeShared.cs (ids, files, restore result, power mode, the helper's request and paths;
+                            also compiled into the widget, the helper and the setup)
+  src/GameShelf.Elevated/   GameShelf.Elevated.exe: Game mode's admin part (Native AOT, windowless). Installed to
+                            %ProgramFiles%\GameShelf by "Allow…", run by two scheduled tasks: Helper (apply, restore,
+                            journal), Services (allowlisted pause/restart), Qos (WMI over COM), Install (tasks, ACLs)
   src/GameShelf.Setup/      GameShelfSetup.exe: per-user installer, updater and uninstaller (Native AOT, task dialogs)
   tests/GameShelf.Tests/    plain console unit tests for the non-UI code (no test framework packages)
   tests/smoke.ps1           Windows UI smoke test run by CI (see .github/workflows/ci.yml)
   tests/setup-test.ps1      CI test of the installer: install, update while running, uninstall
   tools/make-tray-icons.ps1  draws the tray icon frames (run after changing the logo)
-  publish.ps1               builds what ships into publish/: app\ (the WinUI widget folder and the Native AOT
-                            watcher) and GameShelfSetup.exe with app\ inside (optional -CertificateThumbprint signing)
+  publish.ps1               builds what ships into publish/: app\ (the WinUI widget folder, the Native AOT
+                            watcher and helper) and GameShelfSetup.exe with app\ inside (optional -CertificateThumbprint signing)
   check.ps1                 the hard rules on a diff (packages, AOT, and with -Task the agent rules), then build + tests
   AGENTS.md                 short rules for other coding agents doing task cards
   docs/tasks/               small, exactly specified task cards for other agents (README has the workflow and template)
@@ -86,7 +91,7 @@ GameShelf.sln
   docs/installer.md         how to build, install, update and uninstall, and how the installer works
 ```
 
-Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions.json`, `imported-shortcuts.json`, `crashes.json`, and the `Shortcuts\` folder imported shortcuts are moved into). Covers are cached in `%LOCALAPPDATA%\GameShelf\covers\`. Game mode keeps `gamemode-journal.json` (only while changes are applied), `gamemode.log` and `gamemode-last.txt` in `%LOCALAPPDATA%\GameShelf\`.
+Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions.json`, `imported-shortcuts.json`, `crashes.json`, and the `Shortcuts\` folder imported shortcuts are moved into). Covers are cached in `%LOCALAPPDATA%\GameShelf\covers\`. Game mode keeps `gamemode-journal.json` (only while changes are applied), `gamemode.log`, `gamemode-last.txt` and `gamemode-request.txt` (the watcher's request to the helper) in `%LOCALAPPDATA%\GameShelf\`. Its admin part keeps `journal.json`, `elevated.log`, `allowed-<SID>.txt` and `result-<SID>.txt` in `%ProgramData%\GameShelf\` (admins and SYSTEM write, users read).
 
 ## Core flow: launch → hide → return
 
@@ -100,7 +105,7 @@ Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions
    - Once found, it **blocks** on the process handle (`Process.WaitForExitAsync` / `WaitForSingleObject`). No polling while the game runs.
    - Some games restart themselves (launcher → game exe). After an exit, re-check the install folder for ~5 s before deciding the game is really closed.
    - On exit it appends a session (start, end, game id) to `sessions.json`, relaunches `GameShelf.exe` if "Come back when the game closes" is on, and exits.
-   - Game mode (milestone 14, when on for the game): the watcher applies it right after it starts (`--mode`, `--close`, `--toast`), raises the game to Above normal once found, and puts everything back before relaunching the widget, which shows the result (`--restored 4/5|Name`; with "Come back" off only the toast shows, then it exits). If the game is never detected, it restores at once.
+   - Game mode (milestone 14, when on for the game): the watcher applies it right after it starts (`--mode`, `--close`, `--toast`), raises the game to Above normal once found, and puts everything back before relaunching the widget, which shows the result (`--restored 4/5|Name`; with "Come back" off only the toast shows, then it exits). If the game is never detected, it restores at once. If "Allow…" was done, the admin items go through the helper: the watcher writes the request, runs the `GameShelf Apply <SID>` task with `schtasks /run` and waits on the event `Local\GameShelf.Elevated.<id>`; once the game is found it runs Apply again to add the game's exe to "Game and voice chat first"; at the end it runs `GameShelf Restore <SID>` and adds the helper's result to its own.
 6. Single instance: a named mutex in the widget. A second launch hands its arguments to the running one (see Display modes).
 
 ## Library sources
@@ -268,7 +273,7 @@ rules: `docs/installer.md`. The version lives in `Directory.Build.props`.
 
 ## Security rules
 
-The widget runs as the normal user with no elevation, and must never ask for admin rights. Treat these as untrusted input: every launcher's manifests, config files and registry entries (library folders can be on drives other users or devices can write to), desktop shortcuts, and downloaded images.
+The widget runs as the normal user with no elevation, and must never ask for admin rights. The one exception (owner's decision, spec §11) is Game mode's "Allow…", which starts `GameShelf.Elevated.exe` once with a UAC prompt; the widget and the watcher themselves never elevate. Treat these as untrusted input: every launcher's manifests, config files and registry entries (library folders can be on drives other users or devices can write to), desktop shortcuts, and downloaded images.
 
 - **Validate before use.** Store ids must match their expected shape (Steam appid and GOG id: digits only; Epic ids: letters, digits, `-`, `_`, `.`). Steam install folders must be a single folder name under `steamapps\common`. Every other install folder goes through `InstallFolder.Validate`: a full, existing path that isn't a drive root, isn't inside Windows, and isn't a shared folder itself (Program Files, the user profile, Desktop, …). A GOG exe must be inside its install folder. Reject the entry otherwise.
 - **Bounded parsing.** Parsers cap file size and nesting depth and fail with `FormatException`, never a crash. Downloads have a size cap.
@@ -278,6 +283,12 @@ The widget runs as the normal user with no elevation, and must never ask for adm
 - **Autostart (milestone 5).** Write the Run key value with the exe path in quotes, and point it at the actual install location.
 - **Shortcut import.** Read `.lnk` targets with the Shell API (`IShellLinkW`, load only, never `Resolve`) and `.url` files as plain INI. Never execute a shortcut while scanning. Only launch what the user ticked in the picker. Moves stay reversible; where the shared desktop can't be changed without admin rights, copy instead and leave the original.
 - **Game mode, no-admin part (milestone 14).** Every change is journaled (flushed) before it's made, and put back only if it's still the value we set. Apps are closed only with WM_CLOSE to their visible windows, never ended; only full paths to an `.exe` outside Windows, Store apps and our own folder are closed or reopened (checked in the widget, the watcher and when reading the journal), and only the exe recorded in the journal is reopened, without arguments. Priority goes to Above normal at most, never lowered or set High/Realtime.
+- **Game mode, admin part (the helper).**
+  - Where it lives: only in `%ProgramFiles%\GameShelf\` (a hashed copy of itself, made by "Allow…"); it never runs elevated from a user-writable folder except for that one approved `--install`. Its scheduled tasks run that path as the user's SID with highest privileges, only while they're signed in; their security descriptor lets the user run them (read and execute), not change them. It's linked with `/DEPENDENTLOADFLAG:0x800`.
+  - What it trusts: nothing from the user's side. The request file is size-capped, never a link, and parsed strictly (`ElevatedRequest.Parse`): service ids only from the compiled-in allowlist (WSearch, SysMain, DiagTrack, Spooler), app names only as plain exe file names (no paths, quotes or slashes), the upload limit only 1, 5 or 20, ids only 32 hex digits. Paths come from known folders only.
+  - Its files: `%ProgramData%\GameShelf\` with a protected ACL (SYSTEM and Administrators write, Users read). A folder that is already there counts as ours only if its owner is Administrators or SYSTEM and it isn't a link; otherwise "Allow…" moves it aside and the helper refuses to work.
+  - What it changes: services are only stopped (never their start type), only when running, accepting a stop and with no running dependents, and restarted only if we stopped them and they weren't disabled meanwhile. QoS policies go into the ActiveStore (gone at restart), are named `GameShelf …`, and only those are removed. The Delivery Optimization value is restored exactly (including "not set", and its key if we created it). Journal before each change; restore only what is still the value we set.
+  - Removal: Settings › Game mode › "Remove it" and the uninstaller run the installed copy's `--uninstall` (a UAC prompt; a silent uninstall skips it). It puts back what's still applied, deletes this user's tasks, marker and result, and with the last user the ProgramData folder and itself.
 - **Files we own vs. the user's.** Only delete files inside our own AppData folders. Never follow paths from data files to delete or overwrite anything outside them.
 - **Network.** HTTPS to the store CDNs only, for artwork. No telemetry, no other outbound calls.
 

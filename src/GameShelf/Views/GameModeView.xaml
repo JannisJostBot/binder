@@ -33,6 +33,15 @@
                 </Grid>
             </Border>
 
+            <!-- The admin part: one "Allow…" (a UAC prompt) installs the helper. -->
+            <InfoBar x:Name="AllowBar" Margin="20,10,20,0" IsClosable="False" Severity="Informational"
+                     Title="Services and network need administrator rights, once">
+                <InfoBar.ActionButton>
+                    <Button x:Name="AllowButton" Content="Allow…" Click="OnAllowClick"
+                            AutomationProperties.Name="Allow Game mode to pause services and set network priority" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
             <!-- Performance -->
             <TextBlock Style="{StaticResource SectionLabel}" Text="Performance" />
             <Border Style="{StaticResource Card}">
@@ -63,6 +72,14 @@
                         <ToggleSwitch x:Name="PrioritySwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="priority"
                                       AutomationProperties.Name="Give the game priority" Toggled="OnItemToggled" />
                     </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Pause background services (admin part) and Game Bar recording (no admin rights needed) -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="Pause background services" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <StackPanel x:Name="ServiceList" />
                     <Border Style="{StaticResource RowDivider}" />
                     <Grid Style="{StaticResource SettingRow}">
                         <Grid.ColumnDefinitions>
@@ -70,7 +87,7 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Style="{StaticResource RowText}">
-                            <TextBlock Style="{StaticResource RowTitle}" Text="Pause Game Bar background recording" />
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Game Bar background recording" />
                             <TextBlock x:Name="GameBarText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
                         </StackPanel>
                         <ToggleSwitch x:Name="GameBarSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="gamebar"
@@ -78,6 +95,83 @@
                     </Grid>
                 </StackPanel>
             </Border>
+
+            <!-- Network (admin part) -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="Network" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Game and voice chat first" />
+                            <TextBlock x:Name="SmoothText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="SmoothSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="smooth"
+                                      AutomationProperties.Name="Game and voice chat first" Toggled="OnItemToggled" />
+                    </Grid>
+                    <StackPanel x:Name="SmoothList" AutomationProperties.Name="Apps kept smooth" />
+                    <Button x:Name="AddSmoothButton" Click="OnAddSmoothClick" HorizontalAlignment="Left" Margin="0,4,0,12"
+                            AutomationProperties.Name="Add an app to keep smooth">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE710;" FontSize="14" />
+                            <TextBlock Text="Add a running app" />
+                        </StackPanel>
+                    </Button>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Slow down background uploads" />
+                            <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                                       Text="Cloud sync is the usual cause of lag spikes. Only what these apps send is limited." />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="UploadsSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="uploads"
+                                      AutomationProperties.Name="Slow down background uploads" Toggled="OnItemToggled" />
+                    </Grid>
+                    <Grid Margin="0,0,0,8" ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Upload limit" Style="{StaticResource RowDetail}" VerticalAlignment="Center" />
+                        <ComboBox x:Name="LimitBox" Grid.Column="1" MinWidth="120" SelectionChanged="OnLimitChanged"
+                                  AutomationProperties.Name="Upload limit">
+                            <ComboBoxItem Content="1 Mbit/s" Tag="1" />
+                            <ComboBoxItem Content="5 Mbit/s" Tag="5" />
+                            <ComboBoxItem Content="20 Mbit/s" Tag="20" />
+                        </ComboBox>
+                    </Grid>
+                    <StackPanel x:Name="UploadList" AutomationProperties.Name="Apps whose uploads are slowed down" />
+                    <Button x:Name="AddUploadButton" Click="OnAddUploadClick" HorizontalAlignment="Left" Margin="0,4,0,12"
+                            AutomationProperties.Name="Add an app to slow down">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE710;" FontSize="14" />
+                            <TextBlock Text="Add a running app" />
+                        </StackPanel>
+                    </Button>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Limit Windows Update downloads" />
+                            <TextBlock x:Name="UpdatesText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="UpdatesSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="updates"
+                                      AutomationProperties.Name="Limit Windows Update downloads" Toggled="OnItemToggled" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+            <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" Margin="20,10,20,0"
+                       Text="Downloads can't be slowed from this PC. Steam pauses its downloads while you play; Epic and Battle.net have a download limit in their own settings." />
 
             <!-- Close apps while playing -->
             <TextBlock Style="{StaticResource SectionLabel}" Text="Close apps while playing" />
@@ -136,6 +230,12 @@
 
             <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" Margin="20,16,20,0"
                        Text="You can turn Game mode on or off for one game in its details, under &#x201C;This game only&#x201D;." />
+            <StackPanel x:Name="RemovePanel" Orientation="Horizontal" Spacing="4" Margin="20,8,20,0" Visibility="Collapsed">
+                <TextBlock Style="{StaticResource RowDetail}" VerticalAlignment="Center"
+                           Text="Services and network use a helper in Program Files." />
+                <HyperlinkButton x:Name="RemoveButton" Content="Remove it" Click="OnRemoveClick" Padding="4,2"
+                                 AutomationProperties.Name="Remove the Game mode helper" />
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

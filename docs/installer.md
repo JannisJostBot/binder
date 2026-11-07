@@ -28,7 +28,7 @@ This builds everything into `publish\`:
 | File | What it is |
 |---|---|
 | `GameShelfSetup.exe` | The installer and updater. This is the only file you need to share or keep. |
-| `app\` | What gets installed, laid out as in the install folder: the widget (`GameShelf.exe`, WinUI 3, Native AOT, with the .NET and Windows App SDK runtimes it needs, about 70 MB in about 220 files) and the tiny game watcher (`GameShelf.Watcher.exe`, Native AOT). Nothing else needs to be installed on the PC. |
+| `app\` | What gets installed, laid out as in the install folder: the widget (`GameShelf.exe`, WinUI 3, Native AOT, with the .NET and Windows App SDK runtimes it needs, about 70 MB in about 220 files), the tiny game watcher (`GameShelf.Watcher.exe`, Native AOT) and Game mode's helper (`GameShelf.Elevated.exe`, Native AOT, only ever run elevated after Settings › Game mode › Allow…). Nothing else needs to be installed on the PC. |
 
 The last lines of the output show the sizes and the setup's SHA-256 hash.
 
@@ -117,7 +117,7 @@ looks like Windows' built-in prompts.
 
 ### What's in the exe
 
-`publish.ps1` builds the widget and the watcher into `publish\app\`, then zips that folder to
+`publish.ps1` builds the widget, the watcher and the Game mode helper into `publish\app\`, then zips that folder to
 `obj/setup-payload/app.zip` and writes `payload.txt`, which lists every file with its SHA-256, its size and
 its path inside the folder. Both are embedded as resources when the setup is published (`-p:PayloadDir=…`).
 Setup only accepts a list of well-formed hashes and plain relative paths (no root, drive, `..`, empty or
@@ -194,26 +194,32 @@ questions, copies itself to a new `%TEMP%\GameShelf-uninstall-<random>\` folder,
 
 The install folder is in your profile, so other programs running as you could change its files. That's the
 same for every per-user install (VS Code, Discord, …), and it's why the Game mode helper (milestone 14), which
-runs elevated, will be installed to Program Files instead.
+runs elevated, is installed to Program Files instead.
 
-### Later: the Game mode helper (milestone 14)
+### The Game mode helper (milestone 14)
 
 Game mode's service and network items need admin rights. That's the one approved exception to "never
-elevate" (`docs/proposals.md` §11). The app, the watcher and this setup stay per-user and prompt-free. The
-helper is added on top:
+elevate" (`docs/proposals.md` §11). The app, the watcher and this setup stay per-user and prompt-free. Setup
+only ships `GameShelf.Elevated.exe` in the app folder; nothing runs elevated until you allow it:
 
-1. **Install:** one UAC prompt, only when Game mode is turned on in Settings, never during setup. It copies
-   `GameShelf.Elevated.exe` to `%ProgramFiles%\GameShelf\` (writable by admins only, so a program running as you
-   can't swap it) and registers the *GameShelf Apply* / *GameShelf Restore* scheduled tasks.
-2. **Update:** setup carries the helper too, but asks for elevation only when the helper's file actually
-   changed. Updates that don't touch it stay prompt-free.
-3. **Uninstall:** the per-user uninstaller can't remove Program Files or the tasks by itself. When the helper is
-   installed, the temp copy asks for one UAC prompt to remove it. If you decline, the final dialog says it's
-   still there and how to remove it later.
-4. **Restore first:** if a Game mode journal is still pending (services paused, a power plan changed),
-   uninstall restores everything before removing anything.
-5. **Several Windows accounts:** the helper is per PC, the app per account. Uninstalling for one account
-   doesn't remove the helper while another account still uses Game mode.
+1. **Allow (Settings › Game mode › Allow…):** one UAC prompt. The helper copies itself to
+   `%ProgramFiles%\GameShelf\` (writable by admins only, so a program running as you can't swap it), checks the
+   copy's SHA-256, creates `%ProgramData%\GameShelf\` with its own ACL (SYSTEM and Administrators write, Users
+   read) and registers two scheduled tasks for your account: `GameShelf Apply <SID>` and `GameShelf Restore <SID>`
+   (the second also at logon, to put back what a crash left). They run with highest privileges, only while
+   you're signed in, and you may run them but not change them. Only accounts in the Administrators group can
+   allow it; for a standard account the page says so.
+2. **Update:** setup never elevates. When the installed helper is from another version, Settings › Game mode
+   shows **Update…**, which is the same one prompt. Until then the old helper keeps working.
+3. **Remove (Settings › Game mode › Remove it, or uninstall):** a UAC prompt for the installed copy's
+   `--uninstall`. It first puts back whatever is still applied, then deletes your tasks, marker and result; when
+   no other account uses it, also `%ProgramData%\GameShelf\` and itself (a running exe is removed at the next
+   restart). Uninstall does this before deleting the app's files. If you decline, or uninstall silently (`/S`),
+   the helper stays, and the final dialog says where and how to remove it later.
+4. **Several Windows accounts:** the helper is per PC, the tasks per account. Removing it for one account
+   leaves it for the others.
+
+Its own security rules are in `CLAUDE.md` ("Game mode, admin part").
 
 ### Tested in CI
 

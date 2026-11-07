@@ -30,6 +30,11 @@
     <EmbeddedResource Include="$(PayloadDir)app.zip" LogicalName="app.zip" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Game mode's paths and the helper's marker, to remove the helper on uninstall. -->
+    <Compile Include="..\GameShelf.Watcher\GameModeShared.cs" Link="Shared\GameModeShared.cs" />
+  </ItemGroup>
+
   <!-- DLL planting: an installer usually runs from Downloads, next to whatever else was downloaded. Load the
        DLLs the exe imports from System32 only, never from the folder it runs in. -->
   <ItemGroup Condition="'$(PublishAot)' == 'true'">

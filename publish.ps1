@@ -1,6 +1,7 @@
 # Builds what ships, into publish/ (see docs/installer.md):
 #   app\                   the widget (WinUI 3, Native AOT, self-contained: no runtime to install) and the watcher
-#                          (Native AOT, ~1 MB, ~3 MB of memory), as they're laid out in the install folder
+#                          (Native AOT, ~1 MB, ~3 MB of memory) and Game mode's helper (GameShelf.Elevated.exe),
+#                          as they're laid out in the install folder
 #   GameShelfSetup.exe     Native AOT installer/updater with app\ inside
 #
 #   ./publish.ps1
@@ -42,12 +43,18 @@ dotnet publish src/GameShelf.Watcher -c Release -r $runtime -p:PublishAot=true `
     -p:DebugType=none -p:OutputPath="$PSScriptRoot/obj/publish-watcher/" -o $app
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+# Game mode's admin part: "Allow..." copies it to Program Files (one UAC prompt); it never runs from here otherwise.
+dotnet publish src/GameShelf.Elevated -c Release -r $runtime -p:PublishAot=true `
+    -p:DebugType=none -p:OutputPath="$PSScriptRoot/obj/publish-elevated/" -o $app
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 # Metadata for compilers and debug symbols: not needed to run.
 Get-ChildItem $app -Recurse -File -Include *.winmd, *.pdb | Remove-Item
 
 $widget = Join-Path $app 'GameShelf.exe'
 $watcher = Join-Path $app 'GameShelf.Watcher.exe'
-Sign @($widget, $watcher)
+$elevated = Join-Path $app 'GameShelf.Elevated.exe'
+Sign @($widget, $watcher, $elevated)
 
 # The setup's payload: app.zip with the app folder, plus payload.txt with every file's SHA-256 and path, which
 # setup checks after writing each file to disk.

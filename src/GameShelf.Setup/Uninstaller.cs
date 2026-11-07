@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using GameShelf.Shared;
 using Microsoft.Win32;
 
 namespace GameShelf.Setup;
@@ -20,7 +21,8 @@ internal static class Uninstaller
             if (!options.Silent)
             {
                 var confirm = Dialogs.Show("Uninstall Game Shelf?",
-                    "Removes the app, its Start menu entry and Start with Windows. Shortcuts you moved onto the shelf go back on your desktop.",
+                    "Removes the app, its Start menu entry and Start with Windows. Shortcuts you moved onto the shelf go back on your desktop." +
+                    (GameModeHelper.IsAllowed ? "\n\nWindows will ask you to allow removing Game mode's helper too." : ""),
                     [(UninstallButton, "Uninstall")], Dialogs.CommonCancel, Dialogs.IdCancel,
                     verification: "Also delete my game list, play history and settings");
                 if (confirm.Button != UninstallButton) return ExitCode.Cancelled;
@@ -62,6 +64,8 @@ internal static class Uninstaller
             RunningApp.StopWatcher();
         }
         RunningApp.QuitWidget();
+        // Before the app's files go: it puts back what Game mode still has applied.
+        bool helperLeft = !GameModeHelper.Remove(options.Silent);
 
         bool shortcutsLeft = !RestoreShortcuts();
 
@@ -106,6 +110,9 @@ internal static class Uninstaller
                 ? $"Some shortcuts couldn't go back on the desktop. They're still in {Locations.ImportedShortcutsDir}."
                 : options.RemoveData ? "Your game list, play history and settings were deleted too."
                 : "Your game list, play history and settings are kept, in case you install it again.";
+            if (helperLeft)
+                content += $"\n\nGame mode's helper is still in {ElevatedPart.InstallDir} (it does nothing without Game Shelf). " +
+                           "To remove it, install Game Shelf again and use Settings › Game mode › Remove it.";
             Dialogs.Show("Game Shelf was removed", content, [], Dialogs.CommonClose, Dialogs.IdClose);
         }
         return Finish(ExitCode.Ok);

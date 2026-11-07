@@ -40,7 +40,8 @@ to be wrong. Say what you found; don't change the expected value to make a test 
 
 These need a reviewed change by the owner; `check.ps1 -Task` fails if you change them:
 
-- `src/GameShelf.Watcher/` (the game watcher) and `src/GameShelf.Setup/` (the installer)
+- `src/GameShelf.Watcher/` (the game watcher), `src/GameShelf.Setup/` (the installer) and
+  `src/GameShelf.Elevated/` (Game mode's admin helper)
 - `Program.cs`, `MessageWindow.cs`, `app.manifest`
 - `Services/Launcher.cs` and the services that call into Windows directly (`Native*`, `DesktopLayer`,
   `Monitors`, `Footprint`, `ShellImage*`, `ShellNotify`, `PcChecks`, `PcInfo`, `CrashLog`, `Autostart`,

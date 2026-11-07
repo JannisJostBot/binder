@@ -15,7 +15,8 @@ namespace GameShelf.Watcher;
 /// records the session and brings the widget back. Uses only kernel waits once the game is found.
 ///
 /// Args: --game &lt;id&gt; --dir &lt;install folder&gt; [--process &lt;name&gt;] [--timeout &lt;s&gt;] [--return 0|1]
-///       [--mode &lt;game mode items, comma-separated&gt; [--close &lt;app exe&gt;]… [--toast 0|1]]
+///       [--mode &lt;game mode items, comma-separated&gt; [--close &lt;app exe&gt;]… [--toast 0|1]
+///        [--smooth &lt;exe name&gt;]… [--throttle &lt;exe name&gt;]… [--limit &lt;Mbit/s&gt;]]
 /// Or:   --restore (put back Game mode changes left by a session that didn't end normally)
 /// </summary>
 internal static class Program
@@ -39,6 +40,7 @@ internal static class Program
         int timeoutSeconds = 180;
         bool comeBack = true, toast = true;
         var closeApps = new List<string>();
+        var network = new GameMode.NetworkOptions();
         for (int i = 0; i + 1 < args.Length; i += 2)
         {
             switch (args[i])
@@ -51,12 +53,15 @@ internal static class Program
                 case "--mode": modeItems = args[i + 1]; break;
                 case "--close": if (closeApps.Count < 32) closeApps.Add(args[i + 1]); break;
                 case "--toast": toast = args[i + 1] != "0"; break;
+                case "--smooth": if (network.Smooth.Count < 32) network.Smooth.Add(args[i + 1]); break;
+                case "--throttle": if (network.Throttle.Count < 32) network.Throttle.Add(args[i + 1]); break;
+                case "--limit": if (int.TryParse(args[i + 1], out int limit)) network.UploadLimitMbps = limit; break;
             }
         }
         if (gameId is null || (dir is null && processName is null)) return 2;
 
         // Game mode: applied now, while the game starts; put back once it's closed (or never showed up).
-        var gameMode = modeItems is null ? null : GameMode.Begin(gameId, modeItems, closeApps);
+        var gameMode = modeItems is null ? null : GameMode.Begin(gameId, modeItems, closeApps, network);
         var matcher = new Matcher(dir, processName) { RaisePriority = gameMode?.RaisePriority == true };
 
         // Detection phase: the store app may start first, so poll for a while.
@@ -65,7 +70,11 @@ internal static class Program
         while (true)
         {
             matcher.FindMatches(handles);
-            if (handles.Count > 0) break;
+            if (handles.Count > 0)
+            {
+                gameMode?.GameFound(matcher.NamesOf(handles)); // network priority for the game's own exe
+                break;
+            }
             if (Environment.TickCount64 >= deadline)
             {
                 var restored = ToastArgument(gameMode?.End(), toast);
@@ -98,6 +107,7 @@ internal static class Program
             }
             matcher.NoteReporters = false;
             if (handles.Count == 0) break;
+            gameMode?.GameFound(matcher.NamesOf(handles)); // it restarted itself, maybe as another exe
         }
 
         try { AppendSession(gameId, start, end, exit, matcher.ReporterSeen); }
@@ -223,6 +233,10 @@ internal static class Program
             Native.CloseHandle(h);
         }
 
+        /// <summary>The exe file names of these matched processes.</summary>
+        public List<string> NamesOf(List<IntPtr> handles) =>
+            handles.Select(h => _names.GetValueOrDefault(h)).OfType<string>().Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
         /// <summary>Reads the exit codes of the processes that just ended (their handles are still open).</summary>
         public GameExit ExitOf(List<IntPtr> handles)
         {
@@ -311,6 +325,15 @@ internal static class Program
     /// <summary>Starts an exe from its own folder; each argument is quoted on its own. False if it couldn't start.</summary>
     internal static bool StartProcess(string exe, string[] args)
     {
+        if (!StartProcess(exe, args, 0, out var process)) return false;
+        Native.CloseHandle(process);
+        return true;
+    }
+
+    /// <summary>The same with creation flags, handing back the process handle (the caller closes it).</summary>
+    internal static bool StartProcess(string exe, string[] args, uint flags, out IntPtr process)
+    {
+        process = IntPtr.Zero;
         var sb = new StringBuilder();
         AppendArgument(sb, exe);
         foreach (var arg in args)
@@ -320,10 +343,10 @@ internal static class Program
         }
         var cmd = sb.Append('\0').ToString().ToCharArray();
         var si = new Native.STARTUPINFOW { cb = Marshal.SizeOf<Native.STARTUPINFOW>() };
-        if (!Native.CreateProcessW(exe, cmd, IntPtr.Zero, IntPtr.Zero, false, 0, IntPtr.Zero, Path.GetDirectoryName(exe)!, ref si, out var pi))
+        if (!Native.CreateProcessW(exe, cmd, IntPtr.Zero, IntPtr.Zero, false, flags, IntPtr.Zero, Path.GetDirectoryName(exe)!, ref si, out var pi))
             return false;
-        Native.CloseHandle(pi.hProcess);
         Native.CloseHandle(pi.hThread);
+        process = pi.hProcess;
         return true;
     }
 }

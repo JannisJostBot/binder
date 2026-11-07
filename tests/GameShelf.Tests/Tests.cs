@@ -732,8 +732,71 @@ static class Tests
               !GameShelf.Shared.PowerMode.IsFastest(GameShelf.Shared.PowerMode.BalancedPlan, Guid.Empty),
             "already at best performance is left alone");
         var settings = new Settings();
-        Check(!settings.GameModeEnabled && settings.GameModeItems.SequenceEqual(["power", "priority"]) && settings.ShowRestoreToast,
-            "Game mode is opt-in; power and priority on by default");
+        // Spec §11 table: everything on by default except Print Spooler and Game Bar recording (the admin part
+        // added services and network to what used to be power and priority only).
+        Check(!settings.GameModeEnabled &&
+              settings.GameModeItems.SequenceEqual(["power", "priority", "wsearch", "sysmain", "diagtrack", "smooth", "uploads", "updates"]) &&
+              settings.ShowRestoreToast && settings.UploadLimitMbps == 5 &&
+              settings.ThrottledUploadApps.SequenceEqual(["OneDrive.exe", "GoogleDriveFS.exe", "Dropbox.exe"]) && settings.KeepSmoothApps.Count == 0,
+            "Game mode is opt-in; defaults as in the spec");
+        ElevatedTests();
+    }
+
+    static void ElevatedTests()
+    {
+        var ok = new GameShelf.Shared.RestoreResult(2, 2, []);
+        Check(ok.Plus(new GameShelf.Shared.RestoreResult(3, 4, ["Print Spooler"])) is { Restored: 5, Total: 6, Failed: ["Print Spooler"] } &&
+              ok.Plus(null) == ok, "the watcher's and the helper's results add up");
+
+        var request = new GameShelf.Shared.ElevatedRequest
+        {
+            Event = new string('a', 32),
+            Session = "0123456789abcdef0123456789abcdef",
+            UploadLimitMbps = 20,
+            LimitUpdates = true,
+        };
+        request.Services.AddRange(["wsearch", "spooler"]);
+        request.Smooth.AddRange(["Discord.exe", "Game (x64).exe"]);
+        request.Throttle.AddRange(["OneDrive.exe", "discord.exe"]);
+        var back = GameShelf.Shared.ElevatedRequest.Parse(request.Encode());
+        Check(back is { UploadLimitMbps: 20, LimitUpdates: true } && back.Event == request.Event && back.Session == request.Session &&
+              back.Services.SequenceEqual(["wsearch", "spooler"]) && back.Smooth.SequenceEqual(["Discord.exe", "Game (x64).exe"]) &&
+              back.Throttle.SequenceEqual(["OneDrive.exe"]), "request round-trip; an app kept smooth is never slowed down");
+
+        var hostile = GameShelf.Shared.ElevatedRequest.Parse(
+            "event=" + new string('b', 32) + "\nsession=" + new string('c', 32) +
+            "\nservices=wsearch,wuauserv,WinDefend,../x,spooler\nsmooth=C:\\Windows\\x.exe,a'b.exe,..\\y.exe,x.bat,ok.exe,\"q.exe\nthrottle=a/b.exe,%TEMP%.exe\nlimit=5\n");
+        Check(hostile is not null && hostile.Services.SequenceEqual(["wsearch", "spooler"]) && hostile.Smooth.SequenceEqual(["ok.exe"]) &&
+              hostile.Throttle.Count == 0, "only allowlisted services and plain exe names are kept");
+        Check(GameShelf.Shared.ElevatedRequest.Parse("event=xyz\nsession=" + new string('c', 32)) is null &&
+              GameShelf.Shared.ElevatedRequest.Parse("event=" + new string('B', 32) + "\nsession=" + new string('c', 32)) is null &&
+              GameShelf.Shared.ElevatedRequest.Parse("event=" + new string('b', 32) + "\nsession=" + new string('c', 32) + "\nlimit=1000") is null &&
+              GameShelf.Shared.ElevatedRequest.Parse(new string('x', 9000)) is null, "malformed requests rejected");
+        Check(GameShelf.Shared.ElevatedPart.IsUserSid("S-1-5-21-1004336348-1177238915-682003330-1001") &&
+              !GameShelf.Shared.ElevatedPart.IsUserSid("S-1-5-18") && !GameShelf.Shared.ElevatedPart.IsUserSid("S-1-5-21-1-") &&
+              !GameShelf.Shared.ElevatedPart.IsUserSid("S-1-5-21-1 /f") && !GameShelf.Shared.ElevatedPart.IsUserSid("S-1-5-21-1\"x"),
+            "only user SIDs name tasks and files");
+
+        var sid = "S-1-5-21-1004336348-1177238915-682003330-1001";
+        var journal = new GameShelf.Elevated.Journal { Sid = sid, Session = request.Session, Started = new DateTimeOffset(2026, 11, 7, 22, 0, 0, TimeSpan.FromHours(1)) };
+        journal.Services.AddRange(["wsearch", "sysmain"]);
+        journal.Policies.Add("GameShelf smooth Discord.exe");
+        journal.Updates = new GameShelf.Elevated.UpdateChange(null, 10, KeyCreated: true);
+        var j = GameShelf.Elevated.Journal.Parse(journal.ToJson());
+        Check(j.Sid == sid && j.Session == request.Session && j.Started == journal.Started && j.Services.SequenceEqual(["wsearch", "sysmain"]) &&
+              j.Policies.SequenceEqual(["GameShelf smooth Discord.exe"]) && j.Updates == journal.Updates, "helper journal round-trip");
+        var bad = GameShelf.Elevated.Journal.Parse(Encoding.UTF8.GetBytes(
+            "{\"Sid\":\"" + sid + "\",\"Session\":\"" + request.Session + "\",\"Started\":\"2026-11-07T22:00:00+01:00\"," +
+            "\"Services\":[\"wsearch\",\"WinDefend\",\"wsearch\"],\"Policies\":[\"Someone else's\",\"GameShelf upload OneDrive.exe\"]}"));
+        Check(bad.Services.SequenceEqual(["wsearch"]) && bad.Policies.SequenceEqual(["GameShelf upload OneDrive.exe"]) && bad.Updates is null,
+            "the helper only ever restarts allowlisted services and removes its own policies");
+        try
+        {
+            GameShelf.Elevated.Journal.Parse(Encoding.UTF8.GetBytes(
+                "{\"Sid\":\"S-1-5-18\",\"Session\":\"" + request.Session + "\",\"Started\":\"2026-11-07T22:00:00+01:00\",\"Services\":[],\"Policies\":[]}"));
+            Check(false, "a helper journal without a user SID is rejected");
+        }
+        catch (FormatException) { Check(true, "a helper journal without a user SID is rejected"); }
     }
 
     static void PayloadTests()

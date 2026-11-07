@@ -38,12 +38,19 @@ public sealed partial class GameModeView : UserControl
             PowerSwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.Power);
             PrioritySwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.Priority);
             GameBarSwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.GameBar);
+            SmoothSwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.Smooth);
+            UploadsSwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.Uploads);
+            UpdatesSwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.Updates);
             ToastSwitch.IsOn = settings.ShowRestoreToast;
+            int limit = Array.IndexOf(ElevatedPart.UploadLimits, settings.UploadLimitMbps);
+            LimitBox.SelectedIndex = limit >= 0 ? limit : Array.IndexOf(ElevatedPart.UploadLimits, ElevatedPart.DefaultUploadLimit);
         }
         finally
         {
             _loading = false;
         }
+        UpdatesText.Text = $"Windows Update uses at most {ElevatedPart.UpdatePercent}% of the bandwidth for background downloads.";
+        UpdateAdminPart();
         var plan = PowerMode.ActivePlan();
         PowerText.Text = PowerMode.IsFastest(plan, plan == PowerMode.BalancedPlan ? PowerMode.ActiveMode() : null)
             ? $"Now: {PowerMode.Describe()}, already the fastest. Left as is."
@@ -121,6 +128,197 @@ public sealed partial class GameModeView : UserControl
             row.Children.Add(remove);
             AppList.Children.Add(row);
         }
+    }
+
+    // ---- The admin part ------------------------------------------------------------------------------------
+
+    /// <summary>The banner, the services' rows (with their state now), and what needs the helper enabled or not.</summary>
+    private void UpdateAdminPart()
+    {
+        bool allowed = GameModeService.Allowed;
+        bool outdated = allowed && GameModeService.AllowedButOutdated;
+        bool canAllow = GameModeService.CanAllow;
+        AllowBar.Severity = InfoBarSeverity.Informational;
+        AllowBar.IsOpen = !allowed || outdated;
+        AllowBar.Message = outdated
+            ? "The helper is from another version of Game Shelf. Update it to keep these working."
+            : canAllow
+                ? "Pausing services and network priority use a small helper. Windows asks you once to allow it; it can only do what's listed here."
+                : "Only an administrator account can allow this. The other items work without it.";
+        AllowButton.Content = outdated ? "Update…" : "Allow…";
+        AllowButton.Visibility = canAllow ? Visibility.Visible : Visibility.Collapsed;
+        AllowButton.IsEnabled = true;
+        RemovePanel.Visibility = allowed ? Visibility.Visible : Visibility.Collapsed;
+
+        FillServices(allowed);
+        foreach (var control in new Control[] { SmoothSwitch, UploadsSwitch, UpdatesSwitch, LimitBox, AddSmoothButton, AddUploadButton })
+            control.IsEnabled = allowed;
+        var voice = ElevatedPart.InstalledVoiceApps().Select(a => a.Name).ToList();
+        SmoothText.Text = "Marks their traffic as urgent (DSCP 46); helps only if your router honors it. Always included: the game" +
+                          (voice.Count > 0 ? ", " + string.Join(", ", voice) : "") + ".";
+        FillNames(SmoothList, _settings.KeepSmoothApps, AddSmoothButton, allowed);
+        FillNames(UploadList, _settings.ThrottledUploadApps, AddUploadButton, allowed);
+    }
+
+    private static readonly Dictionary<string, string> ServiceDetails = new()
+    {
+        [GameModeInfo.WindowsSearch] = "Stops indexing files; search still works.",
+        [GameModeInfo.SysMain] = "Stops preloading apps into memory.",
+        [GameModeInfo.Telemetry] = "Stops sending diagnostic data to Microsoft.",
+        [GameModeInfo.PrintSpooler] = "Printing waits until the game closes.",
+    };
+
+    private void FillServices(bool allowed)
+    {
+        ServiceList.Children.Clear();
+        foreach (var (id, _, name) in ElevatedPart.Services)
+        {
+            if (ServiceList.Children.Count > 0) ServiceList.Children.Add(new Border { Style = Resource<Style>("RowDivider") });
+            var state = GameModeService.ServiceStateOf(id);
+            var row = new Grid { Style = Resource<Style>("SettingRow") };
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            var text = new StackPanel { Style = Resource<Style>("RowText") };
+            text.Children.Add(new TextBlock { Text = name, Style = Resource<Style>("RowTitle") });
+            text.Children.Add(new TextBlock
+            {
+                Text = ServiceDetails[id] + " Now: " + state switch
+                {
+                    ServiceState.Kind.Running => "running.",
+                    ServiceState.Kind.Stopped => "stopped, left as is.",
+                    ServiceState.Kind.Disabled => "turned off, left as is.",
+                    _ => "not on this PC.",
+                },
+                Style = Resource<Style>("RowDetail"),
+                TextWrapping = TextWrapping.Wrap,
+            });
+            row.Children.Add(text);
+            var toggle = new ToggleSwitch
+            {
+                Style = Resource<Style>("RowSwitch"),
+                Tag = id,
+                IsOn = _settings.GameModeItems.Contains(id),
+                IsEnabled = allowed,
+            };
+            AutomationProperties.SetName(toggle, "Pause " + name);
+            toggle.Toggled += OnItemToggled;
+            Grid.SetColumn(toggle, 1);
+            row.Children.Add(toggle);
+            ServiceList.Children.Add(row);
+        }
+    }
+
+    /// <summary>A list of exe names with a remove button each (kept smooth, or slowed down).</summary>
+    private void FillNames(StackPanel list, List<string> names, Button addButton, bool enabled)
+    {
+        list.Children.Clear();
+        foreach (var exe in names)
+        {
+            var row = new Grid { Padding = new Thickness(0, 2, 0, 2), ColumnSpacing = 8 };
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            row.Children.Add(new TextBlock
+            {
+                Text = Path.GetFileNameWithoutExtension(exe),
+                Style = Resource<Style>("RowTitle"),
+                VerticalAlignment = VerticalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+            });
+            var remove = new Button
+            {
+                Content = "", // Cancel (×), as on the close-apps rows
+                Style = Resource<Style>("IconButton"),
+                VerticalAlignment = VerticalAlignment.Center,
+                IsEnabled = enabled,
+            };
+            AutomationProperties.SetName(remove, "Remove " + Path.GetFileNameWithoutExtension(exe));
+            ToolTipService.SetToolTip(remove, "Remove");
+            remove.Click += (_, _) =>
+            {
+                names.RemoveAll(n => string.Equals(n, exe, StringComparison.OrdinalIgnoreCase));
+                Changed?.Invoke();
+                FillNames(list, names, addButton, enabled);
+                addButton.Focus(FocusState.Programmatic);
+            };
+            Grid.SetColumn(remove, 1);
+            row.Children.Add(remove);
+            list.Children.Add(row);
+        }
+    }
+
+    private void OnAddSmoothClick(object sender, RoutedEventArgs e) =>
+        ShowAppMenu(AddSmoothButton, _settings.KeepSmoothApps, SmoothList);
+
+    private void OnAddUploadClick(object sender, RoutedEventArgs e) =>
+        ShowAppMenu(AddUploadButton, _settings.ThrottledUploadApps, UploadList);
+
+    /// <summary>Running apps with a window (read on click); the pick is stored by exe name, as QoS matches it.</summary>
+    private void ShowAppMenu(Button button, List<string> names, StackPanel list)
+    {
+        var menu = new MenuFlyout { Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft };
+        var apps = GameModeService.RunningApps(_games)
+            .Where(a => ElevatedPart.IsAppName(Path.GetFileName(a.Path)) &&
+                        !names.Contains(Path.GetFileName(a.Path), StringComparer.OrdinalIgnoreCase))
+            .ToList();
+        foreach (var app in apps)
+        {
+            var item = new MenuFlyoutItem { Text = app.Name };
+            ToolTipService.SetToolTip(item, app.Path);
+            item.Click += (_, _) =>
+            {
+                names.Add(Path.GetFileName(app.Path));
+                Changed?.Invoke();
+                FillNames(list, names, button, true);
+            };
+            menu.Items.Add(item);
+        }
+        if (apps.Count == 0) menu.Items.Add(new MenuFlyoutItem { Text = "No other apps with a window are open", IsEnabled = false });
+        App.ModalDepth++;
+        menu.Closed += (_, _) => App.ModalDepth--;
+        menu.ShowAt(button);
+    }
+
+    private void OnLimitChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loading || LimitBox.SelectedItem is not ComboBoxItem { Tag: string tag } || !int.TryParse(tag, out int limit)) return;
+        _settings.UploadLimitMbps = limit;
+        Changed?.Invoke();
+    }
+
+    private async void OnAllowClick(object sender, RoutedEventArgs e)
+    {
+        AllowButton.IsEnabled = false;
+        App.ModalDepth++; // the UAC prompt takes the focus: click-away must not close the flyout
+        int code;
+        try
+        {
+            code = await GameModeService.AllowAsync();
+        }
+        finally
+        {
+            App.ModalDepth--;
+        }
+        UpdateAdminPart();
+        if (code is 0 or 1223) return; // done, or the prompt was declined
+        AllowBar.Severity = InfoBarSeverity.Warning;
+        AllowBar.Message = $"That didn't work (code {code}). The helper's log is in ProgramData\\GameShelf\\elevated.log.";
+    }
+
+    private async void OnRemoveClick(object sender, RoutedEventArgs e)
+    {
+        RemoveButton.IsEnabled = false;
+        App.ModalDepth++;
+        try
+        {
+            await GameModeService.RemoveAsync();
+        }
+        finally
+        {
+            App.ModalDepth--;
+            RemoveButton.IsEnabled = true;
+        }
+        AllowBar.Severity = InfoBarSeverity.Informational;
+        UpdateAdminPart();
     }
 
     private static T Resource<T>(string key) => (T)Application.Current.Resources[key];
