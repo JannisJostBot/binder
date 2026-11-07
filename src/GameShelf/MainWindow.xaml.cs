@@ -96,6 +96,7 @@ public sealed partial class MainWindow : Window
             Shelf.SetFlyout(IsFlyout, App.Pinned);
         };
         Shelf.SetFlyout(IsFlyout, App.Pinned);
+        Shelf.HelperUpdateRequested += UpdateGameModeHelperAsync;
         Shelf.SetData(_games, _sessions, App.Settings);
         Shelf.CrashPlayRequested += game =>
         {
@@ -528,6 +529,25 @@ public sealed partial class MainWindow : Window
         ShowPage(FreeSpacePage);
         FreeSpacePage.UpdateLayout();
         FreeSpacePage.FocusFirst();
+    }
+
+    /// <summary>The shelf's "Game mode needs an update" › Update…: the same UAC prompt as Settings › Game mode.</summary>
+    private async Task UpdateGameModeHelperAsync()
+    {
+        App.ModalDepth++; // the UAC prompt takes the focus: click-away must not close the flyout
+        int code;
+        try
+        {
+            code = await GameModeService.AllowAsync();
+        }
+        finally
+        {
+            App.ModalDepth--;
+        }
+        if (IsClosing) return;
+        RefreshViews(); // closes the notice once the helper is current
+        if (code is 0 or 1223) return; // done, or the prompt was declined
+        ShowToast("Couldn't update Game mode's helper", $"Code {code}. Its log is in ProgramData\\GameShelf\\elevated.log.", "OK");
     }
 
     /// <summary>Settings › Game mode (spec §11, board 5).</summary>

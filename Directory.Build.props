@@ -2,7 +2,7 @@
   <!-- Both apps build into one folder, like the published layout, so the widget finds the watcher next to it. -->
   <PropertyGroup>
     <!-- One version for everything that ships; the installer writes it to Settings → Apps. -->
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <!-- Shown as the publisher in Settings → Apps and in each exe's file properties. -->
     <Company>Vibe-coded with Claude (AI-generated) · Jannis Jost</Company>
     <!-- Building a project on its own (not the solution) sets no configuration yet at this point. -->

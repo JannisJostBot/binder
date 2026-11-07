@@ -94,7 +94,34 @@ public sealed partial class ShelfView : UserControl
         FooterText.Text = settings.ComeBackOnClose ? hides + " · comes back when it closes" : hides;
         UpdateContinueCard();
         UpdateWeekCard(sessions);
+        UpdateHelperBar(games);
         Resort();
+    }
+
+    // ---- Game mode helper notice ---------------------------------------------------------------------------
+
+    /// <summary>The Game mode helper needs updating; the owner runs it (UAC) and calls <see cref="SetData"/> again.</summary>
+    public event Func<Task>? HelperUpdateRequested;
+
+    private bool _helperBarClosed; // closed with its ✕: not again while this panel lives
+
+    private void UpdateHelperBar(List<Game> games)
+    {
+        HelperBar.IsOpen = !_helperBarClosed && GameModeService.HelperNeedsUpdate(_settings, games);
+        HelperUpdateButton.IsEnabled = true;
+    }
+
+    private async void OnHelperUpdateClick(object sender, RoutedEventArgs e)
+    {
+        if (HelperUpdateRequested is null) return;
+        HelperUpdateButton.IsEnabled = false;
+        await HelperUpdateRequested();
+        HelperUpdateButton.IsEnabled = true;
+    }
+
+    private void OnHelperBarClosed(InfoBar sender, InfoBarClosedEventArgs args)
+    {
+        if (args.Reason == InfoBarCloseReason.CloseButton) _helperBarClosed = true;
     }
 
     /// <summary>Sorts once for the current data and sort order, then shows the filtered result.</summary>

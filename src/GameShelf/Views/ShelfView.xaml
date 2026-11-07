@@ -29,9 +29,20 @@
                     ToolTipService.ToolTip="Settings" AutomationProperties.Name="Settings" />
         </Grid>
 
-        <AutoSuggestBox x:Name="SearchBox" Grid.Row="1" PlaceholderText="Search games" QueryIcon="Find"
-                        AutomationProperties.Name="Search games" TextChanged="OnSearchChanged"
-                        PreviewKeyDown="OnSearchKeyDown" />
+        <!-- The Game mode helper notice shares the search box's row, so the rows' spacing stays the same while
+             it's closed. -->
+        <StackPanel Grid.Row="1" Spacing="14">
+            <InfoBar x:Name="HelperBar" Title="Game mode needs an update" IsOpen="False" Severity="Informational"
+                     Message="Its admin helper is from an older version of Game Shelf. Update it so pausing services and network priority keep working. Windows asks once."
+                     Closed="OnHelperBarClosed">
+                <InfoBar.ActionButton>
+                    <Button x:Name="HelperUpdateButton" Content="Update…" Click="OnHelperUpdateClick" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+            <AutoSuggestBox x:Name="SearchBox" PlaceholderText="Search games" QueryIcon="Find"
+                            AutomationProperties.Name="Search games" TextChanged="OnSearchChanged"
+                            PreviewKeyDown="OnSearchKeyDown" />
+        </StackPanel>
 
         <!-- After a crash (milestone 11, board 13) the crash card takes the top slot until it's dismissed. -->
         <v:CrashCard x:Name="Crash" Grid.Row="2" Visibility="Collapsed" />
