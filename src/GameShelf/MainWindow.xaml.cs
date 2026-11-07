@@ -109,8 +109,7 @@ public sealed partial class MainWindow : Window
 
         // The launch countdown runs in App (it survives the flyout closing); show it while we're open.
         App.Current.CountdownTick += OnCountdownTick;
-        if (App.Current.CountdownRunning) ShowCountdown("Starting your game");
-
+        if (App.Current.CountdownRunning) ShowCountdown();
         Activated += OnActivated;
         Closed += OnClosed;
 
@@ -980,6 +979,7 @@ public sealed partial class MainWindow : Window
     private void TestLaunch(Game game)
     {
         App.Current.CancelCountdown();
+        HideCountdown();
         if (Launcher.StartGame(game) is { } launchError)
             ShowToast($"Couldn't start {game.Name}", launchError, "OK");
         else
@@ -989,6 +989,7 @@ public sealed partial class MainWindow : Window
     private void Launch(Game game)
     {
         App.Current.CancelCountdown();
+        HideCountdown();
 
         if (Launcher.StartGame(game) is { } launchError)
         {
@@ -1018,29 +1019,42 @@ public sealed partial class MainWindow : Window
         }
 
         // The countdown runs in App, so it keeps going if the flyout closes (the game takes the foreground).
-        App.Current.StartCountdown(delay);
-        ShowCountdown($"Starting {game.Name}");
+        App.Current.StartCountdown(delay, $"Starting {game.Name}");
+        ShowCountdown();
     }
 
-    private bool _toastIsCountdown;
-
-    private void ShowCountdown(string title)
+    /// <summary>The launch countdown card, also when the flyout reopens while it's still counting.</summary>
+    private void ShowCountdown()
     {
-        ShowToast(title, CountdownText(App.Current.CountdownRemaining), "Keep open");
-        _toastIsCountdown = true;
+        CountdownTitle.Text = App.Current.CountdownTitle;
+        CountdownBar.Maximum = Math.Max(1, App.Current.CountdownTotal);
+        UpdateCountdown(App.Current.CountdownRemaining);
+        Countdown.Visibility = Visibility.Visible;
     }
 
     private void OnCountdownTick(int remaining)
     {
-        if (_toastIsCountdown && Toast.Visibility == Visibility.Visible) ToastBar.Message = CountdownText(remaining);
+        if (Countdown.Visibility == Visibility.Visible) UpdateCountdown(remaining);
     }
 
-    private static string CountdownText(int remaining) => $"Hiding in {remaining} s";
+    private void UpdateCountdown(int remaining)
+    {
+        CountdownText.Text = $"Hiding in {remaining} s";
+        CountdownBar.Value = remaining; // drains as the time runs out
+    }
+
+    private void HideCountdown() => Countdown.Visibility = Visibility.Collapsed;
+
+    private void OnKeepOpenClick(object sender, RoutedEventArgs e)
+    {
+        App.Current.CancelCountdown();
+        HideCountdown();
+        Shelf.FocusSearch();
+    }
 
     private void OnToastButton(object sender, RoutedEventArgs e)
     {
-        // "Keep open" cancels the countdown; "OK" dismisses a notice; "Undo" also runs its action.
-        if (_toastIsCountdown) App.Current.CancelCountdown();
+        // "OK" dismisses a notice; "Undo" also runs its action.
         var action = _toastAction;
         CloseToast();
         action?.Invoke();
@@ -1051,7 +1065,6 @@ public sealed partial class MainWindow : Window
         _undoTimer?.Stop();
         _undoTimer = null;
         _toastAction = null;
-        _toastIsCountdown = false;
         Toast.Visibility = Visibility.Collapsed;
     }
 
@@ -1060,16 +1073,12 @@ public sealed partial class MainWindow : Window
         _undoTimer?.Stop();
         _undoTimer = null;
         _toastAction = action;
-        _toastIsCountdown = false;
         if (action is not null)
         {
             _undoTimer = _dispatcher.CreateTimer();
             _undoTimer.Interval = UndoTimeout;
             _undoTimer.IsRepeating = false;
-            _undoTimer.Tick += (_, _) =>
-            {
-                if (!_toastIsCountdown) CloseToast(); // never cut off a launch countdown
-            };
+            _undoTimer.Tick += (_, _) => CloseToast();
             _undoTimer.Start();
         }
         ToastBar.Title = title;
@@ -1118,7 +1127,7 @@ public sealed partial class MainWindow : Window
         {
             // The game ended before the countdown did; don't hide now.
             App.Current.CancelCountdown();
-            CloseToast();
+            HideCountdown();
         }
         RefreshViews();
     }

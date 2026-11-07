@@ -420,13 +420,19 @@ public sealed partial class App : Application
 
     public event Action<int>? CountdownTick;
     public int CountdownRemaining { get; private set; }
+    /// <summary>The countdown's length, for its progress bar.</summary>
+    public int CountdownTotal { get; private set; }
+    /// <summary>"Starting [Game]", kept for a flyout that reopens while it counts.</summary>
+    public string CountdownTitle { get; private set; } = "";
     public bool CountdownRunning => _countdown is not null;
     private DispatcherQueueTimer? _countdown;
 
-    public void StartCountdown(int seconds)
+    public void StartCountdown(int seconds, string title)
     {
         CancelCountdown();
         CountdownRemaining = seconds;
+        CountdownTotal = seconds;
+        CountdownTitle = title;
         _countdown = _dispatcher.CreateTimer();
         _countdown.Interval = TimeSpan.FromSeconds(1);
         _countdown.Tick += (_, _) =>
