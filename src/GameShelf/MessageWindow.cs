@@ -224,15 +224,15 @@ internal sealed class MessageWindow : IDisposable
         return CreateIconFromResourceEx(bits, (uint)bits.Length, true, 0x00030000, size, size, 0);
     }
 
-    /// <summary>The small native menu on right-click (Open, Settings, Quit). Returns the chosen id or 0.</summary>
-    public int ShowTrayMenu(IReadOnlyList<(int Id, string Text)> items)
+    /// <summary>The small native menu on right-click (id 0: a separator). Returns the chosen id or 0.</summary>
+    public int ShowTrayMenu(IReadOnlyList<(int Id, string Text, bool Checked)> items)
     {
         NativeMenu.FollowSystemTheme(); // dark in dark mode, like Windows' own tray menus
         var menu = CreatePopupMenu();
         try
         {
-            foreach (var (id, text) in items)
-                AppendMenuW(menu, id == 0 ? MF_SEPARATOR : MF_STRING, (UIntPtr)(uint)id, id == 0 ? null : text);
+            foreach (var (id, text, isChecked) in items)
+                AppendMenuW(menu, id == 0 ? MF_SEPARATOR : MF_STRING | (isChecked ? MF_CHECKED : 0), (UIntPtr)(uint)id, id == 0 ? null : text);
             GetCursorPos(out var point);
             SetForegroundWindow(_hwnd); // so the menu closes when clicking elsewhere
             int chosen = TrackPopupMenuEx(menu, TPM_RETURNCMD | TPM_RIGHTBUTTON | TPM_NONOTIFY, point.X, point.Y, _hwnd, IntPtr.Zero);
@@ -335,7 +335,7 @@ internal sealed class MessageWindow : IDisposable
     private const uint NIM_ADD = 0, NIM_MODIFY = 1, NIM_DELETE = 2, NIM_SETVERSION = 4;
     private const uint NIF_MESSAGE = 0x1, NIF_ICON = 0x2, NIF_TIP = 0x4, NIF_SHOWTIP = 0x80;
     private const uint NOTIFYICON_VERSION_4 = 4;
-    private const uint MF_STRING = 0x0, MF_SEPARATOR = 0x800;
+    private const uint MF_STRING = 0x0, MF_CHECKED = 0x8, MF_SEPARATOR = 0x800;
     private const uint TPM_RIGHTBUTTON = 0x2, TPM_NONOTIFY = 0x80, TPM_RETURNCMD = 0x100;
 
     private delegate IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam);

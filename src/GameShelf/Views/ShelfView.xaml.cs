@@ -104,11 +104,17 @@ public sealed partial class ShelfView : UserControl
     public event Func<Task>? HelperUpdateRequested;
 
     private bool _helperBarClosed; // closed with its ✕: not again while this panel lives
+    private bool _helperNeedsUpdate;
 
+    /// <summary>The notice, and the "…" button's dot and name (Game mode on or off).</summary>
     private void UpdateHelperBar(List<Game> games)
     {
-        HelperBar.IsOpen = !_helperBarClosed && GameModeService.HelperNeedsUpdate(_settings, games);
+        _helperNeedsUpdate = GameModeService.HelperNeedsUpdate(_settings, games);
+        HelperBar.IsOpen = !_helperBarClosed && _helperNeedsUpdate;
         HelperUpdateButton.IsEnabled = true;
+        bool on = _settings.GameModeEnabled;
+        GameModeDot.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+        AutomationProperties.SetName(ActionsButton, on ? "More actions, Game mode on" : "More actions");
     }
 
     private async void OnHelperUpdateClick(object sender, RoutedEventArgs e)
@@ -122,6 +128,62 @@ public sealed partial class ShelfView : UserControl
     private void OnHelperBarClosed(InfoBar sender, InfoBarClosedEventArgs args)
     {
         if (args.Reason == InfoBarCloseReason.CloseButton) _helperBarClosed = true;
+    }
+
+    // ---- Quick actions (§16) -------------------------------------------------------------------------------
+
+    /// <summary>Game mode for all games turned on (true) or off; the owner saves it.</summary>
+    public event Action<bool>? GameModeToggled;
+    public event Action? GameModeSettingsRequested;
+    public event Action? FreeSpaceRequested;
+    public event Action? RefreshRequested;
+
+    /// <summary>Built each time it opens, so it holds nothing while closed and always shows the current state.</summary>
+    private void OnActionsMenuOpening(object? sender, object e)
+    {
+        ActionsMenu.Items.Clear();
+        if (_helperNeedsUpdate)
+        {
+            ActionsMenu.Items.Add(MenuItem("Game mode (needs update)", "", () => GameModeSettingsRequested?.Invoke(), "Ctrl+G"));
+        }
+        else
+        {
+            var toggle = new ToggleMenuFlyoutItem
+            {
+                Text = "Game mode",
+                IsChecked = _settings.GameModeEnabled,
+                Icon = new FontIcon { Glyph = "" },
+                KeyboardAcceleratorTextOverride = "Ctrl+G",
+            };
+            toggle.Click += (_, _) => GameModeToggled?.Invoke(toggle.IsChecked);
+            ActionsMenu.Items.Add(toggle);
+        }
+        ActionsMenu.Items.Add(MenuItem("Game mode settings…", "", () => GameModeSettingsRequested?.Invoke()));
+        ActionsMenu.Items.Add(new MenuFlyoutSeparator());
+        ActionsMenu.Items.Add(MenuItem("Free up space…", "", () => FreeSpaceRequested?.Invoke()));
+        ActionsMenu.Items.Add(MenuItem("Add a game…", "", () => AddGameRequested?.Invoke()));
+        ActionsMenu.Items.Add(MenuItem("Refresh library", "", () => RefreshRequested?.Invoke(), "F5"));
+    }
+
+    private static MenuFlyoutItem MenuItem(string text, string glyph, Action action, string? shortcut = null)
+    {
+        var item = new MenuFlyoutItem { Text = text, Icon = new FontIcon { Glyph = glyph } };
+        if (shortcut is not null) item.KeyboardAcceleratorTextOverride = shortcut;
+        item.Click += (_, _) => action();
+        return item;
+    }
+
+    private void OnGameModeAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        args.Handled = true; // not the button's own click, which would open the menu
+        if (_helperNeedsUpdate) GameModeSettingsRequested?.Invoke();
+        else GameModeToggled?.Invoke(!_settings.GameModeEnabled);
+    }
+
+    private void OnRefreshAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        args.Handled = true;
+        RefreshRequested?.Invoke();
     }
 
     /// <summary>Sorts once for the current data and sort order, then shows the filtered result.</summary>

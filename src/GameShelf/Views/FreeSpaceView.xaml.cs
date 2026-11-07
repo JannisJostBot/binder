@@ -28,8 +28,9 @@ public sealed class FreeSpaceState
     /// <summary>The games being uninstalled one at a time, and which one is next (-1: not started).</summary>
     public List<string> Queue { get; } = [];
     public int Step { get; set; } = -1;
-    /// <summary>Where Back goes: the game whose details opened the page, else Settings.</summary>
+    /// <summary>Where Back goes: the game whose details opened the page, the shelf (its "…" menu), else Settings.</summary>
     public string? ReturnGameId { get; set; }
+    public bool ReturnToShelf { get; set; }
 
     public bool Uninstalling => Step >= 0 && Step < Queue.Count;
 }
@@ -86,7 +87,9 @@ public sealed partial class FreeSpaceView : UserControl
         _updating = true;
         NeedBox.Text = _state.Need > 0 ? (_state.Need / SpacePlanner.GB).ToString() : "";
         _updating = false;
-        BackButton.SetValue(ToolTipService.ToolTipProperty, _state.ReturnGameId is null ? "Back to settings (Esc)" : "Back to the game (Esc)");
+        var back = _state.ReturnGameId is not null ? "Back to the game" : _state.ReturnToShelf ? "Back to the shelf" : "Back to settings";
+        BackButton.SetValue(ToolTipService.ToolTipProperty, back + " (Esc)");
+        AutomationProperties.SetName(BackButton, back);
         Recalculate();
     }
 

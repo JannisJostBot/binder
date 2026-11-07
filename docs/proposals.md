@@ -24,7 +24,7 @@ break the user's system.
 | 12 More launchers | §8 | **In progress.** Done: EA app, Ubisoft Connect, Xbox app (tile logo as the cover picture) and Rockstar (tested with synthetic data only, no Rockstar game installed). Not yet: Battle.net, Riot, Amazon, itch, Humble and Meta |
 | 13 Controller | §4 | To do |
 | 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Game mode toast ("Game mode is on" after applying, while the widget is still up, and "Windows is back to normal" after the restore; animated badge) and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\GameShelf\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `GameShelf.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `GameShelf Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\GameShelf\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing). Tested live on the owner's PC on 2026-11-07: the tasks register and run, the Print Spooler is paused and restarted, the QoS policies and the Windows Update limit are applied and restored. Windows keeps ActiveStore policy names lowercased, so ours are matched ignoring case. The shelf shows "Game mode needs an update" with Update… when Game mode uses the helper and it's from another version. Still to check: Delivery Optimization picks up the policy without a restart |
-| 19 Quick actions | §16 | To do |
+| 19 Quick actions | §16 | Built (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); to try on the real PC |
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | To do |
 | 17 Advanced: sources and artwork | §14 | To do |
@@ -866,10 +866,10 @@ shorter way in, without taking room from the grid.
      A game set to On or Off in its own settings keeps that. When the admin helper needs an update
      (`GameModeService.HelperNeedsUpdate`), the item reads "Game mode (needs update)" and opens the Game mode page
      instead of switching.
-  2. **Game mode settings…**: the Game mode page.
+  2. **Game mode settings…**: the Game mode page; Back returns to the shelf.
   3. Separator.
-  4. **Free up space…**: the Free up space page with the fixed drive that has the least free space selected (the
-     detail menu's entry keeps selecting the game's drive).
+  4. **Free up space…**: the Free up space page, opened as from Settings (it picks the drive itself and follows
+     "Best choice" once a size is typed; mid-uninstall it continues there). Back returns to the shelf.
   5. **Add a game…**: the standard file picker, as in Settings.
   6. **Refresh library** (`F5`): the same rescan as Settings' refresh button.
 - While Game mode is on, a small accent dot sits on the "…" button (top-right, 7 px). It isn't the only signal:

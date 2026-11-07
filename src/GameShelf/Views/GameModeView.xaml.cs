@@ -65,6 +65,14 @@ public sealed partial class GameModeView : UserControl
 
     public void FocusFirst() => BackButton.Focus(FocusState.Programmatic);
 
+    /// <summary>Back goes to the shelf (opened from its "…" menu) or to Settings; the button says which.</summary>
+    public void SetBackTarget(bool shelf)
+    {
+        var back = shelf ? "Back to the shelf" : "Back to settings";
+        ToolTipService.SetToolTip(BackButton, back + " (Esc)");
+        AutomationProperties.SetName(BackButton, back);
+    }
+
     /// <summary>A restore just finished (the toast is up): show its result and whether anything is still pending.</summary>
     public void UpdateLastRestore()
     {

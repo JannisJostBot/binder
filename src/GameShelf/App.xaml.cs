@@ -401,12 +401,29 @@ public sealed partial class App : Application
     private void ShowTrayMenu()
     {
         if (_messages is null) return;
-        const int open = 1, settings = 2, quit = 3;
-        int chosen = _messages.ShowTrayMenu([(open, "Open Game Shelf"), (settings, "Settings"), (0, ""), (quit, "Quit")]);
+        const int open = 1, settings = 2, quit = 3, gameMode = 4, freeSpace = 5;
+        // Read when the menu opens (one small file), not kept up to date while it's closed.
+        bool needsUpdate = GameModeService.HelperNeedsUpdate(Settings, State.Games);
+        int chosen = _messages.ShowTrayMenu([
+            (open, "Open Game Shelf", false), (0, "", false),
+            (gameMode, needsUpdate ? "Game mode (needs update)" : "Game mode", Settings.GameModeEnabled),
+            (freeSpace, "Free up space…", false), (0, "", false),
+            (settings, "Settings", false), (quit, "Quit", false)]);
         switch (chosen)
         {
             case open:
                 OpenPanel();
+                break;
+            case gameMode when needsUpdate:
+                OpenPanel();
+                _panel?.OpenGameMode();
+                break;
+            case gameMode:
+                SetGameMode(!Settings.GameModeEnabled);
+                break;
+            case freeSpace:
+                OpenPanel();
+                _panel?.OpenFreeSpace();
                 break;
             case settings:
                 OpenPanel();
@@ -416,6 +433,19 @@ public sealed partial class App : Application
                 Quit();
                 break;
         }
+    }
+
+    /// <summary>The tray menu's Game mode item: through the panel if it's loaded, else straight to settings.json.</summary>
+    private void SetGameMode(bool on)
+    {
+        if (_panel is { IsClosing: false } panel)
+        {
+            panel.SetGameMode(on, toast: false); // the check mark in the menu is the confirmation
+            return;
+        }
+        Settings.GameModeEnabled = on;
+        try { Storage.SaveSettings(Settings); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
     }
 
     public void Quit()

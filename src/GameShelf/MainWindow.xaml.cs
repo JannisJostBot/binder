@@ -66,6 +66,10 @@ public sealed partial class MainWindow : Window
         Shelf.ViewSettingsChanged += SaveSettings;
         Shelf.ImportRequested += () => _ = ShowImportAsync();
         Shelf.AddGameRequested += AddGame;
+        Shelf.GameModeToggled += on => SetGameMode(on);
+        Shelf.GameModeSettingsRequested += OpenGameMode;
+        Shelf.FreeSpaceRequested += OpenFreeSpace;
+        Shelf.RefreshRequested += () => _ = RescanAsync();
         SettingsPage.BackRequested += ShowShelf;
         SettingsPage.Changed += OnSettingChanged;
         SettingsPage.RefreshRequested += () => _ = RescanAsync();
@@ -76,7 +80,11 @@ public sealed partial class MainWindow : Window
         SettingsPage.SetupRequested += ShowSetup;
         SettingsPage.FreeSpaceRequested += () => ShowFreeSpace(new FreeSpaceState());
         SettingsPage.GameModeRequested += ShowGameMode;
-        GameModePage.BackRequested += ShowSettings;
+        GameModePage.BackRequested += () =>
+        {
+            if (_gameModeFromShelf) ShowShelf();
+            else ShowSettings();
+        };
         GameModePage.Changed += SaveSettings;
         FreeSpacePage.BackRequested += LeaveFreeSpace;
         FreeSpacePage.CheckAgainRequested += () => _ = CheckFreeSpaceAgainAsync();
@@ -550,9 +558,44 @@ public sealed partial class MainWindow : Window
         ShowToast("Couldn't update Game mode's helper", $"Code {code}. Its log is in ProgramData\\GameShelf\\elevated.log.", "OK");
     }
 
-    /// <summary>Settings › Game mode (spec §11, board 5).</summary>
-    private void ShowGameMode()
+    // ---- Quick actions (§16): the shelf's "…" menu and the tray menu ---------------------------------------
+
+    /// <summary>
+    /// Game mode for all games on or off (games set to On or Off in their own settings keep that), saved at once.
+    /// <paramref name="toast"/>: confirm it with an Undo, for the shelf (the tray menu's check mark is enough).
+    /// </summary>
+    public void SetGameMode(bool on, bool toast = true)
     {
+        if (App.Settings.GameModeEnabled == on) return;
+        App.Settings.GameModeEnabled = on;
+        SaveSettings();
+        RefreshViews(); // the "…" button's dot, and the notice if the helper needs an update
+        if (toast)
+            ShowToast(on ? "Game mode is on" : "Game mode is off",
+                on ? "It applies to the next game you start." : "Games start without it.", "Undo",
+                () => SetGameMode(!on, toast: false));
+    }
+
+    /// <summary>Free up space as from Settings (or where an uninstall left it), with Back to the shelf.</summary>
+    public void OpenFreeSpace()
+    {
+        var state = App.State.FreeSpace is { Uninstalling: true } current ? current : new FreeSpaceState();
+        state.ReturnGameId = null;
+        state.ReturnToShelf = true;
+        ShowFreeSpace(state);
+    }
+
+    public void OpenGameMode() => ShowGameMode(fromShelf: true);
+
+    private bool _gameModeFromShelf;
+
+    /// <summary>Settings › Game mode (spec §11, board 5), or the same page from the shelf's "…" menu.</summary>
+    private void ShowGameMode() => ShowGameMode(fromShelf: false);
+
+    private void ShowGameMode(bool fromShelf)
+    {
+        _gameModeFromShelf = fromShelf;
+        GameModePage.SetBackTarget(fromShelf);
         GameModePage.Show(App.Settings, _games);
         ShowPage(GameModePage);
         GameModePage.UpdateLayout();
@@ -569,6 +612,7 @@ public sealed partial class MainWindow : Window
     {
         var returnTo = App.State.FreeSpace?.ReturnGameId is { } id ? FindGame(id) : null;
         if (returnTo is not null && !returnTo.Hidden) ShowDetail(returnTo);
+        else if (App.State.FreeSpace?.ReturnToShelf == true) ShowShelf();
         else ShowSettings();
     }
 
