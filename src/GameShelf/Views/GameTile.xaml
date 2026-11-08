@@ -37,6 +37,9 @@
                     </StackPanel>
                 </Border>
             </Border>
+            <!-- Controller focus (board 3): a bold ring just outside the cover, instead of the thin system one. -->
+            <Border x:Name="PadRing" Margin="-4" CornerRadius="12" BorderThickness="3" IsHitTestVisible="False"
+                    BorderBrush="{ThemeResource TextFillColorPrimaryBrush}" Visibility="Collapsed" />
             <!-- Always in the tree so screen readers and UI Automation can reach it; seen and clickable on hover. -->
             <Button x:Name="DetailsButton" Style="{StaticResource CoverDetailsButton}" Margin="6"
                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0" IsHitTestVisible="False"

@@ -54,6 +54,38 @@
         <Setter Property="TextWrapping" Value="NoWrap" />
     </Style>
 
+    <!-- Controller hints (board 3): LB / RB beside the filters, round button keys in the hint bar. -->
+    <Style x:Key="PadPill" TargetType="Border">
+        <Setter Property="Height" Value="22" />
+        <Setter Property="MinWidth" Value="30" />
+        <Setter Property="Padding" Value="6,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ControlStrongStrokeColorDefaultBrush}" />
+    </Style>
+    <Style x:Key="PadPillText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+    </Style>
+    <Style x:Key="PadKey" TargetType="Border">
+        <Setter Property="Width" Value="22" />
+        <Setter Property="Height" Value="22" />
+        <Setter Property="CornerRadius" Value="11" />
+        <Setter Property="Background" Value="{ThemeResource ControlFillColorSecondaryBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
+    </Style>
+    <Style x:Key="PadKeyText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
     <Style x:Key="RowDetail" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
         <Setter Property="Margin" Value="0,2,0,0" />

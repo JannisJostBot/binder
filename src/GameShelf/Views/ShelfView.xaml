@@ -148,7 +148,16 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <SelectorBar x:Name="Filters" AutomationProperties.Name="Filter" SelectionChanged="OnFilterChanged" />
+            <!-- LB and RB beside the filters while a controller is in use (board 3). -->
+            <StackPanel Orientation="Horizontal">
+                <Border x:Name="LbPill" Style="{StaticResource PadPill}" Margin="12,0,0,0" Visibility="Collapsed">
+                    <TextBlock Text="LB" Style="{StaticResource PadPillText}" />
+                </Border>
+                <SelectorBar x:Name="Filters" AutomationProperties.Name="Filter" SelectionChanged="OnFilterChanged" />
+                <Border x:Name="RbPill" Style="{StaticResource PadPill}" Visibility="Collapsed">
+                    <TextBlock Text="RB" Style="{StaticResource PadPillText}" />
+                </Border>
+            </StackPanel>
             <DropDownButton x:Name="MoreFilters" Grid.Column="1" Content="More" VerticalAlignment="Center"
                             AutomationProperties.Name="More launchers" Visibility="Collapsed">
                 <DropDownButton.Flyout>
@@ -169,6 +178,7 @@
             <GridView x:Name="Tiles" SelectionMode="None" IsItemClickEnabled="True" ItemClick="OnItemClick"
                       AutomationProperties.Name="Games" ContainerContentChanging="OnTileContentChanging"
                       PreviewKeyDown="OnGridKeyDown" ContextRequested="OnItemContextRequested"
+                      GotFocus="OnTilesGotFocus" LostFocus="OnTilesLostFocus"
                       IsSwipeEnabled="False" CanDragItems="False">
                 <!-- The tile draws its own hover (lift, accent outline, "Play"), so the item's fill would only show
                      as a second box with other corners behind it. -->
@@ -249,5 +259,32 @@
             <TextBlock x:Name="FooterText" Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </Grid>
+
+        <!-- Controller hints (board 3), in the footer's place while a controller is in use. -->
+        <StackPanel x:Name="PadHints" Grid.Row="5" Orientation="Horizontal" Spacing="16" Padding="0,12,0,0"
+                    BorderThickness="0,1,0,0" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" Visibility="Collapsed"
+                    AutomationProperties.Name="Controller: A play, X details, Y favorite, B close, Menu settings">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <Border Style="{StaticResource PadKey}"><TextBlock Text="A" Style="{StaticResource PadKeyText}" /></Border>
+                <TextBlock Text="Play" VerticalAlignment="Center" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <Border Style="{StaticResource PadKey}"><TextBlock Text="X" Style="{StaticResource PadKeyText}" /></Border>
+                <TextBlock Text="Details" VerticalAlignment="Center" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <Border Style="{StaticResource PadKey}"><TextBlock Text="Y" Style="{StaticResource PadKeyText}" /></Border>
+                <TextBlock Text="Favorite" VerticalAlignment="Center" />
+            </StackPanel>
+            <StackPanel x:Name="BackHint" Orientation="Horizontal" Spacing="6">
+                <Border Style="{StaticResource PadKey}"><TextBlock Text="B" Style="{StaticResource PadKeyText}" /></Border>
+                <TextBlock Text="Close" VerticalAlignment="Center" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <!-- The Menu button's three lines (Segoe Fluent "GlobalNavigationButton"). -->
+                <Border Style="{StaticResource PadKey}"><FontIcon Glyph="&#xE700;" FontSize="10" /></Border>
+                <TextBlock Text="Settings" VerticalAlignment="Center" />
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </UserControl>

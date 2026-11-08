@@ -89,7 +89,8 @@ public sealed partial class ShelfView : UserControl
         // Worked out when the panel gets its data (it opens, a session ends), never on a timer.
         GreetingText.Text = Format.Greeting(DateTime.Now);
         // The footer teaches hide and return; after a few games from the shelf it has done its job.
-        Footer.Visibility = sessions.Count < FooterHintSessions ? Visibility.Visible : Visibility.Collapsed;
+        _footerHint = sessions.Count < FooterHintSessions;
+        Footer.Visibility = _footerHint && !_padMode ? Visibility.Visible : Visibility.Collapsed;
         var hides = settings.HideDelaySeconds <= 0 ? "Hides when a game starts" : $"Hides {settings.HideDelaySeconds} s after a game starts";
         FooterText.Text = settings.ComeBackOnClose ? hides + " · comes back when it closes" : hides;
         UpdateContinueCard();
@@ -436,7 +437,9 @@ public sealed partial class ShelfView : UserControl
         {
             tile.DetailsRequested ??= g => OpenRequested?.Invoke(g);
             tile.Show(game, _tileWidth, _tileHeight, args.ItemIndex);
+            if (_padMode && args.ItemContainer.FocusState != FocusState.Unfocused) tile.SetPadFocus(true);
         }
+        args.ItemContainer.UseSystemFocusVisuals = !_padMode;
         Describe(args.ItemContainer, game);
         args.Handled = true;
     }
@@ -475,6 +478,7 @@ public sealed partial class ShelfView : UserControl
         if (launchers.Contains(_filter) && !shown.Contains(_filter))
             shown[^1] = _filter;
         var more = launchers.Except(shown).ToList();
+        _allFilters = ["All", "Favorites", "Recent", .. launchers];
 
         if (_filter != "All" && _filter is not ("Favorites" or "Recent") && !launchers.Contains(_filter)) _filter = "All";
 
@@ -621,12 +625,97 @@ public sealed partial class ShelfView : UserControl
     /// Puts focus back on a game when coming back from its detail view. Programmatic, so WinUI draws the focus
     /// ring only if the last input was the keyboard (Esc), not after clicking Back with the mouse.
     /// </summary>
-    public void FocusGame(Game game)
+    public void FocusGame(Game game, FocusState how = FocusState.Programmatic)
     {
         int index = _visible.FindIndex(g => g.Id == game.Id);
-        if (index >= 0) FocusIndex(index, FocusState.Programmatic);
+        if (index >= 0) FocusIndex(index, how);
         else FocusSearch();
     }
+
+    // ---- Controller (spec §4, board 3) ----
+
+    private bool _padMode, _footerHint;
+    private List<string> _allFilters = ["All", "Favorites", "Recent"];
+
+    /// <summary>
+    /// Controller look on (a pad was used) or off (mouse or keyboard again): the button hints replace the footer,
+    /// LB and RB show beside the filters, and the focused cover gets a bold ring instead of the thin system one.
+    /// </summary>
+    public void SetControllerMode(bool on)
+    {
+        if (_padMode == on) return;
+        _padMode = on;
+        PadHints.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+        LbPill.Visibility = RbPill.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+        Footer.Visibility = _footerHint && !on ? Visibility.Visible : Visibility.Collapsed;
+        for (int i = 0; i < _visible.Count; i++)
+        {
+            if (Tiles.ContainerFromIndex(i) is not SelectorItem container) continue;
+            container.UseSystemFocusVisuals = !on;
+            if (container.ContentTemplateRoot is GameTile tile)
+                tile.SetPadFocus(on && container.FocusState != FocusState.Unfocused);
+        }
+    }
+
+    /// <summary>B's hint: Close in the flyout (it closes it), hidden on the desktop (there's nothing to go back to).</summary>
+    public void SetBackHint(bool flyout) => BackHint.Visibility = flyout ? Visibility.Visible : Visibility.Collapsed;
+
+    private void OnTilesGotFocus(object sender, RoutedEventArgs e)
+    {
+        if (_padMode && e.OriginalSource is SelectorItem { ContentTemplateRoot: GameTile tile }) tile.SetPadFocus(true);
+    }
+
+    private void OnTilesLostFocus(object sender, RoutedEventArgs e)
+    {
+        if (e.OriginalSource is SelectorItem { ContentTemplateRoot: GameTile tile }) tile.SetPadFocus(false);
+    }
+
+    /// <summary>The game whose cover or row has focus, if any.</summary>
+    public Game? GameAt(DependencyObject? focused) =>
+        FindContainer(focused) is { } container && ItemsControl.ItemsControlFromItemContainer(container) is ListViewBase list &&
+        (list == Tiles || list == Rows) && list.ItemFromContainer(container) is Game game ? game : null;
+
+    /// <summary>
+    /// A controller move inside the grid, by index so it scrolls and works past the realized tiles. True if it
+    /// was handled (also at a side edge, where focus stays); false to leave the grid upwards or when focus isn't in it.
+    /// </summary>
+    public bool MoveFocus(DependencyObject? focused, FocusNavigationDirection direction)
+    {
+        if (FindContainer(focused) is not { } container || ItemsControl.ItemsControlFromItemContainer(container) is not ListViewBase list ||
+            (list != Tiles && list != Rows)) return false;
+        int i = list.IndexFromContainer(container), count = _visible.Count;
+        if (i < 0 || i >= count) return false;
+        int columns = _listMode ? 1 : Math.Max(1, _columns);
+        int target = direction switch
+        {
+            FocusNavigationDirection.Left => i % columns > 0 ? i - 1 : -1,
+            FocusNavigationDirection.Right => i % columns < columns - 1 && i + 1 < count ? i + 1 : -1,
+            FocusNavigationDirection.Up => i - columns,
+            // Down from the row above a short last row lands on its last cover.
+            FocusNavigationDirection.Down => i + columns < count ? i + columns : i / columns < (count - 1) / columns ? count - 1 : -1,
+            _ => -1,
+        };
+        if (direction == FocusNavigationDirection.Up && target < 0) return false;
+        if (target >= 0) FocusIndex(target);
+        return true;
+    }
+
+    /// <summary>LB / RB: the previous or next filter, including the ones under More, wrapping around.</summary>
+    public void CycleFilter(int step)
+    {
+        int at = _allFilters.IndexOf(_filter);
+        _filter = _allFilters[((at < 0 ? 0 : at) + step + _allFilters.Count) % _allFilters.Count];
+        BuildChips();
+        Refresh();
+    }
+
+    public void FocusFirstGame()
+    {
+        if (_visible.Count > 0) FocusIndex(0);
+    }
+
+    /// <summary>The scroll viewer of the grid or list that's showing, for the right stick.</summary>
+    public ScrollViewer? GridScroller => FindDescendant<ScrollViewer>(_listMode ? Rows : Tiles);
 
     private void FocusIndex(int index, FocusState how = FocusState.Keyboard)
     {

@@ -22,7 +22,7 @@ break the user's system.
 | 10 Detail additions | §7 "This week", §9 playtime chart, launch options, anti-cheat | Done. "This week" was later merged with "Continue playing" into one switchable slot (board 16, see `CLAUDE.md`) |
 | 11 Crash detection | §10 | Done. With "Come back" off the crash card shows the next time the panel opens instead of a toast (Game mode's "Restored" toast doesn't exist yet); memory is the installed amount (`GetPhysicallyInstalledSystemMemory`) |
 | 12 More launchers | §8 | **In progress.** Done: EA app, Ubisoft Connect, Xbox app (tile logo as the cover picture) and Rockstar (tested with synthetic data only, no Rockstar game installed). Not yet: Battle.net, Riot, Amazon, itch, Humble and Meta |
-| 13 Controller | §4 | To do |
+| 13 Controller | §4 | Built (`Services/Gamepad`, XInput; the hint bar, LB/RB pills and bold focus ring of board 3, without its "Controller" header pill). B closes menus and dialogs too; A on other controls goes through their UI Automation pattern; Menu toggles Settings. To try with a real pad. `Windows.Gaming.Input` (PlayStation, Switch) not yet |
 | 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Game mode toast ("Game mode is on" after applying, while the widget is still up, and "Windows is back to normal" after the restore; animated badge) and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\GameShelf\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `GameShelf.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `GameShelf Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\GameShelf\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing). Tested live on the owner's PC on 2026-11-07: the tasks register and run, the Print Spooler is paused and restarted, the QoS policies and the Windows Update limit are applied and restored. Windows keeps ActiveStore policy names lowercased, so ours are matched ignoring case. The shelf shows "Game mode needs an update" with Update… when Game mode uses the helper and it's from another version. Still to check: Delivery Optimization picks up the policy without a restart |
 | 19 Quick actions | §16 | Done (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); tried on the real PC |
 | 20 Restart after a crash | §17 | To do |
@@ -217,13 +217,13 @@ No network use. SteamGridDB is *not* approved: it's a third-party service with a
   `net10.0-windows10.0.19041.0` target; measure the size and startup cost first.
 
 **Zero idle cost:**
-- Find controllers through `WM_DEVICECHANGE` (`RegisterDeviceNotification`, HID class).
+- Find controllers when the panel is activated and on `WM_DEVICECHANGE` (Windows sends `DBT_DEVNODES_CHANGED` to every top-level window, so no registration is needed), checking again 1.5 s later since XInput may see a new pad a moment after Windows reports it.
 - Poll only while the widget is the **active window** and a pad is connected:
   - 60 Hz for 5 s after the last input, then 10 Hz.
   - Stop completely when the widget is deactivated.
   - Only poll connected slots.
 
-**Mapping** (through WPF's directional focus navigation, so the keyboard and controller share one code path):
+**Mapping** (WinUI's directional focus navigation, `FocusManager.TryMoveFocus`, and by index inside the grid so it scrolls past the realized covers; A on other controls uses their UI Automation pattern, so it does what Enter or Space would):
 
 | Input | Action |
 |---|---|

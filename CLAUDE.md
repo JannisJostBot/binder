@@ -63,6 +63,7 @@ GameShelf.sln
                             CrashLog (event log 1000/1002/4101 for one session), CrashStore (crashes.json), PcInfo
                             (Windows, graphics, memory; read only when copying), GameLogs (Unity/Unreal log files),
                             RunningGames (games running right now, read once when Free up space opens),
+                            Gamepad (milestone 13: XInput, read only while the panel is active and a pad is connected),
                             GameModeService (milestone 14: the watcher's Game mode arguments, recovery, page state),
                             Sound (the soft chime after a successful restore: the Windows notification sound)
     Views/                  ShelfView, DetailView, SettingsView, ImportView, SetupView (the launch toast lives in MainWindow),
@@ -242,7 +243,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 
 ## Planned additions
 
-Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas; the open ones are on its "Still to build" page. **Read section 0 of that file before starting the next milestone** (its progress table says which one: milestones 8–11 and 15 are done, 12 More launchers is in progress; 13, 14, 16 Look and moments, 17 Advanced sources and 18 Performance are to do). It lists what is new, what changes existing code, and which owner decisions override this brief:
+Approved features after milestone 7 are specced in **`docs/proposals.md`** (baseline: commit `0eacc65`). Designs are on the canvas; the open ones are on its "Still to build" page. **Read section 0 of that file before starting the next milestone** (its progress table says which one: milestones 8–11, 15 and 19 are done, 12 More launchers and 14 Game mode are in progress, 13 Controller is built; 13, 14, 16 Look and moments, 17 Advanced sources and 18 Performance are to do). It lists what is new, what changes existing code, and which owner decisions override this brief:
 
 - Game mode's separate elevated helper is an approved exception to "never ask for admin rights". The widget and the watcher still never elevate.
 - Cover badges show the launcher's icon instead of text, and manually added games get no badge.
