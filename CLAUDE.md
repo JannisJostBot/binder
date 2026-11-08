@@ -65,6 +65,7 @@ GameShelf.sln
                             RunningGames (games running right now, read once when Free up space opens),
                             Gamepad (milestone 13: XInput, read only while the panel is active and a pad is connected),
                             GameModeService (milestone 14: the watcher's Game mode arguments, recovery, page state),
+                            WindowsGaming (Windows' Game Mode, windowed optimizations, OneDrive; read when the Game mode page opens),
                             Chime (the calm "back to normal" sound "Lullaby", made in memory, quieter at night; board 25), Sound (plays it)
     Views/                  ShelfView, DetailView, SettingsView, ImportView, SetupView (the launch toast lives in MainWindow),
                             Disclosure (a settings card that opens, boards 19 and 21), BarChart (the playtime charts), ModePreview (display mode pictures), CrashCard (shelf and detail),
