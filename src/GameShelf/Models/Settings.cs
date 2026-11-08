@@ -67,6 +67,11 @@ public sealed class Settings
     public List<string> GameModeItems { get; set; } = [.. Shared.GameModeInfo.DefaultItems];
     /// <summary>Apps (full exe paths) asked to close while a game runs and reopened after.</summary>
     public List<string> GameModeCloseApps { get; set; } = [];
+    /// <summary>
+    /// Those of <see cref="GameModeCloseApps"/> put in efficiency mode instead of closed (proposals §20, "Calm"):
+    /// they keep running, only slower and on efficient cores.
+    /// </summary>
+    public List<string> GameModeCalmApps { get; set; } = [];
     /// <summary>Show "Restored successfully" when the game closes (problems are always shown).</summary>
     public bool ShowRestoreToast { get; set; } = true;
     /// <summary>Play the Windows notification sound with "Windows is back to normal" (not when something failed).</summary>

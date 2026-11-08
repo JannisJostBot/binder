@@ -20,10 +20,11 @@ public static class GameModeInfo
     public const string Smooth = "smooth";      // game and voice chat first (DSCP 46)
     public const string Uploads = "uploads";    // slow down background uploads
     public const string Updates = "updates";    // limit Windows Update downloads (Delivery Optimization)
+    public const string OneDrive = "onedrive";  // pause OneDrive syncing (proposals §20), off by default
 
     /// <summary>The items the user can turn on, in the order of the Settings page.</summary>
     public static readonly string[] Items =
-        [Power, Priority, WindowsSearch, SysMain, Telemetry, PrintSpooler, GameBar, Smooth, Uploads, Updates];
+        [Power, Priority, WindowsSearch, SysMain, Telemetry, PrintSpooler, GameBar, OneDrive, Smooth, Uploads, Updates];
 
     /// <summary>On by default (spec §11 table): all but Print Spooler and Game Bar recording.</summary>
     public static readonly string[] DefaultItems =
@@ -52,6 +53,56 @@ public static class GameModeInfo
     public static string RequestPath => Path.Combine(Dir, "gamemode-request.txt");
 
     public static bool IsKnownItem(string id) => Array.IndexOf(Items, id) >= 0;
+
+    /// <summary>
+    /// Windows' "Optimizations for windowed games", read for Settings: "Name=Value;Name=Value;" in
+    /// HKCU\Software\Microsoft\DirectX\UserGpuPreferences (bounded; unknown entries ignored).
+    /// </summary>
+    public static bool IsSwapEffectUpgradeOn(string settings)
+    {
+        if (settings.Length > 4096) return false;
+        foreach (var part in settings.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            int eq = part.IndexOf('=');
+            if (eq > 0 && part[..eq].Trim().Equals("SwapEffectUpgradeEnable", StringComparison.OrdinalIgnoreCase))
+                return part[(eq + 1)..].Trim() == "1";
+        }
+        return false;
+    }
+
+    /// <summary>The places OneDrive's sync app is installed (per user, or per machine).</summary>
+    public static IEnumerable<string> OneDriveCandidates()
+    {
+        var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        if (!string.IsNullOrEmpty(local)) yield return Path.Combine(local, "Microsoft", "OneDrive", "OneDrive.exe");
+        foreach (var folder in new[] { Environment.SpecialFolder.ProgramFiles, Environment.SpecialFolder.ProgramFilesX86 })
+        {
+            var programs = Environment.GetFolderPath(folder);
+            if (!string.IsNullOrEmpty(programs)) yield return Path.Combine(programs, "Microsoft OneDrive", "OneDrive.exe");
+        }
+    }
+
+    /// <summary>
+    /// True when the Documents folder is inside a OneDrive folder: games often keep their saves there, and
+    /// online-only files can't be opened while OneDrive is closed, so OneDrive is left running then.
+    /// </summary>
+    public static bool OneDriveHoldsDocuments(string documents, IEnumerable<string?> oneDriveRoots)
+    {
+        if (string.IsNullOrEmpty(documents)) return false;
+        var docs = Path.TrimEndingDirectorySeparator(documents);
+        foreach (var root in oneDriveRoots)
+        {
+            if (string.IsNullOrWhiteSpace(root) || !Path.IsPathFullyQualified(root)) continue;
+            var r = Path.TrimEndingDirectorySeparator(root);
+            if (docs.Equals(r, StringComparison.OrdinalIgnoreCase) || docs.StartsWith(r + "\\", StringComparison.OrdinalIgnoreCase)) return true;
+        }
+        return false;
+    }
+
+    public static bool OneDriveHoldsDocuments() =>
+        OneDriveHoldsDocuments(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            [Environment.GetEnvironmentVariable("OneDrive"), Environment.GetEnvironmentVariable("OneDriveConsumer"),
+             Environment.GetEnvironmentVariable("OneDriveCommercial")]);
 
     /// <summary>The last restore, or null if there was none (or the file is unreadable).</summary>
     public static (DateTimeOffset When, RestoreResult Result)? LastResult()

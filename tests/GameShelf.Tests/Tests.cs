@@ -774,6 +774,28 @@ static class Tests
             "{\"GameId\":\"a\",\"Started\":\"2026-11-07T21:00:00+01:00\",\"ClosedApps\":[\"cmd.exe\",\"C:\\\\x\\\\..\\\\y.exe\",\"C:\\\\Program Files\\\\WindowsApps\\\\a.exe\",\"C:\\\\a.bat\"]}"));
         Check(hostile.ClosedApps.Count == 0, "journal apps that aren't plain full exe paths are never reopened");
 
+        // Proposals §20: OneDrive and calmed apps survive a crash in the journal, and only safe values come back.
+        var oneDrive = GameShelf.Shared.GameModeInfo.OneDriveCandidates().First();
+        var calmJournal = new GameShelf.Watcher.GameMode.Journal { GameId = "steam:570", Started = DateTimeOffset.Now, OneDriveExe = oneDrive };
+        calmJournal.CalmedApps.Add(new(@"C:\Program Files\Spotify\Spotify.exe", 4242, 133_000_000_000_000_000, 1, 0));
+        var calmBack = GameShelf.Watcher.GameMode.Journal.Parse(calmJournal.ToJson());
+        Check(calmBack.OneDriveExe == oneDrive && calmBack.CalmedApps.SequenceEqual(calmJournal.CalmedApps), "journal keeps OneDrive and calmed apps");
+        var calmHostile = GameShelf.Watcher.GameMode.Journal.Parse(Encoding.UTF8.GetBytes(
+            "{\"GameId\":\"a\",\"Started\":\"2026-11-07T21:00:00+01:00\",\"OneDriveExe\":\"C:\\\\Evil\\\\OneDrive.exe\"," +
+            "\"CalmedApps\":[{\"Path\":\"cmd.exe\",\"Pid\":4,\"Created\":1,\"Control\":1,\"State\":1}," +
+            "{\"Path\":\"C:\\\\Apps\\\\a.exe\",\"Pid\":8,\"Created\":2,\"Control\":4294967295,\"State\":4294967295}]}"));
+        Check(calmHostile.OneDriveExe is null, "only OneDrive's own exe is started again");
+        Check(calmHostile.CalmedApps.Count == 1 && calmHostile.CalmedApps[0].Control == 7 && calmHostile.CalmedApps[0].State == 7,
+            "calmed apps: plain exe paths only, masks limited to the known bits");
+        Check(GameShelf.Shared.GameModeInfo.OneDriveHoldsDocuments(@"C:\Users\a\OneDrive\Documents", [null, @"C:\Users\a\OneDrive"]) &&
+              !GameShelf.Shared.GameModeInfo.OneDriveHoldsDocuments(@"C:\Users\a\Documents", [@"C:\Users\a\OneDrive"]) &&
+              !GameShelf.Shared.GameModeInfo.OneDriveHoldsDocuments(@"C:\Users\a\OneDriveX\Documents", [@"C:\Users\a\OneDrive"]) &&
+              !GameShelf.Shared.GameModeInfo.OneDriveHoldsDocuments(@"C:\Users\a\Documents", ["OneDrive"]),
+            "OneDrive stays running when Documents is in it");
+        Check(GameShelf.Shared.GameModeInfo.IsSwapEffectUpgradeOn("VRROptimizeEnable=0;SwapEffectUpgradeEnable=1;") &&
+              !GameShelf.Shared.GameModeInfo.IsSwapEffectUpgradeOn("SwapEffectUpgradeEnable=0;") &&
+              !GameShelf.Shared.GameModeInfo.IsSwapEffectUpgradeOn(""), "windowed games optimizations read from Windows' value");
+
         Check(!GameShelf.Watcher.GameMode.IsClosableApp("notepad.exe") && !GameShelf.Watcher.GameMode.IsClosableApp(@"C:\Apps\run.bat") &&
               !GameShelf.Watcher.GameMode.IsClosableApp(Path.Combine(AppContext.BaseDirectory, "GameShelf.exe")),
             "relative paths, non-exes and Game Shelf itself aren't closed");
