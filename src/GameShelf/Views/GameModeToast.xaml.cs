@@ -1,11 +1,14 @@
 using GameShelf.Services;
+using System.Numerics;
 using GameShelf.Shared;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 
 namespace GameShelf.Views;
@@ -23,7 +26,6 @@ public sealed partial class GameModeToast : Window
 
     private static readonly TimeSpan SuccessTimeout = TimeSpan.FromSeconds(4);
     private static readonly TimeSpan PartialTimeout = TimeSpan.FromSeconds(6);
-    private const int MarginAboveTaskbar = 24;
 
     private readonly IntPtr _hwnd;
     private readonly TimeSpan? _timeout;
@@ -35,18 +37,20 @@ public sealed partial class GameModeToast : Window
         InitializeComponent();
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
-        var presenter = OverlappedPresenter.Create();
-        presenter.IsResizable = false;
-        presenter.IsMaximizable = false;
-        presenter.IsMinimizable = false;
+        // The context-menu kind is a plain popup: no frame at all (the borderless overlapped one keeps a thin
+        // dialog frame that WinUI puts back whenever it's taken away).
+        var presenter = OverlappedPresenter.CreateForContextMenu();
         presenter.IsAlwaysOnTop = true;
-        presenter.SetBorderAndTitleBar(hasBorder: true, hasTitleBar: false);
         AppWindow.SetPresenter(presenter);
         AppWindow.IsShownInSwitchers = false;
         NativeWindow.MakeToolWindow(_hwnd);
-        NativeWindow.TryApplyRoundedCorners(_hwnd);
-        if (PanelBackdrop.IsSupported) SystemBackdrop = new PanelBackdrop();
-        else Root.Background = (Brush)Application.Current.Resources["SolidBackgroundFillColorBaseBrush"];
+        // See-through and frameless: the XAML surface draws the whole pill, its round ends and its shadow.
+        NativeWindow.MakeFrameless(_hwnd);
+        SystemBackdrop = new TransparentBackdrop();
+        if (new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast)
+            Surface.BorderThickness = new Thickness(2); // system colors, a stronger edge and no shadow
+        else
+            Surface.SizeChanged += (_, _) => UpdateShadow();
 
         bool applied = kind == Kind.Applied;
         // A restore that missed something waits for the user; an apply that did is only a heads-up.
@@ -99,7 +103,7 @@ public sealed partial class GameModeToast : Window
     {
         // Laid out off to the side, hidden, then sized to its content and moved into place (OnFirstLayout).
         var work = Monitors.Find(null).WorkArea;
-        NativeWindow.SetBounds(_hwnd, new PixelRect(work.Left, work.Top, work.Left + 900, work.Top + 120));
+        NativeWindow.SetBounds(_hwnd, new PixelRect(work.Left, work.Top, work.Left + 1200, work.Top + 600)); // room for the card and its shadow
         NativeWindow.Cloak(_hwnd, true);
         AppWindow.Show(activateWindow: false);
     }
@@ -117,7 +121,8 @@ public sealed partial class GameModeToast : Window
         var work = monitor.WorkArea;
         int bottom = work.Bottom - Monitors.AutoHideTaskbars(monitor).Bottom;
         int left = work.Left + (work.Width - width) / 2;
-        int top = bottom - height - (int)Math.Round(MarginAboveTaskbar * scale);
+        // The window's bottom edge sits on the taskbar: the shadow room below the pill (Root's padding) is the gap.
+        int top = bottom - height;
         NativeWindow.SetBounds(_hwnd, new PixelRect(left, top, left + width, top + height));
 
         // The storyboard's first frame (From values) is in place before the window shows; with animations off
@@ -141,6 +146,41 @@ public sealed partial class GameModeToast : Window
         _timer.IsRepeating = false;
         _timer.Tick += (_, _) => Close();
         _timer.Start();
+    }
+
+    private LayerVisual? _shadowLayer;
+    private ShapeVisual? _shadowShape;
+    private CompositionRoundedRectangleGeometry? _shadowGeometry;
+
+    /// <summary>
+    /// Board 23's soft shadow (0 8 24, 40 % black): a drop shadow cast by an opaque rounded rectangle the shape of
+    /// the surface, hidden behind it. Built once; only resized if the surface's size changes.
+    /// </summary>
+    private void UpdateShadow()
+    {
+        var size = new Vector2((float)Surface.ActualWidth, (float)Surface.ActualHeight);
+        if (size.X <= 0) return;
+        if (_shadowLayer is null)
+        {
+            var compositor = ElementCompositionPreview.GetElementVisual(ShadowHost).Compositor;
+            _shadowGeometry = compositor.CreateRoundedRectangleGeometry();
+            _shadowGeometry.CornerRadius = new Vector2(24);
+            var shape = compositor.CreateSpriteShape(_shadowGeometry);
+            shape.FillBrush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(255, 0, 0, 0));
+            _shadowShape = compositor.CreateShapeVisual();
+            _shadowShape.Shapes.Add(shape);
+            var shadow = compositor.CreateDropShadow();
+            shadow.BlurRadius = 24;
+            shadow.Offset = new Vector3(0, 8, 0);
+            shadow.Color = Windows.UI.Color.FromArgb(102, 0, 0, 0);
+            _shadowLayer = compositor.CreateLayerVisual();
+            _shadowLayer.Shadow = shadow;
+            _shadowLayer.Children.InsertAtTop(_shadowShape);
+            ElementCompositionPreview.SetElementChildVisual(ShadowHost, _shadowLayer);
+        }
+        _shadowGeometry!.Size = size;
+        _shadowShape!.Size = size;
+        _shadowLayer.Size = size;
     }
 
     private void OnDetailsClick(object sender, RoutedEventArgs e)

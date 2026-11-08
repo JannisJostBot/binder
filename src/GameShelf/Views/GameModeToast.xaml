@@ -7,7 +7,8 @@
          gets a larger card with room for the names and a way to the log. Centered above the taskbar like the
          volume flyout; the window is sized to this content once it has been laid out. The storyboard runs once
          when it shows (not at all when animations are off). -->
-    <Grid x:Name="Root" HorizontalAlignment="Left" VerticalAlignment="Top">
+    <!-- The window itself is transparent (TransparentBackdrop); Roots padding leaves room for the shadow. -->
+    <Grid x:Name="Root" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="28,20,28,32">
         <Grid.Resources>
             <Storyboard x:Name="ShowStoryboard">
                 <DoubleAnimation Storyboard.TargetName="DotScale" Storyboard.TargetProperty="ScaleX" From="0.4" To="1" Duration="0:0:0.3">
@@ -29,10 +30,16 @@
 
         <Grid x:Name="Body">
             <Grid.RenderTransform><TranslateTransform x:Name="BodyShift" /></Grid.RenderTransform>
+            <!-- The soft shadow under the surface (a composition drop shadow, drawn once; none in high contrast). -->
+            <Border x:Name="ShadowHost" IsHitTestVisible="False" />
+            <!-- The surface: fully round ends on the 48 px pill, the same radius on the card. -->
+            <Border x:Name="Surface" CornerRadius="24" BorderThickness="1" Background="{ThemeResource ToastSurfaceBrush}"
+                    BorderBrush="{ThemeResource ToastStrokeBrush}">
+            <Grid>
 
             <!-- The pill: a small round dot (accent while game mode is on, neutral with a green check once Windows
                  is back to normal) and one line of text. -->
-            <Grid x:Name="Pill" Height="48" Padding="10,0,20,0" ColumnSpacing="12">
+            <Grid x:Name="Pill" Height="46" Padding="9,0,19,0" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
@@ -53,7 +60,7 @@
             </Grid>
 
             <!-- Something couldn't be changed or put back: a card with the whole message and the way to the log. -->
-            <Grid x:Name="Card" Width="380" Padding="12,12,10,16" ColumnSpacing="12" RowSpacing="12" Visibility="Collapsed">
+            <Grid x:Name="Card" Width="378" Padding="12,12,10,16" ColumnSpacing="12" RowSpacing="12" Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -80,6 +87,8 @@
                 <Button x:Name="DetailsButton" Grid.Row="1" Grid.Column="1" Content="Open the Game mode log" Click="OnDetailsClick"
                         Visibility="Collapsed" />
             </Grid>
+            </Grid>
+            </Border>
         </Grid>
     </Grid>
 </Window>

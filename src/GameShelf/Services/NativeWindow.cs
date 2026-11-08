@@ -73,6 +73,44 @@ internal static unsafe partial class NativeWindow
         return DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &corner, sizeof(int)) == 0;
     }
 
+    private const int DWMWA_BORDER_COLOR = 34;
+    private const int DWMWCP_DONOTROUND = 1;
+    private const uint DWMWA_COLOR_NONE = 0xFFFFFFFE;
+
+    /// <summary>
+    /// A window with no frame of Windows' own, whose content draws its whole shape on a transparent background
+    /// (the Game mode toast): no non-client area at all (so no border line, whatever style WinUI's presenter keeps
+    /// giving it), no DWM corners or border, and the DWM frame extended over the window so what the content leaves
+    /// empty shows what's behind it. The subclass lives as long as the window. Harmless on Windows 10.
+    /// </summary>
+    public static WindowSubclass MakeFrameless(IntPtr hwnd)
+    {
+        var subclass = new WindowSubclass(hwnd);
+        subclass.Add(static (IntPtr _, uint msg, IntPtr wParam, IntPtr _, ref bool handled) =>
+        {
+            // The client area is the whole window rectangle: nothing is left for a frame.
+            if (msg == WM_NCCALCSIZE && wParam != IntPtr.Zero) handled = true;
+            return IntPtr.Zero;
+        });
+        SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+        int corner = DWMWCP_DONOTROUND;
+        DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &corner, sizeof(int));
+        uint none = DWMWA_COLOR_NONE;
+        DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, &none, sizeof(uint));
+        var all = new MARGINS { Left = -1, Right = -1, Top = -1, Bottom = -1 };
+        DwmExtendFrameIntoClientArea(hwnd, &all);
+        return subclass;
+    }
+
+    private const uint WM_NCCALCSIZE = 0x0083;
+    private const uint SWP_NOMOVE = 0x0002, SWP_FRAMECHANGED = 0x0020;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MARGINS { public int Left, Right, Top, Bottom; }
+
+    [LibraryImport("dwmapi.dll")]
+    private static partial int DwmExtendFrameIntoClientArea(IntPtr hwnd, MARGINS* margins);
+
     private const uint WM_NCLBUTTONDOWN = 0x00A1;
     private const nint HTCAPTION = 2;
 

@@ -10,12 +10,19 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <SolidColorBrush x:Key="FavoriteBrush" Color="#F3C64C" />
+            <!-- The Game mode toast (board 23): a solid surface, not Acrylic, so its round ends and shadow stay crisp. -->
+            <SolidColorBrush x:Key="ToastSurfaceBrush" Color="#2C2C30" />
+            <SolidColorBrush x:Key="ToastStrokeBrush" Color="#3E3E45" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="FavoriteBrush" Color="#C98A00" />
+            <SolidColorBrush x:Key="ToastSurfaceBrush" Color="#F3F3F3" />
+            <SolidColorBrush x:Key="ToastStrokeBrush" Color="#DADADA" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="FavoriteBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ToastSurfaceBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="ToastStrokeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
