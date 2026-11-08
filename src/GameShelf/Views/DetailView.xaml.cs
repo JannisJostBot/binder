@@ -58,6 +58,7 @@ public sealed partial class DetailView : UserControl
         SetArt(Cover, game);
         TitleText.Text = game.Name;
         ToolTipService.SetToolTip(TitleText, game.Name);
+        if (!ReferenceEquals(Logo.Game, game)) TitleText.Visibility = Visibility.Collapsed; // until the logo lookup answers
         Logo.Game = game;
         SubtitleText.Text = LauncherIcons.HasBadge(game.Source) ? LauncherBadge.Label(game.Source) : game.SourceLabel;
         AutomationProperties.SetName(PlayButton, "Play " + game.Name);

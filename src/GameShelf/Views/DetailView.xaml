@@ -37,9 +37,14 @@
             <!-- Banner (Steam hero art, or generated art when there is none) -->
             <Grid Height="200">
                 <v:CoverView x:Name="Banner" Kind="Hero" DecodeWidth="560" CornerRadius="0" />
-                <!-- The game's logo instead of its title (§13 a), right of the cover that overlaps the banner's
-                     lower edge. -->
+                <Border Background="{StaticResource BannerScrimBrush}" IsHitTestVisible="False" />
+                <!-- The game's logo (§13 a), or its title where it has none, on the banner right of the cover that
+                     overlaps the banner's lower edge. Neither shows until the logo lookup is done (no swap). Over
+                     the art, so the same light text in light and dark mode. -->
                 <v:BannerLogo x:Name="Logo" MaxLogoHeight="72" MaxWidthShare="0.6" Margin="138,0,20,12" />
+                <TextBlock x:Name="TitleText" Style="{StaticResource TitleTextBlockStyle}" FontSize="26" Foreground="White"
+                           Margin="138,0,20,10" VerticalAlignment="Bottom" MaxLines="2" TextWrapping="Wrap"
+                           TextTrimming="CharacterEllipsis" Visibility="Collapsed" />
                 <Border Style="{StaticResource OverlaySurface}" HorizontalAlignment="Left">
                     <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Click="OnBackClick"
                             ToolTipService.ToolTip="Back to all games (Esc)" AutomationProperties.Name="Back to all games" />
@@ -51,7 +56,7 @@
                 </Border>
             </Grid>
 
-            <!-- Cover and title, overlapping the banner's lower edge -->
+            <!-- The cover, overlapping the banner's lower edge, and the launcher line under the title -->
             <Grid Margin="20,-56,20,0" ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -61,9 +66,7 @@
                         Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
                     <v:CoverView x:Name="Cover" DecodeWidth="96" CornerRadius="6" />
                 </Border>
-                <StackPanel Grid.Column="1" Margin="0,0,0,4" VerticalAlignment="Bottom" Spacing="4">
-                    <TextBlock x:Name="TitleText" Style="{StaticResource TitleTextBlockStyle}" FontSize="24"
-                               TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                <StackPanel Grid.Column="1" Margin="0,66,0,0" VerticalAlignment="Top" Spacing="4">
                     <TextBlock x:Name="SubtitleText" Style="{StaticResource BodyTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <HyperlinkButton x:Name="AntiCheatLabel" Padding="0" Margin="0,-2,0,0" Visibility="Collapsed"

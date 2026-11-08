@@ -289,7 +289,9 @@ public sealed partial class ShelfView : UserControl
             _updatingSpotlight = false;
         }
         if (!showWeek && !ReferenceEquals(ContinueArt.Game, _continueGame)) ContinueArt.Game = _continueGame;
-        ContinueLogo.Game = showWeek ? null : _continueGame; // loaded only while the banner shows
+        var logoGame = showWeek ? null : _continueGame; // loaded only while the banner shows
+        if (logoGame is not null && !ReferenceEquals(ContinueLogo.Game, logoGame)) ContinueTitle.Visibility = Visibility.Collapsed;
+        ContinueLogo.Game = logoGame;
     }
 
     private bool _crashShown;
