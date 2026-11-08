@@ -1,11 +1,13 @@
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
 
 namespace GameShelf.Services;
 
 /// <summary>
-/// The calm sound after Game mode put Windows back (board 23, <see cref="Chime"/>): made in memory, played at the
-/// system sounds volume (so Windows' own sound settings still apply). Skipped while Windows holds notifications
-/// back (full-screen app or game, presentation mode, Do not disturb, quiet time). PlaySound reads the sound from
+/// The calm sound after Game mode put Windows back (board 25, <see cref="Chime"/>): made in memory, played at the
+/// system sounds volume (so Windows' own sound settings still apply), quieter and darker between 22:00 and 7:00.
+/// Skipped while Windows holds notifications back (full-screen app or game, presentation mode, Do not disturb,
+/// quiet time) and when Windows' own notification sound is off (the "No sounds" scheme, or (None) chosen). PlaySound reads the sound from
 /// memory while it plays, so the buffer is native memory that stays until <see cref="Release"/>.
 /// </summary>
 internal static unsafe partial class Sound
@@ -16,12 +18,14 @@ internal static unsafe partial class Sound
     private static readonly Lock Gate = new();
     private static void* _playing;
 
-    /// <summary>Makes and starts the sound (call it off the UI thread, ~0.1 s of work). Returns how long it plays,
-    /// or null when it doesn't (Windows is holding notifications back, or there's no audio device).</summary>
+    /// <summary>Makes and starts the sound (call it off the UI thread, a few ms of work). Returns how long it plays,
+    /// or null when it doesn't (Windows is holding notifications back or has its notification sound off, or there's
+    /// no audio device).</summary>
     public static TimeSpan? PlayRestored()
     {
         if (SHQueryUserNotificationState(out int state) >= 0 && state != QUNS_ACCEPTS_NOTIFICATIONS) return null;
-        var wav = Chime.RenderWav();
+        if (NotificationSoundOff()) return null;
+        var wav = Chime.RenderWav(Chime.IsNight(DateTime.Now));
         void* buffer = NativeMemory.Alloc((nuint)wav.Length);
         wav.CopyTo(new Span<byte>(buffer, wav.Length));
         lock (Gate)
@@ -32,6 +36,21 @@ internal static unsafe partial class Sound
             _playing = started ? buffer : null;
             if (!started) NativeMemory.Free(buffer);
             return started ? TimeSpan.FromSeconds(Chime.Seconds) : null;
+        }
+    }
+
+    /// <summary>True when the user turned Windows' notification sound off: the "No sounds" scheme or (None) leaves
+    /// its current value empty. A missing key (unusual setups) counts as on, like today.</summary>
+    private static bool NotificationSoundOff()
+    {
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"AppEvents\Schemes\Apps\.Default\Notification.Default\.Current");
+            return key is not null && key.GetValue(null) is null or "";
+        }
+        catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+        {
+            return false;
         }
     }
 

@@ -29,7 +29,7 @@ break the user's system.
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | To do |
 | Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
-| 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | To do (approved 2026-11-08, boards 25 and 26) |
+| 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
 | 17 Advanced: sources and artwork | §14 | To do |
 | 18 Performance | §15 | To do |
 

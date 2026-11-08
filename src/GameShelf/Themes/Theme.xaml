@@ -10,12 +10,29 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <SolidColorBrush x:Key="FavoriteBrush" Color="#F3C64C" />
+            <!-- Cover hover (board 26, "Media tile"): a fade on the bottom half of the art and a fine inside edge. -->
+            <LinearGradientBrush x:Key="CoverScrimBrush" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Offset="0.5" Color="#00000000" />
+                <GradientStop Offset="1" Color="#A6000000" />
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="CoverHoverEdgeBrush" Color="#3DFFFFFF" />
+            <SolidColorBrush x:Key="CoverHighContrastOutlineBrush" Color="Transparent" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="FavoriteBrush" Color="#C98A00" />
+            <LinearGradientBrush x:Key="CoverScrimBrush" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Offset="0.5" Color="#00000000" />
+                <GradientStop Offset="1" Color="#A6000000" />
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="CoverHoverEdgeBrush" Color="#24000000" />
+            <SolidColorBrush x:Key="CoverHighContrastOutlineBrush" Color="Transparent" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="FavoriteBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <!-- High contrast: no fade or light edge, a 2 px highlight outline instead. -->
+            <SolidColorBrush x:Key="CoverScrimBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="CoverHoverEdgeBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="CoverHighContrastOutlineBrush" Color="{ThemeResource SystemColorHighlightColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -26,7 +43,6 @@
     <SolidColorBrush x:Key="BadgeBrush" Color="#E01C1C20" />
     <SolidColorBrush x:Key="BadgeHoverBrush" Color="#F032323A" />
     <SolidColorBrush x:Key="BadgeStrokeBrush" Color="#40FFFFFF" />
-    <SolidColorBrush x:Key="CoverOverlayBrush" Color="#40000000" />
     <!-- The "Continue playing" banner: a fade at the bottom of the hero art so its light text reads on any image. -->
     <LinearGradientBrush x:Key="BannerScrimBrush" StartPoint="0,0" EndPoint="0,1">
         <GradientStop Offset="0.25" Color="#00000000" />

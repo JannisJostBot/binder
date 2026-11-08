@@ -1,43 +1,56 @@
 namespace GameShelf.Services;
 
 /// <summary>
-/// The "back to normal" sound (board 23, sound 1 "Open fourths"), made in memory each time it plays: soft FM keys on
-/// A2, D3, G3 and C4 rolled from left to right, a low-pass that closes as they fade, a dark ping-pong echo and a
-/// large hall whose tail dissolves over about 6 s. The same signal chain as the board's Web Audio version, sample
-/// by sample, so it sounds like what the owner picked. Pure code, no Windows calls: it returns a 16-bit stereo WAV.
-/// About 0.1 s of work on a background thread and ~2 MB of short-lived buffers; nothing stays behind.
+/// The "back to normal" sound (board 25, "Lullaby", §19 a), made in memory each time it plays: two soft felt-key
+/// notes falling a major third (F♯4, then D4 with a low D3 under it), each a sine with a quiet second harmonic and a
+/// light shimmer (a copy a fraction of a hertz off, 15 % of the pair), through a low-pass closing from 1.8 to 1 kHz,
+/// a short room and a 120 Hz high-pass. 2 s, about −34 LUFS. At night (<see cref="Render"/>'s flag) it's 6 dB quieter
+/// and darker. The same signal chain as the board's Web Audio version, sample by sample, so it sounds like what the
+/// owner picked. Pure code, no Windows calls: it returns a 16-bit stereo WAV. A few ms of work on a background
+/// thread and ~2 MB of short-lived buffers; nothing stays behind.
 /// </summary>
 internal static class Chime
 {
-    public const int SampleRate = 22050; // everything is low-passed under 1.4 kHz, so this is plenty
-    public const double Seconds = 8.5;
+    public const int SampleRate = 22050; // everything is low-passed under 2.5 kHz, so this is plenty
+    public const double Seconds = 2.0;
 
-    // The board's numbers.
-    private static readonly double[] Notes = [110.0, 146.83, 196.0, 261.63];
-    private static readonly double[] Pans = [-0.35, -0.12, 0.12, 0.35];
-    private static readonly double[] Levels = [1, 0.9, 0.7, 0.4];
-    private const double Roll = 0.065, Attack = 0.03, Decay = 2.6, NoteGain = 0.085, GlideCents = -10;
-    private const double CutFrom = 1100, CutTo = 320, CutTime = 2.2;
-    private const double EchoSend = 0.1, EchoCut = 500, EchoDelay = 0.29, EchoFeedback = 0.38, EchoPan = 0.7;
-    private const double HallSeconds = 6, HallWet = 0.55, HallPreDelay = 0.045, HallCut = 1400;
-    private const double Master = 0.6;
-    private const double BoardRate = 48000; // the hall's noise filter was tuned in a browser running at 48 kHz
+    /// <summary>One voice: a sine (with partials) that swells in with a sin² curve and fades exponentially.</summary>
+    private readonly record struct Voice(double Frequency, double Pan, double Level, double At, double Attack,
+                                         double Release, double Beat, double Depth, double Harmonic);
 
-    public static byte[] RenderWav()
+    // The board's numbers (board 25, "lullaby").
+    private static readonly Voice[] Voices =
+    [
+        new(146.83, 0, 0.018, 0.25, 0.15, 0.5, 0.4, 0.15, 0.15),     // D3, joins under the second note
+        new(369.99, 0.15, 0.022, 0, 0.1, 0.3, 0.5, 0.15, 0.12),      // F♯4
+        new(293.66, -0.15, 0.024, 0.25, 0.1, 0.45, 0.45, 0.15, 0.12) // D4
+    ];
+    private const double Master = 1.135, HighPass = 120, CutFrom = 1800, CutTo = 1000;
+    private const double RoomSeconds = 1.2, RoomWet = 0.3, RoomPreDelay = 0.02, RoomCut = 2500;
+    private const double FadeSeconds = 0.5;
+    private const double BoardRate = 48000; // the room's noise filter was tuned in a browser running at 48 kHz
+
+    // At night (22:00–7:00): 6 dB quieter, every filter 30 % lower, less room, a higher high-pass.
+    private const double NightMaster = 0.5, NightDark = 0.7, NightWet = 0.6, NightHighPass = 140;
+
+    /// <summary>Night hours for the sound: 22:00 to 7:00 by the local clock (read once when it plays).</summary>
+    public static bool IsNight(DateTime now) => now.Hour >= 22 || now.Hour < 7;
+
+    public static byte[] RenderWav(bool night = false)
     {
-        var (left, right) = Render();
+        var (left, right) = Render(night);
         return ToWav(left, right);
     }
 
-    public static (float[] Left, float[] Right) Render()
+    public static (float[] Left, float[] Right) Render(bool night = false)
     {
+        double dark = night ? NightDark : 1;
         int n = (int)(Seconds * SampleRate);
         var dryL = new float[n];
         var dryR = new float[n];
-        for (int i = 0; i < Notes.Length; i++)
-            Note(Notes[i], i * Roll, Pans[i], NoteGain * Levels[i], dryL, dryR);
+        foreach (var voice in Voices) Swell(voice, dryL, dryR);
 
-        // The filter every note goes through: 1100 Hz closing to 320 Hz over 2.2 s.
+        // The filter every voice goes through: 1800 Hz closing to 1000 Hz over the whole sound.
         var lpL = new Biquad();
         var lpR = new Biquad();
         for (int k = 0; k < n; k++)
@@ -45,8 +58,7 @@ internal static class Chime
             if ((k & 15) == 0)
             {
                 double t = (double)k / SampleRate;
-                double cut = t < CutTime ? CutFrom * Math.Pow(CutTo / CutFrom, t / CutTime) : CutTo;
-                lpL.SetLowpass(cut, 0.2);
+                lpL.SetLowpass(dark * CutFrom * Math.Pow(CutTo / CutFrom, Math.Min(1, t / Seconds)), 0.2);
                 lpR.CopyCoefficients(lpL);
             }
             dryL[k] = lpL.Process(dryL[k]);
@@ -55,97 +67,74 @@ internal static class Chime
 
         var outL = (float[])dryL.Clone();
         var outR = (float[])dryR.Clone();
-        Echo(dryL, dryR, outL, outR);
-        Hall(dryL, dryR, outL, outR);
+        Room(dryL, dryR, outL, outR, RoomCut * dark, RoomWet * (night ? NightWet : 1));
 
-        // Master level, and a gentle fade over the last second (the hall is near -60 dB there anyway).
-        int fade = SampleRate;
+        // Master level with a linear fade over the last half second, then the high-pass.
+        var hpL = new Biquad();
+        var hpR = new Biquad();
+        hpL.SetHighpass(night ? Math.Max(HighPass, NightHighPass) : HighPass, 0.7);
+        hpR.CopyCoefficients(hpL);
+        double master = Master * (night ? NightMaster : 1);
+        int fade = (int)(FadeSeconds * SampleRate);
         for (int k = 0; k < n; k++)
         {
-            double g = Master;
-            if (k > n - fade) g *= 0.5 + 0.5 * Math.Cos(Math.PI * (k - (n - fade)) / fade);
-            outL[k] = (float)(outL[k] * g);
-            outR[k] = (float)(outR[k] * g);
+            double g = k < n - fade ? master : master * (n - k) / fade;
+            outL[k] = hpL.Process(outL[k] * g);
+            outR[k] = hpR.Process(outR[k] * g);
         }
         return (outL, outR);
     }
 
-    /// <summary>One note: an FM sine whose brightness fades within ~0.1 s plus a slightly detuned sine, gliding up
-    /// 10 cents into pitch, a 30 ms onset and an exponential fade, panned (Web Audio's equal-power panner).</summary>
-    private static void Note(double f, double at, double pan, double gain, float[] left, float[] right)
+    /// <summary>One voice: the note and its second harmonic, each a sine plus a copy <c>Beat</c> Hz higher at
+    /// <c>Depth</c> of the pair (a slow, light shimmer); a sin² rise over <c>Attack</c>, then an exponential fade
+    /// with time constant <c>Release</c> (Web Audio's setTargetAtTime), stopping after 7 of them; panned with Web
+    /// Audio's equal-power panner.</summary>
+    private static void Swell(Voice v, float[] left, float[] right)
     {
-        const double fmIndex = 0.45, fmTau = 0.07, glideTau = 0.05, detuneCents = 5;
-        double tau = Decay / 4.5;
-        int start = (int)Math.Round(at * SampleRate);
-        int length = Math.Min((int)((Attack + Decay + 0.4) * SampleRate), left.Length - start);
-        double x = (pan + 1) / 2;
+        int start = (int)Math.Round(v.At * SampleRate);
+        int length = Math.Min((int)((v.Attack + 7 * v.Release) * SampleRate), left.Length - start);
+        double x = (v.Pan + 1) / 2;
         double gl = Math.Cos(x * Math.PI / 2), gr = Math.Sin(x * Math.PI / 2);
-        double f0 = f * Math.Pow(2, GlideCents / 1200);
-        double detune = Math.Pow(2, detuneCents / 1200);
-        double dt = 1.0 / SampleRate, w = 2 * Math.PI * dt;
-        double phase1 = 0, phase2 = 0, phaseMod = 0;
+        double w = 2 * Math.PI / SampleRate;
+        double w1 = w * v.Frequency, w1b = w * (v.Frequency + v.Beat);
+        double w2 = w * 2 * v.Frequency, w2b = w * (2 * v.Frequency + v.Beat);
+        double still = 1 - v.Depth;
         for (int k = 0; k < length; k++)
         {
-            double t = k * dt;
-            double baseF = f + (f0 - f) * Math.Exp(-t / glideTau);
-            double mod = f * fmIndex * Math.Exp(-t / fmTau) * Math.Sin(phaseMod);
-            double env = t < Attack ? t / Attack : Math.Exp(-(t - Attack) / tau);
-            double s = env * gain * (0.9 * Math.Sin(phase1) + 0.3 * Math.Sin(phase2));
+            double t = (double)k / SampleRate;
+            double env;
+            if (t < v.Attack)
+            {
+                double rise = Math.Sin(Math.PI / 2 * t / v.Attack);
+                env = v.Level * rise * rise;
+            }
+            else env = v.Level * Math.Exp(-(t - v.Attack) / v.Release);
+            double s = still * Math.Sin(w1 * k) + v.Depth * Math.Sin(w1b * k)
+                       + v.Harmonic * (still * Math.Sin(w2 * k) + v.Depth * Math.Sin(w2b * k));
+            s *= env;
             left[start + k] += (float)(s * gl);
             right[start + k] += (float)(s * gr);
-            phaseMod += w * f;
-            phase1 += w * (baseF + mod);
-            phase2 += w * baseF * detune;
         }
     }
 
-    /// <summary>Ping-pong echo: through a 500 Hz low-pass into a left delay, which feeds a right delay, which feeds
-    /// the left one again, each pass at 0.38.</summary>
-    private static void Echo(float[] inL, float[] inR, float[] outL, float[] outR)
-    {
-        int n = inL.Length, d = (int)Math.Round(EchoDelay * SampleRate);
-        var dark = new[] { new Biquad(), new Biquad() };
-        dark[0].SetLowpass(EchoCut, 1);
-        dark[1].SetLowpass(EchoCut, 1);
-        var leftIn = new float[2 * n];  // interleaved per channel: [k * 2 + channel]
-        var rightIn = new float[2 * n];
-        // Web Audio's panner on a stereo signal: towards the left keeps the left and folds part of the right in,
-        // towards the right the other way round.
-        double xl = -EchoPan + 1, xr = EchoPan;
-        double leftGainL = Math.Cos(xl * Math.PI / 2), leftGainR = Math.Sin(xl * Math.PI / 2);
-        double rightGainL = Math.Cos(xr * Math.PI / 2), rightGainR = Math.Sin(xr * Math.PI / 2);
-        for (int k = 0; k < n; k++)
-        {
-            float lOutL = k >= d ? leftIn[(k - d) * 2] : 0, lOutR = k >= d ? leftIn[(k - d) * 2 + 1] : 0;
-            float rOutL = k >= d ? rightIn[(k - d) * 2] : 0, rOutR = k >= d ? rightIn[(k - d) * 2 + 1] : 0;
-            leftIn[k * 2] = dark[0].Process(inL[k] * EchoSend) + (float)(EchoFeedback * rOutL);
-            leftIn[k * 2 + 1] = dark[1].Process(inR[k] * EchoSend) + (float)(EchoFeedback * rOutR);
-            rightIn[k * 2] = (float)(EchoFeedback * lOutL);
-            rightIn[k * 2 + 1] = (float)(EchoFeedback * lOutR);
-            outL[k] += (float)(lOutL + lOutR * leftGainL + rOutL * rightGainL);
-            outR[k] += (float)(lOutR * leftGainR + rOutR + rOutL * rightGainR);
-        }
-    }
-
-    /// <summary>The hall: the board's impulse response (noise per ear, fading to -60 dB over 6 s and darkening as
-    /// it fades), normalized the way Web Audio's ConvolverNode does, 45 ms after the dry sound, through a 1400 Hz
-    /// low-pass. Convolved with one FFT pair for both ears.</summary>
-    private static void Hall(float[] inL, float[] inR, float[] outL, float[] outR)
+    /// <summary>The room: the board's impulse response (noise per ear, fading to -60 dB over 1.2 s and darkening as
+    /// it fades), normalized the way Web Audio's ConvolverNode does, 20 ms after the dry sound, through a low-pass.
+    /// Convolved with one FFT pair for both ears.</summary>
+    private static void Room(float[] inL, float[] inR, float[] outL, float[] outR, double cut, double wet)
     {
         int n = outL.Length;
-        int irLength = (int)(HallSeconds * SampleRate);
-        int inputLength = Math.Min(n, (int)((Notes.Length * Roll + Attack + Decay + 0.6) * SampleRate)); // silent after
+        int irLength = (int)(RoomSeconds * SampleRate);
         int size = 1;
-        while (size < inputLength + irLength) size <<= 1;
+        while (size < n + irLength) size <<= 1;
 
         // Input: left in the real part, right in the imaginary part; the response likewise.
         var zr = new float[size];
         var zi = new float[size];
-        Array.Copy(inL, zr, inputLength);
-        Array.Copy(inR, zi, inputLength);
+        Array.Copy(inL, zr, n);
+        Array.Copy(inR, zi, n);
         var hr = new float[size];
         var hi = new float[size];
-        var random = new Random(23);
+        var random = new Lcg(23);
         double power = 0;
         for (int channel = 0; channel < 2; channel++)
         {
@@ -156,15 +145,15 @@ internal static class Chime
                 double t = (double)k / SampleRate;
                 double a = 0.25 * Math.Exp(-t * 1.6) + 0.015;
                 a = 1 - Math.Pow(1 - a, BoardRate / SampleRate); // the same cutoff in Hz at this rate
-                y += a * (random.NextDouble() * 2 - 1 - y);
-                double v = y * Math.Exp(-6.9 * t / HallSeconds) * Math.Min(1, t / 0.08);
+                y += a * (random.Next() * 2 - 1 - y);
+                double v = y * Math.Exp(-6.9 * t / RoomSeconds) * Math.Min(1, t / 0.08);
                 h[k] = (float)v;
                 power += v * v;
             }
         }
         // Web Audio normalizes a convolver's response: 1 / RMS, then -58 dB, then 44100 / sample rate.
         power = Math.Max(Math.Sqrt(power / (2.0 * irLength)), 0.000125);
-        float scale = (float)(1 / power * 0.00125 * (44100.0 / SampleRate) * HallWet);
+        float scale = (float)(1 / power * 0.00125 * (44100.0 / SampleRate) * wet);
 
         Fft(zr, zi, inverse: false);
         Fft(hr, hi, inverse: false);
@@ -181,13 +170,25 @@ internal static class Chime
 
         var cutL = new Biquad();
         var cutR = new Biquad();
-        cutL.SetLowpass(HallCut, 1);
-        cutR.SetLowpass(HallCut, 1);
-        int pre = (int)Math.Round(HallPreDelay * SampleRate);
+        cutL.SetLowpass(cut, 1);
+        cutR.SetLowpass(cut, 1);
+        int pre = (int)Math.Round(RoomPreDelay * SampleRate);
         for (int k = 0; k + pre < n; k++)
         {
             outL[k + pre] += cutL.Process(zr[k] * scale);
             outR[k + pre] += cutR.Process(zi[k] * scale);
+        }
+    }
+
+    /// <summary>The board's seeded noise (a 32-bit linear congruential generator), so the room is the same one.</summary>
+    private struct Lcg(uint seed)
+    {
+        private uint _s = seed;
+
+        public double Next()
+        {
+            _s = unchecked(_s * 1664525 + 1013904223);
+            return _s / 4294967296.0;
         }
     }
 
@@ -242,7 +243,7 @@ internal static class Chime
         for (int i = 0; i < n; i++) { re[i] *= scale; im[i] *= scale; }
     }
 
-    /// <summary>Web Audio's low-pass biquad (Q in dB).</summary>
+    /// <summary>Web Audio's low-pass and high-pass biquads (Q in dB).</summary>
     private sealed class Biquad
     {
         private double _b0, _b1, _b2, _a1, _a2, _x1, _x2, _y1, _y2;
@@ -254,6 +255,18 @@ internal static class Chime
             double cos = Math.Cos(w), a0 = 1 + alpha;
             _b0 = (1 - cos) / 2 / a0;
             _b1 = (1 - cos) / a0;
+            _b2 = _b0;
+            _a1 = -2 * cos / a0;
+            _a2 = (1 - alpha) / a0;
+        }
+
+        public void SetHighpass(double frequency, double qDb)
+        {
+            double w = 2 * Math.PI * frequency / SampleRate;
+            double alpha = Math.Sin(w) / (2 * Math.Pow(10, qDb / 20));
+            double cos = Math.Cos(w), a0 = 1 + alpha;
+            _b0 = (1 + cos) / 2 / a0;
+            _b1 = -(1 + cos) / a0;
             _b2 = _b0;
             _a1 = -2 * cos / a0;
             _a2 = (1 - alpha) / a0;
