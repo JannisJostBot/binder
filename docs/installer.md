@@ -44,8 +44,8 @@ to use `publish.ps1`.
 ## Install
 
 Double-click `GameShelfSetup.exe`, read the disclaimer, tick **I've read and understood the disclaimer** and click
-**Install**. The button stays disabled until the box is ticked; the dialog shows the short version and **Show the
-full disclaimer** the full text from the README. Updates and reinstalls ask the same way.
+**Install**. The window shows the README's full disclaimer in a scrollable box with the checkbox right under it; the
+button stays disabled until the box is ticked. Updates and reinstalls ask the same way.
 
 - It installs to `%LOCALAPPDATA%\Programs\GameShelf\` (your account only, no UAC prompt).
 - It adds **Game Shelf** to the Start menu and to **Settings → Apps → Installed apps**, with its icon, version
@@ -112,8 +112,9 @@ Desktop Runtime is missing", which the self-contained app no longer needs). Ever
 ## How it works inside
 
 The project is `src/GameShelf.Setup`: a Native AOT exe of about 30 MB (almost all of it the compressed app it
-carries), with no third-party code. Its UI is Windows' own task dialog (`TaskDialogIndirect` from Common Controls 6), so it
-looks like Windows' built-in prompts.
+carries), with no third-party code. The install / update screen is a classic setup window (`ConfirmWindow`: a Win32 dialog
+built from an in-memory template, standard controls only); the other prompts are Windows' own task dialogs
+(`TaskDialogIndirect` from Common Controls 6). If the window can't be created, the install screen falls back to a task dialog.
 
 ### What's in the exe
 
@@ -129,7 +130,7 @@ it extracts only the files that list names.
 1. Read the payload.
 2. Read the installed version from the Settings → Apps entry and choose Install, Update, Reinstall or the
    downgrade warning. The dialog carries the disclaimer, and its button is enabled only while "I've read and
-   understood the disclaimer" is ticked (a task dialog callback, `TDM_ENABLE_BUTTON`). In silent mode, refuse a
+   understood the disclaimer" is ticked. In silent mode, refuse a
    downgrade unless `/allowdowngrade`.
 3. Refuse if `%LOCALAPPDATA%\Programs` or the install folder is a link (junction or symlink) to somewhere else.
 4. If the widget is running, send it `--quit` (the same WM_COPYDATA message a second start uses) and wait up to

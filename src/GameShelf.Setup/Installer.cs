@@ -45,18 +45,23 @@ internal static class Installer
                 _ when installed == version => ($"Game Shelf {Program.VersionText} is already installed", "Reinstall"),
                 _ => ($"A newer Game Shelf ({installed!.ToString(3)}) is installed", $"Replace it with {Program.VersionText}"),
             };
-            var content = update
+            var summary = update
                 ? "Your games, play history and settings are kept. If Game Shelf is open, it closes and comes back afterwards."
-                : "Installs for your account only. No administrator rights needed.\n\nFolder: " + Locations.InstallDir;
-            // The README's disclaimer: short in the dialog, in full under "Show the full disclaimer". The install
-            // button stays disabled until it's confirmed (/S implies it: whoever scripts setup has read it).
-            content += "\n\nGame Shelf is vibe-coded: its code was written by an AI (Anthropic's Claude), directed and tested by " +
-                       "Jannis Jost, but not reviewed line by line by a human developer. It's provided as is, without " +
-                       "warranty of any kind, and you use it at your own risk.";
-            var confirm = Dialogs.Show(instruction, content, [(InstallButton, button)], Dialogs.CommonCancel, InstallButton,
-                verification: "I've read and understood the disclaimer", warning: installed > version, required: true,
-                details: (Disclaimer, "Show the full disclaimer", "Hide the full disclaimer"));
-            if (confirm.Button != InstallButton) return ExitCode.Cancelled;
+                : "Installs for your account only. No administrator rights needed.";
+            var note = update
+                ? $"Installed now: {installed!.ToString(3)}. This setup: {Program.VersionText}."
+                : "Installs to " + Locations.InstallDir;
+            // The README's disclaimer in full, with the button disabled until it's confirmed (/S implies it:
+            // whoever scripts setup has read it). A classic setup window; Windows' task dialog if it can't open.
+            bool? accepted = ConfirmWindow.Show(new ConfirmWindow.Content(instruction, summary, Disclaimer, note, button));
+            if (accepted is null)
+            {
+                var confirm = Dialogs.Show(instruction, summary + "\n\n" + note, [(InstallButton, button)], Dialogs.CommonCancel,
+                    InstallButton, verification: "I've read and understood the disclaimer", warning: installed > version,
+                    required: true, details: (Disclaimer, "Show the disclaimer", "Hide the disclaimer"));
+                accepted = confirm.Button == InstallButton;
+            }
+            if (accepted != true) return ExitCode.Cancelled;
         }
         else if (installed > version && !options.AllowDowngrade)
         {
