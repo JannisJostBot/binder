@@ -1,6 +1,6 @@
 # Planned features (approved by the owner)
 
-Status: **approved specs. Milestones 8–11 and 15 are built; 12 is in progress; 13, 14, 16, 17 and 18 are still to do** (see the progress table in §0).
+Status: **approved specs**; what's built is in the progress table in §0.
 - **Designs:** on the design canvas, https://claude.ai/artifact/9tZEP6HSrETxwGwpSbMg1Q. Pages by area ("Shelf",
   "Game detail", "Window, setup & settings"), plus "Still to build" with the open milestones in build order. Board
   numbers (1–17) are given in each section below and stay in the board titles, with "built" or the milestone.
@@ -33,64 +33,12 @@ break the user's system.
 | 17 Advanced: sources and artwork | §14 | To do |
 | 18 Performance | §15 | To do |
 
-Also built since the baseline, outside these milestones (already in `CLAUDE.md`): native radii, click-to-play covers
-with a Details (i) button, greeting header, the switchable top slot, silent Steam start.
+### Still to carry into `CLAUDE.md`
 
-### Already in the code: don't rebuild
-
-- Favorites (`Game.Favorite`, star in Detail, pinned first).
-- Hidden games:
-  - `Game.Hidden`.
-  - "Hid … · Undo" toast in `MainWindow`.
-  - "Hidden games" section in `SettingsView`.
-- Detail view (`DetailView`):
-  - Banner, cover, stat tiles, recent sessions.
-  - Per-game hide delay, process to watch and custom cover.
-- Settings view, autostart, desktop layer, Epic / GOG / shortcut import / manual add.
-- Windows CI with a smoke test (`.github/workflows/ci.yml`, `tests/smoke.ps1`).
-
-### What's new
-
-| # | Feature | Kind | Mainly touches |
-|---|---|---|---|
-| 1 | App icon: logo B | New asset | csproj (`ApplicationIcon`), tray, toasts |
-| 2 | Fallback covers (icon-on-color, monogram) | Changes existing | `CoverCache`, `CoverView`, `Game` (cached tint) |
-| 3 | Launcher icons instead of text badges | **Changes existing** | `ShelfView.xaml` (badge uses `SourceLabel` today), new `LauncherIcons` service |
-| 4 | Controller input (XInput) | New | new `Services/Gamepad`, `MainWindow` |
-| 5 | Flyout mode, tray icon, global shortcut, low-footprint "stay ready" | **Changes existing window behavior** | `MainWindow`, `App`, `DesktopLayer`, `Settings` |
-| 6 | First-run setup (3 steps) | New | new `Views/SetupView` |
-| 7 | Sort menu, Favorites chip, weekly summary, cover size / list view | Changes existing | `ShelfView`, `Settings` |
-| 8 | More launchers (Xbox, EA, Ubisoft, Battle.net, Riot, Rockstar, Amazon, itch, Humble, Meta) | New sources | `Library/*Source.cs`, `GameSource` enum, filter chips |
-| 9 | Detail: playtime chart, launch options with engine suggestions, anti-cheat label and check | Changes existing | `DetailView`, `Launcher`, `Game` |
-| 10 | Crash detection on return | Changes existing | Watcher (save exit code), `Session`, `MainWindow`, `DetailView` |
-| 11 | Game mode (power, priority, services, apps, network) with exact restore and a "Restored" toast | New, biggest item | new `GameShelf.Elevated` project, watcher hooks, new Settings sub-page |
-| 12 | Free up space: which games to uninstall for a new one, per drive, shown as a treemap | New | new `Library/SpacePlanner`, new `Views/FreeSpaceView`, `SettingsView`, `GameMenu` |
-| 13 | Look and moments: game logos on banners, the cover growing into the detail view, "Welcome back" after a session, shiny favourites, quiet playtime milestones | Changes existing | `ShelfView`, `DetailView`, `GameTile`, `CoverCache`, `Game`, `Settings` |
-| 14 | Advanced settings: where Binder finds games and artwork, so users can fix it if a launcher changes | Changes existing | new `Library/SourceDefaults`, every `*Source`, `CoverCache`, `SettingsView`, `Settings` |
-| 15 | Performance: the newest WinUI patch, pre-scaled cover copies, loading hidden UI only when needed, AOT compiler settings, CsWinRT 3.0 once stable | Changes existing | `GameShelf.csproj`, `CoverCache`, the XAML views |
-| 16 | Quick actions: a "…" menu in the shelf header (Game mode on/off, Game mode settings, Free up space, Add a game, Refresh) and the same Game mode and Free up space items in the tray menu | Changes existing | `ShelfView`, `MainWindow`, `App` (tray menu), `Settings` |
-| 17 | Restart after a crash: a per-game option, a cancellable countdown, at most twice in a row | Changes existing | `Game`, `DetailView`, watcher, `MainWindow`, `CrashAnalysis` |
-
-### Conflicts with `CLAUDE.md` to resolve while implementing
-
-These are owner decisions and override the brief:
-- **Security rules say "never ask for admin rights".**
-  - The owner approved one exception: Game mode's separate elevated helper, set up with one UAC prompt (§11).
-  - The widget and the watcher themselves still never elevate.
-  - Update the security rules when Game mode is built.
-- **"A source badge in the top-left"** becomes the launcher's icon (§3).
-- **The widget window:** "Flyout" becomes the default display mode, plus a notification-area icon (§5). The current
-  docked-on-desktop behavior stays as the "On the desktop" option.
-- **Filter chips** become: All, Favorites, Recent, then only the launchers that have games, with the rest under "More" (§7, §8).
 - **Network rule "HTTPS to the store CDNs only"** gains one case (§14): an HTTPS address the user typed
   themselves in Advanced settings. Update the security rules in `CLAUDE.md` in milestone 17.
 
-### Build order
-
-1. Finish **milestone 7**.
-2. Then implement this spec as milestones **8–14**, in the order at the end of this file.
-
-The ideas listed under "Not decided" at the bottom must **not** be built.
+The build order is at the end of this file. The ideas under "Not decided" at the bottom must **not** be built.
 
 ---
 
@@ -334,7 +282,7 @@ Three steps, shown once (Settings has "Run first-time setup again"):
   - "Recently added" needs a new `Game.AddedAt`, set the first time a game is seen.
 - **Favorites filter chip** with a star; a star badge on favorite covers (top-right).
 - **"This week" card** (optional, `Settings.ShowWeeklySummary`, on by default). Built; it now shares one slot with
-  "Continue playing" (board 16, `CLAUDE.md` → Shelf view):
+  "Continue playing" (board 16, `ShelfView`):
   - Total time, number of games, most played game, and 7 bars Mon–Sun.
   - Single series in the accent color: thin bars with 4 px rounded tops, a recessive baseline, a tooltip per bar,
     and an automation name with all values.
