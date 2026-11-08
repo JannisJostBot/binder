@@ -24,7 +24,8 @@ break the user's system.
 | 12 More launchers | §8 | **In progress.** Done: EA app, Ubisoft Connect, Xbox app (tile logo as the cover picture) and Rockstar (tested with synthetic data only, no Rockstar game installed). Not yet: Battle.net, Riot, Amazon, itch, Humble and Meta |
 | 13 Controller | §4 | To do |
 | 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Game mode toast ("Game mode is on" after applying, while the widget is still up, and "Windows is back to normal" after the restore; animated badge) and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\GameShelf\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `GameShelf.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `GameShelf Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\GameShelf\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing). Tested live on the owner's PC on 2026-11-07: the tasks register and run, the Print Spooler is paused and restarted, the QoS policies and the Windows Update limit are applied and restored. Windows keeps ActiveStore policy names lowercased, so ours are matched ignoring case. The shelf shows "Game mode needs an update" with Update… when Game mode uses the helper and it's from another version. Still to check: Delivery Optimization picks up the policy without a restart |
-| 19 Quick actions | §16 | Built (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); to try on the real PC |
+| 19 Quick actions | §16 | Done (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); tried on the real PC |
+| 20 Restart after a crash | §17 | To do |
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | To do |
 | 17 Advanced: sources and artwork | §14 | To do |
@@ -66,6 +67,7 @@ with a Details (i) button, greeting header, the switchable top slot, silent Stea
 | 14 | Advanced settings: where Binder finds games and artwork, so users can fix it if a launcher changes | Changes existing | new `Library/SourceDefaults`, every `*Source`, `CoverCache`, `SettingsView`, `Settings` |
 | 15 | Performance: the newest WinUI patch, pre-scaled cover copies, loading hidden UI only when needed, AOT compiler settings, CsWinRT 3.0 once stable | Changes existing | `GameShelf.csproj`, `CoverCache`, the XAML views |
 | 16 | Quick actions: a "…" menu in the shelf header (Game mode on/off, Game mode settings, Free up space, Add a game, Refresh) and the same Game mode and Free up space items in the tray menu | Changes existing | `ShelfView`, `MainWindow`, `App` (tray menu), `Settings` |
+| 17 | Restart after a crash: a per-game option, a cancellable countdown, at most twice in a row | Changes existing | `Game`, `DetailView`, watcher, `MainWindow`, `CrashAnalysis` |
 
 ### Conflicts with `CLAUDE.md` to resolve while implementing
 
@@ -153,6 +155,10 @@ The ideas listed under "Not decided" at the bottom must **not** be built.
 - The shelf shows "Game mode needs an update" with Update… when Game mode uses the admin helper and the helper is
   from another version.
 - A successful Game mode restore plays the Windows notification sound (its own setting).
+
+**2026-11-08**
+- **Restart after a crash** approved (§17): a per-game option that starts the game again after a crash, with a
+  cancellable countdown, at most twice in a row.
 
 ---
 
@@ -895,6 +901,52 @@ shorter way in, without taking room from the grid.
 `ShelfView` (button, menu, accelerators), `MainWindow` (the actions), `App` and `MessageWindow` (tray items, a
 checked item), `FreeSpaceView` (choosing the drive). No new settings.
 
+## 17. Restart after a crash (milestone 20)
+
+For games that crash now and then mid-session (long online sessions, unstable mods): Game Shelf starts the game
+again on its own, with a short countdown the user can cancel. Off by default; it's a per-game choice, since a game
+that crashes on every start would loop.
+
+### Setting
+
+- Detail › "This game only": **Restart if it crashes**, a toggle (`Game.RestartOnCrash`, default off). Its help
+  line: "Starts the game again after a crash, at most twice in a row."
+- No global setting: the games that need it are few, and a global "on" would restart games that crash on start.
+
+### When it restarts
+
+- Only for the crash card's **Crashed** and **Closed unexpectedly** endings (§10). Never after a normal exit,
+  never after **Closed right after starting** (a missing runtime or a broken install; restarting won't help), and
+  never when the session ran under 60 s.
+- At most **2 restarts in a row**: the count is the game's consecutive crashed sessions in `crashes.json` within
+  the last 30 minutes, so there's no new state and nothing kept in memory (the widget is gone while the game runs).
+  After the second, the crash card shows as today, with the line "Restarted twice already, so Game Shelf stopped
+  trying".
+- It needs the widget to come back. With "Come back when the game closes" off, the watcher still relaunches the
+  widget after a crash exit code when the game has `RestartOnCrash` (it passes `--crashed`; the widget shows only
+  the restart toast, not the panel, and exits again with the restarted game).
+
+### What the user sees
+
+- The launch toast, reused: "[Game] crashed · restarting in 10 s", a determinate countdown (the game's own hide
+  delay, at least 5 s so there's time to react) and **Cancel** instead of Keep open.
+- Cancel, Esc, B on a controller, or opening the panel another way stops it and shows the crash card, so a crash
+  is never hidden. Restarted sessions' crashes stay in `crashes.json`, so the pattern line still counts them.
+- When the countdown ends it's an ordinary Play: the same launch path, watcher, hide and Game mode (Game mode was
+  restored when the game exited and is applied again).
+
+### Not chosen
+
+- Restarting from the watcher without the widget: the watcher doesn't know the launch paths (store URIs, launch
+  options, "Start with"), would have to duplicate `Launcher`, and the user couldn't cancel.
+- Restarting after a whole-PC crash: Game Shelf doesn't detect those (owner's decision, §10).
+
+### Touches
+
+`Game` (`RestartOnCrash`), `DetailView` (the toggle), the watcher (relaunch after a crash exit code when the game
+has it, even with "Come back" off), `MainWindow` (the countdown toast with Cancel, then `Launcher`),
+`CrashAnalysis` (the in-a-row count).
+
 ## Build order (after milestone 7)
 
 8. **Quick wins:** *(Done.)*
@@ -921,6 +973,8 @@ checked item), `FreeSpaceView` (choosing the drive). No new settings.
 18. **Performance** (§15): the WinUI patch first, then pre-scaled covers, deferred loading and the AOT settings, each
     measured on its own. CsWinRT 3.0 when it's stable.
 19. **Quick actions** (§16): the header menu first, then the tray items.
+20. **Restart after a crash** (§17): the in-a-row count and the toggle first, then the toast, then the watcher's
+    relaunch with "Come back" off.
 
 ## Not decided (don't build)
 
