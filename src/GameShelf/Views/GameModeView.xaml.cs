@@ -362,6 +362,7 @@ public sealed partial class GameModeView : UserControl
     {
         if (_loading) return;
         _settings.RestoreSound = SoundSwitch.IsOn;
+        if (SoundSwitch.IsOn) App.Current.PlayRestoredSound(); // so the user hears what they turned on
         Changed?.Invoke();
     }
 

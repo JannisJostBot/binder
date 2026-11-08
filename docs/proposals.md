@@ -28,6 +28,7 @@ break the user's system.
 | 20 Restart after a crash | §17 | To do |
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | To do |
+| Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
 | 17 Advanced: sources and artwork | §14 | To do |
 | 18 Performance | §15 | To do |
 
@@ -159,6 +160,11 @@ The ideas listed under "Not decided" at the bottom must **not** be built.
 **2026-11-08**
 - **Restart after a crash** approved (§17): a per-game option that starts the game again after a crash, with a
   cancellable countdown, at most twice in a row.
+- **Calmer Settings and Game detail** approved (§18): boards 19 and 21, one card per setting under group headings,
+  with a little more spacing than first drawn. Not chosen: a Settings home page with sub-pages (board 20), tabs on
+  the detail page (board 22). Store page and Hide from shelf stay as links at the bottom.
+- **Game mode toast:** design B, the one-line pill; the failure case is a larger card with room for the names.
+- **Restore sound:** sound 1 "Open fourths", made by Game Shelf in memory, replacing the Windows notification sound.
 
 ---
 
@@ -582,13 +588,13 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
 
 ### Game mode toast (board 4)
 
-- **Style:** like the Windows 11 volume flyout, centered above the taskbar: a two-line card with a 36 px round
-  badge (accent; caution with "!" when something failed). The badge pops in and its checkmark draws itself once
-  (no idle cost; skipped with "Animation effects" off).
+- **Style:** replaced by the one-line pill and the failure card of §18 (board 23). Like the Windows 11 volume
+  flyout, centered above the taskbar. The dot pops in and its check draws itself once (no idle cost; skipped with
+  "Animation effects" off).
 - **After the restore** (`GameShelf.exe --restored <result>`; with "Come back" off only the toast shows, then it exits):
-  - "Windows is back to normal · Game mode put back 5 changes" (closes after 4 s), with the user's Windows notification
-    sound ("Play a sound with it", on by default; `PlaySound` alias `Notification.Default`, system volume, skipped
-    while `SHQueryUserNotificationState` says notifications are held back), or
+  - "Windows is back to normal · Game mode put back 5 changes" (closes after 4 s), with Game Shelf's own calm sound
+    (§18; "Play a sound with it", on by default; system sounds volume, skipped while
+    `SHQueryUserNotificationState` says notifications are held back), or
   - "Restored 4 of 5 · Print Spooler couldn't be put back" plus **Details** (stays until dismissed).
 - **After it applied** (`--applied <result>`, forwarded to a widget that is still up: the countdown or Keep open;
   a widget that isn't running never starts for it, so with "Instantly" it doesn't show):
@@ -952,6 +958,75 @@ that crashes on every start would loop.
 `Game` (`RestartOnCrash`), `DetailView` (the toggle), the watcher (relaunch after a crash exit code when the game
 has it, even with "Come back" off), `MainWindow` (the countdown toast with Cancel, then `Launcher`),
 `CrashAnalysis` (the in-a-row count).
+## 18. Calmer Settings and Game detail, the Game mode pill and its sound (boards 19, 21 and 23)
+
+Settings and Game detail had grown crowded: long cards of rows with an explanation under every setting. Both now
+follow Windows 11 Settings: one card per setting, a little apart, under a few group headings, and anything with
+more inside opens from its card. **Nothing was removed**; every setting and action is still on the page.
+
+### Shared pieces
+
+- `Themes/Theme.xaml`: `GroupLabel` (BodyStrong, 36 px above, 12 below), `SettingCard` (one card, 52 px high,
+  6 px apart), `SettingCardBody` (the opened part, joined under its card, a shade darker, indented to the title),
+  `SettingLinkCard` (the whole card is a button to another page), `CardIcon` (20 px Fluent glyph), `DisclosureButton`.
+- `Views/Disclosure.cs` instead of WinUI's `Expander`: an Expander's header is one toggle button, so a switch or
+  Refresh button inside it would not be its own control for the keyboard and screen readers, and a collapsed
+  Expander's content leaves the UI Automation tree. The chevron (name "Show …" / "Hide …") or a click on the card
+  outside its controls opens it; closed, the body is collapsed and costs nothing.
+- The detail line under a title says only state ("3 of 8 on · 72 games", "Uses less memory while it's closed"), never
+  an explanation; explanations moved to tooltips.
+
+### Settings (board 19)
+
+- **Opening Game Shelf:** How it opens (opens to the two mode pictures), Keyboard shortcut (a caution line only
+  when the shortcut is taken), Notification-area icon, Hide when I click elsewhere, Stay ready (switch on the card;
+  "While it's closed" inside), Start with Windows.
+- **When a game starts:** Hide Game Shelf (the delay), Come back when the game closes, Game mode › (its page).
+- **Shelf:** Cover size, the "This week" switch.
+- **Library:** Game sources (Refresh on the card, the eight checkboxes inside), Desktop shortcuts (Import… on the
+  card, Restore inside), Add a game, Hidden games (the list inside), Free up space ›.
+- **Window:** Position, Screen (with more than one monitor), Stay on the desktop layer.
+- "Run first-time setup again" at the bottom.
+
+### Game detail (board 21)
+
+- Banner, title, Play row and the three stat tiles unchanged.
+- **Activity:** one card with the playtime chart and the recent sessions (crash card and pattern line as before).
+- **This game:** Hide delay, Game mode, Cover image, **Launch options** (closed: the engine and what's changed,
+  e.g. "Unity · -monitor 2" or "Default"; inside: suggestions, extra arguments, "Starts as", Test launch / Reset,
+  Start with, Process to watch) and **Anti-cheat** (closed: the names and "All set" or "N issues"; it opens by itself
+  when something needs attention, unless the user opened or closed it for this game; the label under the title
+  opens it and scrolls to it).
+- Store page and Hide from shelf stay as links at the bottom (no decision to move them).
+
+### Game mode toast (board 23, design B)
+
+- A one-line pill centered above the taskbar: a 28 px dot and "**Game mode on** · 5 changes" / "· already set up"
+  (accent dot, gauge glyph) or "**Back to normal** · 5 changes put back" (neutral dot, green check that draws itself).
+  Closes after 4 s. The screen-reader text keeps the full sentence ("put back when the game closes").
+- Something couldn't be changed or put back: a 380 px card instead, with the title ("Restored 4 of 5"), the names
+  and "The log says what happened.", **Open the Game mode log** and a Dismiss (X) button. After a restore it stays
+  until dismissed; after applying it closes after 6 s.
+- Corners: Windows' own rounded window corners (8 px). The board's full capsule would need a transparent or clipped
+  window, which loses the acrylic backdrop and draws jagged edges; left as a possible follow-up.
+
+### The "back to normal" sound (board 23, sound 1 "Open fourths")
+
+- Replaces Windows' notification sound. `Services/Chime` makes it in memory each time (~0.1 s on a background
+  thread, ~2 MB of short-lived buffers): FM keys on A2, D3, G3, C4 rolled left to right, a low-pass closing from
+  1100 to 320 Hz, a dark ping-pong echo and a 6 s hall (the board's noise impulse response, normalized like Web
+  Audio's convolver, convolved by FFT). It follows the board's Web Audio graph sample by sample; rendered side by
+  side, the levels match within 2–3 dB over the whole tail.
+- `Services/Sound` plays it with `PlaySound(SND_MEMORY | SND_ASYNC | SND_SYSTEM)` from native memory at the system
+  sounds volume, still skipped while `SHQueryUserNotificationState` holds notifications back. The process waits
+  until it has played (8.5 s) before quitting when it was started only for the toast, then frees the buffer.
+- Same setting as before ("Play a sound with the Restored confirmation"); turning it on plays it once.
+
+### Touches
+
+`SettingsView`, `DetailView` (+ `.Launch.cs`), new `Disclosure`, `Theme.xaml`, `GameModeToast`, new `Chime`,
+`Sound`, `App` (sound lifetime), `GameModeView` (preview), `tests/smoke.ps1` (opens the Hidden games and Desktop
+shortcuts cards before using their buttons). No new settings.
 
 ## Build order (after milestone 7)
 

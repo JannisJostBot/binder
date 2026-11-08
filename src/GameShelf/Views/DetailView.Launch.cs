@@ -111,6 +111,20 @@ public sealed partial class DetailView
         UpdateStartsAs();
     }
 
+    /// <summary>The closed Launch options card's line: the engine, then what's changed (arguments, the program it starts with).</summary>
+    private void UpdateLaunchSummary(Game game)
+    {
+        var parts = new List<string>(3);
+        var engine = _scan?.Result?.Engine ?? game.Engine ?? GameEngine.Unknown;
+        if (engine != GameEngine.Unknown) parts.Add(LaunchOptions.EngineName(engine));
+        bool changed = false;
+        if (!string.IsNullOrWhiteSpace(game.LaunchArgs)) { parts.Add(game.LaunchArgs.Trim()); changed = true; }
+        if (LaunchOptions.ValidOverride(game) is { } exe) { parts.Add("starts " + Path.GetFileName(exe)); changed = true; }
+        if (!changed) parts.Add("Default");
+        LaunchSummaryText.Text = string.Join(" · ", parts);
+        ToolTipService.SetToolTip(LaunchSummaryText, LaunchSummaryText.Text);
+    }
+
     private static StackPanel SuggestionContent(LaunchSuggestion suggestion)
     {
         var panel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
@@ -146,6 +160,7 @@ public sealed partial class DetailView
         LaunchNoteText.Text = note ?? "";
         LaunchNoteText.Visibility = note is null ? Visibility.Collapsed : Visibility.Visible;
         ResetLaunchButton.IsEnabled = game.LaunchArgs is not null || game.ExeOverride is not null;
+        UpdateLaunchSummary(game);
         TestLaunchButton.IsEnabled = route != LaunchOptions.Route.NotSupported;
     }
 
@@ -244,6 +259,7 @@ public sealed partial class DetailView
         {
             AntiCheatLabel.Visibility = Visibility.Collapsed;
             AntiCheatSection.Visibility = Visibility.Collapsed;
+            _antiCheat.Set(false);
             return;
         }
 
@@ -282,6 +298,15 @@ public sealed partial class DetailView
         AutomationProperties.SetName(AntiCheatLabel, AntiCheatLabelText.Text + ". Show details");
         AntiCheatLabel.Visibility = Visibility.Visible;
         AntiCheatSection.Visibility = Visibility.Visible;
+
+        // Board 21: the card stays closed when all is well and opens by itself when something needs attention,
+        // unless the user already opened or closed it for this game.
+        AntiCheatStateGlyph.Glyph = AntiCheatGlyph.Glyph;
+        AntiCheatStateGlyph.Foreground = AntiCheatGlyph.Foreground;
+        AntiCheatStateGlyph.Visibility = _scan is null ? Visibility.Collapsed : Visibility.Visible;
+        AntiCheatStateText.Text = _scan is null ? "Checking…" : issues == 0 ? "All set" : $"{issues} {(issues == 1 ? "issue" : "issues")}";
+        AutomationProperties.SetName(AntiCheatCard, "Anti-cheat: " + names + ", " + AntiCheatStateText.Text);
+        if (!_antiCheatTouched) _antiCheat.Set(issues > 0);
     }
 
     private static Grid RequirementRow(PcRequirement requirement, bool? met)
@@ -403,8 +428,12 @@ public sealed partial class DetailView
 
     private static T Resource<T>(string key) => (T)Application.Current.Resources[key];
 
-    private void OnAntiCheatLabelClick(object sender, RoutedEventArgs e) =>
+    private void OnAntiCheatLabelClick(object sender, RoutedEventArgs e)
+    {
+        _antiCheat.Set(true);
+        _antiCheatTouched = true;
         AntiCheatSection.StartBringIntoView(new BringIntoViewOptions { VerticalAlignmentRatio = 0 });
+    }
 
     private void OnRemindClick(object sender, RoutedEventArgs e)
     {

@@ -78,6 +78,7 @@ static class Tests
         PlacementTests();
         ShelfTests();
         PayloadTests();
+        ChimeTests();
         LaunchTests(dir);
         PlaytimeTests();
         CrashTests();
@@ -850,6 +851,34 @@ static class Tests
             Check(false, "a helper journal without a user SID is rejected");
         }
         catch (FormatException) { Check(true, "a helper journal without a user SID is rejected"); }
+    }
+
+    static void ChimeTests()
+    {
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var (left, right) = GameShelf.Services.Chime.Render();
+        watch.Stop();
+        int rate = GameShelf.Services.Chime.SampleRate;
+        Check(left.Length == (int)(GameShelf.Services.Chime.Seconds * rate) && right.Length == left.Length, "sound has its length");
+        float peak = 0;
+        foreach (var v in left) peak = Math.Max(peak, Math.Abs(v));
+        foreach (var v in right) peak = Math.Max(peak, Math.Abs(v));
+        Check(peak is > 0.03f and < 0.5f, $"sound is quiet but audible, never clipping (peak {peak:0.000})");
+        double Rms(float[] x, double from, double to)
+        {
+            double sum = 0; int a = (int)(from * rate), b = (int)(to * rate);
+            for (int k = a; k < b; k++) sum += x[k] * x[k];
+            return Math.Sqrt(sum / (b - a));
+        }
+        double early = Rms(left, 0.1, 0.6), tail = Rms(left, 5, 6), end = Rms(left, 8.4, 8.5);
+        Check(tail > early * 0.003 && tail < early * 0.3, $"the hall carries on and fades (0.1-0.6 s {early:0.0000}, 5-6 s {tail:0.00000})");
+        Check(end < early * 0.001, "sound ends in silence");
+        Check(Math.Abs(Rms(left, 0.1, 3) - Rms(right, 0.1, 3)) < Rms(left, 0.1, 3) * 0.5, "sound is balanced left and right");
+        var wav = GameShelf.Services.Chime.ToWav(left, right);
+        Check(wav.Length == 44 + left.Length * 4 && Encoding.ASCII.GetString(wav, 0, 4) == "RIFF" && Encoding.ASCII.GetString(wav, 36, 4) == "data",
+            "sound is a PCM WAV");
+        Check(watch.ElapsedMilliseconds < 1500, $"sound is made quickly ({watch.ElapsedMilliseconds} ms)");
+        if (Environment.GetEnvironmentVariable("GAMESHELF_CHIME_WAV") is { Length: > 0 } path) File.WriteAllBytes(path, wav);
     }
 
     static void PayloadTests()
