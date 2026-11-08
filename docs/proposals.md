@@ -1028,12 +1028,12 @@ more inside opens from its card. **Nothing was removed**; every setting and acti
 `Sound`, `App` (sound lifetime), `GameModeView` (preview), `tests/smoke.ps1` (opens the Hidden games and Desktop
 shortcuts cards before using their buttons). No new settings.
 
-## 19. A gentler "back to normal" sound and a modern cover hover (boards 25 and 26)
+## 19. A relaxing "back to normal" sound and a modern cover hover (boards 25 and 26)
 
 **Proposed, not approved (don't build).** Two proposals from 2026-11-08, waiting for the owner. Designs and
 prototypes: canvas, "Still to build" page, board 25 (listen to each sound) and board 26 (hover, press, Tab).
 
-### a. The "back to normal" sound, gentler (board 25)
+### a. The "back to normal" sound: a breath, not a notification (board 25)
 
 Goal: a sound that never gets annoying, even after hundreds of sessions or at 3 am.
 
@@ -1056,54 +1056,52 @@ BS.1770 K-weighting, loudest 400 ms, against `Windows Notify System Generic.wav`
 - **The "tine":** the FM keys start with a short metallic shimmer: soft, but an edge, heard again every time.
 - **Level:** −26.4 LUFS: fine by day, too loud at night.
 
-**Direction (owner, 2026-11-08):** don't model it on Windows' sounds; make it as clean, smooth and gentle as
-possible. Windows' notification sound is only a point of comparison for the level.
+**Direction (owner, 2026-11-08):** not modelled on Windows' sounds, and it must not sound like a notification at
+all: "the most relaxing sound ever". Two earlier rounds (short struck tones, then pure gentle sines) were rejected
+as still too much like a notification. What makes a sound read as a notification is its shape: something strikes,
+then decays. So these have no strike: each one rises out of silence over most of a second, breathes slowly while
+it's there and sinks back into silence. Longer (5 s) but very quiet, so it's felt more than heard.
 
-**What every variant does:**
-- Pure sines (one variant adds a little triangle). No FM "tine", no echo, no glide.
-- The onset is a sin² curve over 50–180 ms instead of a straight ramp: the level starts and arrives with zero
-  slope, so there's no click and no corner. (`setValueCurveAtTime` with 64 points on the board; in C#, `sin²(π/2 ·
-  t / attack)` per sample.)
-- Register D4–C5 (294–523 Hz), where the ear is most relaxed and small speakers still play it. High-pass 150–160 Hz
-  (no boom, nothing to carry through walls), low-pass ≤ 1.8 kHz (nothing bright).
-- Two copies of a note 3 cents apart give a slow, smooth shimmer (about one swell a second) instead of echoes. A
-  small room (the board's noise hall, ≤ 1.6 s).
-- Quiet: the loudest moment at **−30 LUFS** by day (about 12 dB under Windows' notification sound), about −36 at
-  night. Still at the system sounds volume.
-- The same sound every time: identical sounds fade into the background (habituation); variation keeps them
-  noticeable, so no rotation.
+**What all three do:**
+- **No onset.** Every voice rises with a sin² curve (zero slope at both ends) over 0.7–1.4 s, then falls with
+  `setTargetAtTime(0, τ)`. In C#: `peak · sin²(π/2 · t / attack)`, then `peak · e^(−(t − attack)/τ)`.
+- **It breathes.** Each tone is two equal sines a fraction of a hertz apart (0.3–0.8 Hz, each at half the level),
+  so it swells and softens by itself. The main low-pass opens a little as it rises and closes as it fades.
+- **Air:** where used, soft brown noise (white noise integrated with a leak: `y = 0.985·y + 0.12·white`, seeded),
+  through its own low-pass, with the same kind of swell.
+- **Warm and quiet.** Low mids only (high-pass 90–120 Hz, Q 0.7 dB; nothing bright), §18's noise room at ≤ 2.4 s,
+  no echo, no FM. **−32 LUFS** at its loudest (about 14 dB under Windows' notification sound), about −38 at night.
+  The master fades linearly over the last 0.5 s of the file.
+- Main low-pass Q 0.2 dB; frequency points are exponential ramps from the previous point.
+- The same sound every time (identical sounds fade into the background; variation keeps them noticeable).
 
-**Variants**, ranked. All use §18's signal chain (per-note layers, a closing low-pass, the noise hall, now short)
-without the echo, plus a final high-pass (Web Audio's biquad, Q 0.7 dB) and a 0.3 s linear fade at the end of the
-file. Each layer: `gain × noteLevel × layerLevel`, the sin² onset, then `setTargetAtTime(0, τ = decay × layerDecay /
-4.5)`. Low-pass Q 0.2 dB.
+**Variants**, ranked (measured offline at 48 kHz, BS.1770 K-weighting, loudest 400 ms):
 
-1. **Halo (recommended).** Two pure tones a major sixth apart, the upper one a breath later and quieter. They fade
-   in like a light coming on, shimmer slowly and melt into a small, soft room: warm and sweet, not cheerful, with
-   nothing in it to wince at.
-   - Notes D4 293.66, B4 493.88, roll 30 ms, pans −0.15 / 0.15, levels 1 / 0.6.
-   - Attack 70 ms (sin²), decay 1.8 s, gain 0.1. Layers: sine, level 1; sine +3 cents, level 0.35.
-   - Low-pass 1600 → 900 Hz over 1.5 s. Room 1.6 s, wet 0.28, pre-delay 25 ms, cut 2500 Hz. High-pass 160 Hz.
-     Master 0.425. File 2.4 s.
-   - Measured: −30.0 LUFS, peak −22.9 dBFS, audible 2.0 s; night −35.6 LUFS.
-2. **Soft fourths.** The chosen fourths (D, G, C) an octave higher, as pure sines: the same open colour without
-   the bass, the tine or the hall. Closest to today, a touch more "melody" than Halo.
-   - Notes D4 293.66, G4 392.00, C5 523.25, roll 80 ms, pans −0.2 / 0 / 0.2, levels 1 / 0.75 / 0.45.
-   - Attack 50 ms, decay 1.5 s, gain 0.09. Layers: sine, level 1; sine +3 cents, level 0.3.
-   - Low-pass 1400 → 600 Hz over 1.2 s. Room 1.4 s, wet 0.30, pre-delay 20 ms, cut 2000 Hz. High-pass 150 Hz.
-     Master 0.44. File 2.2 s. Measured: −30.0 LUFS, peak −23.0 dBFS, audible 1.7 s; night −35.6.
-3. **Breath.** G3, D4, B4 (roll 30 ms, pans −0.25 / 0 / 0.25, levels 0.8 / 1 / 0.4) swelling in over 180 ms: an
-   exhale more than a note. The softest at 3 am, but slow to arrive, so it says "done" least clearly.
-   - Decay 2.0 s, gain 0.07. Layers: sine level 0.7; triangles at −3 and +3 cents, level 0.25 each.
-   - Low-pass 1000 → 700 Hz over 1.8 s. Room 1.6 s, wet 0.20, pre-delay 25 ms, cut 1800 Hz. High-pass 150 Hz.
-     Master 0.60. File 2.6 s. Measured: −30.0 LUFS, peak −22.6 dBFS, audible 2.2 s; night −35.8.
-4. **One tone.** A single pure E4 329.63 with a whisper of its octave (level 0.06, decay × 0.5): the cleanest
-   possible sound, but so plain it can feel empty, closer to a "ping" than to "all's well".
-   - Attack 80 ms, decay 1.4 s, gain 0.12. Low-pass 1800 → 1000 Hz over 1.0 s. Room 1.2 s, wet 0.25, pre-delay
-     20 ms, cut 2500 Hz. High-pass 160 Hz. Master 0.52. File 2.0 s. Measured: −30.0 LUFS, audible 1.5 s; night −36.0.
+1. **Exhale (recommended).** An open D chord that fades up from nothing over about a second, with a breath of soft
+   air beneath it, then lets go slowly: a long, contented sigh.
+   - Voices (Hz, pan, level, beat, start): D3 146.83, −0.30, 0.050, 0.35 Hz, 0 · A3 220.00, 0.25, 0.040, 0.5 Hz, 0 ·
+     E4 329.63, −0.10, 0.030, 0.6 Hz, 80 ms · F♯4 369.99, 0.35, 0.022, 0.45 Hz, 150 ms.
+   - Attack 0.9 / 0.95 / 1.0 / 1.05 s, release τ 0.9 / 0.85 / 0.8 / 0.75 s.
+   - Air: level 0.05, attack 0.8 s, τ 0.7 s, its low-pass (Q 0.5 dB) 300 → 900 Hz at 0.8 s → 250 Hz at 4.0 s.
+   - Low-pass 500 → 1300 Hz at 0.9 s → 380 Hz at 4.5 s. Room 2.4 s, wet 0.35, pre-delay 30 ms, cut 1600 Hz.
+     High-pass 110 Hz. Master 0.76. File 5.0 s. Measured: −32 LUFS, peak −24 dBFS; night −38.
+2. **Bowl.** A singing bowl on A that is rubbed, never struck: three partials bloom together and hum, wavering
+   slowly. Deeply calm, though some will hear it as "spa" more than "all's well".
+   - A3 220.00, centre, level 0.055, partials ×1 (1), ×2.71 (0.22), ×5.15 (0.05), each a pair 0.8 Hz apart;
+     attack 0.7 s, τ 1.1 s.
+   - Low-pass 1400 → 700 Hz over 5 s. Room 2.2 s, wet 0.30, pre-delay 25 ms, cut 2200 Hz. High-pass 120 Hz.
+     Master 0.92. File 5.5 s. Measured: −32 LUFS, peak −28 dBFS; night −38.
+3. **Tide.** One slow wave: soft noise rising and drawing back like water reaching the sand, a faint fifth inside
+   it. The most natural, but on small laptop speakers noise can turn into hiss.
+   - Air: level 0.16, attack 1.2 s, τ 0.75 s, its low-pass (Q 0.7 dB) 250 → 1200 Hz at 1.2 s → 700 at 2.2 s →
+     200 at 4.6 s.
+   - Voices: A3 220.00, −0.2, 0.022, 0.3 Hz, 200 ms, attack 1.3 s, τ 0.8 s · E4 329.63, 0.2, 0.016, 0.4 Hz,
+     250 ms, attack 1.4 s, τ 0.75 s.
+   - Low-pass 600 → 1100 Hz at 1.2 s → 400 Hz at 4.5 s. Room 1.8 s, wet 0.20, pre-delay 20 ms, cut 1500 Hz.
+     High-pass 90 Hz. Master 0.37. File 5.0 s. Measured: −32 LUFS, peak −23.5 dBFS; night −39.
 
 **Night**, for whichever variant: between 22:00 and 7:00 by the local clock, read once when the sound plays (no
-timer, no setting): master × 0.5 (−6 dB), both low-pass ends × 0.7, room wet × 0.5, high-pass raised to 180 Hz.
+timer, no setting): master × 0.5 (−6 dB), every filter point × 0.7, room wet × 0.6, high-pass at least 140 Hz.
 "At night" buttons on board 25.
 
 **Also silent when** Windows' own notification sound is off: `HKCU\AppEvents\Schemes\Apps\.Default\Notification.Default\.Current`
@@ -1111,12 +1109,13 @@ empty (the "No sounds" scheme or (None) chosen), read once at play time. As toda
 `SHQueryUserNotificationState` holds notifications back. Check on the PC whether Windows 11's Do not disturb shows up
 there; if it doesn't, leave it: there's no public API for it, and undocumented WNF state isn't worth reading.
 
-**Implementing (when approved):** `Chime` takes the variant's numbers (the note layers become a small array like
-the board's), drops FM, the glide and `Echo`, shapes the onset as sin², gets a final high-pass
-(`Biquad.SetHighpass`, Web Audio's formula) and a `Render(bool night)`; `Seconds` becomes 2.4, so
-`Sound.PlayRestored` returns 2.4 s and the process quits ~6 s sooner. Buffers shrink to about a quarter (FFT size 2^17 instead of 2^18, a 210 KB WAV instead of 750 KB).
-Compare the C# render with board 25's `OfflineAudioContext` render as for §18 (within 2–3 dB). `Sound` reads the
-clock and the Notification.Default value. No new setting; the toggle stays.
+**Implementing (when approved):** `Chime` becomes the swell engine above: voices as a small array (frequency,
+pan, level, beat, start, attack, release, partials), an optional air layer (seeded brown noise through a
+time-varying low-pass), the main low-pass points, the room (the same FFT convolution, shorter), a final high-pass
+(`Biquad.SetHighpass`, Web Audio's formula) and `Render(bool night)`; FM, the glide and `Echo` go. `Seconds`
+becomes 5.0, so the process waits 5 s instead of 8.5 s; the WAV is 440 KB instead of 750 KB. Compare the C#
+render with board 25's `OfflineAudioContext` render as for §18 (within 2–3 dB). `Sound` reads the clock and the
+Notification.Default value. No new setting; the toggle stays.
 
 ### b. Cover hover, more modern (board 26)
 
@@ -1229,5 +1228,5 @@ Suggested but neither approved nor rejected yet:
 - Backup / restore
 - Portable mode (likely dropped, since it conflicts with the installer)
 - A Windows 11 Widgets-board card
-- A gentler "back to normal" sound with a night version, and a modern cover hover (§19, boards 25 and 26;
-  recommended: "Halo" and "C · Media tile")
+- A relaxing "back to normal" sound with a night version, and a modern cover hover (§19, boards 25 and 26;
+  recommended: "Exhale" and "C · Media tile")
