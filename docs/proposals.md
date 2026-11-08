@@ -1028,6 +1028,146 @@ more inside opens from its card. **Nothing was removed**; every setting and acti
 `Sound`, `App` (sound lifetime), `GameModeView` (preview), `tests/smoke.ps1` (opens the Hidden games and Desktop
 shortcuts cards before using their buttons). No new settings.
 
+## 19. A gentler "back to normal" sound and a modern cover hover (boards 25 and 26)
+
+**Proposed, not approved (don't build).** Two proposals from 2026-11-08, waiting for the owner. Designs and
+prototypes: canvas, "Still to build" page, board 25 (listen to each sound) and board 26 (hover, press, Tab).
+
+### a. The "back to normal" sound, gentler (board 25)
+
+Goal: a sound that never gets annoying, even after hundreds of sessions or at 3 am.
+
+**What can grate in today's sound** (§18, "Open fourths"; measured offline from the board's Web Audio graph,
+BS.1770 K-weighting, loudest 400 ms, against `Windows Notify System Generic.wav`, the default notification sound):
+
+| | Today | Windows' notification sound |
+|---|---|---|
+| Loudest moment | −26.4 LUFS (peak −18.6 dBFS) | −17.9 LUFS (peak −9.8 dBFS) |
+| Audible (to −40 dB of peak) | 3.8 s, in an 8.5 s file | 1.1 s |
+| Energy below ~150 Hz | 54 % | 32 % |
+| Energy above ~2 kHz | 0.4 % | 1 % |
+
+- **Length:** the hall tail is still sounding when the user is back at the desktop; in a quiet room it's the part
+  that's heard. The widget process also waits 8.5 s for it before quitting.
+- **Echo:** the ping-pong repeats every 0.29 s; repeats are rhythm, and rhythm asks for attention every time.
+- **Bass:** A2 (110 Hz) carries half the energy. Laptop speakers lose it (so people raise the volume), headphones
+  and subwoofers boom, and low notes are what carries through walls and floors at night.
+- **Four-note roll:** a small melody, heard as an event each time.
+- **The "tine":** the FM keys start with a short metallic shimmer: soft, but an edge, heard again every time.
+- **Level:** −26.4 LUFS: fine by day, too loud at night.
+
+**Direction (owner, 2026-11-08):** don't model it on Windows' sounds; make it as clean, smooth and gentle as
+possible. Windows' notification sound is only a point of comparison for the level.
+
+**What every variant does:**
+- Pure sines (one variant adds a little triangle). No FM "tine", no echo, no glide.
+- The onset is a sin² curve over 50–180 ms instead of a straight ramp: the level starts and arrives with zero
+  slope, so there's no click and no corner. (`setValueCurveAtTime` with 64 points on the board; in C#, `sin²(π/2 ·
+  t / attack)` per sample.)
+- Register D4–C5 (294–523 Hz), where the ear is most relaxed and small speakers still play it. High-pass 150–160 Hz
+  (no boom, nothing to carry through walls), low-pass ≤ 1.8 kHz (nothing bright).
+- Two copies of a note 3 cents apart give a slow, smooth shimmer (about one swell a second) instead of echoes. A
+  small room (the board's noise hall, ≤ 1.6 s).
+- Quiet: the loudest moment at **−30 LUFS** by day (about 12 dB under Windows' notification sound), about −36 at
+  night. Still at the system sounds volume.
+- The same sound every time: identical sounds fade into the background (habituation); variation keeps them
+  noticeable, so no rotation.
+
+**Variants**, ranked. All use §18's signal chain (per-note layers, a closing low-pass, the noise hall, now short)
+without the echo, plus a final high-pass (Web Audio's biquad, Q 0.7 dB) and a 0.3 s linear fade at the end of the
+file. Each layer: `gain × noteLevel × layerLevel`, the sin² onset, then `setTargetAtTime(0, τ = decay × layerDecay /
+4.5)`. Low-pass Q 0.2 dB.
+
+1. **Halo (recommended).** Two pure tones a major sixth apart, the upper one a breath later and quieter. They fade
+   in like a light coming on, shimmer slowly and melt into a small, soft room: warm and sweet, not cheerful, with
+   nothing in it to wince at.
+   - Notes D4 293.66, B4 493.88, roll 30 ms, pans −0.15 / 0.15, levels 1 / 0.6.
+   - Attack 70 ms (sin²), decay 1.8 s, gain 0.1. Layers: sine, level 1; sine +3 cents, level 0.35.
+   - Low-pass 1600 → 900 Hz over 1.5 s. Room 1.6 s, wet 0.28, pre-delay 25 ms, cut 2500 Hz. High-pass 160 Hz.
+     Master 0.425. File 2.4 s.
+   - Measured: −30.0 LUFS, peak −22.9 dBFS, audible 2.0 s; night −35.6 LUFS.
+2. **Soft fourths.** The chosen fourths (D, G, C) an octave higher, as pure sines: the same open colour without
+   the bass, the tine or the hall. Closest to today, a touch more "melody" than Halo.
+   - Notes D4 293.66, G4 392.00, C5 523.25, roll 80 ms, pans −0.2 / 0 / 0.2, levels 1 / 0.75 / 0.45.
+   - Attack 50 ms, decay 1.5 s, gain 0.09. Layers: sine, level 1; sine +3 cents, level 0.3.
+   - Low-pass 1400 → 600 Hz over 1.2 s. Room 1.4 s, wet 0.30, pre-delay 20 ms, cut 2000 Hz. High-pass 150 Hz.
+     Master 0.44. File 2.2 s. Measured: −30.0 LUFS, peak −23.0 dBFS, audible 1.7 s; night −35.6.
+3. **Breath.** G3, D4, B4 (roll 30 ms, pans −0.25 / 0 / 0.25, levels 0.8 / 1 / 0.4) swelling in over 180 ms: an
+   exhale more than a note. The softest at 3 am, but slow to arrive, so it says "done" least clearly.
+   - Decay 2.0 s, gain 0.07. Layers: sine level 0.7; triangles at −3 and +3 cents, level 0.25 each.
+   - Low-pass 1000 → 700 Hz over 1.8 s. Room 1.6 s, wet 0.20, pre-delay 25 ms, cut 1800 Hz. High-pass 150 Hz.
+     Master 0.60. File 2.6 s. Measured: −30.0 LUFS, peak −22.6 dBFS, audible 2.2 s; night −35.8.
+4. **One tone.** A single pure E4 329.63 with a whisper of its octave (level 0.06, decay × 0.5): the cleanest
+   possible sound, but so plain it can feel empty, closer to a "ping" than to "all's well".
+   - Attack 80 ms, decay 1.4 s, gain 0.12. Low-pass 1800 → 1000 Hz over 1.0 s. Room 1.2 s, wet 0.25, pre-delay
+     20 ms, cut 2500 Hz. High-pass 160 Hz. Master 0.52. File 2.0 s. Measured: −30.0 LUFS, audible 1.5 s; night −36.0.
+
+**Night**, for whichever variant: between 22:00 and 7:00 by the local clock, read once when the sound plays (no
+timer, no setting): master × 0.5 (−6 dB), both low-pass ends × 0.7, room wet × 0.5, high-pass raised to 180 Hz.
+"At night" buttons on board 25.
+
+**Also silent when** Windows' own notification sound is off: `HKCU\AppEvents\Schemes\Apps\.Default\Notification.Default\.Current`
+empty (the "No sounds" scheme or (None) chosen), read once at play time. As today, it's skipped while
+`SHQueryUserNotificationState` holds notifications back. Check on the PC whether Windows 11's Do not disturb shows up
+there; if it doesn't, leave it: there's no public API for it, and undocumented WNF state isn't worth reading.
+
+**Implementing (when approved):** `Chime` takes the variant's numbers (the note layers become a small array like
+the board's), drops FM, the glide and `Echo`, shapes the onset as sin², gets a final high-pass
+(`Biquad.SetHighpass`, Web Audio's formula) and a `Render(bool night)`; `Seconds` becomes 2.4, so
+`Sound.PlayRestored` returns 2.4 s and the process quits ~6 s sooner. Buffers shrink to about a quarter (FFT size 2^17 instead of 2^18, a 210 KB WAV instead of 750 KB).
+Compare the C# render with board 25's `OfflineAudioContext` render as for §18 (within 2–3 dB). `Sound` reads the
+clock and the Notification.Default value. No new setting; the toggle stays.
+
+### b. Cover hover, more modern (board 26)
+
+Today (`Views/GameTile`): the cover jumps to scale 1.03, gets a 2 px accent outline, a 25 % black veil
+(`CoverOverlayBrush`) and a centred accent "Play" pill; the (i) button appears. Instant, the same with animations
+off. The veil darkens the art and the outline is loud, which modern media tiles avoid: Windows' own apps (Xbox,
+Media Player, Photos, the Store) lift or lighten the tile, keep the art bright and put the action at the bottom or
+corner, with Fluent's short control timings.
+
+Shared by all three options: Fluent motion values from WinUI's theme resources, `ControlFasterAnimationDuration`
+(83 ms) for fades and presses, `ControlFastAnimationDuration` (167 ms) for scale and lift, easing
+`ControlFastOutSlowInKeySpline` (0,0,0,1). Implicit composition animations on the tile's own visual
+(`ElementCompositionPreview.GetElementVisual`, `ImplicitAnimations` for Scale, Translation and Opacity with a
+`CubicBezierEasingFunction`, or `UIElement.ScaleTransition` / `TranslationTransition` / `OpacityTransition` if their
+built-in ease is close enough): they run only when a value changes, so idle cost stays zero. The XAML
+`ScaleTransform` becomes `UIElement.Scale` with `CenterPoint` at the cover's centre (updated in `SizeChanged`).
+
+- **A · Lift.** Today's look, eased: scale 1.00 → 1.04 in 167 ms, `ThemeShadow` with Translation Z 0 → 24, veil,
+  outline and pill fade in over 83 ms. Press → 1.01 in 83 ms, release 167 ms. Least change, still the heaviest look.
+- **B · Light edge.** Nothing moves: white 6 % over the art, a 1 px static edge gradient (135°, white 55 % → 8 % →
+  4 %), a neutral pill (`SolidBackgroundFillColorBase` at 88 %, `ControlStrokeColorDefault` border), 83 ms fades;
+  press: scale 0.98 and black 12 % instead of the light. Calmest, but the weakest "this is clickable". (The old
+  pointer-following Reveal is gone from Windows 11, so it isn't copied.)
+- **C · Media tile (recommended).** Lift as A (1.04, 167 ms, ThemeShadow Z 24, press 1.01), a 1 px inside edge
+  (`CoverHoverEdgeBrush`: white 24 % dark, black 14 % light), no veil and no outline, a scrim on the bottom half
+  only (transparent at 50 % → black 65 %, 83 ms), and a 36 px round Play button (Accent fill, glyph `F5B0` 14 px in
+  `TextOnAccentFillColorPrimaryBrush`) bottom left, rising 4 px and fading in (167 ms / 83 ms). The (i) button stays
+  bottom right, 28–30 px as today, so Play and Details sit together. Screen-reader names unchanged.
+
+How it combines (C; A the same where it applies):
+- **Keyboard focus** shows the hover state plus Windows' focus visual just outside the cover
+  (`FocusVisualPrimaryBrush` 2 px, `FocusVisualSecondaryBrush` 1 px); returning from details still focuses without a
+  ring after a click (programmatic focus).
+- **Controller focus** shows the hover state plus today's PadRing (3 px, 4 px out, radius 12) and the bold title.
+  1.04 is already the pad's scale, so hover and pad finally match. Pointer and pad on different covers: both show.
+- **Shiny favourites (§13 d):** layers from the art up: art, sheen, scrim, edge, badges, Play, (i). The scrim covers
+  only the bottom half, so the sheen stays visible where the pointer moves it. A favourite's light edge is the
+  sheen's own edge, so C's hover edge is left off there. The sheen and the lift share one PointerEntered/Exited pair.
+- **"Animation effects" off:** the implicit animations are removed (instant), the look is the same.
+- **High contrast:** no shadow, scrim, sheen or light edge; a 2 px `SystemColorHighlightColor` outline and a Play
+  button in Highlight / HighlightText.
+- **List view** (`GameRow`) unchanged.
+- **Cost:** one ThemeShadow at a time (only the hovered or focused tile is raised); check that the GridView's item
+  container doesn't clip the shadow or the 4 % growth (the grid has 12 px gaps; the PadRing already needs 4 px).
+
+### Touches (if approved)
+
+a: `Services/Chime`, `Services/Sound`, `App` (wait time), `GameModeView` (preview); tests compare the render's
+length and level. b: `Views/GameTile.xaml(.cs)`, `Themes/Theme.xaml` (`CoverScrimBrush`, `CoverHoverEdgeBrush`;
+`CoverOverlayBrush` goes), `ShelfView` (item container clipping, if needed). No new settings.
+
 ## Build order (after milestone 7)
 
 8. **Quick wins:** *(Done.)*
@@ -1089,3 +1229,5 @@ Suggested but neither approved nor rejected yet:
 - Backup / restore
 - Portable mode (likely dropped, since it conflicts with the installer)
 - A Windows 11 Widgets-board card
+- A gentler "back to normal" sound with a night version, and a modern cover hover (§19, boards 25 and 26;
+  recommended: "Halo" and "C · Media tile")
