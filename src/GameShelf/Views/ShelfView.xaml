@@ -182,7 +182,7 @@
                       PreviewKeyDown="OnGridKeyDown" ContextRequested="OnItemContextRequested"
                       GotFocus="OnTilesGotFocus" LostFocus="OnTilesLostFocus"
                       IsSwipeEnabled="False" CanDragItems="False">
-                <!-- The tile draws its own hover (lift, accent outline, "Play"), so the item's fill would only show
+                <!-- The tile draws its own hover (lift, shadow, fade, "Play"), so the item's fill would only show
                      as a second box with other corners behind it. -->
                 <GridView.Resources>
                     <SolidColorBrush x:Key="GridViewItemBackgroundPointerOver" Color="Transparent" />

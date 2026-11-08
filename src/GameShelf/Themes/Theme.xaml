@@ -13,14 +13,31 @@
             <!-- The Game mode toast (board 23): a solid surface, not Acrylic, so its round ends and shadow stay crisp. -->
             <SolidColorBrush x:Key="ToastSurfaceBrush" Color="#2C2C30" />
             <SolidColorBrush x:Key="ToastStrokeBrush" Color="#3E3E45" />
+            <!-- Cover hover (board 26, "Media tile"): a fade on the bottom half of the art and a fine inside edge. -->
+            <LinearGradientBrush x:Key="CoverScrimBrush" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Offset="0.5" Color="#00000000" />
+                <GradientStop Offset="1" Color="#A6000000" />
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="CoverHoverEdgeBrush" Color="#3DFFFFFF" />
+            <SolidColorBrush x:Key="CoverHighContrastOutlineBrush" Color="Transparent" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="FavoriteBrush" Color="#C98A00" />
+            <LinearGradientBrush x:Key="CoverScrimBrush" StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Offset="0.5" Color="#00000000" />
+                <GradientStop Offset="1" Color="#A6000000" />
+            </LinearGradientBrush>
             <SolidColorBrush x:Key="ToastSurfaceBrush" Color="#F3F3F3" />
             <SolidColorBrush x:Key="ToastStrokeBrush" Color="#DADADA" />
+            <SolidColorBrush x:Key="CoverHoverEdgeBrush" Color="#24000000" />
+            <SolidColorBrush x:Key="CoverHighContrastOutlineBrush" Color="Transparent" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="FavoriteBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <!-- High contrast: no fade or light edge, a 2 px highlight outline instead. -->
+            <SolidColorBrush x:Key="CoverScrimBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="CoverHoverEdgeBrush" Color="Transparent" />
+            <SolidColorBrush x:Key="CoverHighContrastOutlineBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="ToastSurfaceBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="ToastStrokeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
         </ResourceDictionary>
@@ -33,7 +50,6 @@
     <SolidColorBrush x:Key="BadgeBrush" Color="#E01C1C20" />
     <SolidColorBrush x:Key="BadgeHoverBrush" Color="#F032323A" />
     <SolidColorBrush x:Key="BadgeStrokeBrush" Color="#40FFFFFF" />
-    <SolidColorBrush x:Key="CoverOverlayBrush" Color="#40000000" />
     <!-- The "Continue playing" banner: a fade at the bottom of the hero art so its light text reads on any image. -->
     <LinearGradientBrush x:Key="BannerScrimBrush" StartPoint="0,0" EndPoint="0,1">
         <GradientStop Offset="0.25" Color="#00000000" />

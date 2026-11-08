@@ -876,26 +876,45 @@ static class Tests
         var (left, right) = GameShelf.Services.Chime.Render();
         watch.Stop();
         int rate = GameShelf.Services.Chime.SampleRate;
+        Check(GameShelf.Services.Chime.Seconds == 2.0, "sound is 2 s (Lullaby)");
         Check(left.Length == (int)(GameShelf.Services.Chime.Seconds * rate) && right.Length == left.Length, "sound has its length");
-        float peak = 0;
-        foreach (var v in left) peak = Math.Max(peak, Math.Abs(v));
-        foreach (var v in right) peak = Math.Max(peak, Math.Abs(v));
-        Check(peak is > 0.03f and < 0.5f, $"sound is quiet but audible, never clipping (peak {peak:0.000})");
+        float Peak(float[] l, float[] r)
+        {
+            float p = 0;
+            foreach (var v in l) p = Math.Max(p, Math.Abs(v));
+            foreach (var v in r) p = Math.Max(p, Math.Abs(v));
+            return p;
+        }
+        float peak = Peak(left, right);
+        Check(peak is > 0.02f and < 0.2f, $"sound is quiet but audible, never clipping (peak {peak:0.000})");
         double Rms(float[] x, double from, double to)
         {
             double sum = 0; int a = (int)(from * rate), b = (int)(to * rate);
             for (int k = a; k < b; k++) sum += x[k] * x[k];
             return Math.Sqrt(sum / (b - a));
         }
-        double early = Rms(left, 0.1, 0.6), tail = Rms(left, 5, 6), end = Rms(left, 8.4, 8.5);
-        Check(tail > early * 0.003 && tail < early * 0.3, $"the hall carries on and fades (0.1-0.6 s {early:0.0000}, 5-6 s {tail:0.00000})");
-        Check(end < early * 0.001, "sound ends in silence");
-        Check(Math.Abs(Rms(left, 0.1, 3) - Rms(right, 0.1, 3)) < Rms(left, 0.1, 3) * 0.5, "sound is balanced left and right");
+        // F#4 first, D4 and D3 from 0.25 s: the second note is the loudest part, then it fades.
+        double first = Rms(left, 0.05, 0.25), second = Rms(left, 0.3, 0.6), late = Rms(left, 1.3, 1.5);
+        Check(first > 0 && second > first * 0.8, $"two notes, the second at least as full ({first:0.0000}, {second:0.0000})");
+        Check(late < second * 0.3 && late > second * 0.001, $"the notes fade and the room carries on ({late:0.00000})");
+        Check(Rms(left, 1.97, 2.0) < second * 0.01, "sound ends in silence");
+        Check(Math.Abs(Rms(left, 0.05, 1.5) - Rms(right, 0.05, 1.5)) < Rms(left, 0.05, 1.5) * 0.5, "sound is balanced left and right");
+        var (nightL, nightR) = GameShelf.Services.Chime.Render(night: true);
+        double ratio = Rms(nightL, 0.05, 1.5) / Rms(left, 0.05, 1.5);
+        Check(ratio is > 0.35 and < 0.6 && Peak(nightL, nightR) < peak, $"the night version is about 6 dB quieter ({20 * Math.Log10(ratio):0.0} dB)");
+        Check(GameShelf.Services.Chime.IsNight(new DateTime(2026, 11, 8, 22, 0, 0)) && GameShelf.Services.Chime.IsNight(new DateTime(2026, 11, 8, 6, 59, 0))
+              && !GameShelf.Services.Chime.IsNight(new DateTime(2026, 11, 8, 7, 0, 0)) && !GameShelf.Services.Chime.IsNight(new DateTime(2026, 11, 8, 21, 59, 0)),
+            "night is 22:00 to 7:00");
         var wav = GameShelf.Services.Chime.ToWav(left, right);
         Check(wav.Length == 44 + left.Length * 4 && Encoding.ASCII.GetString(wav, 0, 4) == "RIFF" && Encoding.ASCII.GetString(wav, 36, 4) == "data",
             "sound is a PCM WAV");
+        Check(wav.Length < 200_000, $"sound is small ({wav.Length / 1024} KB)");
         Check(watch.ElapsedMilliseconds < 1500, $"sound is made quickly ({watch.ElapsedMilliseconds} ms)");
-        if (Environment.GetEnvironmentVariable("GAMESHELF_CHIME_WAV") is { Length: > 0 } path) File.WriteAllBytes(path, wav);
+        if (Environment.GetEnvironmentVariable("GAMESHELF_CHIME_WAV") is { Length: > 0 } path)
+        {
+            File.WriteAllBytes(path, wav);
+            File.WriteAllBytes(Path.ChangeExtension(path, null) + "-night.wav", GameShelf.Services.Chime.ToWav(nightL, nightR));
+        }
     }
 
     static void PayloadTests()

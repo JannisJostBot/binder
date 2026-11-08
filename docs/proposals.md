@@ -29,6 +29,7 @@ break the user's system.
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | **In progress.** Done: a, the logo on banners (`ArtKind.Logo`, `BannerLogo`; Steam keeps `librarycache\{appid}\logo.png`, 188 of 400 games on the owner's PC, the rest downloaded once; shadow from the logo's alpha via `Image.GetAlphaMask`; in Detail it sits right of the cover, which overlaps the banner's bottom left). Not yet: b–e |
 | Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
+| 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
 | 17 Advanced: sources and artwork | §14 | To do |
 | 18 Performance | §15 | To do |
 
@@ -165,6 +166,12 @@ The ideas listed under "Not decided" at the bottom must **not** be built.
   the detail page (board 22). Store page and Hide from shelf stay as links at the bottom.
 - **Game mode toast:** design B, the one-line pill; the failure case is a larger card with room for the names.
 - **Restore sound:** sound 1 "Open fourths", made by Game Shelf in memory, replacing the Windows notification sound.
+- **Restore sound, replaced (§19 a, board 25):** "Lullaby": two soft notes falling a major third over a low D, 2 s,
+  quiet (−34 LUFS, −40 between 22:00 and 7:00), silent when Windows' notification sound is off. Rejected along the
+  way: struck tones ("too much like a notification"), long swells, bright ones ("way too bright"), rising ones
+  (didn't fit "back to normal") and falling dark ones ("like horror sounds").
+- **Cover hover (§19 b, board 26):** option C "Media tile": eased lift to 1.04 with a shadow, a fine light edge, a
+  bottom scrim and a round Play button; no dark veil or accent outline.
 
 ---
 
@@ -1028,6 +1035,255 @@ more inside opens from its card. **Nothing was removed**; every setting and acti
 `Sound`, `App` (sound lifetime), `GameModeView` (preview), `tests/smoke.ps1` (opens the Hidden games and Desktop
 shortcuts cards before using their buttons). No new settings.
 
+## 19. A softer "back to normal" sound and a modern cover hover (boards 25 and 26)
+
+**Approved (owner, 2026-11-08):** the sound **Lullaby** (a) and the hover **C · Media tile** (b). Designs and
+prototypes: canvas, "Still to build" page, board 25 (listen to each sound) and board 26 (hover, press, Tab). The
+other variants below are kept as the record of how the choice was reached; build only the chosen ones.
+
+### a. The "back to normal" sound: a breath, not a notification (board 25)
+
+Goal: a sound that never gets annoying, even after hundreds of sessions or at 3 am.
+
+**What can grate in today's sound** (§18, "Open fourths"; measured offline from the board's Web Audio graph,
+BS.1770 K-weighting, loudest 400 ms, against `Windows Notify System Generic.wav`, the default notification sound):
+
+| | Today | Windows' notification sound |
+|---|---|---|
+| Loudest moment | −26.4 LUFS (peak −18.6 dBFS) | −17.9 LUFS (peak −9.8 dBFS) |
+| Audible (to −40 dB of peak) | 3.8 s, in an 8.5 s file | 1.1 s |
+| Energy below ~150 Hz | 54 % | 32 % |
+| Energy above ~2 kHz | 0.4 % | 1 % |
+
+- **Length:** the hall tail is still sounding when the user is back at the desktop; in a quiet room it's the part
+  that's heard. The widget process also waits 8.5 s for it before quitting.
+- **Echo:** the ping-pong repeats every 0.29 s; repeats are rhythm, and rhythm asks for attention every time.
+- **Bass:** A2 (110 Hz) carries half the energy. Laptop speakers lose it (so people raise the volume), headphones
+  and subwoofers boom, and low notes are what carries through walls and floors at night.
+- **Four-note roll:** a small melody, heard as an event each time.
+- **The "tine":** the FM keys start with a short metallic shimmer: soft, but an edge, heard again every time.
+- **Level:** −26.4 LUFS: fine by day, too loud at night.
+
+**Direction (owner, 2026-11-08):** not modelled on Windows' sounds, and it must not sound like a notification at
+all: "the most relaxing sound ever". Two earlier rounds (short struck tones, then pure gentle sines) were rejected
+as still too much like a notification. What makes a sound read as a notification is its shape: something strikes,
+then decays. So these have no strike: each one rises out of silence over most of a second, breathes slowly while
+it's there and sinks back into silence. Longer (5 s) but very quiet, so it's felt more than heard.
+
+**What all six do:**
+- **No onset.** Every voice rises with a sin² curve (zero slope at both ends) over 0.7–1.4 s, then falls with
+  `setTargetAtTime(0, τ)`. In C#: `peak · sin²(π/2 · t / attack)`, then `peak · e^(−(t − attack)/τ)`.
+- **It breathes.** Each tone is two equal sines a fraction of a hertz apart (0.3–0.8 Hz, each at half the level),
+  so it swells and softens by itself. The main low-pass opens a little as it rises and closes as it fades.
+- **Air:** where used, soft brown noise (white noise integrated with a leak: `y = 0.985·y + 0.12·white`, seeded),
+  through its own low-pass, with the same kind of swell.
+- **Dark, warm and quiet.** Low mids only: filters peak at 0.6–1.4 kHz and close as it fades, §18's noise room
+  (cut at 0.9–1.8 kHz), high-pass 90–120 Hz (Q 0.7 dB), no echo, no FM. **−32 LUFS** at its loudest (about 14 dB under Windows' notification sound), about −38 at night.
+  The master fades linearly over the last 0.5 s of the file.
+- Main low-pass Q 0.2 dB; frequency points are exponential ramps from the previous point.
+- The same sound every time (identical sounds fade into the background; variation keeps them noticeable).
+
+**Warm and friendly (latest round; Lullaby chosen).** The owner said the settling sounds (next round) "sound like
+horror sounds". Why: tones fading in from silence like a ghost, a full slow wobble (two equal sines beating), very
+muffled, and pitch falling (Resolve even slid down). These fix exactly that, still 2.0 s, −34 LUFS, −40 at night:
+- a soft but defined start (sin², 0.10–0.15 s, like a felt key);
+- a light shimmer only: `depth` 0.15 (the beating copy is 15 % of the pair instead of 50 %);
+- a little warmth: a second harmonic at 0.10–0.15 (`partials [[1, 1], [2, 0.12]]`);
+- less muffled: low-pass 1.6–1.8 kHz closing to 1 kHz, room 1.2 s, wet 0.30, pre-delay 20 ms, cut 2500 Hz;
+- a clear major third, no pitch slides. High-pass 120 Hz for all.
+
+- **Home.** One warm D major chord blooming almost together, low to high: "everything is in its
+  place".
+  - Voices (Hz, pan, level, start, attack, τ, beat, 2nd harmonic): D3 146.83, 0, 0.026, 0, 0.15 s, 0.50 s, 0.4 Hz,
+    0.15 · A3 220.00, −0.20, 0.020, 30 ms, 0.14 s, 0.48 s, 0.45 Hz, 0.12 · F♯4 369.99, 0.20, 0.018, 60 ms, 0.13 s,
+    0.45 s, 0.5 Hz, 0.12 · A4 440.00, 0.05, 0.011, 90 ms, 0.12 s, 0.42 s, 0.6 Hz, 0.10.
+  - Low-pass 1600 → 1000 Hz over 2 s. Master 0.99. Measured: −34.0 LUFS, peak −26.2 dBFS, audible 1.9 s; night −40.0.
+- **Warm settle.** Settle made warm: A4, F♯4, D4, D3 100 ms apart like soft felt keys.
+  - A4 440.00, 0.25, 0.012, 0, 0.12 s, 0.32 s, 0.6 Hz, 0.12 · F♯4 369.99, −0.20, 0.018, 100 ms, 0.12 s, 0.36 s,
+    0.5 Hz, 0.12 · D4 293.66, 0.10, 0.020, 200 ms, 0.13 s, 0.40 s, 0.45 Hz, 0.12 · D3 146.83, 0, 0.026, 300 ms,
+    0.15 s, 0.48 s, 0.4 Hz, 0.15.
+  - Low-pass 1800 → 1000 Hz over 2 s. Master 1.135. Measured: −34.0 LUFS, peak −28.5 dBFS; night −40.1.
+- **Lullaby (chosen).** F♯4 then D4 (a falling major third) with a low D joining under the second note.
+  - F♯4 369.99, 0.15, 0.022, 0, 0.10 s, 0.30 s, 0.5 Hz, 0.12 · D4 293.66, −0.15, 0.024, 250 ms, 0.10 s, 0.45 s,
+    0.45 Hz, 0.12 · D3 146.83, 0, 0.018, 250 ms, 0.15 s, 0.50 s, 0.4 Hz, 0.15.
+  - Low-pass 1800 → 1000 Hz over 2 s. Master 1.135. Measured: −34.0 LUFS, peak −25.9 dBFS; night −40.0.
+
+**Made for "back to normal" (the round before; sounded eerie).** The owner found Soft glass didn't fit the message.
+Glass light rises into a major seventh, which sounds like something opening or beginning; "Windows is back to
+normal" means things coming down, settling, ending at rest. These keep Soft glass's sound (pure sines, slow
+shimmer, dark, 2.0 s, −34 LUFS, −40 at night) but move downwards and end on a plain D major chord, with the low D
+last or underneath. No major seventh. Engine additions: a voice can have a shimmer `depth` (default 0.5), and can `bend` (an exponential frequency ramp by a
+ratio, starting at a time after its start, over a time), applied to both sines of its pair.
+
+- **Settle.** Soft glass upside down: A, F♯, D drift in from the top and the low D arrives last.
+  - Voices (Hz, pan, level, beat, start, attack, release τ): A4 440.00, 0.25, 0.010, 0.45 Hz, 0, 0.40 s, 0.28 s ·
+    F♯4 369.99, −0.20, 0.014, 0.40 Hz, 120 ms, 0.40 s, 0.30 s · D4 293.66, 0.10, 0.020, 0.35 Hz, 240 ms, 0.45 s,
+    0.32 s · D3 146.83, 0, 0.032, 0.25 Hz, 360 ms, 0.50 s, 0.38 s.
+  - Low-pass 900 → 500 Hz over 2 s. Room 1.4 s, wet 0.40, pre-delay 30 ms, cut 1100 Hz. High-pass 120 Hz.
+    Master 0.90. Measured: −34.0 LUFS, peak −28.9 dBFS, audible 1.9 s; night −40.2.
+- **Resolve.** Dsus4 (D3, A3, D4, G4) together; after 0.55 s the G4 sinks to F♯4 over 0.3 s and the chord becomes
+  D major: tension released.
+  - D3 146.83, 0, 0.030, 0.25 Hz, τ 0.45 s · A3 220.00, −0.20, 0.022, 0.30 Hz, τ 0.42 s · D4 293.66, 0.20,
+    0.018, 0.35 Hz, τ 0.40 s (all attack 0.50 s) · G4 392.00, 0.05, 0.013, 0.40 Hz, attack 0.45 s, τ 0.50 s,
+    bend ratio 369.99 / 392.00 at 0.55 s over 0.3 s.
+  - Low-pass 850 → 500 Hz over 2 s. Room 1.4 s, wet 0.40, pre-delay 30 ms, cut 1100 Hz. High-pass 120 Hz.
+    Master 0.785. Measured: −34.0 LUFS, peak −27.1 dBFS, audible 1.8 s; night −40.0.
+- **Sigh.** A4 then D4 (a falling fifth) over a soft D3: a relieved "ahh".
+  - D3 146.83, 0, 0.030, 0.25 Hz, 0, 0.5 s, 0.40 s · A4 440.00, 0.20, 0.014, 0.45 Hz, 0, 0.3 s, 0.22 s ·
+    D4 293.66, −0.10, 0.020, 0.35 Hz, 300 ms, 0.4 s, 0.38 s.
+  - Low-pass 900 → 500 Hz over 2 s. Room 1.4 s, wet 0.40, pre-delay 30 ms, cut 1100 Hz. High-pass 120 Hz.
+    Master 0.955. Measured: −34.0 LUFS, peak −30.0 dBFS, audible 1.8 s; night −40.3.
+
+**Soft glass (the round before).** The owner liked Glass light (5 below) and asked for it softer, then
+for about 2 s. Three versions, all **2.0 s** (audible 1.7–1.9 s) at **−34 LUFS** (2 dB under the others, −40 at
+night). All five (or three) tones arrive within 0.4 s; the master fades over the last 0.5 s.
+
+- **Soft glass.** Glass light's five tones, swelling in over about half a second, with a slow quiet
+  shimmer and a small dark room.
+  - Voices (Hz, pan, level, beat, start, attack, release τ): D3 146.83, 0, 0.030, 0.25 Hz, 0, 0.55 s, 0.35 s ·
+    D4 293.66, −0.30, 0.020, 0.35 Hz, 60 ms, 0.45 s, 0.30 s · F♯4 369.99, 0.30, 0.014, 0.40 Hz, 180 ms, 0.45 s,
+    0.28 s · A4 440.00, −0.12, 0.010, 0.45 Hz, 300 ms, 0.45 s, 0.26 s · C♯5 554.37, 0.15, 0.006, 0.50 Hz,
+    420 ms, 0.45 s, 0.25 s.
+  - Low-pass 900 → 550 Hz over 2 s. Room 1.4 s, wet 0.40, pre-delay 30 ms, cut 1200 Hz. High-pass 120 Hz.
+    Master 0.87. Measured: −34.0 LUFS, peak −27.9 dBFS, audible 1.7 s; night −40.1.
+- **Three glass.** Only D3, F♯4, A4: a plain warm major chord.
+  - D3 146.83, 0, 0.030, 0.25 Hz, 0, 0.55 s, 0.32 s · F♯4 369.99, −0.25, 0.016, 0.35 Hz, 120 ms, 0.45 s, 0.28 s ·
+    A4 440.00, 0.25, 0.011, 0.40 Hz, 250 ms, 0.45 s, 0.26 s.
+  - Low-pass 800 → 500 Hz over 2 s. Room 1.3 s, wet 0.38, pre-delay 30 ms, cut 1100 Hz. High-pass 120 Hz.
+    Master 1.035. Measured: −34.0 LUFS, peak −28.1 dBFS, audible 1.7 s; night −40.1.
+- **Still glass.** Soft glass with no shimmer (each tone a single sine), attacks D3 0.6 s, the rest 0.5 s, releases
+  as Soft glass. Low-pass 800 → 500 Hz over 2 s. Room 1.4 s, wet 0.40, pre-delay 30 ms, cut 1100 Hz. High-pass
+  120 Hz. Master 0.767. Measured: −34.0 LUFS, peak −27.4 dBFS, audible 1.9 s; night −40.1.
+
+The earlier rounds below stay for comparison.
+
+**Calm variants**, ranked (measured offline at 48 kHz, BS.1770 K-weighting, loudest 400 ms). After the owner found
+the first versions "way too bright", every variant is dark: filters peak at 0.6–1.4 kHz, rooms are cut at
+0.9–1.8 kHz, and under 2 % of the energy is above 2 kHz.
+
+1. **Exhale (recommended).** An open D chord that fades up from nothing over about a second, with a breath of soft
+   air beneath it, then lets go slowly: a long, contented sigh.
+   - Voices (Hz, pan, level, beat, start): D3 146.83, −0.30, 0.050, 0.35 Hz, 0 · A3 220.00, 0.25, 0.040, 0.5 Hz, 0 ·
+     E4 329.63, −0.10, 0.026, 0.6 Hz, 80 ms · F♯4 369.99, 0.35, 0.015, 0.45 Hz, 150 ms.
+   - Attack 0.9 / 0.95 / 1.0 / 1.05 s, release τ 0.9 / 0.85 / 0.8 / 0.75 s.
+   - Air: level 0.05, attack 0.8 s, τ 0.7 s, its low-pass (Q 0.5 dB) 200 → 500 Hz at 0.8 s → 180 Hz at 4.0 s.
+   - Low-pass 350 → 750 Hz at 0.9 s → 280 Hz at 4.5 s. Room 2.4 s, wet 0.35, pre-delay 30 ms, cut 900 Hz.
+     High-pass 100 Hz. Master 0.76. File 5.0 s. Measured: −31.9 LUFS, peak −24.5 dBFS; night −38.4.
+2. **Bowl.** A singing bowl on A that is rubbed, never struck: two partials bloom together and hum, wavering
+   slowly. Deeply calm, though some will hear it as "spa" more than "all's well".
+   - A3 220.00, centre, level 0.055, partials ×1 (1) and ×2.71 (0.12), each a pair 0.8 Hz apart; attack 0.7 s,
+     τ 1.1 s.
+   - Low-pass 700 → 400 Hz over 5 s. Room 2.2 s, wet 0.30, pre-delay 25 ms, cut 1000 Hz. High-pass 110 Hz.
+     Master 0.92. File 5.5 s. Measured: −32.0 LUFS, peak −29.1 dBFS; night −37.4.
+3. **Tide.** One slow wave: soft noise rising and drawing back like water reaching the sand, a faint fifth inside
+   it. The most natural, but on small laptop speakers noise can turn into hiss.
+   - Air: level 0.16, attack 1.2 s, τ 0.75 s, its low-pass (Q 0.7 dB) 180 → 600 Hz at 1.2 s → 400 at 2.2 s →
+     150 at 4.6 s.
+   - Voices: A3 220.00, −0.2, 0.022, 0.3 Hz, 200 ms, attack 1.3 s, τ 0.8 s · E4 329.63, 0.2, 0.014, 0.4 Hz,
+     250 ms, attack 1.4 s, τ 0.75 s.
+   - Low-pass 400 → 700 Hz at 1.2 s → 300 Hz at 4.5 s. Room 1.8 s, wet 0.20, pre-delay 20 ms, cut 900 Hz.
+     High-pass 90 Hz. Master 0.38. File 5.0 s. Measured: −32.0 LUFS, peak −22.8 dBFS; night −38.9.
+
+**Heavenly variants** (added at the owner's request, kept beside the three above): the same breath with more space,
+a large soft room (3.5–4 s) and tones that arrive one after another. Still no strike, still −32 LUFS, and as dark
+as the calm ones. Two engine additions: a voice can be an ensemble of detuned copies (`detunes` in cents) with a
+vibrato (a sine LFO into each oscillator's frequency, ±cents), and can pass through parallel band-passes
+(formants: frequency, Q in Web Audio's bandpass sense, gain).
+
+4. **Choir.** A low, distant choir humming a dark "oo" on an open D chord, each voice entering after the last.
+   - Voices (Hz, pan, vibrato rate, start): D3 146.83, −0.30, 4.6 Hz, 0 · F♯3 185.00, 0.30, 5.0 Hz, 100 ms ·
+     A3 220.00, −0.10, 5.2 Hz, 200 ms · E4 329.63, 0.15, 4.4 Hz, 350 ms.
+   - Each: three sawtooths at −7 / 0 / +7 cents, vibrato ±6 cents, formants 320 Hz (Q 4, gain 1) and 800 Hz
+     (Q 6, 0.25); level 0.06 (E4 0.035); attack 1.2 / 1.25 / 1.3 / 1.4 s, τ 1.0 s.
+   - Low-pass 900 → 600 Hz over 5 s. Room 4.0 s, wet 0.50, pre-delay 40 ms, cut 1500 Hz. High-pass 110 Hz.
+     Master 1.82. File 5.5 s. Measured: −32.0 LUFS, peak −23.2 dBFS; night −38.1.
+5. **Glass light (recommended of these).** A soft D underneath, then four pure tones (D, F♯, A, C♯: a major
+   seventh) appearing a quarter second apart, each shimmering, in a wide soft room: light through frosted glass.
+   - Voices (Hz, pan, level, beat, start): D3 146.83, 0, 0.030, 0.3 Hz, 0 (attack 1.0 s, τ 1.2 s) · D4 293.66,
+     −0.35, 0.022, 0.5 Hz, 100 ms (0.7 s, τ 1.0 s) · F♯4 369.99, 0.35, 0.017, 0.6 Hz, 350 ms · A4 440.00, −0.15,
+     0.013, 0.7 Hz, 600 ms · C♯5 554.37, 0.20, 0.009, 0.8 Hz, 850 ms (the last three 0.7 s, τ 0.9 s).
+   - Low-pass 1400 → 900 Hz over 6 s. Room 4.0 s, wet 0.55, pre-delay 50 ms, cut 1800 Hz. High-pass 120 Hz.
+     Master 1.59. File 6.0 s. Measured: −31.9 LUFS, peak −26.1 dBFS; night −38.2.
+6. **Rising light.** A warm G chord that starts muffled and opens up like a door to a lit room; two softer tones
+   shimmer in above it with a breath of air, then it settles.
+   - Voices: G3 196.00, −0.30, 0.045, 0.3 Hz · D4 293.66, 0.25, 0.040, 0.45 Hz (both 1.4 s, τ 1.1 s) · B4 493.88,
+     −0.05, 0.026, 0.5 Hz (1.5 s, τ 1.0 s) · A4 440.00, 0.30, 0.014, 0.6 Hz, 900 ms · D5 587.33, −0.30, 0.009,
+     0.7 Hz, 1.1 s (both 1.2 s, τ 1.0 s).
+   - Air: level 0.03, attack 1.5 s, τ 1.0 s, low-pass 300 → 1000 Hz at 2.0 s → 400 Hz at 5.0 s.
+   - Low-pass 300 → 1300 Hz at 2.2 s → 600 Hz at 5.5 s. Room 3.5 s, wet 0.45, pre-delay 40 ms, cut 1600 Hz.
+     High-pass 110 Hz. Master 1.06. File 6.0 s. Measured: −32.0 LUFS, peak −24.5 dBFS; night −37.6.
+
+Earlier picks: Exhale if it should be calm and warm, Glass light if it should feel heavenly; now superseded by
+Home above. A 4 s room at
+22050 Hz keeps the FFT at 2^18, as today.
+
+**Night**, for whichever variant: between 22:00 and 7:00 by the local clock, read once when the sound plays (no
+timer, no setting): master × 0.5 (−6 dB), every filter point × 0.7, room wet × 0.6, high-pass at least 140 Hz.
+"At night" buttons on board 25.
+
+**Also silent when** Windows' own notification sound is off: `HKCU\AppEvents\Schemes\Apps\.Default\Notification.Default\.Current`
+empty (the "No sounds" scheme or (None) chosen), read once at play time. As today, it's skipped while
+`SHQueryUserNotificationState` holds notifications back. Check on the PC whether Windows 11's Do not disturb shows up
+there; if it doesn't, leave it: there's no public API for it, and undocumented WNF state isn't worth reading.
+
+**Implementing (when approved):** `Chime` becomes the swell engine above: voices as a small array (frequency,
+pan, level, beat, start, attack, release, partials), an optional air layer (seeded brown noise through a
+time-varying low-pass), the main low-pass points, the room (the same FFT convolution, shorter), a final high-pass
+(`Biquad.SetHighpass`, Web Audio's formula) and `Render(bool night)`; FM, the glide and `Echo` go. `Seconds`
+becomes 2.0 for Lullaby, so the process waits 2 s instead of 8.5 s; the WAV is 176 KB instead of 750 KB. Compare the C#
+render with board 25's `OfflineAudioContext` render as for §18 (within 2–3 dB). `Sound` reads the clock and the
+Notification.Default value. No new setting; the toggle stays.
+
+### b. Cover hover, more modern (board 26)
+
+Today (`Views/GameTile`): the cover jumps to scale 1.03, gets a 2 px accent outline, a 25 % black veil
+(`CoverOverlayBrush`) and a centred accent "Play" pill; the (i) button appears. Instant, the same with animations
+off. The veil darkens the art and the outline is loud, which modern media tiles avoid: Windows' own apps (Xbox,
+Media Player, Photos, the Store) lift or lighten the tile, keep the art bright and put the action at the bottom or
+corner, with Fluent's short control timings.
+
+Shared by all three options: Fluent motion values from WinUI's theme resources, `ControlFasterAnimationDuration`
+(83 ms) for fades and presses, `ControlFastAnimationDuration` (167 ms) for scale and lift, easing
+`ControlFastOutSlowInKeySpline` (0,0,0,1). Implicit composition animations on the tile's own visual
+(`ElementCompositionPreview.GetElementVisual`, `ImplicitAnimations` for Scale, Translation and Opacity with a
+`CubicBezierEasingFunction`, or `UIElement.ScaleTransition` / `TranslationTransition` / `OpacityTransition` if their
+built-in ease is close enough): they run only when a value changes, so idle cost stays zero. The XAML
+`ScaleTransform` becomes `UIElement.Scale` with `CenterPoint` at the cover's centre (updated in `SizeChanged`).
+
+- **A · Lift.** Today's look, eased: scale 1.00 → 1.04 in 167 ms, `ThemeShadow` with Translation Z 0 → 24, veil,
+  outline and pill fade in over 83 ms. Press → 1.01 in 83 ms, release 167 ms. Least change, still the heaviest look.
+- **B · Light edge.** Nothing moves: white 6 % over the art, a 1 px static edge gradient (135°, white 55 % → 8 % →
+  4 %), a neutral pill (`SolidBackgroundFillColorBase` at 88 %, `ControlStrokeColorDefault` border), 83 ms fades;
+  press: scale 0.98 and black 12 % instead of the light. Calmest, but the weakest "this is clickable". (The old
+  pointer-following Reveal is gone from Windows 11, so it isn't copied.)
+- **C · Media tile (chosen).** Lift as A (1.04, 167 ms, ThemeShadow Z 24, press 1.01), a 1 px inside edge
+  (`CoverHoverEdgeBrush`: white 24 % dark, black 14 % light), no veil and no outline, a scrim on the bottom half
+  only (transparent at 50 % → black 65 %, 83 ms), and a 36 px round Play button (Accent fill, glyph `F5B0` 14 px in
+  `TextOnAccentFillColorPrimaryBrush`) bottom left, rising 4 px and fading in (167 ms / 83 ms). The (i) button stays
+  bottom right, 28–30 px as today, so Play and Details sit together. Screen-reader names unchanged.
+
+How it combines (C; A the same where it applies):
+- **Keyboard focus** shows the hover state plus Windows' focus visual just outside the cover
+  (`FocusVisualPrimaryBrush` 2 px, `FocusVisualSecondaryBrush` 1 px); returning from details still focuses without a
+  ring after a click (programmatic focus).
+- **Controller focus** shows the hover state plus today's PadRing (3 px, 4 px out, radius 12) and the bold title.
+  1.04 is already the pad's scale, so hover and pad finally match. Pointer and pad on different covers: both show.
+- **Shiny favourites (§13 d):** layers from the art up: art, sheen, scrim, edge, badges, Play, (i). The scrim covers
+  only the bottom half, so the sheen stays visible where the pointer moves it. A favourite's light edge is the
+  sheen's own edge, so C's hover edge is left off there. The sheen and the lift share one PointerEntered/Exited pair.
+- **"Animation effects" off:** the implicit animations are removed (instant), the look is the same.
+- **High contrast:** no shadow, scrim, sheen or light edge; a 2 px `SystemColorHighlightColor` outline and a Play
+  button in Highlight / HighlightText.
+- **List view** (`GameRow`) unchanged.
+- **Cost:** one ThemeShadow at a time (only the hovered or focused tile is raised); check that the GridView's item
+  container doesn't clip the shadow or the 4 % growth (the grid has 12 px gaps; the PadRing already needs 4 px).
+
+### Touches (if approved)
+
+a: `Services/Chime`, `Services/Sound`, `App` (wait time), `GameModeView` (preview); tests compare the render's
+length and level. b: `Views/GameTile.xaml(.cs)`, `Themes/Theme.xaml` (`CoverScrimBrush`, `CoverHoverEdgeBrush`;
+`CoverOverlayBrush` goes), `ShelfView` (item container clipping, if needed). No new settings.
+
 ## Build order (after milestone 7)
 
 8. **Quick wins:** *(Done.)*
@@ -1056,6 +1312,8 @@ shortcuts cards before using their buttons). No new settings.
 19. **Quick actions** (§16): the header menu first, then the tray items.
 20. **Restart after a crash** (§17): the in-a-row count and the toggle first, then the toast, then the watcher's
     relaunch with "Come back" off.
+21. **Softer sound and cover hover** (§19): the Lullaby sound (compare the C# render with board 25's), then the
+    Media tile hover; check both on the real PC (speakers and headphones; mouse, keyboard and controller).
 
 ## Not decided (don't build)
 

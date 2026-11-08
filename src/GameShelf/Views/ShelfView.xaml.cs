@@ -664,12 +664,16 @@ public sealed partial class ShelfView : UserControl
 
     private void OnTilesGotFocus(object sender, RoutedEventArgs e)
     {
-        if (_padMode && e.OriginalSource is SelectorItem { ContentTemplateRoot: GameTile tile }) tile.SetPadFocus(true);
+        if (e.OriginalSource is not SelectorItem { ContentTemplateRoot: GameTile tile } item) return;
+        if (_padMode) tile.SetPadFocus(true);
+        else if (item.FocusState == FocusState.Keyboard) tile.SetKeyFocus(true); // not after a click or in code
     }
 
     private void OnTilesLostFocus(object sender, RoutedEventArgs e)
     {
-        if (e.OriginalSource is SelectorItem { ContentTemplateRoot: GameTile tile }) tile.SetPadFocus(false);
+        if (e.OriginalSource is not SelectorItem { ContentTemplateRoot: GameTile tile }) return;
+        tile.SetPadFocus(false);
+        tile.SetKeyFocus(false);
     }
 
     /// <summary>The game whose cover or row has focus, if any.</summary>

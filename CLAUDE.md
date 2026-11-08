@@ -65,7 +65,7 @@ GameShelf.sln
                             RunningGames (games running right now, read once when Free up space opens),
                             Gamepad (milestone 13: XInput, read only while the panel is active and a pad is connected),
                             GameModeService (milestone 14: the watcher's Game mode arguments, recovery, page state),
-                            Chime (the calm "back to normal" sound, made in memory; board 23), Sound (plays it)
+                            Chime (the calm "back to normal" sound "Lullaby", made in memory, quieter at night; board 25), Sound (plays it)
     Views/                  ShelfView, DetailView, SettingsView, ImportView, SetupView (the launch toast lives in MainWindow),
                             Disclosure (a settings card that opens, boards 19 and 21), BarChart (the playtime charts), ModePreview (display mode pictures), CrashCard (shelf and detail),
                             FreeSpaceView (Free up space, milestone 15), GameModeView (Settings › Game mode),
@@ -202,7 +202,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
   - **Continue playing:** a hero banner of the last played game (its hero art, loaded only while shown, with a bottom fade), the game's logo (Steam's `logo.png`, local cache or downloaded once, max 56 px high and 60 % wide, soft shadow) or else its title, last played and launcher, and a Play button.
   - **This week:** the total, game count, most played game and a bar per day.
   - The switch shows only when both have something to show; the slot hides while searching.
-- Cover grid (3:4 covers, the title below). Top-left: the launcher's own icon as a 28 px badge (read from the installed launcher's exe at runtime; manual games and shortcuts get none). Top-right: a star on favorites. Badges, the star and the 30 px Details (i) button are near-solid dark chips with a light edge (`BadgeBrush`, `BadgeStrokeBrush`), so they read on any cover. Hovering lifts the cover slightly with an accent outline and a "Play" label, and shows the Details button in its bottom-right corner (instant, no animation). Coming back from details focuses that cover programmatically, so no focus ring shows after a mouse click (keyboard keeps it).
+- Cover grid (3:4 covers, the title below). Top-left: the launcher's own icon as a 28 px badge (read from the installed launcher's exe at runtime; manual games and shortcuts get none). Top-right: a star on favorites. Badges, the star and the 30 px Details (i) button are near-solid dark chips with a light edge (`BadgeBrush`, `BadgeStrokeBrush`), so they read on any cover. Hovering (and keyboard or controller focus) lifts the cover to 1.04 with a shadow, a fine edge and a fade on its bottom half, and shows a round Play mark bottom left beside the Details button (board 26 "Media tile": Fluent timings 167/83 ms, instant with animations off; a highlight outline in high contrast). Coming back from details focuses that cover programmatically, so no focus ring shows after a mouse click (keyboard keeps it).
 - Games without store art get a generated cover: the game's icon on its own muted color, or a monogram (`FallbackArt`, `CoverColors`). No network.
 - Clicking a cover (or a row in List) plays the game, like Enter and like the desktop shortcuts it replaces. Details open from the (i) button, Space, or right-click › Details. The (i) button stays in the UI Automation tree when not hovered, so screen readers can reach it.
 - Favorites are pinned first.
