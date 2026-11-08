@@ -90,12 +90,16 @@ internal static class Install
 {
     public static int Run(string sid)
     {
+        // Opened first and held without delete sharing: from here on the file this process was started from can't
+        // be renamed or replaced, so the copy put into Program Files is the exe the user approved in the UAC prompt.
+        using var self = OpenSelf();
+        if (self is null) return 11;
         if (!DataFolder.Ensure())
         {
             return 10;
         }
         Helper.Log($"Allow: for {sid}");
-        if (!CopySelf())
+        if (!CopySelf(self))
         {
             Helper.Log("Allow: couldn't put the helper into Program Files");
             return 11;
@@ -142,15 +146,32 @@ internal static class Install
     /// Copies this exe to Program Files and checks the copy's hash; an in-use old copy is moved aside first. The
     /// same exe already there is left alone; any other one (an older helper version) is replaced.
     /// </summary>
-    private static bool CopySelf()
+    private static FileStream? OpenSelf()
     {
-        var source = Environment.ProcessPath;
+        if (Environment.ProcessPath is not { } source) return null;
+        try
+        {
+            if (File.GetAttributes(source).HasFlag(FileAttributes.ReparsePoint)) return null;
+            return new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            Helper.Log("Allow: couldn't open the helper itself: " + e.Message);
+            return null;
+        }
+    }
+
+    private static bool CopySelf(FileStream self)
+    {
+        var source = self.Name;
         var target = ElevatedPart.InstalledExe;
-        if (source is null) return false;
         if (string.Equals(Path.GetFullPath(source), target, StringComparison.OrdinalIgnoreCase)) return true;
         try
         {
-            var bytes = File.ReadAllBytes(source);
+            if (self.Length > 64L * 1024 * 1024) return false; // the helper is a few MB
+            var bytes = new byte[self.Length];
+            self.Position = 0;
+            self.ReadExactly(bytes);
             var hash = SHA256.HashData(bytes);
             var dir = new DirectoryInfo(ElevatedPart.InstallDir);
             if (dir.Exists && dir.Attributes.HasFlag(FileAttributes.ReparsePoint)) return false;

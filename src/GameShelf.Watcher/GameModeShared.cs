@@ -246,7 +246,7 @@ public static partial class ElevatedPart
     /// Bump it by hand whenever GameShelf.Elevated changes: what it does, the request, journal or result format,
     /// or how its tasks and folders are set up.
     /// </summary>
-    public const int HelperVersion = 1;
+    public const int HelperVersion = 2; // 2: security fixes (file lock, capped request read, system apps refused, self-copy held open)
 
     /// <summary>
     /// A marker's text is from another helper version. Markers written before <see cref="HelperVersion"/> hold the
@@ -321,8 +321,22 @@ public static partial class ElevatedPart
         if (name is null || name.Length is < 5 or > 64 || !name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) return false;
         foreach (char c in name)
             if (!char.IsLetterOrDigit(c) && " ._()+-[]&!#".IndexOf(c) < 0) return false;
-        return name[0] != '.' && name[0] != ' ';
+        return name[0] != '.' && name[0] != ' ' && !IsSystemApp(name);
     }
+
+    /// <summary>
+    /// Windows' own processes and its security software: never slowed down or re-marked, whatever the request
+    /// says (the request comes from the user's side; svchost.exe would cover Windows Update and Defender too).
+    /// </summary>
+    public static bool IsSystemApp(string name) => Array.Exists(SystemApps, s => s.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+    private static readonly string[] SystemApps =
+    [
+        "svchost.exe", "System.exe", "smss.exe", "csrss.exe", "wininit.exe", "winlogon.exe", "services.exe", "lsass.exe",
+        "lsaiso.exe", "explorer.exe", "dwm.exe", "spoolsv.exe", "TrustedInstaller.exe", "TiWorker.exe", "wuauclt.exe",
+        "MsMpEng.exe", "NisSrv.exe", "MpDefenderCoreService.exe", "MpCmdRun.exe", "MsSense.exe", "SenseCncProxy.exe",
+        "SecurityHealthService.exe", "smartscreen.exe",
+    ];
 
     /// <summary>A user account's SID as text ("S-1-5-21-…"): what tasks, markers and results are named by.</summary>
     public static bool IsUserSid(string? sid)

@@ -6,13 +6,12 @@ namespace GameShelf.Elevated;
 
 /// <summary>
 /// Apply and restore (spec §11): services, network priority (QoS) and the Windows Update limit. One run at a time
-/// (a machine-wide mutex); the journal in the admin-only ProgramData folder is written before each change, and a
+/// (a file lock in the admin-only ProgramData folder); the journal there is written before each change, and a
 /// restore puts back, in reverse order, only what is still the way we set it.
 /// </summary>
 internal static class Helper
 {
     private const long MaxLogBytes = 256 * 1024;
-    private const string MutexName = @"Global\GameShelf.Elevated";
     private const int DscpGame = 46;
 
     // ---- Apply --------------------------------------------------------------------------------------------
@@ -32,6 +31,11 @@ internal static class Helper
             {
                 Log("Apply: the ProgramData folder isn't ours, nothing changed");
                 return 4;
+            }
+            if (!gate.Held)
+            {
+                Log("Apply: another run didn't finish in time, nothing changed");
+                return 6;
             }
             var journal = Journal.Load();
             if (journal is not null && journal.Sid != sid)
@@ -169,6 +173,8 @@ internal static class Helper
         RestoreResult? result = null;
         try
         {
+            // Only a journal from our admin-only folder is acted on.
+            if (!DataFolder.IsOurs()) return 4;
             var journal = Journal.Load();
             if (journal is null) return 0;
             if (journal.Sid != sid)
@@ -283,7 +289,12 @@ internal static class Helper
         {
             var info = new FileInfo(GameModeInfo.RequestPath);
             if (!info.Exists || info.Length > ElevatedRequest.MaxBytes || info.Attributes.HasFlag(FileAttributes.ReparsePoint)) return null;
-            return ElevatedRequest.Parse(File.ReadAllText(info.FullName));
+            // The size is capped on what is actually read, not only on the check above: the file may change in between.
+            using var stream = new FileStream(info.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1, FileOptions.None);
+            var buffer = new byte[ElevatedRequest.MaxBytes + 1];
+            int read = stream.ReadAtLeast(buffer, buffer.Length, throwOnEndOfStream: false);
+            if (read > ElevatedRequest.MaxBytes) return null;
+            return ElevatedRequest.Parse(System.Text.Encoding.UTF8.GetString(buffer, 0, read));
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
@@ -311,36 +322,38 @@ internal static class Helper
         Native.CloseHandle(handle);
     }
 
+    /// <summary>
+    /// One run at a time: an exclusive lock on a file in the admin-only folder, waited for up to 2 minutes. Not a
+    /// named mutex: a user's program could create that name first and hold it. Without the lock (folder not ours,
+    /// or it timed out) Apply changes nothing; a restore still goes ahead, since leaving changes applied is worse.
+    /// </summary>
     private static Gate Lock()
     {
-        try
+        if (!DataFolder.IsOurs()) return new Gate(null);
+        var path = Path.Combine(ElevatedPart.DataDir, "helper.lock");
+        long end = Environment.TickCount64 + 120_000;
+        while (true)
         {
-            var mutex = new Mutex(false, MutexName);
             try
             {
-                if (mutex.WaitOne(TimeSpan.FromMinutes(2))) return new Gate(mutex);
+                return new Gate(new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 1, FileOptions.DeleteOnClose));
             }
-            catch (AbandonedMutexException)
+            catch (IOException) when (Environment.TickCount64 < end)
             {
-                return new Gate(mutex);
+                Thread.Sleep(250); // another run holds it
             }
-            mutex.Dispose();
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                Log("Couldn't take the lock: " + e.Message);
+                return new Gate(null);
+            }
         }
-        catch (Exception e) when (e is UnauthorizedAccessException or IOException or WaitHandleCannotBeOpenedException)
-        {
-            Log("Couldn't take the lock: " + e.Message);
-        }
-        return new Gate(null);
     }
 
-    private readonly record struct Gate(Mutex? Mutex) : IDisposable
+    private readonly record struct Gate(FileStream? File) : IDisposable
     {
-        public void Dispose()
-        {
-            if (Mutex is null) return;
-            Mutex.ReleaseMutex();
-            Mutex.Dispose();
-        }
+        public bool Held => File is not null;
+        public void Dispose() => File?.Dispose();
     }
 
     // ---- Log ----------------------------------------------------------------------------------------------

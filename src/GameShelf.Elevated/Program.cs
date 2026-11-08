@@ -16,7 +16,8 @@ namespace GameShelf.Elevated;
 ///   --apply                    the "GameShelf Apply" task: pause services, network priority, Windows Update limit
 ///   --restore                  the "GameShelf Restore" task (also at logon): put all of that back
 ///
-/// Exit codes: 0 done, 1 something wasn't put back, 2 no valid request, 3 not elevated, 4/5 refused, 10+ install failed.
+/// Exit codes: 0 done, 1 something wasn't put back, 2 no valid request, 3 not elevated, 4/5 refused, 6 busy (another run held the
+/// lock for 2 minutes), 10+ install failed.
 /// </summary>
 internal static class Program
 {

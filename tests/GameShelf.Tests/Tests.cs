@@ -807,6 +807,11 @@ static class Tests
             "\nservices=wsearch,wuauserv,WinDefend,../x,spooler\nsmooth=C:\\Windows\\x.exe,a'b.exe,..\\y.exe,x.bat,ok.exe,\"q.exe\nthrottle=a/b.exe,%TEMP%.exe\nlimit=5\n");
         Check(hostile is not null && hostile.Services.SequenceEqual(["wsearch", "spooler"]) && hostile.Smooth.SequenceEqual(["ok.exe"]) &&
               hostile.Throttle.Count == 0, "only allowlisted services and plain exe names are kept");
+        var system = GameShelf.Shared.ElevatedRequest.Parse(
+            "event=" + new string('b', 32) + "\nsession=" + new string('c', 32) +
+            "\nsmooth=game.exe,svchost.exe\nthrottle=SVCHOST.EXE,MsMpEng.exe,OneDrive.exe\nlimit=1\n");
+        Check(system is not null && system.Smooth.SequenceEqual(["game.exe"]) && system.Throttle.SequenceEqual(["OneDrive.exe"]),
+            "Windows and security processes are never throttled or re-marked");
         Check(GameShelf.Shared.ElevatedRequest.Parse("event=xyz\nsession=" + new string('c', 32)) is null &&
               GameShelf.Shared.ElevatedRequest.Parse("event=" + new string('B', 32) + "\nsession=" + new string('c', 32)) is null &&
               GameShelf.Shared.ElevatedRequest.Parse("event=" + new string('b', 32) + "\nsession=" + new string('c', 32) + "\nlimit=1000") is null &&
