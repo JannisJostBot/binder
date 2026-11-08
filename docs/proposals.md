@@ -1075,11 +1075,37 @@ it's there and sinks back into silence. Longer (5 s) but very quiet, so it's fel
 - Main low-pass Q 0.2 dB; frequency points are exponential ramps from the previous point.
 - The same sound every time (identical sounds fade into the background; variation keeps them noticeable).
 
-**Soft glass (latest round, recommended).** The owner liked Glass light (5 below) and asked for it softer, then
+**Made for "back to normal" (latest round, recommended).** The owner found Soft glass didn't fit the message.
+Glass light rises into a major seventh, which sounds like something opening or beginning; "Windows is back to
+normal" means things coming down, settling, ending at rest. These keep Soft glass's sound (pure sines, slow
+shimmer, dark, 2.0 s, −34 LUFS, −40 at night) but move downwards and end on a plain D major chord, with the low D
+last or underneath. No major seventh. One engine addition: a voice can `bend` (an exponential frequency ramp by a
+ratio, starting at a time after its start, over a time), applied to both sines of its pair.
+
+- **Settle (recommended).** Soft glass upside down: A, F♯, D drift in from the top and the low D arrives last.
+  - Voices (Hz, pan, level, beat, start, attack, release τ): A4 440.00, 0.25, 0.010, 0.45 Hz, 0, 0.40 s, 0.28 s ·
+    F♯4 369.99, −0.20, 0.014, 0.40 Hz, 120 ms, 0.40 s, 0.30 s · D4 293.66, 0.10, 0.020, 0.35 Hz, 240 ms, 0.45 s,
+    0.32 s · D3 146.83, 0, 0.032, 0.25 Hz, 360 ms, 0.50 s, 0.38 s.
+  - Low-pass 900 → 500 Hz over 2 s. Room 1.4 s, wet 0.40, pre-delay 30 ms, cut 1100 Hz. High-pass 120 Hz.
+    Master 0.90. Measured: −34.0 LUFS, peak −28.9 dBFS, audible 1.9 s; night −40.2.
+- **Resolve.** Dsus4 (D3, A3, D4, G4) together; after 0.55 s the G4 sinks to F♯4 over 0.3 s and the chord becomes
+  D major: tension released.
+  - D3 146.83, 0, 0.030, 0.25 Hz, τ 0.45 s · A3 220.00, −0.20, 0.022, 0.30 Hz, τ 0.42 s · D4 293.66, 0.20,
+    0.018, 0.35 Hz, τ 0.40 s (all attack 0.50 s) · G4 392.00, 0.05, 0.013, 0.40 Hz, attack 0.45 s, τ 0.50 s,
+    bend ratio 369.99 / 392.00 at 0.55 s over 0.3 s.
+  - Low-pass 850 → 500 Hz over 2 s. Room 1.4 s, wet 0.40, pre-delay 30 ms, cut 1100 Hz. High-pass 120 Hz.
+    Master 0.785. Measured: −34.0 LUFS, peak −27.1 dBFS, audible 1.8 s; night −40.0.
+- **Sigh.** A4 then D4 (a falling fifth) over a soft D3: a relieved "ahh".
+  - D3 146.83, 0, 0.030, 0.25 Hz, 0, 0.5 s, 0.40 s · A4 440.00, 0.20, 0.014, 0.45 Hz, 0, 0.3 s, 0.22 s ·
+    D4 293.66, −0.10, 0.020, 0.35 Hz, 300 ms, 0.4 s, 0.38 s.
+  - Low-pass 900 → 500 Hz over 2 s. Room 1.4 s, wet 0.40, pre-delay 30 ms, cut 1100 Hz. High-pass 120 Hz.
+    Master 0.955. Measured: −34.0 LUFS, peak −30.0 dBFS, audible 1.8 s; night −40.3.
+
+**Soft glass (the round before).** The owner liked Glass light (5 below) and asked for it softer, then
 for about 2 s. Three versions, all **2.0 s** (audible 1.7–1.9 s) at **−34 LUFS** (2 dB under the others, −40 at
 night). All five (or three) tones arrive within 0.4 s; the master fades over the last 0.5 s.
 
-- **Soft glass (recommended).** Glass light's five tones, swelling in over about half a second, with a slow quiet
+- **Soft glass.** Glass light's five tones, swelling in over about half a second, with a slow quiet
   shimmer and a small dark room.
   - Voices (Hz, pan, level, beat, start, attack, release τ): D3 146.83, 0, 0.030, 0.25 Hz, 0, 0.55 s, 0.35 s ·
     D4 293.66, −0.30, 0.020, 0.35 Hz, 60 ms, 0.45 s, 0.30 s · F♯4 369.99, 0.30, 0.014, 0.40 Hz, 180 ms, 0.45 s,
@@ -1155,7 +1181,7 @@ vibrato (a sine LFO into each oscillator's frequency, ±cents), and can pass thr
      High-pass 110 Hz. Master 1.06. File 6.0 s. Measured: −32.0 LUFS, peak −24.5 dBFS; night −37.6.
 
 Earlier picks: Exhale if it should be calm and warm, Glass light if it should feel heavenly; now superseded by
-Soft glass above. A 4 s room at
+Settle above. A 4 s room at
 22050 Hz keeps the FFT at 2^18, as today.
 
 **Night**, for whichever variant: between 22:00 and 7:00 by the local clock, read once when the sound plays (no
@@ -1171,7 +1197,7 @@ there; if it doesn't, leave it: there's no public API for it, and undocumented W
 pan, level, beat, start, attack, release, partials), an optional air layer (seeded brown noise through a
 time-varying low-pass), the main low-pass points, the room (the same FFT convolution, shorter), a final high-pass
 (`Biquad.SetHighpass`, Web Audio's formula) and `Render(bool night)`; FM, the glide and `Echo` go. `Seconds`
-becomes 2.0 for Soft glass, so the process waits 2 s instead of 8.5 s; the WAV is 176 KB instead of 750 KB. Compare the C#
+becomes 2.0 for Settle, so the process waits 2 s instead of 8.5 s; the WAV is 176 KB instead of 750 KB. Compare the C#
 render with board 25's `OfflineAudioContext` render as for §18 (within 2–3 dB). `Sound` reads the clock and the
 Notification.Default value. No new setting; the toggle stays.
 
@@ -1287,4 +1313,4 @@ Suggested but neither approved nor rejected yet:
 - Portable mode (likely dropped, since it conflicts with the installer)
 - A Windows 11 Widgets-board card
 - A relaxing "back to normal" sound with a night version, and a modern cover hover (§19, boards 25 and 26;
-  recommended: "Soft glass" (2 s) and "C · Media tile")
+  recommended: "Settle" (2 s) and "C · Media tile")
