@@ -57,6 +57,9 @@ public sealed class Game
     public GameEngine? Engine { get; set; }
     public List<AntiCheatKind>? AntiCheats { get; set; }
 
+    /// <summary>The highest playtime milestone (hours) already shown in "Welcome back" (proposals §13 e).</summary>
+    public int MilestoneShownHours { get; set; }
+
     [JsonIgnore]
     public string SizeText => FormatSize(SizeOnDisk);
 
@@ -87,6 +90,7 @@ public sealed class Game
         ExeOverride = from.ExeOverride;
         AntiCheatReminder = from.AntiCheatReminder;
         GameMode = from.GameMode;
+        MilestoneShownHours = from.MilestoneShownHours;
         if (ScanStamp is null)
         {
             ScanStamp = from.ScanStamp;

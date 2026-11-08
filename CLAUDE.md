@@ -55,7 +55,8 @@ GameShelf.sln
                             from file names, bounded, cached per game), AntiCheat (requirements and conflict tables),
                             PlaytimeStats (this week, weekly and monthly playtime from our sessions),
                             CrashAnalysis (milestone 11: exit code + Windows events -> ending, culprit, advice, copied texts),
-                            SpacePlanner (milestone 15: which games to remove on which drive, squarified treemap)
+                            SpacePlanner (milestone 15: which games to remove on which drive, squarified treemap),
+                            Moments (milestone 16: "Welcome back" and playtime milestones)
     Models/                 Game, Session, Settings, ImportedShortcut, CrashRecord
     Services/               Launcher, CoverCache, Storage, DesktopLayer, Autostart, GameActions,
                             Placement (pure pixel math), Monitors (displays, auto-hide taskbars), ShellNotify, ErrorLog,
@@ -70,7 +71,8 @@ GameShelf.sln
     Views/                  ShelfView, DetailView, SettingsView, ImportView, SetupView (the launch toast lives in MainWindow),
                             Disclosure (a settings card that opens, boards 19 and 21), BarChart (the playtime charts), ModePreview (display mode pictures), CrashCard (shelf and detail),
                             FreeSpaceView (Free up space, milestone 15), GameModeView (Settings › Game mode),
-                            GameModeToast (Game mode's "Game mode is on" / "Windows is back to normal" toast, its own small window)
+                            GameModeToast (Game mode's "Game mode is on" / "Windows is back to normal" toast, its own small window),
+                            BannerLogo (a game's logo on banners), Sheen (shiny favorites)
   src/GameShelf.Watcher/    Program.cs, GameMode.cs (applies and restores Game mode, with its journal),
                             ElevatedClient.cs (runs the helper's tasks and waits on its event),
                             GameModeShared.cs (ids, files, restore result, power mode, the helper's request and paths;
@@ -203,10 +205,20 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
   - **Continue playing:** a hero banner of the last played game (its hero art, loaded only while shown, with a bottom fade), the game's logo (Steam's `logo.png`, local cache or downloaded once, max 56 px high and 60 % wide, soft shadow) or else its title, last played and launcher, and a Play button.
   - **This week:** the total, game count, most played game and a bar per day.
   - The switch shows only when both have something to show; the slot hides while searching.
+  - **Welcome back** (§13 c, e): the first time the panel opens after a session of 2 min or longer, the slot shows
+    that game with "Welcome back", the session's length and the week so far, and no switch. A playtime milestone it
+    passed (10, 50, 100, 250, 500, 1,000 h) adds one quiet line. Shown once, chosen when the panel opens
+    (`Moments`, `Settings.WelcomeBackSessionStart`, `Game.MilestoneShownHours`). The first run only records
+    what's there.
 - Cover grid (3:4 covers, the title below). Top-left: the launcher's own icon as a 28 px badge (read from the installed launcher's exe at runtime; manual games and shortcuts get none). Top-right: a star on favorites. Badges, the star and the 30 px Details (i) button are near-solid dark chips with a light edge (`BadgeBrush`, `BadgeStrokeBrush`), so they read on any cover. Hovering (and keyboard or controller focus) lifts the cover to 1.04 with a shadow, a fine edge and a fade on its bottom half, and shows a round Play mark bottom left beside the Details button (board 26 "Media tile": Fluent timings 167/83 ms, instant with animations off; a highlight outline in high contrast). Coming back from details focuses that cover programmatically, so no focus ring shows after a mouse click (keyboard keeps it).
 - Games without store art get a generated cover: the game's icon on its own muted color, or a monogram (`FallbackArt`, `CoverColors`). No network.
 - Clicking a cover (or a row in List) plays the game, like Enter and like the desktop shortcuts it replaces. Details open from the (i) button, Space, or right-click › Details. The (i) button stays in the UI Automation tree when not hovered, so screen readers can reach it.
 - Favorites are pinned first.
+- Shiny favorites (§13 d, Settings › Appearance, on by default): favorite covers get a faint rainbow foil, glare
+  and light edge (`Sheen`, composition layers). Over the pointer they follow it, and they ease back on leave. They
+  stay still with animations off, and there's none in high contrast or List.
+- Opening details from a cover grows it into the Detail view's cover, and back (§13 b, `ConnectedAnimationService`).
+  This only happens from the grid, only for a cover in view, and never with animations off.
 - Footer hint: "Hides 10 s after a game starts · comes back when it closes", shown until three sessions are recorded.
 - "Game mode needs an update" (an `InfoBar` above the search box, with Update…): shown when Game mode is on with items
   that need the admin helper and the helper is from another version; checked when the shelf gets its data.

@@ -48,6 +48,9 @@ public sealed partial class DetailView : UserControl
     /// <summary>The game being shown, or null.</summary>
     public Game? Game => _game;
 
+    /// <summary>The cover beside the banner, where the shelf's cover grows into (proposals §13 b).</summary>
+    public UIElement CoverElement => Cover;
+
     public void Show(Game game, IReadOnlyList<Session> sessions, Settings settings)
     {
         bool sameGame = ReferenceEquals(_game, game) || _game?.Id == game.Id;

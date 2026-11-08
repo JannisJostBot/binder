@@ -80,12 +80,16 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel VerticalAlignment="Bottom" Spacing="0">
-                        <TextBlock Text="Continue playing" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{StaticResource BannerSecondaryTextBrush}" />
+                        <!-- "Continue playing", or "Welcome back" once after a session (§13 c). -->
+                        <TextBlock x:Name="ContinueEyebrow" Text="Continue playing" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{StaticResource BannerSecondaryTextBrush}" />
                         <!-- The game's logo instead of its title when Steam has one (§13 a). -->
                         <v:BannerLogo x:Name="ContinueLogo" MaxLogoHeight="56" Margin="0,4,0,4" />
                         <TextBlock x:Name="ContinueTitle" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="22"
                                    Foreground="White" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
                         <TextBlock x:Name="ContinueDetail" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{StaticResource BannerSecondaryTextBrush}" />
+                        <!-- A quiet playtime milestone ("100 hours in …", §13 e), only in "Welcome back". -->
+                        <TextBlock x:Name="ContinueMilestone" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="SemiBold"
+                                   Foreground="White" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" Visibility="Collapsed" />
                     </StackPanel>
                     <Button x:Name="ContinuePlay" Grid.Column="1" Style="{StaticResource AccentButtonStyle}" Click="OnContinuePlayClick"
                             VerticalAlignment="Bottom" Padding="18,6">

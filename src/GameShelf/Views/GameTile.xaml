@@ -11,8 +11,10 @@
         <!-- Hover (board 26, option C "Media tile"): the cover lifts to 1.04 with a shadow, a fine light edge and a
              fade on its bottom half, and a round Play button rises into the corner beside Details. The scale,
              lift and fades are UIElement transitions set in code (none with "Animation effects" off). -->
-        <Grid x:Name="CoverArea" SizeChanged="OnCoverSizeChanged">
+        <Grid x:Name="CoverArea" SizeChanged="OnCoverSizeChanged" PointerMoved="OnCoverPointerMoved">
             <v:CoverView x:Name="Cover" />
+            <!-- Favourites' shiny sleeve (§13 d): collapsed on other covers. -->
+            <v:Sheen x:Name="Shine" />
             <!-- Shown until (or unless) a cover image loads. -->
             <TextBlock x:Name="PlaceholderTitle" Margin="10" TextWrapping="Wrap" TextAlignment="Center"
                        VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"

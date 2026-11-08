@@ -14,6 +14,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using ConnectedAnimation = Microsoft.UI.Xaml.Media.Animation.ConnectedAnimation;
+using ConnectedAnimationService = Microsoft.UI.Xaml.Media.Animation.ConnectedAnimationService;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.UI.ViewManagement;
@@ -105,6 +107,7 @@ public sealed partial class MainWindow : Window
         Shelf.SetFlyout(IsFlyout, App.Pinned);
         Shelf.HelperUpdateRequested += UpdateGameModeHelperAsync;
         Shelf.SetData(_games, _sessions, App.Settings);
+        PickWelcome();
         Shelf.CrashPlayRequested += game =>
         {
             CrashSeen();
@@ -345,6 +348,7 @@ public sealed partial class MainWindow : Window
     public void Reopen()
     {
         IsClosing = false;
+        PickWelcome();
         PlaceOnScreen();
         if (IsFlyout) PrepareSlide();
         Activate();
@@ -699,11 +703,26 @@ public sealed partial class MainWindow : Window
         if (newLauncher) _ = RescanAsync();
     }
 
+    private const string CoverAnimation = "cover";
+
+    /// <summary>
+    /// Proposals §13 b: the cover grows from the grid into the Detail view (and back). WinUI's connected
+    /// animation, default timing; only from the cover grid, only a cover that's in view, never with "Animation
+    /// effects" off. Nothing runs outside the ~250 ms it plays.
+    /// </summary>
+    private static ConnectedAnimation? PrepareCover(UIElement? from)
+    {
+        if (from is null || !new UISettings().AnimationsEnabled) return null;
+        return ConnectedAnimationService.GetForCurrentView().PrepareToAnimate(CoverAnimation, from);
+    }
+
     private void ShowDetail(Game game)
     {
+        var animation = Shelf.Visibility == Visibility.Visible ? PrepareCover(Shelf.CoverOf(game)) : null;
         Detail.Show(game, _sessions, App.Settings);
         ShowPage(Detail);
         Detail.UpdateLayout();
+        animation?.TryStart(Detail.CoverElement);
         Detail.FocusPlay();
     }
 
@@ -719,11 +738,17 @@ public sealed partial class MainWindow : Window
     {
         if (Shelf.Visibility == Visibility.Visible) return;
         var shown = Detail.Visibility == Visibility.Visible ? Detail.Game : null;
+        var animation = shown is not null && !Shelf.IsListMode ? PrepareCover(Detail.CoverElement) : null;
         ShowPage(Shelf);
         Shelf.UpdateLayout();
         if (shown is not null) Shelf.FocusGame(shown);
         else if (_padMode) Shelf.FocusFirstGame(); // a search box is no use without a keyboard
         else Shelf.FocusSearch();
+        if (animation is null) return;
+        // Back into the grid only if that cover is in view (focusing it may just have scrolled it there).
+        Shelf.UpdateLayout();
+        if (Shelf.CoverOf(shown!) is { } target) animation.TryStart(target);
+        else animation.Cancel();
     }
 
     private void OnSettingChanged(SettingChange change)
@@ -1411,5 +1436,37 @@ public sealed partial class MainWindow : Window
             HideCountdown();
         }
         RefreshViews();
+        // On screen (Keep open, or the desktop panel): welcome back now. Hidden: when it next opens (Reopen).
+        if (!IsClosing) PickWelcome();
+    }
+
+    /// <summary>
+    /// Proposals §13 c and e: each time the panel opens, "Welcome back" shows the session that ended since the
+    /// last one shown (2 min or longer), with a playtime milestone it passed. Stored as shown right away, so the
+    /// next opening shows the normal slot. The first run only records what's there, showing nothing.
+    /// </summary>
+    private void PickWelcome()
+    {
+        var settings = App.Settings;
+        if (settings.WelcomeBackSessionStart is not { } shownFor)
+        {
+            settings.WelcomeBackSessionStart = Moments.Seed(_sessions, _games);
+            SaveSettings();
+            SaveLibrary();
+            Shelf.SetWelcome(null);
+            return;
+        }
+        var moment = Moments.Pick(_sessions, shownFor, id => FindGame(id)?.MilestoneShownHours ?? 0, DateTime.Now);
+        if (moment is not null)
+        {
+            settings.WelcomeBackSessionStart = moment.SessionStart;
+            SaveSettings();
+            if (moment.Milestone > 0 && FindGame(moment.GameId) is { } game)
+            {
+                game.MilestoneShownHours = moment.Milestone;
+                SaveLibrary();
+            }
+        }
+        Shelf.SetWelcome(moment);
     }
 }
