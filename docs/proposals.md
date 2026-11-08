@@ -29,6 +29,7 @@ break the user's system.
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | To do |
 | Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
+| 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | To do (approved 2026-11-08, boards 25 and 26) |
 | 17 Advanced: sources and artwork | §14 | To do |
 | 18 Performance | §15 | To do |
 
@@ -165,6 +166,12 @@ The ideas listed under "Not decided" at the bottom must **not** be built.
   the detail page (board 22). Store page and Hide from shelf stay as links at the bottom.
 - **Game mode toast:** design B, the one-line pill; the failure case is a larger card with room for the names.
 - **Restore sound:** sound 1 "Open fourths", made by Game Shelf in memory, replacing the Windows notification sound.
+- **Restore sound, replaced (§19 a, board 25):** "Lullaby": two soft notes falling a major third over a low D, 2 s,
+  quiet (−34 LUFS, −40 between 22:00 and 7:00), silent when Windows' notification sound is off. Rejected along the
+  way: struck tones ("too much like a notification"), long swells, bright ones ("way too bright"), rising ones
+  (didn't fit "back to normal") and falling dark ones ("like horror sounds").
+- **Cover hover (§19 b, board 26):** option C "Media tile": eased lift to 1.04 with a shadow, a fine light edge, a
+  bottom scrim and a round Play button; no dark veil or accent outline.
 
 ---
 
@@ -1028,10 +1035,11 @@ more inside opens from its card. **Nothing was removed**; every setting and acti
 `Sound`, `App` (sound lifetime), `GameModeView` (preview), `tests/smoke.ps1` (opens the Hidden games and Desktop
 shortcuts cards before using their buttons). No new settings.
 
-## 19. A relaxing "back to normal" sound and a modern cover hover (boards 25 and 26)
+## 19. A softer "back to normal" sound and a modern cover hover (boards 25 and 26)
 
-**Proposed, not approved (don't build).** Two proposals from 2026-11-08, waiting for the owner. Designs and
-prototypes: canvas, "Still to build" page, board 25 (listen to each sound) and board 26 (hover, press, Tab).
+**Approved (owner, 2026-11-08):** the sound **Lullaby** (a) and the hover **C · Media tile** (b). Designs and
+prototypes: canvas, "Still to build" page, board 25 (listen to each sound) and board 26 (hover, press, Tab). The
+other variants below are kept as the record of how the choice was reached; build only the chosen ones.
 
 ### a. The "back to normal" sound: a breath, not a notification (board 25)
 
@@ -1075,7 +1083,7 @@ it's there and sinks back into silence. Longer (5 s) but very quiet, so it's fel
 - Main low-pass Q 0.2 dB; frequency points are exponential ramps from the previous point.
 - The same sound every time (identical sounds fade into the background; variation keeps them noticeable).
 
-**Warm and friendly (latest round, recommended).** The owner said the settling sounds (next round) "sound like
+**Warm and friendly (latest round; Lullaby chosen).** The owner said the settling sounds (next round) "sound like
 horror sounds". Why: tones fading in from silence like a ghost, a full slow wobble (two equal sines beating), very
 muffled, and pitch falling (Resolve even slid down). These fix exactly that, still 2.0 s, −34 LUFS, −40 at night:
 - a soft but defined start (sin², 0.10–0.15 s, like a felt key);
@@ -1084,7 +1092,7 @@ muffled, and pitch falling (Resolve even slid down). These fix exactly that, sti
 - less muffled: low-pass 1.6–1.8 kHz closing to 1 kHz, room 1.2 s, wet 0.30, pre-delay 20 ms, cut 2500 Hz;
 - a clear major third, no pitch slides. High-pass 120 Hz for all.
 
-- **Home (recommended).** One warm D major chord blooming almost together, low to high: "everything is in its
+- **Home.** One warm D major chord blooming almost together, low to high: "everything is in its
   place".
   - Voices (Hz, pan, level, start, attack, τ, beat, 2nd harmonic): D3 146.83, 0, 0.026, 0, 0.15 s, 0.50 s, 0.4 Hz,
     0.15 · A3 220.00, −0.20, 0.020, 30 ms, 0.14 s, 0.48 s, 0.45 Hz, 0.12 · F♯4 369.99, 0.20, 0.018, 60 ms, 0.13 s,
@@ -1095,7 +1103,7 @@ muffled, and pitch falling (Resolve even slid down). These fix exactly that, sti
     0.5 Hz, 0.12 · D4 293.66, 0.10, 0.020, 200 ms, 0.13 s, 0.40 s, 0.45 Hz, 0.12 · D3 146.83, 0, 0.026, 300 ms,
     0.15 s, 0.48 s, 0.4 Hz, 0.15.
   - Low-pass 1800 → 1000 Hz over 2 s. Master 1.135. Measured: −34.0 LUFS, peak −28.5 dBFS; night −40.1.
-- **Lullaby.** F♯4 then D4 (a falling major third) with a low D joining under the second note.
+- **Lullaby (chosen).** F♯4 then D4 (a falling major third) with a low D joining under the second note.
   - F♯4 369.99, 0.15, 0.022, 0, 0.10 s, 0.30 s, 0.5 Hz, 0.12 · D4 293.66, −0.15, 0.024, 250 ms, 0.10 s, 0.45 s,
     0.45 Hz, 0.12 · D3 146.83, 0, 0.018, 250 ms, 0.15 s, 0.50 s, 0.4 Hz, 0.15.
   - Low-pass 1800 → 1000 Hz over 2 s. Master 1.135. Measured: −34.0 LUFS, peak −25.9 dBFS; night −40.0.
@@ -1222,7 +1230,7 @@ there; if it doesn't, leave it: there's no public API for it, and undocumented W
 pan, level, beat, start, attack, release, partials), an optional air layer (seeded brown noise through a
 time-varying low-pass), the main low-pass points, the room (the same FFT convolution, shorter), a final high-pass
 (`Biquad.SetHighpass`, Web Audio's formula) and `Render(bool night)`; FM, the glide and `Echo` go. `Seconds`
-becomes 2.0 for Home, so the process waits 2 s instead of 8.5 s; the WAV is 176 KB instead of 750 KB. Compare the C#
+becomes 2.0 for Lullaby, so the process waits 2 s instead of 8.5 s; the WAV is 176 KB instead of 750 KB. Compare the C#
 render with board 25's `OfflineAudioContext` render as for §18 (within 2–3 dB). `Sound` reads the clock and the
 Notification.Default value. No new setting; the toggle stays.
 
@@ -1248,7 +1256,7 @@ built-in ease is close enough): they run only when a value changes, so idle cost
   4 %), a neutral pill (`SolidBackgroundFillColorBase` at 88 %, `ControlStrokeColorDefault` border), 83 ms fades;
   press: scale 0.98 and black 12 % instead of the light. Calmest, but the weakest "this is clickable". (The old
   pointer-following Reveal is gone from Windows 11, so it isn't copied.)
-- **C · Media tile (recommended).** Lift as A (1.04, 167 ms, ThemeShadow Z 24, press 1.01), a 1 px inside edge
+- **C · Media tile (chosen).** Lift as A (1.04, 167 ms, ThemeShadow Z 24, press 1.01), a 1 px inside edge
   (`CoverHoverEdgeBrush`: white 24 % dark, black 14 % light), no veil and no outline, a scrim on the bottom half
   only (transparent at 50 % → black 65 %, 83 ms), and a 36 px round Play button (Accent fill, glyph `F5B0` 14 px in
   `TextOnAccentFillColorPrimaryBrush`) bottom left, rising 4 px and fading in (167 ms / 83 ms). The (i) button stays
@@ -1304,6 +1312,8 @@ length and level. b: `Views/GameTile.xaml(.cs)`, `Themes/Theme.xaml` (`CoverScri
 19. **Quick actions** (§16): the header menu first, then the tray items.
 20. **Restart after a crash** (§17): the in-a-row count and the toggle first, then the toast, then the watcher's
     relaunch with "Come back" off.
+21. **Softer sound and cover hover** (§19): the Lullaby sound (compare the C# render with board 25's), then the
+    Media tile hover; check both on the real PC (speakers and headphones; mouse, keyboard and controller).
 
 ## Not decided (don't build)
 
@@ -1337,5 +1347,3 @@ Suggested but neither approved nor rejected yet:
 - Backup / restore
 - Portable mode (likely dropped, since it conflicts with the installer)
 - A Windows 11 Widgets-board card
-- A relaxing "back to normal" sound with a night version, and a modern cover hover (§19, boards 25 and 26;
-  recommended: "Home" (2 s) and "C · Media tile")
