@@ -1075,7 +1075,7 @@ it's there and sinks back into silence. Longer (5 s) but very quiet, so it's fel
 - Main low-pass Q 0.2 dB; frequency points are exponential ramps from the previous point.
 - The same sound every time (identical sounds fade into the background; variation keeps them noticeable).
 
-**Variants**, ranked (measured offline at 48 kHz, BS.1770 K-weighting, loudest 400 ms):
+**Calm variants**, ranked (measured offline at 48 kHz, BS.1770 K-weighting, loudest 400 ms):
 
 1. **Exhale (recommended).** An open D chord that fades up from nothing over about a second, with a breath of soft
    air beneath it, then lets go slowly: a long, contented sigh.
@@ -1099,6 +1099,38 @@ it's there and sinks back into silence. Longer (5 s) but very quiet, so it's fel
      250 ms, attack 1.4 s, τ 0.75 s.
    - Low-pass 600 → 1100 Hz at 1.2 s → 400 Hz at 4.5 s. Room 1.8 s, wet 0.20, pre-delay 20 ms, cut 1500 Hz.
      High-pass 90 Hz. Master 0.37. File 5.0 s. Measured: −32 LUFS, peak −23.5 dBFS; night −39.
+
+**Heavenly variants** (added at the owner's request, kept beside the three above): the same breath, with light in
+it. Higher, brighter, a large airy room (3.5–4 s); still no strike, still −32 LUFS. Two engine additions: a voice
+can be an ensemble of detuned copies (`detunes` in cents) with a vibrato (a sine LFO into each oscillator's
+frequency, ±cents), and can pass through parallel band-passes (formants: frequency, Q in Web Audio's bandpass
+sense, gain).
+
+4. **Choir.** A soft, distant choir singing "ah" on an open D chord, each voice entering after the last.
+   - Voices (Hz, pan, vibrato rate, start): D4 293.66, −0.30, 4.6 Hz, 0 · F♯4 369.99, 0.30, 5.0 Hz, 100 ms ·
+     A4 440.00, −0.10, 5.2 Hz, 200 ms · E5 659.25, 0.15, 4.4 Hz, 350 ms.
+   - Each: three sawtooths at −7 / 0 / +7 cents, vibrato ±7 cents, formants 800 Hz (Q 5, gain 1), 1150 Hz
+     (Q 6, 0.5), 2900 Hz (Q 8, 0.12); level 0.06 (E5 0.035); attack 1.2 / 1.25 / 1.3 / 1.4 s, τ 1.0 s.
+   - Low-pass 2500 → 1500 Hz over 5 s. Room 4.0 s, wet 0.50, pre-delay 40 ms, cut 4500 Hz. High-pass 150 Hz.
+     Master 2.14. File 5.5 s. Measured: −32 LUFS, peak −22.5 dBFS; night −38.
+5. **Glass light (recommended of these).** A soft D underneath, then four high pure tones (D, F♯, A, C♯: a major
+   seventh) appearing a quarter second apart, each shimmering, in a wide bright room: sunlight through glass.
+   - Voices (Hz, pan, level, beat, start): D4 293.66, 0, 0.030, 0.3 Hz, 0 (attack 1.0 s, τ 1.2 s) · D5 587.33,
+     −0.35, 0.020, 0.5 Hz, 100 ms (0.7 s, τ 1.0 s) · F♯5 739.99, 0.35, 0.016, 0.6 Hz, 350 ms · A5 880.00, −0.15,
+     0.013, 0.7 Hz, 600 ms · C♯6 1108.73, 0.20, 0.009, 0.8 Hz, 850 ms (the last three 0.7 s, τ 0.9 s).
+   - Low-pass 4000 → 2500 Hz over 6 s. Room 4.0 s, wet 0.55, pre-delay 50 ms, cut 6000 Hz. High-pass 200 Hz.
+     Master 1.74. File 6.0 s. Measured: −32 LUFS, peak −26 dBFS; night −38.
+6. **Rising light.** A warm G chord that starts muffled and opens up like a door to a bright room; two high tones
+   shimmer in above it with a breath of air, then it settles.
+   - Voices: G3 196.00, −0.30, 0.045, 0.3 Hz · D4 293.66, 0.25, 0.040, 0.45 Hz (both 1.4 s, τ 1.1 s) · B4 493.88,
+     −0.05, 0.030, 0.5 Hz (1.5 s, τ 1.0 s) · A5 880.00, 0.30, 0.012, 0.6 Hz, 900 ms · D6 1174.66, −0.30, 0.007,
+     0.7 Hz, 1.1 s (both 1.2 s, τ 1.0 s).
+   - Air: level 0.03, attack 1.5 s, τ 1.0 s, low-pass 500 → 2600 Hz at 2.0 s → 800 Hz at 5.0 s.
+   - Low-pass 350 → 3200 Hz at 2.2 s → 1200 Hz at 5.5 s. Room 3.5 s, wet 0.45, pre-delay 40 ms, cut 5000 Hz.
+     High-pass 140 Hz. Master 1.06. File 6.0 s. Measured: −32 LUFS, peak −24 dBFS; night −38.
+
+Overall pick: Exhale if it should be calm and warm, Glass light if it should feel heavenly. The heavenly ones are
+brighter, so a little more present; a 4 s room at 22050 Hz keeps the FFT at 2^18, as today.
 
 **Night**, for whichever variant: between 22:00 and 7:00 by the local clock, read once when the sound plays (no
 timer, no setting): master × 0.5 (−6 dB), every filter point × 0.7, room wet × 0.6, high-pass at least 140 Hz.
