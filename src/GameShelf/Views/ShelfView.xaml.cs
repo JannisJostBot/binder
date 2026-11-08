@@ -248,7 +248,7 @@ public sealed partial class ShelfView : UserControl
         EmptyClearButton.Visibility = noMatch ? Visibility.Visible : Visibility.Collapsed;
         EmptyImportButton.Visibility = noMatch ? Visibility.Collapsed : Visibility.Visible;
         EmptyText.Text =
-            _games.Count == 0 ? "No games found yet. Games from Steam, Epic, GOG, EA, Ubisoft, Xbox and Rockstar show up here automatically, or bring in your own." :
+            _games.Count == 0 ? "No games found yet. Games from Steam, Epic, GOG, EA, Ubisoft, Xbox, Rockstar and Hytale show up here automatically, or bring in your own." :
             query.Length > 0 ? $"No games match “{query}”. Check the spelling, or add the game if it isn't installed through a launcher." :
             _filter == "Recent" ? "Games you play from the shelf show up here." :
             _filter == "Favorites" ? "No favorites yet. Star a game in its details or its right-click menu." :

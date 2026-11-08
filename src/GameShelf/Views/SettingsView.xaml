@@ -283,6 +283,8 @@
                         <CheckBox x:Name="XboxCheck" Style="{StaticResource SourceCheck}" Content="Xbox app (Game Pass)" Click="OnSourceChanged" />
                         <CheckBox x:Name="RockstarCheck" Style="{StaticResource SourceCheck}" Content="Rockstar Games" Click="OnSourceChanged"
                                   AutomationProperties.Name="Rockstar Games Launcher" />
+                        <CheckBox x:Name="HytaleCheck" Style="{StaticResource SourceCheck}" Content="Hytale" Click="OnSourceChanged"
+                                  AutomationProperties.Name="Hytale Launcher" />
                         <CheckBox x:Name="ShortcutsCheck" Style="{StaticResource SourceCheck}" Content="Desktop shortcuts" Click="OnSourceChanged"
                                   AutomationProperties.Name="Imported desktop shortcuts" />
                     </StackPanel>

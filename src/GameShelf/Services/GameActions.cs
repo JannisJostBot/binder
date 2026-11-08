@@ -55,6 +55,7 @@ public static class GameActions
         GameSource.Ea => "EA app",
         GameSource.Ubisoft => "Ubisoft Connect",
         GameSource.Rockstar => "Rockstar Games Launcher",
+        GameSource.Hytale => "Hytale Launcher",
         GameSource.Gog => "GOG Galaxy",
         _ => "launcher",
     };

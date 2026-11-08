@@ -49,7 +49,7 @@ Approved third-party dependencies:
 ```
 GameShelf.sln
   src/GameShelf/            WinUI 3 app
-    Library/                SteamSource, EpicSource, GogSource, EaSource, UbisoftSource, XboxSource, RockstarSource, InstallFolder (folder safety),
+    Library/                SteamSource, EpicSource, GogSource, EaSource, UbisoftSource, XboxSource, RockstarSource, HytaleSource, InstallFolder (folder safety),
                             ShortcutFile (.lnk/.url reading), ShortcutImporter (import, restore, manual add),
                             LaunchOptions (arguments, Steam run links, "Start with"), GameScan (engine and anti-cheat
                             from file names, bounded, cached per game), AntiCheat (requirements and conflict tables),
@@ -98,7 +98,7 @@ Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions
 
 ## Core flow: launch → hide → return
 
-1. The user clicks Play. `Launcher` starts the game: via the launcher's URI or command (Steam, Epic, EA, Ubisoft, Xbox, Rockstar) or by running the exe directly (GOG, manual, shortcut).
+1. The user clicks Play. `Launcher` starts the game: via the launcher's URI or command (Steam, Epic, EA, Ubisoft, Xbox, Rockstar, Hytale) or by running the exe directly (GOG, manual, shortcut).
 2. The widget shows the in-panel **launch toast**: "Starting [Game]", a countdown (default 10 s, per-game override), and a **Keep open** button.
 3. The widget starts `GameShelf.Watcher.exe` with arguments: game id, install folder, optional explicit process name, and the timeout.
 4. When the countdown ends, the widget **exits completely** (process ends, not just hidden). If the user pressed Keep open, it stays and nothing else changes.
@@ -130,6 +130,7 @@ Data lives in `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions
 - **Ubisoft Connect**: `HKLM\SOFTWARE\WOW6432Node\Ubisoft\Launcher\Installs\{id}` (InstallDir), named by the `Uplay Install {id}` uninstall entry (DisplayName, EstimatedSize, DisplayIcon .ico). Launch with `uplay://launch/{id}/0`. Entries whose folder no longer exists are skipped.
 - **Xbox app (Game Pass, Microsoft Store PC games)**: each fixed drive's `.GamingRoot` file ("RGBX", a count, UTF-16 folder names) names its `XboxGames` folder; each game folder has `Content\appxmanifest.xml` (Identity Name, Application Id) and `Content\MicrosoftGame.config` (ShellVisuals DefaultDisplayName and Square150x150Logo, Executable Name). Only packages registered for this user count (key names under `HKCU\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages` give the publisher id). Launch with `shell:AppsFolder\{Name_PublisherId}!{AppId}`. The generated cover uses the tile logo PNG (Xbox game exes often have no icon); the badge is the Xbox app's own icon.
 - **Rockstar Games Launcher**: uninstall entries whose UninstallString runs `Rockstar Games\Launcher\uninstall.exe -uninstall=<title>` (not `launcher`); launch with `{InstallFolder}\Launcher.exe -launchTitle=<title>` (`HKLM\SOFTWARE\WOW6432Node\Rockstar Games\Launcher`). Copies bought on Epic or Steam come from those sources.
+- **Hytale Launcher**: `HKLM\SOFTWARE\Hypixel Studios\Hytale Launcher` (InstallDir with `hytale-launcher.exe`) and `HKLM\SOFTWARE\Hypixel Studios\Hytale` (GameInstallPath, usually `%APPDATA%\Hytale`). The game counts as installed when `{GameInstallPath}\install\{patchline}\package\game\latest\Client\HytaleClient.exe` exists; the install folder is `{GameInstallPath}\install` (client, Java runtime, local server), its size counted from the files (bounded). The client needs the launcher's sign-in, so Play opens the launcher and the watcher follows what runs from the install folder.
 - **Desktop shortcuts (import)**
   - Scan the user's Desktop and the Public Desktop for `.lnk` and `.url` files. Show a picker so the user ticks which ones are games.
   - Move the chosen shortcuts into `%APPDATA%\GameShelf\Shortcuts\`. Never delete them, so the import is reversible, and offer "Restore to desktop".
@@ -223,7 +224,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 **Settings view** (groups: Opening Game Shelf, When a game starts, Shelf, Library, Window)
 - Hide delay: Instantly / 5 s / 10 s / 30 s.
 - Come back when the game closes (toggle).
-- Library sources: Steam, Epic, GOG, EA app, Ubisoft Connect, Xbox app, Rockstar Games Launcher and Desktop shortcuts, each with a checkbox, plus "Add a game".
+- Library sources: Steam, Epic, GOG, EA app, Ubisoft Connect, Xbox app, Rockstar Games Launcher, Hytale Launcher and Desktop shortcuts, each with a checkbox, plus "Add a game".
 - Position: Left / Right / Free.
 - Stay on the desktop layer (toggle).
 - Start with Windows: an `HKCU\...\Run` entry.

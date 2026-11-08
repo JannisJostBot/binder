@@ -327,6 +327,23 @@ static class Tests
         Check(RockstarSource.Read("rdr2", "Fake", "", null, 0) is null && RockstarSource.Read("rd r2", "Fake", gameDir, null, 0) is null,
             "Rockstar entry without a folder or with a bad title rejected");
 
+        // Hytale Launcher: the game counts once its client is downloaded; the install folder holds client and runtime.
+        var hytale = Path.Combine(dir, "Hytale");
+        Directory.CreateDirectory(Path.Combine(hytale, "install"));
+        Check(HytaleSource.Read(hytale) is null, "Hytale without its client isn't a game yet");
+        var hytaleClient = Path.Combine(hytale, "install", "release", "package", "game", "latest", "Client", "HytaleClient.exe");
+        Directory.CreateDirectory(Path.GetDirectoryName(hytaleClient)!);
+        File.WriteAllBytes(hytaleClient, new byte[1000]);
+        Check(HytaleSource.Read(hytale) is { Id: "hytale:hytale", Source: GameSource.Hytale, Name: "Hytale", SizeOnDisk: 1000 } ht &&
+              ht.InstallDir == Path.Combine(hytale, "install") && ht.IconPath == hytaleClient,
+            "Hytale found with its install folder, size and client icon");
+        var hytaleBeta = Path.Combine(hytale, "install", "pre-release", "package", "game", "latest", "Client", "HytaleClient.exe");
+        Directory.CreateDirectory(Path.GetDirectoryName(hytaleBeta)!);
+        File.WriteAllBytes(hytaleBeta, []);
+        File.Delete(hytaleClient);
+        Check(HytaleSource.Client(Path.Combine(hytale, "install")) == hytaleBeta, "Hytale on another patchline found");
+        Check(HytaleSource.Read("") is null && HytaleSource.Read("C:\\") is null, "Hytale with no or an unsafe folder rejected");
+
         // Shortcut links.
         ShortcutFile Url(string url) => new(Path.Combine(dir, "x.url"), "x", null, url);
         Check(Url("steam://rungameid/570").SteamAppId == "570", "Steam link parsed");

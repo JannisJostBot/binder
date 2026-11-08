@@ -19,7 +19,7 @@ internal static class Installer
         "shall the author or anyone involved be liable for any claim, damages or other liability arising from, out of, or " +
         "in connection with the software or its use. You use it at your own risk.\n\n" +
         "Game Shelf isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Electronic Arts, Ubisoft, Rockstar Games, " +
-        "Microsoft or any other " +
+        "Hypixel Studios, Microsoft or any other " +
         "company whose launchers it works with. Their names and icons belong to their owners.";
 
     public static int Run(Options options)

@@ -8,8 +8,8 @@ comes back when the game closes.
 
 ## What it does
 
-- **Finds your games:** Steam, Epic Games, GOG, EA app, Ubisoft Connect, the Xbox app (Game Pass) and the
-  Rockstar Games Launcher, plus desktop shortcuts you import and games you add yourself. Covers come from the
+- **Finds your games:** Steam, Epic Games, GOG, EA app, Ubisoft Connect, the Xbox app (Game Pass), the
+  Rockstar Games Launcher and the Hytale Launcher, plus desktop shortcuts you import and games you add yourself. Covers come from the
   store, or are generated from the game's icon.
 - **Opens like part of Windows:** a flyout from the notification-area icon or **Win+Shift+G**. It can also sit
   docked on the desktop, behind your windows.
@@ -95,7 +95,7 @@ Steam settings with test data, and are meant for CI only.
 ## Status
 
 Working:
-- Steam, Epic, GOG, EA app, Ubisoft Connect, Xbox app and Rockstar Games Launcher; shortcut import and manual
+- Steam, Epic, GOG, EA app, Ubisoft Connect, Xbox app, Rockstar Games Launcher and Hytale Launcher; shortcut import and manual
   add.
 - Launch → hide → return, with playtime tracking.
 - Shelf, details (playtime charts, launch options, anti-cheat check) and settings.
@@ -121,5 +121,5 @@ event shall the author or anyone involved be liable for any claim, damages or ot
 of, or in connection with the software or its use. You use it at your own risk.
 
 Game Shelf isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Electronic Arts, Ubisoft,
-Rockstar Games, Microsoft or any other
+Rockstar Games, Hypixel Studios, Microsoft or any other
 company whose launchers it works with. Their names and icons belong to their owners.

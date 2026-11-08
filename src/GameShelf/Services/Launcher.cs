@@ -30,6 +30,12 @@ public static class Launcher
             if (RockstarSource.LauncherExe() is not { } rockstar) return "The Rockstar Games Launcher wasn't found.";
             psi = DirectStart(rockstar, ["-launchTitle=" + game.StoreId]);
         }
+        else if (game.Source == GameSource.Hytale)
+        {
+            // Through the Hytale Launcher: the client needs its sign-in. Play there starts the game.
+            if (HytaleSource.LauncherExe() is not { } hytale) return "The Hytale Launcher wasn't found.";
+            psi = DirectStart(hytale, []);
+        }
         else if (!string.IsNullOrEmpty(game.LaunchUri))
             psi = new ProcessStartInfo(game.LaunchUri) { UseShellExecute = true };
         else if (!string.IsNullOrEmpty(game.ExePath) && File.Exists(game.ExePath))

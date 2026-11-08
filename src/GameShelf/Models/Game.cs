@@ -3,7 +3,7 @@ using GameShelf.Library;
 
 namespace GameShelf.Models;
 
-public enum GameSource { Steam, Epic, Gog, Ea, Ubisoft, Xbox, Rockstar, Shortcut, Manual }
+public enum GameSource { Steam, Epic, Gog, Ea, Ubisoft, Xbox, Rockstar, Hytale, Shortcut, Manual }
 
 public sealed class Game
 {
@@ -12,7 +12,7 @@ public sealed class Game
     public GameSource Source { get; set; }
     public string Name { get; set; } = "";
 
-    /// <summary>Store-specific id (Steam appid, Epic AppName, GOG game id, EA content id, Ubisoft game id, Xbox package family name, Rockstar title id).</summary>
+    /// <summary>Store-specific id (Steam appid, Epic AppName, GOG game id, EA content id, Ubisoft game id, Xbox package family name, Rockstar title id, "hytale").</summary>
     public string? StoreId { get; set; }
     public string? InstallDir { get; set; }
 
@@ -71,6 +71,7 @@ public sealed class Game
         GameSource.Ubisoft => "Ubisoft",
         GameSource.Xbox => "Xbox",
         GameSource.Rockstar => "Rockstar",
+        GameSource.Hytale => "Hytale",
         _ => "Other",
     };
 

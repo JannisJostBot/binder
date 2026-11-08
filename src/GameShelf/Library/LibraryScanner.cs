@@ -7,7 +7,7 @@ public static class LibraryScanner
 {
     /// <summary>Every launcher Game Shelf reads, in the order Settings lists them.</summary>
     public static readonly GameSource[] StoreSources =
-        [GameSource.Steam, GameSource.Epic, GameSource.Gog, GameSource.Ea, GameSource.Ubisoft, GameSource.Xbox, GameSource.Rockstar];
+        [GameSource.Steam, GameSource.Epic, GameSource.Gog, GameSource.Ea, GameSource.Ubisoft, GameSource.Xbox, GameSource.Rockstar, GameSource.Hytale];
 
     /// <summary>
     /// First-run setup: how many games each launcher has on this PC, also for launchers that are turned off (the
@@ -39,6 +39,7 @@ public static class LibraryScanner
         GameSource.Ubisoft => UbisoftSource.Scan(),
         GameSource.Xbox => XboxSource.Scan(),
         GameSource.Rockstar => RockstarSource.Scan(),
+        GameSource.Hytale => HytaleSource.Scan(),
         _ => [],
     };
 

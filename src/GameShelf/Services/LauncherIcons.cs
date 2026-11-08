@@ -76,6 +76,7 @@ public static class LauncherIcons
             GameSource.Ea => ProtocolHandler("origin2"),
             GameSource.Ubisoft => ProtocolHandler("uplay"),
             GameSource.Rockstar => RockstarSource.LauncherExe(),
+            GameSource.Hytale => HytaleSource.LauncherExe(),
             // A packaged app without a plain exe path: the shell item Start shows it as has its icon.
             GameSource.Xbox => XboxAppItem,
             _ => null,

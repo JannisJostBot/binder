@@ -25,6 +25,7 @@ public sealed class Settings
     public bool UbisoftEnabled { get; set; } = true;
     public bool XboxEnabled { get; set; } = true;
     public bool RockstarEnabled { get; set; } = true;
+    public bool HytaleEnabled { get; set; } = true;
     public bool ShortcutsEnabled { get; set; } = true;
 
     public DockPosition Position { get; set; } = DockPosition.Right;
@@ -87,6 +88,7 @@ public sealed class Settings
         GameSource.Ubisoft => UbisoftEnabled,
         GameSource.Xbox => XboxEnabled,
         GameSource.Rockstar => RockstarEnabled,
+        GameSource.Hytale => HytaleEnabled,
         GameSource.Shortcut => ShortcutsEnabled,
         _ => true,
     };
@@ -102,6 +104,7 @@ public sealed class Settings
             case GameSource.Ubisoft: UbisoftEnabled = on; break;
             case GameSource.Xbox: XboxEnabled = on; break;
             case GameSource.Rockstar: RockstarEnabled = on; break;
+            case GameSource.Hytale: HytaleEnabled = on; break;
             case GameSource.Shortcut: ShortcutsEnabled = on; break;
         }
     }

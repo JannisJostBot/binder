@@ -104,6 +104,7 @@ public sealed partial class LauncherBadge : Grid
         GameSource.Ubisoft => "Ubisoft Connect",
         GameSource.Xbox => "Xbox app",
         GameSource.Rockstar => "Rockstar Games Launcher",
+        GameSource.Hytale => "Hytale Launcher",
         _ => source.ToString(),
     };
 

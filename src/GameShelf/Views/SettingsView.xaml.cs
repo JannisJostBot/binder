@@ -80,6 +80,7 @@ public sealed partial class SettingsView : UserControl
             UbisoftCheck.IsChecked = settings.UbisoftEnabled;
             XboxCheck.IsChecked = settings.XboxEnabled;
             RockstarCheck.IsChecked = settings.RockstarEnabled;
+            HytaleCheck.IsChecked = settings.HytaleEnabled;
             ShortcutsCheck.IsChecked = settings.ShortcutsEnabled;
             ShortcutsText.Text = importedShortcuts switch
             {
@@ -102,9 +103,9 @@ public sealed partial class SettingsView : UserControl
             int sourcesOn = new[]
             {
                 settings.SteamEnabled, settings.EpicEnabled, settings.GogEnabled, settings.EaEnabled, settings.UbisoftEnabled,
-                settings.XboxEnabled, settings.RockstarEnabled, settings.ShortcutsEnabled,
+                settings.XboxEnabled, settings.RockstarEnabled, settings.HytaleEnabled, settings.ShortcutsEnabled,
             }.Count(on => on);
-            LibraryText.Text = refreshing ? "Scanning your stores…" : $"{sourcesOn} of 8 on · {shown} games";
+            LibraryText.Text = refreshing ? "Scanning your stores…" : $"{sourcesOn} of 9 on · {shown} games";
             RefreshButton.IsEnabled = !refreshing;
         }
         finally
@@ -262,6 +263,7 @@ public sealed partial class SettingsView : UserControl
         _settings.UbisoftEnabled = UbisoftCheck.IsChecked == true;
         _settings.XboxEnabled = XboxCheck.IsChecked == true;
         _settings.RockstarEnabled = RockstarCheck.IsChecked == true;
+        _settings.HytaleEnabled = HytaleCheck.IsChecked == true;
         _settings.ShortcutsEnabled = ShortcutsCheck.IsChecked == true;
         Change(SettingChange.Sources);
     }
