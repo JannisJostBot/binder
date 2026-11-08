@@ -9,8 +9,8 @@ using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace GameShelf.Services;
 
-/// <summary>Which artwork to load: the 600×900 portrait cover, or the wide hero banner for the detail view.</summary>
-public enum ArtKind { Cover, Hero }
+/// <summary>Which artwork to load: the 600×900 portrait cover, the wide hero banner, or the game's transparent logo (§13 a).</summary>
+public enum ArtKind { Cover, Hero, Logo }
 
 /// <summary>What a generated cover is made of: the game's icon (if any) and its background color.</summary>
 public sealed record FallbackArtInfo(IconPixels? Icon, string Tint);
@@ -257,6 +257,7 @@ public static class CoverCache
         {
             Resolved.Remove(ResolvedKey(game, ArtKind.Cover));
             Resolved.Remove(ResolvedKey(game, ArtKind.Hero));
+            Resolved.Remove(ResolvedKey(game, ArtKind.Logo));
             var prefix = game.Id + "|";
             for (var node = Lru.First; node is not null;)
             {
@@ -292,16 +293,24 @@ public static class CoverCache
     private static string SafeId(Game game) => string.Join("_", game.Id.Split(Path.GetInvalidFileNameChars()));
 
     private static string CachedFile(Game game, ArtKind kind, string ext) =>
-        Path.Combine(CoversDir, SafeId(game) + (kind == ArtKind.Hero ? "_hero" : "") + ext);
+        Path.Combine(CoversDir, SafeId(game) + kind switch { ArtKind.Hero => "_hero", ArtKind.Logo => "_logo", _ => "" } + ext);
 
-    private static string SteamFileName(ArtKind kind) => kind == ArtKind.Hero ? "library_hero.jpg" : "library_600x900.jpg";
+    /// <summary>Our cached copy's extension: logos keep their transparency.</summary>
+    private static string ImageExt(ArtKind kind) => kind == ArtKind.Logo ? ".png" : ".jpg";
+
+    private static string SteamFileName(ArtKind kind) => kind switch
+    {
+        ArtKind.Hero => "library_hero.jpg",
+        ArtKind.Logo => "logo.png",
+        _ => "library_600x900.jpg",
+    };
 
     private static string? FindLocal(Game game, ArtKind kind)
     {
         if (kind == ArtKind.Cover && !string.IsNullOrEmpty(game.CustomCover) && File.Exists(game.CustomCover))
             return game.CustomCover;
 
-        var cached = CachedFile(game, kind, ".jpg");
+        var cached = CachedFile(game, kind, ImageExt(kind));
         if (File.Exists(cached)) return cached;
 
         if (game.Source == GameSource.Steam && game.StoreId is { } appId && SteamLibraryCache.Value is { } lc)
@@ -344,7 +353,7 @@ public static class CoverCache
     {
         if (game.Source != GameSource.Steam || game.StoreId is not { } appId) return null;
 
-        var target = CachedFile(game, kind, ".jpg");
+        var target = CachedFile(game, kind, ImageExt(kind));
         var missingMarker = CachedFile(game, kind, ".none");
         if (File.Exists(missingMarker)) return null; // the CDN had nothing last time; don't ask again
 

@@ -33,6 +33,7 @@ public sealed partial class DetailView : UserControl
     public DetailView()
     {
         InitializeComponent();
+        Logo.LogoChanged += hasLogo => TitleText.Visibility = hasLogo ? Visibility.Collapsed : Visibility.Visible;
         _launch = new Disclosure(LaunchChevron, LaunchCard, LaunchBody, "launch options");
         _antiCheat = new Disclosure(AntiCheatChevron, AntiCheatCard, AntiCheatBody, "anti-cheat details");
         _antiCheat.Toggled += _ => _antiCheatTouched = true;
@@ -57,6 +58,7 @@ public sealed partial class DetailView : UserControl
         SetArt(Cover, game);
         TitleText.Text = game.Name;
         ToolTipService.SetToolTip(TitleText, game.Name);
+        Logo.Game = game;
         SubtitleText.Text = LauncherIcons.HasBadge(game.Source) ? LauncherBadge.Label(game.Source) : game.SourceLabel;
         AutomationProperties.SetName(PlayButton, "Play " + game.Name);
         UpdateFavorite();

@@ -199,7 +199,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 - Filter chips (below the slot, in one row with the sort button, right above the grid they filter; owner's choice): All, Favorites, Recent, then the launchers that have games (most games first) and "Other" for manual games and shortcuts; beyond three launcher chips the rest go under "More".
 - Sort menu: an icon button at the right end of the filter row (one toolbar row above the grid; its tooltip and screen-reader name say the current order) (Recently played, Most played, Name, Recently added, Size on disk, plus "Favorites first"), saved in settings. Cover size in Settings: Small (5 columns), Medium (4), Large (3), List.
 - One fixed-height slot (168 px) under the search box, switched with a small `SelectorBar` in its top-right corner and remembered (`SpotlightShowsWeek`), so switching never moves the grid:
-  - **Continue playing:** a hero banner of the last played game (its hero art, loaded only while shown, with a bottom fade), title, last played and launcher, and a Play button.
+  - **Continue playing:** a hero banner of the last played game (its hero art, loaded only while shown, with a bottom fade), the game's logo (Steam's `logo.png`, local cache or downloaded once, max 56 px high and 60 % wide, soft shadow) or else its title, last played and launcher, and a Play button.
   - **This week:** the total, game count, most played game and a bar per day.
   - The switch shows only when both have something to show; the slot hides while searching.
 - Cover grid (3:4 covers, the title below). Top-left: the launcher's own icon as a 28 px badge (read from the installed launcher's exe at runtime; manual games and shortcuts get none). Top-right: a star on favorites. Badges, the star and the 30 px Details (i) button are near-solid dark chips with a light edge (`BadgeBrush`, `BadgeStrokeBrush`), so they read on any cover. Hovering lifts the cover slightly with an accent outline and a "Play" label, and shows the Details button in its bottom-right corner (instant, no animation). Coming back from details focuses that cover programmatically, so no focus ring shows after a mouse click (keyboard keeps it).
@@ -214,7 +214,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 **Settings and Detail layout (boards 19 and 21, `docs/proposals.md` §18):** like Windows 11 Settings, one card per setting under a few group headings, a little apart (`GroupLabel`, `SettingCard`, `SettingLinkCard` in `Theme.xaml`); anything with more inside opens from its card (`Disclosure`, not WinUI's Expander). A card's second line says only state; explanations are tooltips.
 
 **Detail view** (replaces the grid inside the same panel; a back button returns)
-- Banner (Steam hero art), cover, title, store, and a favorite star. The developer isn't in the local store manifests, so it's left out unless a source provides it.
+- Banner (Steam hero art) with the game's logo right of the cover (max 72 px high; the title text then hides), cover, title, store, and a favorite star. The developer isn't in the local store manifests, so it's left out unless a source provides it.
 - A big Play button, an open-folder button and a "…" menu (it also has "Free up space…", opening with this game's drive).
 - Stat tiles: Playtime (from our own sessions), Last played, Size on disk.
 - Activity: one card with the playtime chart and the recent sessions (last 3–5).

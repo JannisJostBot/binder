@@ -57,6 +57,7 @@ public sealed partial class ShelfView : UserControl
     public ShelfView()
     {
         InitializeComponent();
+        ContinueLogo.LogoChanged += hasLogo => ContinueTitle.Visibility = hasLogo ? Visibility.Collapsed : Visibility.Visible;
         Tiles.Loaded += (_, _) => ApplyPanel();
         Tiles.SizeChanged += (_, e) =>
         {
@@ -288,6 +289,7 @@ public sealed partial class ShelfView : UserControl
             _updatingSpotlight = false;
         }
         if (!showWeek && !ReferenceEquals(ContinueArt.Game, _continueGame)) ContinueArt.Game = _continueGame;
+        ContinueLogo.Game = showWeek ? null : _continueGame; // loaded only while the banner shows
     }
 
     private bool _crashShown;
