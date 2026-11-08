@@ -1075,14 +1075,39 @@ it's there and sinks back into silence. Longer (5 s) but very quiet, so it's fel
 - Main low-pass Q 0.2 dB; frequency points are exponential ramps from the previous point.
 - The same sound every time (identical sounds fade into the background; variation keeps them noticeable).
 
-**Made for "back to normal" (latest round, recommended).** The owner found Soft glass didn't fit the message.
+**Warm and friendly (latest round, recommended).** The owner said the settling sounds (next round) "sound like
+horror sounds". Why: tones fading in from silence like a ghost, a full slow wobble (two equal sines beating), very
+muffled, and pitch falling (Resolve even slid down). These fix exactly that, still 2.0 s, −34 LUFS, −40 at night:
+- a soft but defined start (sin², 0.10–0.15 s, like a felt key);
+- a light shimmer only: `depth` 0.15 (the beating copy is 15 % of the pair instead of 50 %);
+- a little warmth: a second harmonic at 0.10–0.15 (`partials [[1, 1], [2, 0.12]]`);
+- less muffled: low-pass 1.6–1.8 kHz closing to 1 kHz, room 1.2 s, wet 0.30, pre-delay 20 ms, cut 2500 Hz;
+- a clear major third, no pitch slides. High-pass 120 Hz for all.
+
+- **Home (recommended).** One warm D major chord blooming almost together, low to high: "everything is in its
+  place".
+  - Voices (Hz, pan, level, start, attack, τ, beat, 2nd harmonic): D3 146.83, 0, 0.026, 0, 0.15 s, 0.50 s, 0.4 Hz,
+    0.15 · A3 220.00, −0.20, 0.020, 30 ms, 0.14 s, 0.48 s, 0.45 Hz, 0.12 · F♯4 369.99, 0.20, 0.018, 60 ms, 0.13 s,
+    0.45 s, 0.5 Hz, 0.12 · A4 440.00, 0.05, 0.011, 90 ms, 0.12 s, 0.42 s, 0.6 Hz, 0.10.
+  - Low-pass 1600 → 1000 Hz over 2 s. Master 0.99. Measured: −34.0 LUFS, peak −26.2 dBFS, audible 1.9 s; night −40.0.
+- **Warm settle.** Settle made warm: A4, F♯4, D4, D3 100 ms apart like soft felt keys.
+  - A4 440.00, 0.25, 0.012, 0, 0.12 s, 0.32 s, 0.6 Hz, 0.12 · F♯4 369.99, −0.20, 0.018, 100 ms, 0.12 s, 0.36 s,
+    0.5 Hz, 0.12 · D4 293.66, 0.10, 0.020, 200 ms, 0.13 s, 0.40 s, 0.45 Hz, 0.12 · D3 146.83, 0, 0.026, 300 ms,
+    0.15 s, 0.48 s, 0.4 Hz, 0.15.
+  - Low-pass 1800 → 1000 Hz over 2 s. Master 1.135. Measured: −34.0 LUFS, peak −28.5 dBFS; night −40.1.
+- **Lullaby.** F♯4 then D4 (a falling major third) with a low D joining under the second note.
+  - F♯4 369.99, 0.15, 0.022, 0, 0.10 s, 0.30 s, 0.5 Hz, 0.12 · D4 293.66, −0.15, 0.024, 250 ms, 0.10 s, 0.45 s,
+    0.45 Hz, 0.12 · D3 146.83, 0, 0.018, 250 ms, 0.15 s, 0.50 s, 0.4 Hz, 0.15.
+  - Low-pass 1800 → 1000 Hz over 2 s. Master 1.135. Measured: −34.0 LUFS, peak −25.9 dBFS; night −40.0.
+
+**Made for "back to normal" (the round before; sounded eerie).** The owner found Soft glass didn't fit the message.
 Glass light rises into a major seventh, which sounds like something opening or beginning; "Windows is back to
 normal" means things coming down, settling, ending at rest. These keep Soft glass's sound (pure sines, slow
 shimmer, dark, 2.0 s, −34 LUFS, −40 at night) but move downwards and end on a plain D major chord, with the low D
-last or underneath. No major seventh. One engine addition: a voice can `bend` (an exponential frequency ramp by a
+last or underneath. No major seventh. Engine additions: a voice can have a shimmer `depth` (default 0.5), and can `bend` (an exponential frequency ramp by a
 ratio, starting at a time after its start, over a time), applied to both sines of its pair.
 
-- **Settle (recommended).** Soft glass upside down: A, F♯, D drift in from the top and the low D arrives last.
+- **Settle.** Soft glass upside down: A, F♯, D drift in from the top and the low D arrives last.
   - Voices (Hz, pan, level, beat, start, attack, release τ): A4 440.00, 0.25, 0.010, 0.45 Hz, 0, 0.40 s, 0.28 s ·
     F♯4 369.99, −0.20, 0.014, 0.40 Hz, 120 ms, 0.40 s, 0.30 s · D4 293.66, 0.10, 0.020, 0.35 Hz, 240 ms, 0.45 s,
     0.32 s · D3 146.83, 0, 0.032, 0.25 Hz, 360 ms, 0.50 s, 0.38 s.
@@ -1181,7 +1206,7 @@ vibrato (a sine LFO into each oscillator's frequency, ±cents), and can pass thr
      High-pass 110 Hz. Master 1.06. File 6.0 s. Measured: −32.0 LUFS, peak −24.5 dBFS; night −37.6.
 
 Earlier picks: Exhale if it should be calm and warm, Glass light if it should feel heavenly; now superseded by
-Settle above. A 4 s room at
+Home above. A 4 s room at
 22050 Hz keeps the FFT at 2^18, as today.
 
 **Night**, for whichever variant: between 22:00 and 7:00 by the local clock, read once when the sound plays (no
@@ -1197,7 +1222,7 @@ there; if it doesn't, leave it: there's no public API for it, and undocumented W
 pan, level, beat, start, attack, release, partials), an optional air layer (seeded brown noise through a
 time-varying low-pass), the main low-pass points, the room (the same FFT convolution, shorter), a final high-pass
 (`Biquad.SetHighpass`, Web Audio's formula) and `Render(bool night)`; FM, the glide and `Echo` go. `Seconds`
-becomes 2.0 for Settle, so the process waits 2 s instead of 8.5 s; the WAV is 176 KB instead of 750 KB. Compare the C#
+becomes 2.0 for Home, so the process waits 2 s instead of 8.5 s; the WAV is 176 KB instead of 750 KB. Compare the C#
 render with board 25's `OfflineAudioContext` render as for §18 (within 2–3 dB). `Sound` reads the clock and the
 Notification.Default value. No new setting; the toggle stays.
 
@@ -1313,4 +1338,4 @@ Suggested but neither approved nor rejected yet:
 - Portable mode (likely dropped, since it conflicts with the installer)
 - A Windows 11 Widgets-board card
 - A relaxing "back to normal" sound with a night version, and a modern cover hover (§19, boards 25 and 26;
-  recommended: "Settle" (2 s) and "C · Media tile")
+  recommended: "Home" (2 s) and "C · Media tile")
