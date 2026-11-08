@@ -106,8 +106,8 @@ internal static class Install
             Helper.Log("Allow: couldn't register the tasks");
             return 12;
         }
-        File.WriteAllText(ElevatedPart.MarkerPath(sid), ElevatedPart.BuildVersion);
-        Helper.Log($"Allow: done (version {ElevatedPart.BuildVersion})");
+        File.WriteAllText(ElevatedPart.MarkerPath(sid), ElevatedPart.HelperVersion.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Helper.Log($"Allow: done (helper version {ElevatedPart.HelperVersion})");
         return 0;
     }
 
@@ -138,7 +138,10 @@ internal static class Install
         return 0;
     }
 
-    /// <summary>Copies this exe to Program Files and checks the copy's hash; an in-use old copy is moved aside first.</summary>
+    /// <summary>
+    /// Copies this exe to Program Files and checks the copy's hash; an in-use old copy is moved aside first. The
+    /// same exe already there is left alone; any other one (an older helper version) is replaced.
+    /// </summary>
     private static bool CopySelf()
     {
         var source = Environment.ProcessPath;
@@ -151,6 +154,13 @@ internal static class Install
             var hash = SHA256.HashData(bytes);
             var dir = new DirectoryInfo(ElevatedPart.InstallDir);
             if (dir.Exists && dir.Attributes.HasFlag(FileAttributes.ReparsePoint)) return false;
+            var installed = new FileInfo(target);
+            if (installed.Exists && !installed.Attributes.HasFlag(FileAttributes.ReparsePoint) && installed.Length == bytes.Length &&
+                SHA256.HashData(File.ReadAllBytes(target)).AsSpan().SequenceEqual(hash))
+            {
+                Helper.Log("Allow: the helper in Program Files is already this one");
+                return true;
+            }
             dir.Create();
             var tmp = target + ".new";
             using (var file = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough))

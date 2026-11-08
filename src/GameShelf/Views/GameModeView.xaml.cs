@@ -151,7 +151,7 @@ public sealed partial class GameModeView : UserControl
         AllowBar.Severity = InfoBarSeverity.Informational;
         AllowBar.IsOpen = !allowed || outdated;
         AllowBar.Message = outdated
-            ? "The helper is from another version of Game Shelf. Update it to keep these working."
+            ? "This version of Game Shelf has a new helper. Update it to keep these working."
             : canAllow
                 ? "Pausing services and network priority use a small helper. Windows asks you once to allow it; it can only do what's listed here."
                 : "Only an administrator account can allow this. The other items work without it.";

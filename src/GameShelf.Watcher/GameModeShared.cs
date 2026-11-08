@@ -229,7 +229,7 @@ public static partial class ElevatedPart
     public static string JournalPath => Path.Combine(DataDir, "journal.json");
     public static string LogPath => Path.Combine(DataDir, "elevated.log");
 
-    /// <summary>Written by "Allow…" for this user (the helper's version inside); the watcher and Settings check it.</summary>
+    /// <summary>Written by "Allow…" for this user (<see cref="HelperVersion"/> inside); the watcher and Settings check it.</summary>
     public static string MarkerPath(string sid) => Path.Combine(DataDir, $"allowed-{sid}.txt");
 
     /// <summary>The last result for this user: the request's event id on line 1, the result on line 2.</summary>
@@ -240,15 +240,21 @@ public static partial class ElevatedPart
 
     public const string EventPrefix = @"Local\GameShelf.Elevated.";
 
-    /// <summary>This build's version (Directory.Build.props), which "Allow…" writes into the marker.</summary>
-    public static string BuildVersion
-    {
-        get
-        {
-            var v = typeof(ElevatedPart).Assembly.GetName().Version;
-            return v is null ? "0.0.0" : $"{v.Major}.{v.Minor}.{Math.Max(0, v.Build)}";
-        }
-    }
+    /// <summary>
+    /// The helper's own version, which "Allow…" writes into the marker; a marker with another one means "Update…"
+    /// (one UAC prompt). It is not the app's version, so a Game Shelf update alone doesn't ask again.
+    /// Bump it by hand whenever GameShelf.Elevated changes: what it does, the request, journal or result format,
+    /// or how its tasks and folders are set up.
+    /// </summary>
+    public const int HelperVersion = 1;
+
+    /// <summary>
+    /// A marker's text is from another helper version. Markers written before <see cref="HelperVersion"/> hold the
+    /// app version ("0.1.3"), which isn't a plain number, so those installs update once more.
+    /// </summary>
+    public static bool IsOutdatedMarker(string marker, int current = HelperVersion) =>
+        !int.TryParse(marker.Trim(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var v) ||
+        v != current;
 
     /// <summary>Upload limits offered (Mbit/s); the default is 5.</summary>
     public static readonly int[] UploadLimits = [1, 5, 20];
