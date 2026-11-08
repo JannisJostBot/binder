@@ -25,10 +25,17 @@ public sealed partial class DetailView : UserControl
     private Game? _game;
     private Settings _settings = new();
     private bool _loading;
+    private readonly Disclosure _launch;
+    private readonly Disclosure _antiCheat;
+    /// <summary>The user opened or closed the anti-cheat card for this game, so it no longer opens by itself.</summary>
+    private bool _antiCheatTouched;
 
     public DetailView()
     {
         InitializeComponent();
+        _launch = new Disclosure(LaunchChevron, LaunchCard, LaunchBody, "launch options");
+        _antiCheat = new Disclosure(AntiCheatChevron, AntiCheatCard, AntiCheatBody, "anti-cheat details");
+        _antiCheat.Toggled += _ => _antiCheatTouched = true;
         SessionCrash.PlayRequested += _ => Raise(GameAction.Play);
         SessionCrash.Dismissed += record =>
         {
@@ -61,7 +68,12 @@ public sealed partial class DetailView : UserControl
 
         ShowStats(game, sessions);
         UpdateSettingsRows();
-        if (!sameGame) _scan = null;
+        if (!sameGame)
+        {
+            _scan = null;
+            _launch.Set(false);
+            _antiCheatTouched = false;
+        }
         UpdateLaunchOptions();
         UpdateAntiCheat();
         _ = ScanAsync(game);

@@ -399,6 +399,7 @@ try {
     Start-Sleep -Milliseconds 500
     Shot '6-settings'
 
+    Invoke-Button $window 'Show hidden games'   # the Hidden games card opens (board 19)
     Invoke-Button $window 'Show Team Fortress 2'
     Wait-Until { (Get-Game 'steam:440').Hidden -ne $true } 5 'Team Fortress 2 shown again' | Out-Null
     $metrics += 'Hide and show again from Settings: yes'
@@ -470,6 +471,7 @@ try {
     $metrics += 'Shortcut import: 2 moved off the desktop, Steam link merged, web link left alone'
 
     Invoke-Button $window 'Settings'
+    Invoke-Button $window 'Show desktop shortcut options'
     Invoke-Button $window 'Restore shortcuts to desktop'
     Wait-Until { (Test-Path (Join-Path $desktop 'Loop Shortcut.lnk')) -and (Test-Path (Join-Path $desktop 'Dota 2.url')) } 5 'shortcuts restored to the desktop' | Out-Null
     if (@((Get-Content (Join-Path $dataDir 'library.json') -Raw | ConvertFrom-Json) | Where-Object { $_.Source -eq 'Shortcut' }).Count -ne 0) {

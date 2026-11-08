@@ -64,9 +64,9 @@ GameShelf.sln
                             (Windows, graphics, memory; read only when copying), GameLogs (Unity/Unreal log files),
                             RunningGames (games running right now, read once when Free up space opens),
                             GameModeService (milestone 14: the watcher's Game mode arguments, recovery, page state),
-                            Sound (the soft chime after a successful restore: the Windows notification sound)
+                            Chime (the calm "back to normal" sound, made in memory; board 23), Sound (plays it)
     Views/                  ShelfView, DetailView, SettingsView, ImportView, SetupView (the launch toast lives in MainWindow),
-                            BarChart (the playtime charts), ModePreview (display mode pictures), CrashCard (shelf and detail),
+                            Disclosure (a settings card that opens, boards 19 and 21), BarChart (the playtime charts), ModePreview (display mode pictures), CrashCard (shelf and detail),
                             FreeSpaceView (Free up space, milestone 15), GameModeView (Settings › Game mode),
                             GameModeToast (Game mode's "Game mode is on" / "Windows is back to normal" toast, its own small window)
   src/GameShelf.Watcher/    Program.cs, GameMode.cs (applies and restores Game mode, with its journal),
@@ -208,15 +208,17 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
   that need the admin helper and the helper is from another version; checked when the shelf gets its data.
 - Empty states: a large Fluent icon, one plain sentence and the way forward (no games: Import desktop shortcuts / Add a game; no search match: Clear search / Add a game).
 
+**Settings and Detail layout (boards 19 and 21, `docs/proposals.md` §17):** like Windows 11 Settings, one card per setting under a few group headings, a little apart (`GroupLabel`, `SettingCard`, `SettingLinkCard` in `Theme.xaml`); anything with more inside opens from its card (`Disclosure`, not WinUI's Expander). A card's second line says only state; explanations are tooltips.
+
 **Detail view** (replaces the grid inside the same panel; a back button returns)
 - Banner (Steam hero art), cover, title, store, and a favorite star. The developer isn't in the local store manifests, so it's left out unless a source provides it.
 - A big Play button, an open-folder button and a "…" menu (it also has "Free up space…", opening with this game's drive).
 - Stat tiles: Playtime (from our own sessions), Last played, Size on disk.
-- Recent sessions list (last 3–5).
-- "This game only" settings: hide delay (Default / custom), process to watch (auto-detected or picked), and a custom cover.
+- Activity: one card with the playtime chart and the recent sessions (last 3–5).
+- "This game": hide delay (Default / custom), Game mode, a custom cover, Launch options (opens: arguments, Start with, process to watch) and Anti-cheat (opens by itself when something needs attention).
 - Links: Store page, Hide from shelf.
 
-**Settings view**
+**Settings view** (groups: Opening Game Shelf, When a game starts, Shelf, Library, Window)
 - Hide delay: Instantly / 5 s / 10 s / 30 s.
 - Come back when the game closes (toggle).
 - Library sources: Steam, Epic, GOG, EA app, Ubisoft Connect, Xbox app, Rockstar Games Launcher and Desktop shortcuts, each with a checkbox, plus "Add a game".

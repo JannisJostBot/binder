@@ -124,129 +124,154 @@
                 </Border>
             </Grid>
 
-            <!-- Playtime chart: hours per week (8 weeks) or per month (12 months), from our own sessions -->
-            <StackPanel x:Name="PlaytimeSection" Visibility="Collapsed">
-                <TextBlock Style="{StaticResource SectionLabel}" Text="Playtime" />
-                <Border Style="{StaticResource Card}">
-                    <StackPanel Padding="0,10,0,10" Spacing="12">
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock x:Name="PeriodTotalText" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="18" />
-                                <TextBlock x:Name="PeriodDetailText" Style="{StaticResource RowDetail}" />
-                            </StackPanel>
-                            <SelectorBar x:Name="PeriodChoice" Grid.Column="1" VerticalAlignment="Center"
-                                         AutomationProperties.Name="Chart period" SelectionChanged="OnPeriodChanged">
-                                <SelectorBarItem x:Name="WeeksItem" Text="8 weeks" IsSelected="True" />
-                                <SelectorBarItem x:Name="MonthsItem" Text="12 months" />
-                            </SelectorBar>
-                        </Grid>
-                        <v:BarChart x:Name="PlaytimeChart" PlotHeight="88" BarWidth="14" />
-                    </StackPanel>
-                </Border>
-            </StackPanel>
-
-            <!-- Recent sessions (tracked by the watcher) -->
-            <TextBlock Style="{StaticResource SectionLabel}" Text="Recent sessions" />
+            <!--
+                Board 21: the playtime chart and the recent sessions share one "Activity" card; the per-game
+                settings are one card each; launch options (with "Start with" and "Process to watch") and the
+                anti-cheat check open from their card.
+            -->
+            <TextBlock Style="{StaticResource GroupLabel}" Text="Activity" />
             <!-- A session's crash, opened from its "Details" link (milestone 11) -->
             <v:CrashCard x:Name="SessionCrash" Margin="20,0,20,8" Visibility="Collapsed" />
             <Border Style="{StaticResource Card}">
                 <StackPanel>
-                    <StackPanel x:Name="SessionsList" AutomationProperties.Name="Recent sessions" />
+                    <!-- Playtime chart: hours per week (8 weeks) or per month (12 months), from our own sessions -->
+                    <StackPanel x:Name="PlaytimeSection" Visibility="Collapsed">
+                        <StackPanel Padding="0,14,0,10" Spacing="12">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock x:Name="PeriodTotalText" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="18" />
+                                    <TextBlock x:Name="PeriodDetailText" Style="{StaticResource RowDetail}" />
+                                </StackPanel>
+                                <SelectorBar x:Name="PeriodChoice" Grid.Column="1" VerticalAlignment="Center"
+                                             AutomationProperties.Name="Chart period" SelectionChanged="OnPeriodChanged">
+                                    <SelectorBarItem x:Name="WeeksItem" Text="8 weeks" IsSelected="True" />
+                                    <SelectorBarItem x:Name="MonthsItem" Text="12 months" />
+                                </SelectorBar>
+                            </Grid>
+                            <v:BarChart x:Name="PlaytimeChart" PlotHeight="88" BarWidth="14" />
+                        </StackPanel>
+                        <Border Style="{StaticResource RowDivider}" />
+                    </StackPanel>
+                    <!-- Recent sessions (tracked by the watcher) -->
+                    <StackPanel x:Name="SessionsList" AutomationProperties.Name="Recent sessions" Padding="0,4" />
                     <TextBlock x:Name="NoSessionsText" Margin="0,14" TextWrapping="Wrap" Style="{StaticResource BodyTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Text="No sessions yet. Playtime is tracked when you start the game from the shelf." />
                 </StackPanel>
             </Border>
-            <TextBlock x:Name="CrashPatternText" Margin="4,6,0,0" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap"
+            <TextBlock x:Name="CrashPatternText" Margin="24,6,20,0" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" />
 
             <!-- Per-game settings -->
-            <TextBlock Style="{StaticResource SectionLabel}" Text="This game only" />
-            <Border Style="{StaticResource Card}">
-                <StackPanel>
-                    <Grid Style="{StaticResource SettingRow}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource RowTitle}" Text="Hide delay" />
-                        <ComboBox x:Name="HideDelayBox" Grid.Column="1" VerticalAlignment="Center" MinWidth="150"
-                                  AutomationProperties.Name="Hide delay" SelectionChanged="OnHideDelayChanged" />
-                    </Grid>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <Grid Style="{StaticResource SettingRow}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Style="{StaticResource RowText}">
-                            <TextBlock Style="{StaticResource RowTitle}" Text="Game mode" />
-                            <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
-                                       Text="Optimizes Windows while this game runs (Settings › Game mode)" />
-                        </StackPanel>
-                        <ComboBox x:Name="GameModeBox" Grid.Column="1" VerticalAlignment="Center" MinWidth="150"
-                                  AutomationProperties.Name="Game mode for this game" SelectionChanged="OnGameModeChanged" />
-                    </Grid>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <Grid Style="{StaticResource SettingRow}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Style="{StaticResource RowText}">
-                            <TextBlock Style="{StaticResource RowTitle}" Text="Process to watch" />
-                            <TextBlock x:Name="ProcessText" Style="{StaticResource RowDetail}" />
-                        </StackPanel>
-                        <DropDownButton x:Name="ProcessButton" Grid.Column="1" Content="Change" VerticalAlignment="Center"
-                                        AutomationProperties.Name="Change process to watch">
-                            <DropDownButton.Flyout>
-                                <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                    <MenuFlyoutItem Text="Choose program…" Click="OnPickProcess">
-                                        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8E5;" /></MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutItem x:Name="AutoProcessItem" Text="Use auto-detect" Click="OnAutoProcess">
-                                        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE72C;" /></MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
-                                </MenuFlyout>
-                            </DropDownButton.Flyout>
-                        </DropDownButton>
-                    </Grid>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <Grid Style="{StaticResource SettingRow}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Style="{StaticResource RowText}">
-                            <TextBlock Style="{StaticResource RowTitle}" Text="Cover image" />
-                            <TextBlock x:Name="CoverText" Style="{StaticResource RowDetail}" />
-                        </StackPanel>
-                        <DropDownButton x:Name="CoverButton" Grid.Column="1" Content="Change" VerticalAlignment="Center"
-                                        AutomationProperties.Name="Change cover image">
-                            <DropDownButton.Flyout>
-                                <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                    <MenuFlyoutItem Text="Choose image…" Click="OnPickCover">
-                                        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xEB9F;" /></MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutItem x:Name="DefaultCoverItem" Text="Use default" Click="OnDefaultCover">
-                                        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE72C;" /></MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
-                                </MenuFlyout>
-                            </DropDownButton.Flyout>
-                        </DropDownButton>
-                    </Grid>
-                </StackPanel>
+            <TextBlock Style="{StaticResource GroupLabel}" Text="This game" />
+            <Border Style="{StaticResource SettingCard}">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE916;" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Hide delay" />
+                    <ComboBox x:Name="HideDelayBox" Grid.Column="2" VerticalAlignment="Center" MinWidth="150"
+                              AutomationProperties.Name="Hide delay" SelectionChanged="OnHideDelayChanged" />
+                </Grid>
+            </Border>
+            <Border Style="{StaticResource SettingCard}">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="Optimizes Windows while this game runs (Settings › Game mode)">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7FC;" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Game mode" />
+                    <ComboBox x:Name="GameModeBox" Grid.Column="2" VerticalAlignment="Center" MinWidth="150"
+                              AutomationProperties.Name="Game mode for this game" SelectionChanged="OnGameModeChanged" />
+                </Grid>
+            </Border>
+            <Border Style="{StaticResource SettingCard}">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xEB9F;" />
+                    <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
+                        <TextBlock Style="{StaticResource RowTitle}" Text="Cover image" />
+                        <TextBlock x:Name="CoverText" Style="{StaticResource RowDetail}" />
+                    </StackPanel>
+                    <DropDownButton x:Name="CoverButton" Grid.Column="2" Content="Change" VerticalAlignment="Center"
+                                    AutomationProperties.Name="Change cover image">
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                <MenuFlyoutItem Text="Choose image…" Click="OnPickCover">
+                                    <MenuFlyoutItem.Icon><FontIcon Glyph="&#xEB9F;" /></MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem x:Name="DefaultCoverItem" Text="Use default" Click="OnDefaultCover">
+                                    <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE72C;" /></MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </Grid>
             </Border>
 
-            <!-- Launch options: engine suggestions, extra arguments, another exe to start with -->
-            <TextBlock Style="{StaticResource SectionLabel}" Text="Launch options" />
-            <Border Style="{StaticResource Card}">
-                <StackPanel>
-                    <Grid Style="{StaticResource SettingRow}">
+            <!-- Launch options: engine suggestions, extra arguments, another exe to start with, the process to watch -->
+            <Border x:Name="LaunchCard" Style="{StaticResource SettingCard}">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE9E9;" />
+                    <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
+                        <TextBlock Style="{StaticResource RowTitle}" Text="Launch options" />
+                        <TextBlock x:Name="LaunchSummaryText" Style="{StaticResource RowDetail}" />
+                    </StackPanel>
+                    <Button x:Name="LaunchChevron" Grid.Column="2" Style="{StaticResource DisclosureButton}" />
+                </Grid>
+            </Border>
+            <Border x:Name="LaunchBody" Style="{StaticResource SettingCardBody}">
+                <StackPanel Spacing="8">
+                    <Grid ColumnSpacing="10" MinHeight="28">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="EngineText" Style="{StaticResource RowDetail}" VerticalAlignment="Center" Margin="0" />
+                        <Border x:Name="EngineTag" Grid.Column="1" Padding="8,3,9,4" CornerRadius="10" BorderThickness="1"
+                                VerticalAlignment="Center" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                Background="{ThemeResource SystemFillColorNeutralBackgroundBrush}">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <FontIcon x:Name="EngineGlyph" Glyph="&#xE7FC;" FontSize="11" VerticalAlignment="Center"
+                                          Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                <TextBlock x:Name="EngineTagText" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                    <StackPanel x:Name="SuggestionList" AutomationProperties.Name="Suggested launch options" />
+                    <TextBox x:Name="ExtraArgsBox" Header="Extra arguments" PlaceholderText="For example -windowed"
+                             MaxLength="1024" TextChanged="OnExtraArgsChanged" LostFocus="OnExtraArgsLostFocus"
+                             AutomationProperties.Name="Extra arguments" IsSpellCheckEnabled="False" />
+                    <TextBlock x:Name="StartsAsText" Style="{StaticResource RowDetail}" IsTextSelectionEnabled="True"
+                               TextWrapping="Wrap" TextTrimming="None" />
+                    <TextBlock x:Name="LaunchNoteText" Style="{StaticResource RowDetail}" Visibility="Collapsed"
+                               TextWrapping="Wrap" TextTrimming="None" />
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,4">
+                        <Button x:Name="TestLaunchButton" Content="Test launch" Click="OnTestLaunchClick"
+                                ToolTipService.ToolTip="Start the game with these options and keep Game Shelf open" />
+                        <Button x:Name="ResetLaunchButton" Content="Reset" Click="OnResetLaunchClick"
+                                ToolTipService.ToolTip="Start the game the normal way again" />
+                    </StackPanel>
+                    <Border Style="{StaticResource RowDivider}" Margin="0,0,-16,0" />
+                    <Grid Style="{StaticResource SettingRow}" MinHeight="52">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -269,53 +294,63 @@
                             </DropDownButton.Flyout>
                         </DropDownButton>
                     </Grid>
-                    <Border Style="{StaticResource RowDivider}" />
-                    <StackPanel Padding="0,12" Spacing="8">
-                        <Grid ColumnSpacing="10" MinHeight="28">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Style="{StaticResource RowTitle}" Text="Engine" VerticalAlignment="Center" />
-                            <Border x:Name="EngineTag" Grid.Column="1" Padding="8,3,9,4" CornerRadius="10" BorderThickness="1"
-                                    VerticalAlignment="Center" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    Background="{ThemeResource SystemFillColorNeutralBackgroundBrush}">
-                                <StackPanel Orientation="Horizontal" Spacing="5">
-                                    <FontIcon x:Name="EngineGlyph" Glyph="&#xE7FC;" FontSize="11" VerticalAlignment="Center"
-                                              Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                                    <TextBlock x:Name="EngineTagText" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-                        <TextBlock x:Name="EngineText" Style="{StaticResource RowDetail}" Margin="0,6,0,0" />
-
-                        <StackPanel x:Name="SuggestionList" AutomationProperties.Name="Suggested launch options" />
-                        <TextBox x:Name="ExtraArgsBox" Header="Extra arguments" PlaceholderText="For example -windowed"
-                                 MaxLength="1024" TextChanged="OnExtraArgsChanged" LostFocus="OnExtraArgsLostFocus"
-                                 AutomationProperties.Name="Extra arguments" IsSpellCheckEnabled="False" />
-                        <TextBlock x:Name="StartsAsText" Style="{StaticResource RowDetail}" IsTextSelectionEnabled="True" />
-                        <TextBlock x:Name="LaunchNoteText" Style="{StaticResource RowDetail}" Visibility="Collapsed" />
-                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-                            <Button x:Name="TestLaunchButton" Content="Test launch" Click="OnTestLaunchClick"
-                                    ToolTipService.ToolTip="Start the game with these options and keep Game Shelf open" />
-                            <Button x:Name="ResetLaunchButton" Content="Reset" Click="OnResetLaunchClick"
-                                    ToolTipService.ToolTip="Start the game the normal way again" />
+                    <Border Style="{StaticResource RowDivider}" Margin="0,0,-16,0" />
+                    <Grid Style="{StaticResource SettingRow}" MinHeight="52">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Process to watch" />
+                            <TextBlock x:Name="ProcessText" Style="{StaticResource RowDetail}" />
                         </StackPanel>
-                    </StackPanel>
+                        <DropDownButton x:Name="ProcessButton" Grid.Column="1" Content="Change" VerticalAlignment="Center"
+                                        AutomationProperties.Name="Change process to watch">
+                            <DropDownButton.Flyout>
+                                <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                    <MenuFlyoutItem Text="Choose program…" Click="OnPickProcess">
+                                        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8E5;" /></MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem x:Name="AutoProcessItem" Text="Use auto-detect" Click="OnAutoProcess">
+                                        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE72C;" /></MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </DropDownButton.Flyout>
+                        </DropDownButton>
+                    </Grid>
                 </StackPanel>
             </Border>
 
-            <!-- Anti-cheat: what the game uses, what it needs from this PC, and programs it may refuse to run next to -->
+            <!-- Anti-cheat: what the game uses, what it needs from this PC, and programs it may refuse to run next to.
+                 Closed when all is well, open when something needs attention. -->
             <StackPanel x:Name="AntiCheatSection" Visibility="Collapsed">
-                <TextBlock Style="{StaticResource SectionLabel}" Text="Anti-cheat" />
-                <Border Style="{StaticResource Card}">
-                    <StackPanel Padding="0,12" Spacing="10">
-                        <TextBlock x:Name="AntiCheatNames" Style="{StaticResource BodyStrongTextBlockStyle}" TextWrapping="Wrap" />
+                <Border x:Name="AntiCheatCard" Style="{StaticResource SettingCard}">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xEA18;" />
+                        <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Anti-cheat" />
+                            <TextBlock x:Name="AntiCheatNames" Style="{StaticResource RowDetail}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <FontIcon x:Name="AntiCheatStateGlyph" FontSize="14" VerticalAlignment="Center" />
+                            <TextBlock x:Name="AntiCheatStateText" VerticalAlignment="Center" Style="{StaticResource BodyTextBlockStyle}" />
+                        </StackPanel>
+                        <Button x:Name="AntiCheatChevron" Grid.Column="3" Style="{StaticResource DisclosureButton}" />
+                    </Grid>
+                </Border>
+                <Border x:Name="AntiCheatBody" Style="{StaticResource SettingCardBody}">
+                    <StackPanel Spacing="10">
                         <StackPanel x:Name="RequirementList" Spacing="6" AutomationProperties.Name="Requirements" />
                         <StackPanel x:Name="ConflictList" Spacing="6" AutomationProperties.Name="Programs that may conflict" />
                         <CheckBox x:Name="RemindCheck" Content="Remind me before launching" Click="OnRemindClick"
                                   ToolTipService.ToolTip="When you press Play, offer to close programs this anti-cheat may refuse to run next to" />
-                        <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                        <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" TextTrimming="None"
                                    Text="Requirements can change with game updates. Game Shelf only checks these settings and never changes them." />
                     </StackPanel>
                 </Border>

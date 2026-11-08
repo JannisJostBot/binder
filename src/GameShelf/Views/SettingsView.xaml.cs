@@ -36,6 +36,13 @@ public sealed partial class SettingsView : UserControl
         InitializeComponent();
         foreach (var hotkey in Enum.GetValues<Hotkey>())
             HotkeyBox.Items.Add(new ComboBoxItem { Content = App.HotkeyLabel(hotkey), Tag = hotkey.ToString() });
+
+        // The parts that open from their card (board 19). They start closed.
+        _ = new Disclosure(ModeChevron, ModeCard, ModeBody, "display modes");
+        _ = new Disclosure(StayReadyChevron, StayReadyCard, StayReadyBody, "stay ready options");
+        _ = new Disclosure(SourcesChevron, SourcesCard, SourcesBody, "game sources");
+        _ = new Disclosure(ShortcutsChevron, ShortcutsCard, ShortcutsBody, "desktop shortcut options");
+        _ = new Disclosure(HiddenChevron, HiddenCard, HiddenBody, "hidden games");
     }
 
     /// <summary>Fills the controls. <paramref name="autostartOn"/> comes from the registry, the source of truth.</summary>
@@ -47,10 +54,14 @@ public sealed partial class SettingsView : UserControl
         {
             _settings = settings;
             ModeChoice.SelectedIndex = settings.DisplayMode == DisplayMode.Desktop ? 1 : 0;
+            ModeText.Text = settings.DisplayMode == DisplayMode.Desktop ? "On the desktop" : "Flyout from the notification area";
             Select(HotkeyBox, settings.Hotkey.ToString());
-            HotkeyStatus.Text = settings.Hotkey == Hotkey.Off ? "Off"
-                : hotkeyFree ? "Free, not used by Windows or other apps"
-                : "Taken by another app: choose a different one";
+            // Only a problem gets a line on the card; the rest is the tooltip.
+            bool taken = settings.Hotkey != Hotkey.Off && !hotkeyFree;
+            HotkeyStatus.Text = "Taken by another app: choose a different one";
+            HotkeyStatus.Visibility = taken ? Visibility.Visible : Visibility.Collapsed;
+            ToolTipService.SetToolTip(HotkeyBox, settings.Hotkey == Hotkey.Off ? null
+                : taken ? HotkeyStatus.Text : "Free, not used by Windows or other apps");
             TraySwitch.IsOn = settings.TrayIcon;
             StayReadySwitch.IsOn = settings.StayReady;
             Select(KeepLoadedBox, settings.KeepPanelLoaded ? "Fast" : "Light");
@@ -58,11 +69,9 @@ public sealed partial class SettingsView : UserControl
             ClickAwaySwitch.IsOn = settings.CloseOnClickAway;
 
             Select(DelayBox, settings.HideDelaySeconds.ToString(CultureInfo.InvariantCulture));
-            GameModeText.Text = settings.GameModeEnabled
-                ? "On: optimizes Windows while you play, and puts it back after"
-                : "Off: optimize Windows while you play, and put it back after";
+            GameModeText.Text = settings.GameModeEnabled ? "On" : "Off";
             ComeBackSwitch.IsOn = settings.ComeBackOnClose;
-        WeekSwitch.IsOn = settings.ShowWeeklySummary;
+            WeekSwitch.IsOn = settings.ShowWeeklySummary;
             Select(DensityBox, settings.GridDensity.ToString());
             SteamCheck.IsChecked = settings.SteamEnabled;
             EpicCheck.IsChecked = settings.EpicEnabled;
@@ -74,26 +83,28 @@ public sealed partial class SettingsView : UserControl
             ShortcutsCheck.IsChecked = settings.ShortcutsEnabled;
             ShortcutsText.Text = importedShortcuts switch
             {
-                0 => "Move game shortcuts off your desktop into the shelf",
-                1 => "1 shortcut imported",
-                _ => $"{importedShortcuts} shortcuts imported",
+                0 => "None imported",
+                1 => "1 imported",
+                _ => $"{importedShortcuts} imported",
             };
             RestoreButton.IsEnabled = importedShortcuts > 0;
 
             Select(PositionBox, settings.Position.ToString());
-            PositionText.Text = settings.Position == DockPosition.Free
-                ? "Drag the widget by an empty spot to move it"
-                : "Docked to the edge of the screen";
+            PositionText.Visibility = settings.Position == DockPosition.Free ? Visibility.Visible : Visibility.Collapsed;
 
             FillScreens(monitors, currentMonitor);
             DesktopSwitch.IsOn = settings.StayOnDesktop;
             AutostartSwitch.IsOn = autostartOn;
-            AutostartText.Text = autostartOn ? "Opens when you sign in" : "Off";
 
             FillHidden(games);
 
             int shown = games.Count(g => !g.Hidden && settings.IsSourceEnabled(g.Source));
-            LibraryText.Text = refreshing ? "Scanning your stores…" : $"{shown} games on the shelf";
+            int sourcesOn = new[]
+            {
+                settings.SteamEnabled, settings.EpicEnabled, settings.GogEnabled, settings.EaEnabled, settings.UbisoftEnabled,
+                settings.XboxEnabled, settings.RockstarEnabled, settings.ShortcutsEnabled,
+            }.Count(on => on);
+            LibraryText.Text = refreshing ? "Scanning your stores…" : $"{sourcesOn} of 8 on · {shown} games";
             RefreshButton.IsEnabled = !refreshing;
         }
         finally
@@ -133,10 +144,12 @@ public sealed partial class SettingsView : UserControl
             .OrderBy(g => g.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
         HiddenList.Children.Clear();
+        HiddenCountText.Text = hidden.Count == 0 ? "None" : $"{hidden.Count} hidden";
         foreach (var game in hidden)
         {
-            if (HiddenList.Children.Count > 0) HiddenList.Children.Add(new Border { Style = (Style)Application.Current.Resources["RowDivider"] });
-            var row = new Grid { Style = (Style)Application.Current.Resources["SettingRow"] };
+            if (HiddenList.Children.Count > 0)
+                HiddenList.Children.Add(new Border { Style = (Style)Application.Current.Resources["RowDivider"], Margin = new Thickness(0, 0, -16, 0) });
+            var row = new Grid { Style = (Style)Application.Current.Resources["SettingRow"], MinHeight = 52 };
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             var text = new StackPanel { Style = (Style)Application.Current.Resources["RowText"] };
@@ -204,6 +217,9 @@ public sealed partial class SettingsView : UserControl
             : _settings.KeepPanelLoaded
                 ? "Opens at once; stays loaded (up to ~200 MB, which Windows reclaims first). Games aren't affected: it exits while you play."
                 : "Frees all but a few MB, so it opens a moment slower. Games aren't affected: it exits while you play.";
+        StayReadyText.Text = !_settings.StayReady ? "Off: closing it ends Game Shelf"
+            : _settings.KeepPanelLoaded ? "Opens faster while it's closed"
+            : "Uses less memory while it's closed";
     }
 
     private void OnSetupClick(object sender, RoutedEventArgs e) => SetupRequested?.Invoke();

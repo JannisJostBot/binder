@@ -175,7 +175,32 @@ public sealed partial class App : Application
             return;
         }
         ShowGameModeToast(Views.GameModeToast.Kind.Restored, result, exitWhenClosed);
-        if (result.Success && Settings.RestoreSound) Services.Sound.PlayRestored(); // a soft chime, never for a problem
+        if (result.Success && Settings.RestoreSound) PlayRestoredSound(); // a calm sound, never for a problem
+    }
+
+    private int _sound; // which sound is playing (a newer one replaces it); 0 = none
+    private bool _quitAfterSound;
+
+    /// <summary>
+    /// Game mode's "back to normal" sound (board 23). It's made on a background thread; the process stays until it
+    /// has played (the toast may close first), then its buffer is freed. The Game mode page plays it too when its
+    /// switch is turned on, so it can be heard.
+    /// </summary>
+    public async void PlayRestoredSound()
+    {
+        int id = ++_sound;
+        try
+        {
+            if (await Task.Run(Services.Sound.PlayRestored) is { } length) await Task.Delay(length);
+        }
+        catch (Exception e) when (e is OutOfMemoryException or ExternalException)
+        {
+            ErrorLog.Write(e, "restored sound");
+        }
+        if (id != _sound) return; // a newer one is playing; it frees the buffer
+        _sound = 0;
+        Services.Sound.Release();
+        if (_quitAfterSound && !_quitting) Quit();
     }
 
     /// <summary>One Game mode toast at a time; a newer one replaces it.</summary>
@@ -186,7 +211,11 @@ public sealed partial class App : Application
         toast.Closed += (_, _) =>
         {
             if (ReferenceEquals(_gameModeToast, toast)) _gameModeToast = null;
-            if (exitWhenClosed && !_quitting && _panel is null && _kept is null) Quit();
+            if (exitWhenClosed && !_quitting && _panel is null && _kept is null)
+            {
+                if (_sound != 0) _quitAfterSound = true; // after the sound has played
+                else Quit();
+            }
         };
         _gameModeToast = toast;
         toast.ShowQuietly();

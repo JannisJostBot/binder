@@ -11,10 +11,11 @@ using Microsoft.UI.Xaml.Media;
 namespace GameShelf.Views;
 
 /// <summary>
-/// Game mode's toast (board 4), shown without taking focus, centered above the taskbar of the main screen:
-/// "Game mode is on" once it applied (while the widget is still up), "Windows is back to normal" once it put
-/// everything back. A restore that missed something stays until dismissed and offers Details. The badge pops in
-/// and draws its checkmark once; its one timer exists only while a message that closes by itself is up.
+/// Game mode's toast (board 23), shown without taking focus, centered above the taskbar of the main screen: a
+/// one-line pill, "Game mode on · 5 changes" once it applied (while the widget is still up) and "Back to normal ·
+/// 5 changes put back" once it put everything back. Something that couldn't be changed or put back gets a card
+/// with the names and the log; after a restore it stays until dismissed. The dot pops in and draws its check
+/// once; the one timer exists only while a message that closes by itself is up.
 /// </summary>
 public sealed partial class GameModeToast : Window
 {
@@ -22,12 +23,12 @@ public sealed partial class GameModeToast : Window
 
     private static readonly TimeSpan SuccessTimeout = TimeSpan.FromSeconds(4);
     private static readonly TimeSpan PartialTimeout = TimeSpan.FromSeconds(6);
-    private const int Height = 64;
     private const int MarginAboveTaskbar = 24;
 
     private readonly IntPtr _hwnd;
     private readonly TimeSpan? _timeout;
     private DispatcherQueueTimer? _timer;
+    private readonly FrameworkElement _announce;
 
     public GameModeToast(Kind kind, RestoreResult result)
     {
@@ -47,21 +48,43 @@ public sealed partial class GameModeToast : Window
         if (PanelBackdrop.IsSupported) SystemBackdrop = new PanelBackdrop();
         else Root.Background = (Brush)Application.Current.Resources["SolidBackgroundFillColorBaseBrush"];
 
-        var (title, detail) = result.ToastText(applied: kind == Kind.Applied);
-        TitleText.Text = title;
-        DetailText.Text = detail;
-        AutomationProperties.SetName(TitleText, title + ". " + detail);
-        ToolTipService.SetToolTip(Body, detail); // the detail may be cut short
-
+        bool applied = kind == Kind.Applied;
         // A restore that missed something waits for the user; an apply that did is only a heads-up.
-        _timeout = result.Success ? SuccessTimeout : kind == Kind.Applied ? PartialTimeout : null;
-        if (!result.Success)
+        _timeout = result.Success ? SuccessTimeout : applied ? PartialTimeout : null;
+        if (result.Success)
         {
-            BadgeFill.Fill = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
-            Mark.Visibility = Visibility.Collapsed;
-            Warning.Visibility = Visibility.Visible;
-            DetailsButton.Visibility = GameModeService.HasLog ? Visibility.Visible : Visibility.Collapsed;
-            CloseButton.Visibility = Visibility.Visible;
+            string changes = result.Restored == 1 ? "1 change" : $"{result.Restored} changes";
+            var (title, detail) = applied
+                ? ("Game mode on", result.Restored == 0 ? "already set up" : changes)
+                : ("Back to normal", changes + " put back");
+            LineTitle.Text = title;
+            LineDetail.Text = " · " + detail;
+            AutomationProperties.SetName(LineText, applied
+                ? (result.Restored == 0 ? "Game mode is on. Windows was already set up for gaming" : $"Game mode is on. {changes}, put back when the game closes")
+                : $"Windows is back to normal. Game mode put back {changes}");
+            if (!applied)
+            {
+                // Done: a quiet neutral dot with a green check, not the accent.
+                var resources = Application.Current.Resources;
+                OnGlyph.Visibility = Visibility.Collapsed;
+                Mark.Visibility = Visibility.Visible;
+                DotFill.Fill = (Brush)resources["ControlFillColorSecondaryBrush"];
+                DotFill.Stroke = (Brush)resources["ControlStrokeColorDefaultBrush"];
+                Mark.Stroke = (Brush)resources["SystemFillColorSuccessBrush"];
+            }
+            _announce = LineText;
+        }
+        else
+        {
+            var (title, detail) = result.ToastText(applied);
+            bool hasLog = GameModeService.HasLog;
+            TitleText.Text = title;
+            DetailText.Text = detail + (hasLog ? ". The log says what happened." : ".");
+            AutomationProperties.SetName(TitleText, title + ". " + DetailText.Text);
+            DetailsButton.Visibility = hasLog ? Visibility.Visible : Visibility.Collapsed;
+            Pill.Visibility = Visibility.Collapsed;
+            Card.Visibility = Visibility.Visible;
+            _announce = TitleText;
         }
         Root.SizeChanged += OnFirstLayout;
         Closed += (_, _) =>
@@ -88,7 +111,7 @@ public sealed partial class GameModeToast : Window
 
         double scale = xamlRoot.RasterizationScale;
         int width = (int)Math.Ceiling(Root.ActualWidth * scale);
-        int height = (int)Math.Ceiling(Height * scale);
+        int height = (int)Math.Ceiling(Root.ActualHeight * scale);
         // Above the taskbar, also an auto-hide one (it reserves no work area but slides up over the bottom).
         var monitor = Monitors.Find(null);
         var work = monitor.WorkArea;
@@ -102,15 +125,15 @@ public sealed partial class GameModeToast : Window
         bool animate = new Windows.UI.ViewManagement.UISettings().AnimationsEnabled;
         if (animate)
         {
-            Badge.Opacity = 0;
             Body.Opacity = 0;
-            Mark.StrokeDashOffset = 9;
+            DotScale.ScaleX = DotScale.ScaleY = 0.4;
+            Mark.StrokeDashOffset = 8;
         }
         NativeWindow.Cloak(_hwnd, false);
         if (animate) ShowStoryboard.Begin();
 
         // Screen readers announce it like Windows' own notifications.
-        FrameworkElementAutomationPeer.CreatePeerForElement(TitleText)?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+        FrameworkElementAutomationPeer.CreatePeerForElement(_announce)?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
 
         if (_timeout is not { } timeout) return;
         _timer = DispatcherQueue.CreateTimer();

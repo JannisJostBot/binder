@@ -77,6 +77,63 @@
         <Setter Property="Margin" Value="0,12" />
     </Style>
 
+    <!--
+        Settings and Game detail (board 19 and 21): one Windows Settings-style card per setting, a little apart,
+        with an icon, under a group heading. A card that opens (Disclosure) shows its body joined underneath.
+    -->
+    <Style x:Key="GroupLabel" TargetType="TextBlock" BasedOn="{StaticResource BodyStrongTextBlockStyle}">
+        <Setter Property="Margin" Value="20,36,20,12" />
+    </Style>
+
+    <Style x:Key="SettingCard" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <Setter Property="Margin" Value="20,0,20,6" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="MinHeight" Value="52" />
+    </Style>
+
+    <!-- The opened part of a card: joined to it, a shade darker, indented to line up with the card's title. -->
+    <Style x:Key="SettingCardBody" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1,0,1,1" />
+        <Setter Property="CornerRadius" Value="0,0,8,8" />
+        <Setter Property="Margin" Value="20,0,20,6" />
+        <Setter Property="Padding" Value="52,12,16,16" />
+        <Setter Property="Visibility" Value="Collapsed" />
+    </Style>
+
+    <!-- A card that is a link to another page (Game mode, Free up space): the whole card is the button. -->
+    <Style x:Key="SettingLinkCard" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+        <Setter Property="Margin" Value="20,0,20,6" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="MinHeight" Value="52" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+
+    <Style x:Key="CardIcon" TargetType="FontIcon">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="Width" Value="20" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- The chevron that opens a card. -->
+    <Style x:Key="DisclosureButton" TargetType="Button" BasedOn="{StaticResource IconButton}">
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Content" Value="&#xE70D;" />
+        <Setter Property="Margin" Value="0,0,-8,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
     <!-- ToggleSwitch without its On/Off label, as in Windows Settings rows where the row names it. -->
     <Style x:Key="RowSwitch" TargetType="ToggleSwitch" BasedOn="{StaticResource DefaultToggleSwitchStyle}">
         <Setter Property="OnContent" Value="" />
