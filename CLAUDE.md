@@ -82,6 +82,7 @@ GameShelf.sln
   tests/smoke.ps1           Windows UI smoke test run by CI (see .github/workflows/ci.yml)
   tests/setup-test.ps1      CI test of the installer: install, update while running, uninstall
   tools/make-tray-icons.ps1  draws the tray icon frames (run after changing the logo)
+  tools/make-watcher-icon.ps1  draws the watcher's icon: the logo with an eye instead of the play mark
   publish.ps1               builds what ships into publish/: app\ (the WinUI widget folder, the Native AOT
                             watcher and helper) and GameShelfSetup.exe with app\ inside (optional -CertificateThumbprint signing)
   check.ps1                 the hard rules on a diff (packages, AOT, and with -Task the agent rules), then build + tests
