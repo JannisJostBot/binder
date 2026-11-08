@@ -131,9 +131,10 @@ public sealed partial class GameModeToast : Window
         if (animate)
         {
             Body.Opacity = 0;
-            DotScale.ScaleX = DotScale.ScaleY = 0.4;
             Mark.StrokeDashOffset = 8;
+            OnGlyph.Glyph = ""; // the gauge starts at "off"
         }
+        if (animate) PopDot();
         NativeWindow.Cloak(_hwnd, false);
         if (animate) ShowStoryboard.Begin();
 
@@ -146,6 +147,25 @@ public sealed partial class GameModeToast : Window
         _timer.IsRepeating = false;
         _timer.Tick += (_, _) => Close();
         _timer.Start();
+    }
+
+    /// <summary>
+    /// The dot pops in from small with a slight overshoot. Done on the compositor, not with a XAML ScaleTransform:
+    /// XAML would rasterize the dot at its small starting size and stretch that up (pixelated); here it's drawn
+    /// at full size and only shrunk. Runs once; nothing is left running.
+    /// </summary>
+    private void PopDot()
+    {
+        var visual = ElementCompositionPreview.GetElementVisual(Dot);
+        var compositor = visual.Compositor;
+        visual.CenterPoint = new Vector3((float)Dot.Width / 2, (float)Dot.Height / 2, 0);
+        var pop = compositor.CreateVector3KeyFrameAnimation();
+        pop.InsertKeyFrame(0, new Vector3(0.2f, 0.2f, 1));
+        pop.InsertKeyFrame(1, Vector3.One, compositor.CreateCubicBezierEasingFunction(new Vector2(0.34f, 1.5f), new Vector2(0.64f, 1)));
+        pop.Duration = TimeSpan.FromMilliseconds(400);
+        pop.DelayTime = TimeSpan.FromMilliseconds(100);
+        pop.DelayBehavior = AnimationDelayBehavior.SetInitialValueBeforeDelay;
+        visual.StartAnimation("Scale", pop);
     }
 
     private LayerVisual? _shadowLayer;

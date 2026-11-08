@@ -7,21 +7,23 @@
          gets a larger card with room for the names and a way to the log. Centered above the taskbar like the
          volume flyout; the window is sized to this content once it has been laid out. The storyboard runs once
          when it shows (not at all when animations are off). -->
-    <!-- The window itself is transparent (TransparentBackdrop); Roots padding leaves room for the shadow. -->
+    <!-- The window itself is transparent (TransparentBackdrop); Root's padding leaves room for the shadow. -->
     <Grid x:Name="Root" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="28,20,28,32">
         <Grid.Resources>
             <Storyboard x:Name="ShowStoryboard">
-                <DoubleAnimation Storyboard.TargetName="DotScale" Storyboard.TargetProperty="ScaleX" From="0.4" To="1" Duration="0:0:0.3">
-                    <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="0.45" /></DoubleAnimation.EasingFunction>
-                </DoubleAnimation>
-                <DoubleAnimation Storyboard.TargetName="DotScale" Storyboard.TargetProperty="ScaleY" From="0.4" To="1" Duration="0:0:0.3">
-                    <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="0.45" /></DoubleAnimation.EasingFunction>
-                </DoubleAnimation>
+                <!-- The pill fades in first; then the dot pops in (a compositor scale, PopDot, so it stays sharp),
+                     and then its icon moves: the check draws itself, or the gauge's needle sweeps up from off to
+                     high (Windows' own speed glyphs). -->
                 <DoubleAnimation Storyboard.TargetName="Mark" Storyboard.TargetProperty="StrokeDashOffset" From="8" To="0"
-                                 BeginTime="0:0:0.15" Duration="0:0:0.35" EnableDependentAnimation="True">
-                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                                 BeginTime="0:0:0.35" Duration="0:0:0.45" EnableDependentAnimation="True">
+                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
-                <DoubleAnimation Storyboard.TargetName="Body" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.25" />
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OnGlyph" Storyboard.TargetProperty="Glyph">
+                    <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="&#xEC48;" />
+                    <DiscreteObjectKeyFrame KeyTime="0:0:0.4" Value="&#xEC49;" />
+                    <DiscreteObjectKeyFrame KeyTime="0:0:0.6" Value="&#xEC4A;" />
+                </ObjectAnimationUsingKeyFrames>
+                <DoubleAnimation Storyboard.TargetName="Body" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.2" />
                 <DoubleAnimation Storyboard.TargetName="BodyShift" Storyboard.TargetProperty="Y" From="6" To="0" Duration="0:0:0.3">
                     <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
@@ -44,9 +46,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Grid x:Name="Dot" Width="28" Height="28" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5"
-                      AutomationProperties.AccessibilityView="Raw">
-                    <Grid.RenderTransform><ScaleTransform x:Name="DotScale" /></Grid.RenderTransform>
+                <Grid x:Name="Dot" Width="28" Height="28" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw">
                     <Ellipse x:Name="DotFill" Fill="{ThemeResource AccentFillColorDefaultBrush}" StrokeThickness="1" />
                     <!-- On: a gauge. Back to normal: a check that draws itself. -->
                     <FontIcon x:Name="OnGlyph" Glyph="&#xEC4A;" FontSize="14" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
