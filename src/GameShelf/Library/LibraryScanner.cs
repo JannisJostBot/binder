@@ -5,45 +5,53 @@ namespace GameShelf.Library;
 /// <summary>Runs the enabled sources and merges results with the stored library.</summary>
 public static class LibraryScanner
 {
+    /// <summary>Every launcher Game Shelf reads, in the order Settings lists them.</summary>
+    public static readonly GameSource[] StoreSources =
+        [GameSource.Steam, GameSource.Epic, GameSource.Gog, GameSource.Ea, GameSource.Ubisoft, GameSource.Xbox, GameSource.Rockstar];
+
+    /// <summary>
+    /// First-run setup: how many games each launcher has on this PC, also for launchers that are turned off (the
+    /// regular rescan skips those, so their games aren't in the library to count). Only when setup opens.
+    /// </summary>
+    public static Dictionary<GameSource, int> CountAll()
+    {
+        var counts = new Dictionary<GameSource, int>();
+        foreach (var source in StoreSources)
+        {
+            try
+            {
+                counts[source] = ScanOne(source).Count;
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                counts[source] = 0;
+            }
+        }
+        return counts;
+    }
+
+    private static List<Game> ScanOne(GameSource source) => source switch
+    {
+        GameSource.Steam => SteamSource.Scan(),
+        GameSource.Epic => EpicSource.Scan(),
+        GameSource.Gog => GogSource.Scan(),
+        GameSource.Ea => EaSource.Scan(),
+        GameSource.Ubisoft => UbisoftSource.Scan(),
+        GameSource.Xbox => XboxSource.Scan(),
+        GameSource.Rockstar => RockstarSource.Scan(),
+        _ => [],
+    };
+
     public static List<Game> Rescan(List<Game> stored, Settings settings)
     {
         var scanned = new List<Game>();
         var scannedSources = new HashSet<GameSource>();
 
-        if (settings.SteamEnabled)
+        foreach (var source in StoreSources)
         {
-            scanned.AddRange(SteamSource.Scan());
-            scannedSources.Add(GameSource.Steam);
-        }
-        if (settings.EpicEnabled)
-        {
-            scanned.AddRange(EpicSource.Scan());
-            scannedSources.Add(GameSource.Epic);
-        }
-        if (settings.GogEnabled)
-        {
-            scanned.AddRange(GogSource.Scan());
-            scannedSources.Add(GameSource.Gog);
-        }
-        if (settings.EaEnabled)
-        {
-            scanned.AddRange(EaSource.Scan());
-            scannedSources.Add(GameSource.Ea);
-        }
-        if (settings.UbisoftEnabled)
-        {
-            scanned.AddRange(UbisoftSource.Scan());
-            scannedSources.Add(GameSource.Ubisoft);
-        }
-        if (settings.XboxEnabled)
-        {
-            scanned.AddRange(XboxSource.Scan());
-            scannedSources.Add(GameSource.Xbox);
-        }
-        if (settings.RockstarEnabled)
-        {
-            scanned.AddRange(RockstarSource.Scan());
-            scannedSources.Add(GameSource.Rockstar);
+            if (!settings.IsSourceEnabled(source)) continue;
+            scanned.AddRange(ScanOne(source));
+            scannedSources.Add(source);
         }
 
         var byId = new Dictionary<string, Game>(stored.Count);

@@ -46,6 +46,8 @@ public sealed partial class SetupView : UserControl
     {
         _settings = settings;
         _shortcutsLoaded = false;
+        _launchers = []; // a new run starts from the settings' ticks
+        _foundCounts = null;
         UpdateLibrary(games);
         FlyoutCard.IsChecked = settings.DisplayMode == DisplayMode.Flyout;
         DesktopCard.IsChecked = settings.DisplayMode == DisplayMode.Desktop;
@@ -54,15 +56,42 @@ public sealed partial class SetupView : UserControl
         ShowStep(1);
     }
 
-    /// <summary>Launchers with their game counts. Called again when the scan finishes.</summary>
+    // Games per launcher: from the library until the window's count of every launcher (on or off) arrives.
+    private Dictionary<GameSource, int> _libraryCounts = [];
+    private IReadOnlyDictionary<GameSource, int>? _foundCounts;
+
+    /// <summary>The library as found so far. Called again when the scan finishes.</summary>
     public void UpdateLibrary(IReadOnlyList<Game> games)
     {
-        var counts = games.Where(g => LauncherIcons.HasBadge(g.Source))
+        _libraryCounts = games.Where(g => LauncherIcons.HasBadge(g.Source))
             .GroupBy(g => g.Source)
-            .OrderByDescending(group => group.Count())
+            .ToDictionary(group => group.Key, group => group.Count());
+        BuildLaunchers();
+    }
+
+    /// <summary>Every launcher's games on this PC, also the ones turned off (<see cref="LibraryScanner.CountAll"/>).</summary>
+    public void SetFoundCounts(IReadOnlyDictionary<GameSource, int> counts)
+    {
+        _foundCounts = counts;
+        BuildLaunchers();
+    }
+
+    /// <summary>
+    /// Every launcher Game Shelf reads: the ones with games first (most first), then the ones with none found,
+    /// so none is left unmentioned. A tick changed here is kept when the counts come in.
+    /// </summary>
+    private void BuildLaunchers()
+    {
+        var previous = _launchers.ToDictionary(row => row.Source, row => row.Enabled);
+        int CountOf(GameSource source) =>
+            _foundCounts?.GetValueOrDefault(source) is > 0 and var found ? found : _libraryCounts.GetValueOrDefault(source);
+        var counts = LibraryScanner.StoreSources
+            .Select(source => (Source: source, Count: CountOf(source)))
+            .OrderByDescending(entry => entry.Count)
             .ToList();
-        _launchers = counts.Select(group => new SetupLauncherRow(group.Key, LauncherBadge.Label(group.Key),
-            group.Count() == 1 ? "1 game" : $"{group.Count()} games", _settings.IsSourceEnabled(group.Key))).ToList();
+        _launchers = counts.Select(entry => new SetupLauncherRow(entry.Source, LauncherBadge.Label(entry.Source),
+            entry.Count switch { 0 => "None found", 1 => "1 game", var n => $"{n} games" },
+            previous.TryGetValue(entry.Source, out bool ticked) ? ticked : _settings.IsSourceEnabled(entry.Source))).ToList();
 
         LauncherList.Children.Clear();
         foreach (var row in _launchers)
@@ -71,6 +100,7 @@ public sealed partial class SetupView : UserControl
             var box = new CheckBox { Content = row.Name, IsChecked = row.Enabled, Margin = new Thickness(0, 4, 0, 4) };
             box.Checked += (_, _) => row.Enabled = true;
             box.Unchecked += (_, _) => row.Enabled = false;
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetHelpText(box, row.Count);
             line.Children.Add(box);
             line.Children.Add(new TextBlock
             {
@@ -82,8 +112,8 @@ public sealed partial class SetupView : UserControl
             });
             LauncherList.Children.Add(line);
         }
-        NothingFoundText.Visibility = _launchers.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        int total = counts.Sum(group => group.Count());
+        int total = counts.Sum(entry => entry.Count);
+        NothingFoundText.Visibility = total == 0 ? Visibility.Visible : Visibility.Collapsed;
         FoundTitle.Text = total == 0 ? "Let's set up your shelf" : total == 1 ? "We found 1 game" : $"We found {total} games";
     }
 

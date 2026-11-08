@@ -627,8 +627,21 @@ public sealed partial class MainWindow : Window
     /// <summary>First-run setup (board 10). Also reachable from Settings → "Run first-time setup again".</summary>
     private void ShowSetup()
     {
+        _sourcesBeforeSetup = LibraryScanner.StoreSources.Where(App.Settings.IsSourceEnabled).ToHashSet();
         SetupPage.Start(App.Settings, _games, Autostart.IsEnabled());
         ShowPage(SetupPage);
+        _ = CountLaunchersForSetupAsync();
+    }
+
+    private HashSet<GameSource> _sourcesBeforeSetup = [];
+
+    /// <summary>Setup lists every launcher with its games, also the ones turned off, so it reads each one once.</summary>
+    private async Task CountLaunchersForSetupAsync()
+    {
+        Dictionary<GameSource, int> counts;
+        try { counts = await Task.Run(LibraryScanner.CountAll); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return; }
+        if (!IsClosing && SetupPage.Visibility == Visibility.Visible) SetupPage.SetFoundCounts(counts);
     }
 
     private async Task LoadSetupShortcutsAsync()
@@ -652,6 +665,8 @@ public sealed partial class MainWindow : Window
         }
         settings.SetupDone = true;
         SaveSettings();
+        bool newLauncher = LibraryScanner.StoreSources.Any(s => settings.IsSourceEnabled(s) && !_sourcesBeforeSetup.Contains(s));
+        if (newLauncher) App.State.Scanned = false; // the next window (after a mode change) scans again too
         if (modeChanged)
         {
             App.Current.ApplyDisplayMode(); // this window closes; the new one opens in the chosen mode
@@ -660,6 +675,8 @@ public sealed partial class MainWindow : Window
         RefreshViews(); // launchers may have been unticked in step 1
         ShowShelf();
         Shelf.FocusSearch();
+        // A launcher ticked on in step 1 wasn't scanned: its games come in now.
+        if (newLauncher) _ = RescanAsync();
     }
 
     private void ShowDetail(Game game)
