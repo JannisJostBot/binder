@@ -1062,75 +1062,77 @@ as still too much like a notification. What makes a sound read as a notification
 then decays. So these have no strike: each one rises out of silence over most of a second, breathes slowly while
 it's there and sinks back into silence. Longer (5 s) but very quiet, so it's felt more than heard.
 
-**What all three do:**
+**What all six do:**
 - **No onset.** Every voice rises with a sin² curve (zero slope at both ends) over 0.7–1.4 s, then falls with
   `setTargetAtTime(0, τ)`. In C#: `peak · sin²(π/2 · t / attack)`, then `peak · e^(−(t − attack)/τ)`.
 - **It breathes.** Each tone is two equal sines a fraction of a hertz apart (0.3–0.8 Hz, each at half the level),
   so it swells and softens by itself. The main low-pass opens a little as it rises and closes as it fades.
 - **Air:** where used, soft brown noise (white noise integrated with a leak: `y = 0.985·y + 0.12·white`, seeded),
   through its own low-pass, with the same kind of swell.
-- **Warm and quiet.** Low mids only (high-pass 90–120 Hz, Q 0.7 dB; nothing bright), §18's noise room at ≤ 2.4 s,
-  no echo, no FM. **−32 LUFS** at its loudest (about 14 dB under Windows' notification sound), about −38 at night.
+- **Dark, warm and quiet.** Low mids only: filters peak at 0.6–1.4 kHz and close as it fades, §18's noise room
+  (cut at 0.9–1.8 kHz), high-pass 90–120 Hz (Q 0.7 dB), no echo, no FM. **−32 LUFS** at its loudest (about 14 dB under Windows' notification sound), about −38 at night.
   The master fades linearly over the last 0.5 s of the file.
 - Main low-pass Q 0.2 dB; frequency points are exponential ramps from the previous point.
 - The same sound every time (identical sounds fade into the background; variation keeps them noticeable).
 
-**Calm variants**, ranked (measured offline at 48 kHz, BS.1770 K-weighting, loudest 400 ms):
+**Calm variants**, ranked (measured offline at 48 kHz, BS.1770 K-weighting, loudest 400 ms). After the owner found
+the first versions "way too bright", every variant is dark: filters peak at 0.6–1.4 kHz, rooms are cut at
+0.9–1.8 kHz, and under 2 % of the energy is above 2 kHz.
 
 1. **Exhale (recommended).** An open D chord that fades up from nothing over about a second, with a breath of soft
    air beneath it, then lets go slowly: a long, contented sigh.
    - Voices (Hz, pan, level, beat, start): D3 146.83, −0.30, 0.050, 0.35 Hz, 0 · A3 220.00, 0.25, 0.040, 0.5 Hz, 0 ·
-     E4 329.63, −0.10, 0.030, 0.6 Hz, 80 ms · F♯4 369.99, 0.35, 0.022, 0.45 Hz, 150 ms.
+     E4 329.63, −0.10, 0.026, 0.6 Hz, 80 ms · F♯4 369.99, 0.35, 0.015, 0.45 Hz, 150 ms.
    - Attack 0.9 / 0.95 / 1.0 / 1.05 s, release τ 0.9 / 0.85 / 0.8 / 0.75 s.
-   - Air: level 0.05, attack 0.8 s, τ 0.7 s, its low-pass (Q 0.5 dB) 300 → 900 Hz at 0.8 s → 250 Hz at 4.0 s.
-   - Low-pass 500 → 1300 Hz at 0.9 s → 380 Hz at 4.5 s. Room 2.4 s, wet 0.35, pre-delay 30 ms, cut 1600 Hz.
-     High-pass 110 Hz. Master 0.76. File 5.0 s. Measured: −32 LUFS, peak −24 dBFS; night −38.
-2. **Bowl.** A singing bowl on A that is rubbed, never struck: three partials bloom together and hum, wavering
+   - Air: level 0.05, attack 0.8 s, τ 0.7 s, its low-pass (Q 0.5 dB) 200 → 500 Hz at 0.8 s → 180 Hz at 4.0 s.
+   - Low-pass 350 → 750 Hz at 0.9 s → 280 Hz at 4.5 s. Room 2.4 s, wet 0.35, pre-delay 30 ms, cut 900 Hz.
+     High-pass 100 Hz. Master 0.76. File 5.0 s. Measured: −31.9 LUFS, peak −24.5 dBFS; night −38.4.
+2. **Bowl.** A singing bowl on A that is rubbed, never struck: two partials bloom together and hum, wavering
    slowly. Deeply calm, though some will hear it as "spa" more than "all's well".
-   - A3 220.00, centre, level 0.055, partials ×1 (1), ×2.71 (0.22), ×5.15 (0.05), each a pair 0.8 Hz apart;
-     attack 0.7 s, τ 1.1 s.
-   - Low-pass 1400 → 700 Hz over 5 s. Room 2.2 s, wet 0.30, pre-delay 25 ms, cut 2200 Hz. High-pass 120 Hz.
-     Master 0.92. File 5.5 s. Measured: −32 LUFS, peak −28 dBFS; night −38.
+   - A3 220.00, centre, level 0.055, partials ×1 (1) and ×2.71 (0.12), each a pair 0.8 Hz apart; attack 0.7 s,
+     τ 1.1 s.
+   - Low-pass 700 → 400 Hz over 5 s. Room 2.2 s, wet 0.30, pre-delay 25 ms, cut 1000 Hz. High-pass 110 Hz.
+     Master 0.92. File 5.5 s. Measured: −32.0 LUFS, peak −29.1 dBFS; night −37.4.
 3. **Tide.** One slow wave: soft noise rising and drawing back like water reaching the sand, a faint fifth inside
    it. The most natural, but on small laptop speakers noise can turn into hiss.
-   - Air: level 0.16, attack 1.2 s, τ 0.75 s, its low-pass (Q 0.7 dB) 250 → 1200 Hz at 1.2 s → 700 at 2.2 s →
-     200 at 4.6 s.
-   - Voices: A3 220.00, −0.2, 0.022, 0.3 Hz, 200 ms, attack 1.3 s, τ 0.8 s · E4 329.63, 0.2, 0.016, 0.4 Hz,
+   - Air: level 0.16, attack 1.2 s, τ 0.75 s, its low-pass (Q 0.7 dB) 180 → 600 Hz at 1.2 s → 400 at 2.2 s →
+     150 at 4.6 s.
+   - Voices: A3 220.00, −0.2, 0.022, 0.3 Hz, 200 ms, attack 1.3 s, τ 0.8 s · E4 329.63, 0.2, 0.014, 0.4 Hz,
      250 ms, attack 1.4 s, τ 0.75 s.
-   - Low-pass 600 → 1100 Hz at 1.2 s → 400 Hz at 4.5 s. Room 1.8 s, wet 0.20, pre-delay 20 ms, cut 1500 Hz.
-     High-pass 90 Hz. Master 0.37. File 5.0 s. Measured: −32 LUFS, peak −23.5 dBFS; night −39.
+   - Low-pass 400 → 700 Hz at 1.2 s → 300 Hz at 4.5 s. Room 1.8 s, wet 0.20, pre-delay 20 ms, cut 900 Hz.
+     High-pass 90 Hz. Master 0.38. File 5.0 s. Measured: −32.0 LUFS, peak −22.8 dBFS; night −38.9.
 
-**Heavenly variants** (added at the owner's request, kept beside the three above): the same breath, with light in
-it. Higher, brighter, a large airy room (3.5–4 s); still no strike, still −32 LUFS. Two engine additions: a voice
-can be an ensemble of detuned copies (`detunes` in cents) with a vibrato (a sine LFO into each oscillator's
-frequency, ±cents), and can pass through parallel band-passes (formants: frequency, Q in Web Audio's bandpass
-sense, gain).
+**Heavenly variants** (added at the owner's request, kept beside the three above): the same breath with more space,
+a large soft room (3.5–4 s) and tones that arrive one after another. Still no strike, still −32 LUFS, and as dark
+as the calm ones. Two engine additions: a voice can be an ensemble of detuned copies (`detunes` in cents) with a
+vibrato (a sine LFO into each oscillator's frequency, ±cents), and can pass through parallel band-passes
+(formants: frequency, Q in Web Audio's bandpass sense, gain).
 
-4. **Choir.** A soft, distant choir singing "ah" on an open D chord, each voice entering after the last.
-   - Voices (Hz, pan, vibrato rate, start): D4 293.66, −0.30, 4.6 Hz, 0 · F♯4 369.99, 0.30, 5.0 Hz, 100 ms ·
-     A4 440.00, −0.10, 5.2 Hz, 200 ms · E5 659.25, 0.15, 4.4 Hz, 350 ms.
-   - Each: three sawtooths at −7 / 0 / +7 cents, vibrato ±7 cents, formants 800 Hz (Q 5, gain 1), 1150 Hz
-     (Q 6, 0.5), 2900 Hz (Q 8, 0.12); level 0.06 (E5 0.035); attack 1.2 / 1.25 / 1.3 / 1.4 s, τ 1.0 s.
-   - Low-pass 2500 → 1500 Hz over 5 s. Room 4.0 s, wet 0.50, pre-delay 40 ms, cut 4500 Hz. High-pass 150 Hz.
-     Master 2.14. File 5.5 s. Measured: −32 LUFS, peak −22.5 dBFS; night −38.
-5. **Glass light (recommended of these).** A soft D underneath, then four high pure tones (D, F♯, A, C♯: a major
-   seventh) appearing a quarter second apart, each shimmering, in a wide bright room: sunlight through glass.
-   - Voices (Hz, pan, level, beat, start): D4 293.66, 0, 0.030, 0.3 Hz, 0 (attack 1.0 s, τ 1.2 s) · D5 587.33,
-     −0.35, 0.020, 0.5 Hz, 100 ms (0.7 s, τ 1.0 s) · F♯5 739.99, 0.35, 0.016, 0.6 Hz, 350 ms · A5 880.00, −0.15,
-     0.013, 0.7 Hz, 600 ms · C♯6 1108.73, 0.20, 0.009, 0.8 Hz, 850 ms (the last three 0.7 s, τ 0.9 s).
-   - Low-pass 4000 → 2500 Hz over 6 s. Room 4.0 s, wet 0.55, pre-delay 50 ms, cut 6000 Hz. High-pass 200 Hz.
-     Master 1.74. File 6.0 s. Measured: −32 LUFS, peak −26 dBFS; night −38.
-6. **Rising light.** A warm G chord that starts muffled and opens up like a door to a bright room; two high tones
+4. **Choir.** A low, distant choir humming a dark "oo" on an open D chord, each voice entering after the last.
+   - Voices (Hz, pan, vibrato rate, start): D3 146.83, −0.30, 4.6 Hz, 0 · F♯3 185.00, 0.30, 5.0 Hz, 100 ms ·
+     A3 220.00, −0.10, 5.2 Hz, 200 ms · E4 329.63, 0.15, 4.4 Hz, 350 ms.
+   - Each: three sawtooths at −7 / 0 / +7 cents, vibrato ±6 cents, formants 320 Hz (Q 4, gain 1) and 800 Hz
+     (Q 6, 0.25); level 0.06 (E4 0.035); attack 1.2 / 1.25 / 1.3 / 1.4 s, τ 1.0 s.
+   - Low-pass 900 → 600 Hz over 5 s. Room 4.0 s, wet 0.50, pre-delay 40 ms, cut 1500 Hz. High-pass 110 Hz.
+     Master 1.82. File 5.5 s. Measured: −32.0 LUFS, peak −23.2 dBFS; night −38.1.
+5. **Glass light (recommended of these).** A soft D underneath, then four pure tones (D, F♯, A, C♯: a major
+   seventh) appearing a quarter second apart, each shimmering, in a wide soft room: light through frosted glass.
+   - Voices (Hz, pan, level, beat, start): D3 146.83, 0, 0.030, 0.3 Hz, 0 (attack 1.0 s, τ 1.2 s) · D4 293.66,
+     −0.35, 0.022, 0.5 Hz, 100 ms (0.7 s, τ 1.0 s) · F♯4 369.99, 0.35, 0.017, 0.6 Hz, 350 ms · A4 440.00, −0.15,
+     0.013, 0.7 Hz, 600 ms · C♯5 554.37, 0.20, 0.009, 0.8 Hz, 850 ms (the last three 0.7 s, τ 0.9 s).
+   - Low-pass 1400 → 900 Hz over 6 s. Room 4.0 s, wet 0.55, pre-delay 50 ms, cut 1800 Hz. High-pass 120 Hz.
+     Master 1.59. File 6.0 s. Measured: −31.9 LUFS, peak −26.1 dBFS; night −38.2.
+6. **Rising light.** A warm G chord that starts muffled and opens up like a door to a lit room; two softer tones
    shimmer in above it with a breath of air, then it settles.
    - Voices: G3 196.00, −0.30, 0.045, 0.3 Hz · D4 293.66, 0.25, 0.040, 0.45 Hz (both 1.4 s, τ 1.1 s) · B4 493.88,
-     −0.05, 0.030, 0.5 Hz (1.5 s, τ 1.0 s) · A5 880.00, 0.30, 0.012, 0.6 Hz, 900 ms · D6 1174.66, −0.30, 0.007,
+     −0.05, 0.026, 0.5 Hz (1.5 s, τ 1.0 s) · A4 440.00, 0.30, 0.014, 0.6 Hz, 900 ms · D5 587.33, −0.30, 0.009,
      0.7 Hz, 1.1 s (both 1.2 s, τ 1.0 s).
-   - Air: level 0.03, attack 1.5 s, τ 1.0 s, low-pass 500 → 2600 Hz at 2.0 s → 800 Hz at 5.0 s.
-   - Low-pass 350 → 3200 Hz at 2.2 s → 1200 Hz at 5.5 s. Room 3.5 s, wet 0.45, pre-delay 40 ms, cut 5000 Hz.
-     High-pass 140 Hz. Master 1.06. File 6.0 s. Measured: −32 LUFS, peak −24 dBFS; night −38.
+   - Air: level 0.03, attack 1.5 s, τ 1.0 s, low-pass 300 → 1000 Hz at 2.0 s → 400 Hz at 5.0 s.
+   - Low-pass 300 → 1300 Hz at 2.2 s → 600 Hz at 5.5 s. Room 3.5 s, wet 0.45, pre-delay 40 ms, cut 1600 Hz.
+     High-pass 110 Hz. Master 1.06. File 6.0 s. Measured: −32.0 LUFS, peak −24.5 dBFS; night −37.6.
 
-Overall pick: Exhale if it should be calm and warm, Glass light if it should feel heavenly. The heavenly ones are
-brighter, so a little more present; a 4 s room at 22050 Hz keeps the FFT at 2^18, as today.
+Overall pick: Exhale if it should be calm and warm, Glass light if it should feel heavenly. A 4 s room at
+22050 Hz keeps the FFT at 2^18, as today.
 
 **Night**, for whichever variant: between 22:00 and 7:00 by the local clock, read once when the sound plays (no
 timer, no setting): master × 0.5 (−6 dB), every filter point × 0.7, room wet × 0.6, high-pass at least 140 Hz.
