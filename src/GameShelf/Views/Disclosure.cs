@@ -56,7 +56,29 @@ internal sealed class Disclosure
     {
         Set(!IsOpen);
         Toggled?.Invoke(IsOpen);
-        if (IsOpen) _body.StartBringIntoView(new BringIntoViewOptions { VerticalAlignmentRatio = 1, AnimationDesired = false });
+        if (IsOpen) RevealBody();
+    }
+
+    /// <summary>
+    /// Scrolls just enough to show what opened, and only if it's cut off at the bottom; never so far that the card's
+    /// own header leaves the top. Measured after layout, so the page doesn't jump to a guess first.
+    /// </summary>
+    private void RevealBody()
+    {
+        ScrollViewer? scroller = null;
+        for (var node = VisualTreeHelper.GetParent(_header); node is not null && scroller is null; node = VisualTreeHelper.GetParent(node))
+            scroller = node as ScrollViewer;
+        if (scroller is null) return;
+        scroller.UpdateLayout();
+        const double gap = 12;
+        double headerTop = _header.TransformToVisual(scroller).TransformPoint(default).Y;
+        double bodyBottom = _body.TransformToVisual(scroller).TransformPoint(new Windows.Foundation.Point(0, _body.ActualHeight)).Y;
+        double needed = bodyBottom + gap - scroller.ViewportHeight;
+        if (needed <= 0) return; // all of it shows already
+        double delta = Math.Min(needed, headerTop - gap);
+        if (delta <= 0) return;
+        bool animate = new Windows.UI.ViewManagement.UISettings().AnimationsEnabled;
+        scroller.ChangeView(null, scroller.VerticalOffset + delta, null, disableAnimation: !animate);
     }
 
     /// <summary>A click on the card itself, not on one of its controls.</summary>
