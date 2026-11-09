@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <!-- Tray glyph: monochrome one card, play mark cut out (the closed state; tools/make-tray-icons.ps1 draws the .ico and the opening frames). "-dark" is for dark taskbars. -->
+  <!-- Tray glyph: monochrome one card, play mark cut out (the closed state; scripts/make-tray-icons.ps1 draws the .ico and the opening frames). "-dark" is for dark taskbars. -->
   <defs><mask id="m"><rect width="48" height="48" fill="white"/><path d="M17.5 17.5v15l11.5-7.5z" fill="black" stroke="black" stroke-width="1.6" stroke-linejoin="round"/></mask></defs>
   <rect x="10" y="9" width="23" height="32" rx="3.5" fill="#FFFFFF" mask="url(#m)"/>
 </svg>

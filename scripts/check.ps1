@@ -20,9 +20,9 @@
     - with -Task: only the files listed under "## Files" in that task card are changed
 
 .EXAMPLE
-  ./check.ps1 -Task docs/tasks/T001-format-playtime-tests.md
+  ./scripts/check.ps1 -Task docs/tasks/T001-format-playtime-tests.md
 .EXAMPLE
-  ./check.ps1 -SkipBuild
+  ./scripts/check.ps1 -SkipBuild
 #>
 param(
     [string]$Base = 'origin/main',
@@ -33,7 +33,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-Set-Location $PSScriptRoot
+Set-Location (Split-Path $PSScriptRoot -Parent)   # the repo root
 $problems = New-Object System.Collections.Generic.List[string]
 function Problem([string]$text) { $problems.Add($text) | Out-Null; Write-Host "FAIL  $text" -ForegroundColor Red }
 if ($Task) { $Strict = $true }
@@ -102,7 +102,7 @@ if ($Strict) {
         '^src/GameShelf/Services/(Launcher|Native\w*|DesktopLayer|Monitors|Footprint|ShellImage[\w.]*|ShellNotify|PcChecks|PcInfo|CrashLog|Autostart|CoverCache|Storage|RunningGames|GameLogs|GameModeService)\.cs$',
         '^src/GameShelf/Library/(\w+Source|InstallFolder|ShortcutFile|ShortcutImporter|Vdf|LibraryScanner)\.cs$',
         '^src/GameShelf/Views/PanelBackdrop\.cs$',
-        '\.(csproj|sln|props|targets)$', '^publish\.ps1$', '^check\.ps1$', '^\.github/', '^tools/',
+        '\.(csproj|sln|props|targets)$', '^scripts/', '^\.github/',
         '^tests/(smoke|setup-test)\.ps1$', '^tests/FakeGame/',
         '^(CLAUDE|AGENTS)\.md$', '^docs/(proposals|installer)\.md$', '^docs/tasks/'
     )

@@ -11,7 +11,7 @@ milestone, and you're testing exactly the combination that will end up on `main`
 
 1. **Get the build.** No build tools needed: on GitHub, switch to the branch **`ci-results/installer`** (or
    whichever branch is newest) and download **`GameShelfSetup.exe`**. CI builds it from that branch on every
-   push. Building it yourself works too: check out the branch and run `./publish.ps1` (see
+   push. Building it yourself works too: check out the branch and run `./scripts/publish.ps1` (see
    [installer.md](installer.md)).
 2. **Back up your data** (optional, but cheap): copy `%APPDATA%\GameShelf` somewhere. Imported desktop
    shortcuts are only ever moved, never deleted.

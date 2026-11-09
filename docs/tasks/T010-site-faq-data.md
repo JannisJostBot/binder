@@ -31,7 +31,7 @@ Add one question to the website's FAQ, before "What does it cost?".
 
 ## Done when
 
-- `./check.ps1 -Task docs/tasks/T010-site-faq-data.md` ends with `CHECK PASSED`.
+- `./scripts/check.ps1 -Task docs/tasks/T010-site-faq-data.md` ends with `CHECK PASSED`.
 - In a browser, the FAQ has 8 questions, and "Where does Binder keep my data?" is the one directly above "What
   does it cost?". Clicking it opens the answer.
 

@@ -20,7 +20,7 @@ You need, on a Windows 10/11 x64 PC:
 Then, in PowerShell, from the repository folder:
 
 ```powershell
-./publish.ps1
+./scripts/publish.ps1
 ```
 
 This builds everything into `publish\`:
@@ -34,7 +34,7 @@ The last lines of the output show the sizes and the setup's SHA-256 hash.
 
 Options:
 
-- `./publish.ps1 -CertificateThumbprint <SHA-1 thumbprint>` Authenticode-signs the three exes, with a
+- `./scripts/publish.ps1 -CertificateThumbprint <SHA-1 thumbprint>` Authenticode-signs the three exes, with a
   timestamp. Signing the widget and the watcher happens before they're packed into the setup, so the installed
   files are signed too.
 

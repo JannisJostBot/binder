@@ -3,7 +3,7 @@
 #   tray-open-0..6.ico               opening: the back card slides out from behind the front one into the
 #                                    coloured small logo (Assets\logo-small.svg); played backwards on close
 # Each .ico holds the small-icon sizes for 100-300 % scaling, PNG-compressed. Geometry is in the logo's 48 x 48
-# units. Run again after changing the logo:  powershell -File tools\make-tray-icons.ps1
+# units. Run again after changing the logo:  powershell -File scripts\make-tray-icons.ps1
 param([string]$Out = (Join-Path $PSScriptRoot '..\src\GameShelf\Assets'))
 
 Add-Type -AssemblyName System.Drawing

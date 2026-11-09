@@ -48,7 +48,7 @@ For example, the first row becomes:
 
 ## Done when
 
-- `./check.ps1 -Task docs/tasks/T005-playtime-labels-tests.md` ends with `CHECK PASSED`.
+- `./scripts/check.ps1 -Task docs/tasks/T005-playtime-labels-tests.md` ends with `CHECK PASSED`.
 - The test output has 6 lines starting with `PASS Labels:` and 3 starting with `PASS WeekStart:`.
 
 ## Don't

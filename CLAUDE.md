@@ -66,8 +66,9 @@ src/GameShelf.Watcher/    windowless; Program.cs, GameMode.cs (apply/restore + j
 src/GameShelf.Elevated/   Game mode's admin helper (Native AOT, windowless, run by scheduled tasks)
 src/GameShelf.Setup/      GameShelfSetup.exe: per-user installer/updater/uninstaller (docs/installer.md)
 tests/GameShelf.Tests/    plain console unit tests (no test framework packages); smoke.ps1 / setup-test.ps1 are CI-only
-publish.ps1               builds publish\app (widget folder + AOT watcher + helper) and GameShelfSetup.exe
-check.ps1                 the hard rules on a diff, then build + tests (-Task for agent cards)
+scripts/                  publish.ps1 (builds publish\app: widget folder + AOT watcher + helper, and GameShelfSetup.exe),
+                          check.ps1 (the hard rules on a diff, then build + tests; -Task for agent cards),
+                          make-tray-icons.ps1 / make-watcher-icon.ps1 (redraw icons after a logo change)
 site/                     one-page website: plain HTML + CSS, no scripts, nothing from other servers
 docs/proposals.md         approved feature specs, progress table (§0), decisions log, "Not decided"
 docs/tasks/, AGENTS.md    task cards and rules for cheaper coding agents
@@ -207,10 +208,10 @@ shortcuts, downloaded images.
 
 - What to build next: `docs/proposals.md` §0 progress table, then the section it names. Items under "Not decided"
   there must not be built. Keep that table and this brief current when something changes.
-- After each change run `./check.ps1` (or `dotnet build` + the unit tests). This repo builds on Windows only;
+- After each change run `./scripts/check.ps1` (or `dotnet build` + the unit tests). This repo builds on Windows only;
   on Linux only the unit tests run. Test new behaviour on the real PC's launchers where possible.
 - Commit at each milestone with a short message.
 - Routine work can go to cheaper agents as task cards (`docs/tasks/README.md`, `AGENTS.md`): one goal per card,
-  exact files, insertion points and expected values checked against the code, and a `./check.ps1 -Task` line under
+  exact files, insertion points and expected values checked against the code, and a `./scripts/check.ps1 -Task` line under
   "Done when". Review agent branches before merging and set the card to `done`. Keep `AGENTS.md`'s "Don't touch"
   list and `check.ps1`'s protected list in sync.

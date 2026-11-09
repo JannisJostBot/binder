@@ -39,7 +39,7 @@ For example, the first row becomes:
 
 ## Done when
 
-- `./check.ps1 -Task docs/tasks/T002-format-duration-tests.md` ends with `CHECK PASSED`.
+- `./scripts/check.ps1 -Task docs/tasks/T002-format-duration-tests.md` ends with `CHECK PASSED`.
 - The test output has 7 lines starting with `PASS Duration:`.
 
 ## Don't

@@ -38,7 +38,7 @@ jobs:
             if (-not $card) { Write-Host "No task card docs/tasks/$id-*.md for branch $env:BRANCH"; exit 1 }
             $checkArgs.Task = $card.FullName
           }
-          ./check.ps1 @checkArgs
+          ./scripts/check.ps1 @checkArgs
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -52,7 +52,7 @@ jobs:
       # Test what ships: the published WinUI widget folder and the Native AOT watcher (publish.ps1).
       - name: Publish
         run: |
-          ./publish.ps1 -Output publish 2>&1 | Tee-Object artifacts/publish.txt
+          ./scripts/publish.ps1 -Output publish 2>&1 | Tee-Object artifacts/publish.txt
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Get-ChildItem publish -File | ForEach-Object { '{0}: {1:N0} KB' -f $_.Name, ($_.Length / 1KB) } |
             Tee-Object artifacts/publish-sizes.txt

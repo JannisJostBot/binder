@@ -5,7 +5,7 @@ Small, exactly specified tasks for coding agents (see `AGENTS.md`). One card = o
 ## Workflow
 
 1. An agent takes a `ready` card whose dependencies are `done`, works on the card's branch, runs
-   `./check.ps1 -Task <card>` until it prints `CHECK PASSED`, commits and pushes.
+   `./scripts/check.ps1 -Task <card>` until it prints `CHECK PASSED`, commits and pushes.
 2. CI runs the same rule check on every `agent/*` branch (with the card found by the branch name), plus the
    normal build and tests.
 3. The owner reviews the diff, merges it, and sets the card's `Status:` to `done`.

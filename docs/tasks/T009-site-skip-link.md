@@ -48,7 +48,7 @@ the Tab key, then it appears in the top-left corner.
 
 ## Done when
 
-- `./check.ps1 -Task docs/tasks/T009-site-skip-link.md` ends with `CHECK PASSED`.
+- `./scripts/check.ps1 -Task docs/tasks/T009-site-skip-link.md` ends with `CHECK PASSED`.
 - Opening `site/index.html` in a browser and pressing Tab once shows a blue "Skip to content" button in the
   top-left corner; pressing Enter scrolls to the top section. Without pressing Tab, it isn't visible.
 

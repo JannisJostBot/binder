@@ -51,7 +51,7 @@ text in the detail view). The checks describe what the code does today; don't ch
 
 ## Done when
 
-- `./check.ps1 -Task docs/tasks/T001-format-playtime-tests.md` ends with `CHECK PASSED`.
+- `./scripts/check.ps1 -Task docs/tasks/T001-format-playtime-tests.md` ends with `CHECK PASSED`.
 - The test output has 8 lines starting with `PASS Playtime:`.
 
 ## Don't

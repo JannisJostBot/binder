@@ -13,7 +13,7 @@
     <SelfContained>true</SelfContained>
     <Product>Game Shelf</Product>
     <AssemblyTitle>Game Shelf game watcher</AssemblyTitle>
-    <!-- The app's logo with an eye instead of the play mark (tools\make-watcher-icon.ps1), for Task Manager. -->
+    <!-- The app's logo with an eye instead of the play mark (scripts\make-watcher-icon.ps1), for Task Manager. -->
     <ApplicationIcon>watcher.ico</ApplicationIcon>
 
     <!-- Native AOT is enabled by the publish script (-p:PublishAot=true): it needs the ILCompiler

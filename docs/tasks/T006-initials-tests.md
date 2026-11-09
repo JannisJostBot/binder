@@ -51,7 +51,7 @@ and the last row becomes:
 
 ## Done when
 
-- `./check.ps1 -Task docs/tasks/T006-initials-tests.md` ends with `CHECK PASSED`.
+- `./scripts/check.ps1 -Task docs/tasks/T006-initials-tests.md` ends with `CHECK PASSED`.
 - The test output has 7 lines starting with `PASS Initials:`.
 
 ## Don't

@@ -30,7 +30,7 @@ Add the page description that search engines and chat apps show for a link to th
 
 ## Done when
 
-- `./check.ps1 -Task docs/tasks/T008-site-description-tags.md` ends with `CHECK PASSED`.
+- `./scripts/check.ps1 -Task docs/tasks/T008-site-description-tags.md` ends with `CHECK PASSED`.
 - `Select-String -Path site/index.html -Pattern '<meta (name|property)='` prints 4 lines.
 
 ## Don't

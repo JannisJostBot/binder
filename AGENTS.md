@@ -15,7 +15,7 @@ as little CPU and memory as possible, and it is published with Native AOT.
 3. Do exactly what the card says, in the files listed under `## Files`. Nothing else: no refactoring, no
    reformatting, no "while I'm here" fixes, no new files unless the card lists them.
 4. Run the check named on the card, for example:
-   `./check.ps1 -Task docs/tasks/T001-format-playtime-tests.md`
+   `./scripts/check.ps1 -Task docs/tasks/T001-format-playtime-tests.md`
    It must end with `CHECK PASSED`.
 5. Commit with the message `T001: <the card's title>` and push the branch. Don't merge it and don't open a pull
    request unless you're asked to.
@@ -48,7 +48,7 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
   `CoverCache`, `Storage`, `RunningGames`, `GameLogs`, `GameModeService`) and `Views/PanelBackdrop.cs`
 - The library sources and security checks: `Library/*Source.cs`, `InstallFolder.cs`, `ShortcutFile.cs`,
   `ShortcutImporter.cs`, `Vdf.cs`, `LibraryScanner.cs`
-- Project and build files (`*.csproj`, `*.sln`, `*.props`), `publish.ps1`, `check.ps1`, `.github/`, `tools/`,
+- Project and build files (`*.csproj`, `*.sln`, `*.props`), `scripts/`, `.github/`,
   `tests/smoke.ps1`, `tests/setup-test.ps1`, `tests/FakeGame/`
 - `CLAUDE.md`, `AGENTS.md`, `docs/proposals.md`, `docs/installer.md`, `docs/tasks/`
 
@@ -87,6 +87,6 @@ from this repo (for example with GitHub Pages) once the repo is public.
 - Unit tests (Windows or Linux, .NET 10 SDK): `dotnet run --project tests/GameShelf.Tests -c Release`
   The last line is `ALL PASS` or `N FAILED`; each check prints `PASS …` or `FAIL …`.
 - Build (Windows only): `dotnet build GameShelf.sln -c Release`
-- Both, plus the rules: `./check.ps1 -Task docs/tasks/<card>.md` (PowerShell 5.1 or 7)
+- Both, plus the rules: `./scripts/check.ps1 -Task docs/tasks/<card>.md` (PowerShell 5.1 or 7)
 
 Don't run `tests/smoke.ps1` or `tests/setup-test.ps1` on a real PC: they replace the user's data. They're for CI.

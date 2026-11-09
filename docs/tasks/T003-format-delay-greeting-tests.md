@@ -41,7 +41,7 @@ For example, the first row becomes:
 
 ## Done when
 
-- `./check.ps1 -Task docs/tasks/T003-format-delay-greeting-tests.md` ends with `CHECK PASSED`.
+- `./scripts/check.ps1 -Task docs/tasks/T003-format-delay-greeting-tests.md` ends with `CHECK PASSED`.
 - The test output has 4 lines starting with `PASS Delay:` and 4 starting with `PASS Greeting:`.
 
 ## Don't

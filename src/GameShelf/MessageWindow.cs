@@ -91,7 +91,7 @@ internal sealed class MessageWindow : IDisposable
     private bool _trayActive;
 
     // Open: the back card slides out from behind the front one into the coloured logo (Assets\tray-open-0..6.ico,
-    // drawn by tools\make-tray-icons.ps1); close plays it backwards and ends on the monochrome card. A Win32 timer
+    // drawn by scripts\make-tray-icons.ps1); close plays it backwards and ends on the monochrome card. A Win32 timer
     // steps the frames and exists only while the icon moves.
     private const int TrayFrameCount = 7;
     private const uint TrayAnimationTimer = 1, TrayFrameMilliseconds = 30;

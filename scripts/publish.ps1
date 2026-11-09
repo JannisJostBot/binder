@@ -4,18 +4,19 @@
 #                          as they're laid out in the install folder
 #   GameShelfSetup.exe     Native AOT installer/updater with app\ inside
 #
-#   ./publish.ps1
-#   ./publish.ps1 -CertificateThumbprint <sha1>   # also Authenticode-signs the exes (cert in your store)
+#   ./scripts/publish.ps1
+#   ./scripts/publish.ps1 -CertificateThumbprint <sha1>   # also Authenticode-signs the exes (cert in your store)
 #
 # Native AOT needs the "Desktop development with C++" workload (MSVC linker) from Visual Studio
 # or the Build Tools.
 param(
-    [string] $Output = (Join-Path $PSScriptRoot 'publish'),
+    [string] $Output = (Join-Path (Split-Path $PSScriptRoot -Parent) 'publish'),
     [string] $CertificateThumbprint,
     [string] $TimestampUrl = 'http://timestamp.digicert.com'
 )
 $ErrorActionPreference = 'Stop'
-Set-Location $PSScriptRoot
+$repo = Split-Path $PSScriptRoot -Parent   # the repo root
+Set-Location $repo
 
 $runtime = 'win-x64'
 
@@ -36,16 +37,16 @@ Remove-Item $app -Recurse -Force -ErrorAction SilentlyContinue
 
 # Intermediate output goes to obj/publish-* so it can't mix with the normal bin/ build.
 dotnet publish src/GameShelf -c Release -r $runtime -p:PublishAot=true -p:DebugType=none `
-    -p:OutputPath="$PSScriptRoot/obj/publish-widget/" -o $app
+    -p:OutputPath="$repo/obj/publish-widget/" -o $app
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 dotnet publish src/GameShelf.Watcher -c Release -r $runtime -p:PublishAot=true `
-    -p:DebugType=none -p:OutputPath="$PSScriptRoot/obj/publish-watcher/" -o $app
+    -p:DebugType=none -p:OutputPath="$repo/obj/publish-watcher/" -o $app
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # Game mode's admin part: "Allow..." copies it to Program Files (one UAC prompt); it never runs from here otherwise.
 dotnet publish src/GameShelf.Elevated -c Release -r $runtime -p:PublishAot=true `
-    -p:DebugType=none -p:OutputPath="$PSScriptRoot/obj/publish-elevated/" -o $app
+    -p:DebugType=none -p:OutputPath="$repo/obj/publish-elevated/" -o $app
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # Metadata for compilers and debug symbols: not needed to run.
@@ -58,7 +59,7 @@ Sign @($widget, $watcher, $elevated)
 
 # The setup's payload: app.zip with the app folder, plus payload.txt with every file's SHA-256 and path, which
 # setup checks after writing each file to disk.
-$payload = Join-Path $PSScriptRoot 'obj/setup-payload'
+$payload = Join-Path $repo 'obj/setup-payload'
 Remove-Item $payload -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force $payload | Out-Null
 $root = (Resolve-Path $app).Path.TrimEnd('\') + '\'
@@ -80,10 +81,10 @@ finally {
 }
 
 dotnet publish src/GameShelf.Setup -c Release -r $runtime -p:PublishAot=true `
-    -p:PayloadDir="$payload/" -p:DebugType=none -p:OutputPath="$PSScriptRoot/obj/publish-setup/" -o "$PSScriptRoot/obj/setup-out"
+    -p:PayloadDir="$payload/" -p:DebugType=none -p:OutputPath="$repo/obj/publish-setup/" -o "$repo/obj/setup-out"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 $setup = Join-Path $Output 'GameShelfSetup.exe'
-Copy-Item (Join-Path $PSScriptRoot 'obj/setup-out/GameShelfSetup.exe') $setup -Force
+Copy-Item (Join-Path $repo 'obj/setup-out/GameShelfSetup.exe') $setup -Force
 Sign @($setup)
 
 # Single files of earlier versions of this script, so publish/ only holds what this build made.

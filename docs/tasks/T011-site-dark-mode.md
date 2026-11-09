@@ -48,7 +48,7 @@ variables change; nothing in `index.html` changes.
 
 ## Done when
 
-- `./check.ps1 -Task docs/tasks/T011-site-dark-mode.md` ends with `CHECK PASSED`.
+- `./scripts/check.ps1 -Task docs/tasks/T011-site-dark-mode.md` ends with `CHECK PASSED`.
 - With the system (or the browser's developer tools: "Emulate prefers-color-scheme: dark") in dark mode, the
   page has a dark background, white headings and light blue buttons with dark text. In light mode it looks
   exactly as before.

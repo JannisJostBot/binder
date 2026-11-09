@@ -58,7 +58,7 @@ Requirements: the .NET 10 SDK, and the "Desktop development with C++" workload f
 Tools (for Native AOT). Then, in PowerShell:
 
 ```powershell
-./publish.ps1          # publish\GameShelfSetup.exe, plus the portable GameShelf.exe and GameShelf.Watcher.exe
+./scripts/publish.ps1  # publish\GameShelfSetup.exe, plus the portable GameShelf.exe and GameShelf.Watcher.exe
 dotnet build           # a normal development build into bin\
 dotnet run --project tests/GameShelf.Tests -c Release   # unit tests
 ```
@@ -86,6 +86,8 @@ Steam settings with test data, and are meant for CI only.
 | `src/GameShelf/` | The WinUI 3 app: shelf, details, settings, library sources, launcher. |
 | `src/GameShelf.Watcher/` | The tiny game watcher (Native AOT). |
 | `src/GameShelf.Setup/` | The installer, updater and uninstaller (Native AOT). |
+| `src/GameShelf.Elevated/` | Game mode's optional admin helper (Native AOT). |
+| `scripts/` | Publish, the pre-commit check and the icon generators (PowerShell). |
 | `tests/` | Unit tests, the stand-in game and the CI UI tests. |
 | `docs/proposals.md` | Planned features. |
 | `docs/installer.md` | Building, installing, updating and how the installer works. |
