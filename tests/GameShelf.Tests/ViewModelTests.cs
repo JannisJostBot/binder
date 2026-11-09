@@ -473,4 +473,141 @@ static partial class Tests
         Check(vm.IsStep1 && vm.FoundTitle == "Let's set up your shelf" && vm.NothingFound && vm.SelectionText == "Nothing selected",
             "setup: a new run starts over, nothing found");
     }
+
+    sealed class ShelfActionsSpy : IShelfActions
+    {
+        public readonly List<string> Calls = [];
+        public int Saves;
+        public bool NeedsUpdate;
+        public void Play(Game game) => Calls.Add("play " + game.Id);
+        public void OpenDetails(Game game) => Calls.Add("details " + game.Id);
+        public void Act(Game game, Views.GameAction action) => Calls.Add($"{action} {game.Id}");
+        public void OpenSettings() => Calls.Add("settings");
+        public void ImportShortcuts() => Calls.Add("import");
+        public void AddGame() => Calls.Add("add");
+        public void TogglePin() => Calls.Add("pin");
+        public void SetGameMode(bool on) => Calls.Add("game mode " + on);
+        public void OpenGameMode() => Calls.Add("game mode settings");
+        public void OpenFreeSpace() => Calls.Add("free space");
+        public void Refresh() => Calls.Add("refresh");
+        public void ViewSettingsChanged() => Saves++;
+        public bool HelperNeedsUpdate(IReadOnlyList<Game> games) => NeedsUpdate;
+        public Task UpdateHelperAsync() { Calls.Add("update helper"); return Task.CompletedTask; }
+    }
+
+    static void ShelfViewModelTests()
+    {
+        var spy = new ShelfActionsSpy();
+        var vm = new ShelfViewModel(spy);
+        var now = DateTimeOffset.Now;
+        var games = new List<Game>
+        {
+            new() { Id = "s1", Name = "Alpha", Source = GameSource.Steam, AddedAt = now.AddDays(-9) },
+            new() { Id = "s2", Name = "Bravo", Source = GameSource.Steam, AddedAt = now.AddDays(-8), Favorite = true },
+            new() { Id = "e1", Name = "Charlie", Source = GameSource.Epic, AddedAt = now.AddDays(-7) },
+            new() { Id = "g1", Name = "Delta", Source = GameSource.Gog, AddedAt = now.AddDays(-6) },
+            new() { Id = "x1", Name = "Echo", Source = GameSource.Xbox, AddedAt = now.AddDays(-5) },
+            new() { Id = "m1", Name = "Foxtrot", Source = GameSource.Manual, AddedAt = now.AddDays(-4) },
+            new() { Id = "h1", Name = "Hidden", Source = GameSource.Steam, Hidden = true },
+            new() { Id = "r1", Name = "Rockstar off", Source = GameSource.Rockstar },
+        };
+        var sessions = new List<Session>
+        {
+            new() { GameId = "e1", Start = now.AddDays(-30).AddHours(-2), End = now.AddDays(-30) },
+            new() { GameId = "s1", Start = now.AddMinutes(-90), End = now.AddMinutes(-30) },
+        };
+        var settings = new Settings { RockstarEnabled = false, SortBy = SortBy.Name, FavoritesFirst = false, ShowWeeklySummary = true };
+        var notified = new List<string?>();
+        vm.PropertyChanged += (_, e) => notified.Add(e.PropertyName);
+
+        vm.SetData(games, sessions, settings);
+        Check(notified is [""] && spy.Calls.Count == 0 && spy.Saves == 0, "shelf: new data refreshes every binding once and asks nothing");
+        Check(vm.Visible.Select(g => g.Id).SequenceEqual(["s1", "s2", "e1", "g1", "x1", "m1"]), "shelf: hidden and turned-off launchers left out, sorted by name");
+        Check(vm.Placeholder == "Search 6 games" && !vm.EmptyVisible && vm.Greeting.Length > 0, "shelf: the search box counts the games");
+        Check(vm.ShownChips.SequenceEqual(["Steam", "Epic", "Gog"]) && vm.MoreChips.SequenceEqual(["Xbox", "Other"]) && vm.MoreVisible,
+            "shelf: three launchers (most games first), the rest under More");
+        Check(ShelfViewModel.ChipLabel("Gog") == "GOG" && ShelfViewModel.ChipLabel("Ea") == "EA", "shelf: chip labels");
+        Check(games[0].LastPlayedText == Views.Format.RelativeDay(sessions[1].End) && games[3].LastPlayedText == "Never", "shelf: last played on each game");
+        Check(vm.ContinueGame?.Id == "s1" && vm.ContinueTitle == "Alpha" && vm.ContinuePlayName == "Play Alpha", "shelf: continue playing the last game");
+        Check(vm.HasWeek && vm.WeekBars.Count == 7 && vm.SpotlightVisible && vm.SwitchVisible && !vm.ShowWeek && vm.ContinueVisible,
+            "shelf: both top cards, Continue first");
+        Check(vm.FooterVisible && vm.FooterText.Contains("comes back when it closes") && vm.Columns == 4 && !vm.ListMode,
+            "shelf: footer hint and medium covers");
+        Check(!vm.HelperBarOpen && vm.ActionsName == "More actions" && !vm.GameModeOn, "shelf: no helper notice");
+
+        notified.Clear();
+        vm.Query = "arl";
+        Check(vm.Visible.Select(g => g.Id).SequenceEqual(["e1"]) && notified.Contains(nameof(ShelfViewModel.Visible)) &&
+              !vm.SpotlightVisible && vm.Searching, "shelf: search filters and hides the top slot");
+        notified.Clear();
+        vm.Query = "arl ";
+        Check(!notified.Contains(nameof(ShelfViewModel.Visible)), "shelf: the same result keeps the shown list");
+        vm.Query = "zzz";
+        Check(vm.EmptyVisible && vm.EmptyClearVisible && !vm.EmptyImportVisible && vm.EmptyActionsVisible &&
+              vm.EmptyText.StartsWith("No games match “zzz”") && vm.EmptyGlyph == "", "shelf: no match offers to clear the search");
+        vm.Query = "";
+
+        vm.SelectFilter("Favorites");
+        Check(vm.Visible.Select(g => g.Id).SequenceEqual(["s2"]) && vm.CurrentFilter == "Favorites", "shelf: favorites filter");
+        vm.SelectFilter("Recent");
+        Check(vm.Visible.Select(g => g.Id).SequenceEqual(["s1", "e1"]) && !vm.SortVisible, "shelf: recent, latest first, no sort button");
+        vm.SelectFilter("Other");
+        Check(vm.Visible.Select(g => g.Id).SequenceEqual(["m1"]) && vm.ShownChips.SequenceEqual(["Steam", "Epic", "Other"]) &&
+              vm.MoreChips.SequenceEqual(["Gog", "Xbox"]), "shelf: a filter under More takes the last chip");
+        vm.CycleFilter(1);
+        Check(vm.CurrentFilter == "All", "shelf: RB wraps around to All");
+        vm.CycleFilter(-1);
+        Check(vm.CurrentFilter == "Other", "shelf: LB goes back");
+        vm.SelectFilter("All");
+
+        vm.SetSort(SortBy.RecentlyAdded);
+        Check(vm.Visible[0].Id == "m1" && settings.SortBy == SortBy.RecentlyAdded && spy.Saves == 1 && vm.SortName == "Sort: Recently added",
+            "shelf: sorting saves and re-orders");
+        vm.SetFavoritesFirst(true);
+        Check(vm.Visible[0].Id == "s2" && spy.Saves == 2, "shelf: favorites first");
+        vm.ShowWeekCard(true);
+        Check(vm.ShowWeek && !vm.ContinueVisible && settings.SpotlightShowsWeek && spy.Saves == 3, "shelf: the This week card is remembered");
+        vm.ShowWeekCard(true);
+        Check(spy.Saves == 3, "shelf: the same card saves nothing");
+
+        vm.SetCrashShown(true);
+        Check(vm.CrashVisible && !vm.SpotlightVisible && vm.CrashShown, "shelf: the crash card takes the top slot");
+        vm.SetCrashShown(false);
+        Check(!vm.CrashVisible && vm.SpotlightVisible, "shelf: the top slot comes back");
+
+        vm.SetFlyout(true, false);
+        Check(vm.PinVisible && vm.PinChecked == false && vm.PinLabel == "Pin open", "shelf: pin button in the flyout");
+        vm.SetFlyout(true, true);
+        Check(vm.PinChecked == true && vm.PinLabel.StartsWith("Unpin"), "shelf: pinned");
+        vm.PadMode = true;
+        Check(!vm.FooterVisible, "shelf: controller hints replace the footer");
+        vm.SetBackHint(false);
+        Check(!vm.BackHintVisible, "shelf: no B hint on the desktop");
+
+        spy.NeedsUpdate = true;
+        settings.GameModeEnabled = true;
+        settings.GridDensity = GridDensity.List;
+        vm.SetData(games, sessions, settings);
+        Check(vm.HelperBarOpen && vm.ActionsName == "More actions, Game mode on" && vm.ListMode && vm.Columns == 1, "shelf: helper notice, Game mode dot, list");
+        vm.ToggleGameMode();
+        vm.CloseHelperBar();
+        vm.UpdateHelperAsync().Wait();
+        Check(!vm.HelperBarOpen && vm.HelperUpdateEnabled, "shelf: a closed notice stays closed");
+        spy.NeedsUpdate = false;
+        vm.SetData(games, sessions, settings);
+        vm.ToggleGameMode();
+
+        vm.ContinuePlayCommand.Execute(null);
+        vm.SettingsCommand.Execute(null);
+        vm.PinCommand.Execute(null);
+        vm.ImportCommand.Execute(null);
+        vm.AddGameCommand.Execute(null);
+        vm.Act(games[0], Views.GameAction.ToggleFavorite);
+        Check(spy.Calls.SequenceEqual(["game mode settings", "update helper", "game mode False", "play s1", "settings", "pin", "import", "add", "ToggleFavorite s1"]),
+            "shelf: buttons reach the owner");
+
+        vm.SetData([], [], new Settings());
+        Check(vm.EmptyVisible && vm.EmptyGlyph == "" && vm.EmptyImportVisible && !vm.EmptyClearVisible && vm.ContinueGame is null &&
+              !vm.SpotlightVisible && vm.Placeholder == "Search 0 games", "shelf: nothing found yet");
+    }
 }

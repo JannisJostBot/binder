@@ -25,7 +25,7 @@ namespace GameShelf;
 /// The panel: a borderless WinUI window docked to the screen edge, with Acrylic behind it. In Flyout mode it's
 /// created on open and closed for good on close; on the desktop it stays.
 /// </summary>
-public sealed partial class MainWindow : Window, ISettingsActions, IDetailActions, IGameModeActions, IFreeSpaceActions, ISetupActions
+public sealed partial class MainWindow : Window, ISettingsActions, IDetailActions, IGameModeActions, IFreeSpaceActions, ISetupActions, IShelfActions
 {
     // The library lives in App.State, so it survives the flyout window being closed and rebuilt.
     private List<Game> _games { get => App.State.Games; set => App.State.Games = value; }
@@ -56,32 +56,16 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         _dispatcher = DispatcherQueue.GetForCurrentThread();
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
-        Shelf.PlayRequested += Play;
-        Shelf.OpenRequested += ShowDetail;
-        Shelf.ActionRequested += OnGameAction;
+        Shelf.Initialize(this); // its actions: MainWindow.Shelf.cs
         Detail.Initialize(this); // its actions: MainWindow.Detail.cs
-        Shelf.SettingsRequested += ShowSettings;
-        Shelf.ViewSettingsChanged += SaveSettings;
-        Shelf.ImportRequested += () => _ = ShowImportAsync();
-        Shelf.AddGameRequested += AddGame;
-        Shelf.GameModeToggled += on => SetGameMode(on);
-        Shelf.GameModeSettingsRequested += OpenGameMode;
-        Shelf.FreeSpaceRequested += OpenFreeSpace;
-        Shelf.RefreshRequested += () => _ = RescanAsync();
         SettingsPage.Initialize(this); // its actions: MainWindow.Settings.cs
         GameModePage.Initialize(this); // its actions: MainWindow.GameMode.cs
         FreeSpacePage.Initialize(this); // its actions: MainWindow.FreeSpace.cs
         ImportPage.Cancelled += ShowSettings;
         ImportPage.ImportRequested += ImportShortcuts;
         SetupPage.Initialize(this); // its actions: MainWindow.Setup.cs
-        Shelf.PinRequested += () =>
-        {
-            App.Pinned = !App.Pinned;
-            Shelf.SetFlyout(IsFlyout, App.Pinned);
-        };
-        Shelf.SetFlyout(IsFlyout, App.Pinned);
-        Shelf.HelperUpdateRequested += UpdateGameModeHelperAsync;
-        Shelf.SetData(_games, _sessions, App.Settings);
+        Shelf.ViewModel!.SetFlyout(IsFlyout, App.Pinned);
+        Shelf.ViewModel!.SetData(_games, _sessions, App.Settings);
         Shelf.CrashPlayRequested += game =>
         {
             CrashSeen();
@@ -101,7 +85,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         _pad.Moved += OnPadMoved;
         _pad.Pressed += OnPadPressed;
         _pad.Scrolled += OnPadScrolled;
-        Shelf.SetBackHint(IsFlyout);
+        Shelf.ViewModel!.SetBackHint(IsFlyout);
         Root.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler(OnAnyKeyDown), handledEventsToo: true);
         Root.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(OnAnyPointerPressed), handledEventsToo: true);
         Root.AddHandler(UIElement.PointerWheelChangedEvent, new PointerEventHandler(OnAnyPointerPressed), handledEventsToo: true);
@@ -485,7 +469,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     /// <summary>Re-renders the shelf and whichever page is open (with the current instance of its game).</summary>
     private void RefreshViews()
     {
-        Shelf.SetData(_games, _sessions, App.Settings);
+        Shelf.ViewModel!.SetData(_games, _sessions, App.Settings);
         RefreshSettingsPage();
         if (SetupPage.Visibility == Visibility.Visible) SetupPage.ViewModel!.UpdateLibrary(_games);
         if (Detail.Visibility != Visibility.Visible || Detail.Game is not { } shown) return;
@@ -1096,7 +1080,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
                 break;
             case PadButton.LeftShoulder or PadButton.RightShoulder when popup is null && Shelf.Visibility == Visibility.Visible:
                 bool inGrid = game is not null;
-                Shelf.CycleFilter(button == PadButton.RightShoulder ? 1 : -1);
+                Shelf.ViewModel!.CycleFilter(button == PadButton.RightShoulder ? 1 : -1);
                 if (inGrid) Shelf.FocusFirstGame();
                 break;
             case PadButton.Menu when popup is null && SetupPage.Visibility != Visibility.Visible:

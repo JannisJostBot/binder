@@ -15,7 +15,7 @@ public sealed partial class MainWindow
     void IDetailActions.GameEdited(Game game)
     {
         SaveLibrary();
-        Shelf.SetData(_games, _sessions, App.Settings); // e.g. a new cover shows on the tile too
+        Shelf.ViewModel!.SetData(_games, _sessions, App.Settings); // e.g. a new cover shows on the tile too
     }
 
     void IDetailActions.CrashSeen(CrashRecord record) => CrashStore.MarkSeen(App.State.Crashes, record);

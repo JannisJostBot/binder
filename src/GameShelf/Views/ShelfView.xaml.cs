@@ -1,6 +1,6 @@
-using GameShelf.Library;
+using System.ComponentModel;
 using GameShelf.Models;
-using GameShelf.Services;
+using GameShelf.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -11,6 +11,10 @@ using Windows.System;
 
 namespace GameShelf.Views;
 
+/// <summary>
+/// The shelf. What shows and in what order is <see cref="ShelfViewModel"/>'s; the view sizes and fills the cover
+/// grid, builds the menus and filter chips, loads the top slot's art and moves keyboard and controller focus.
+/// </summary>
 public sealed partial class ShelfView : UserControl
 {
     // Each item's 6 px padding on both sides.
@@ -20,39 +24,14 @@ public sealed partial class ShelfView : UserControl
     // pixel or so, and a column that doesn't fit exactly wraps).
     private double _gridWidth = 532;
 
-    /// <summary>A shelf choice kept in settings changed (sort order, favorites first, the top slot); the owner saves.</summary>
-    public event Action? ViewSettingsChanged;
-
-    public event Action<Game>? PlayRequested;
-    public event Action<Game>? OpenRequested;
-    public event Action? SettingsRequested;
-    public event Action? ImportRequested;
-    public event Action? PinRequested;
-    public event Action? AddGameRequested;
-    /// <summary>Right-click menu actions other than Play and Details.</summary>
-    public event Action<Game, GameAction>? ActionRequested;
-
-    private List<Game> _games = [];
-    private Dictionary<string, DateTimeOffset> _lastPlayed = [];
-    private Dictionary<string, TimeSpan> _playtime = [];
-    private List<Game> _visible = [];
-    // The shelf in sort order. Sorting (culture-aware name compares) happens when the data or the sort order
-    // changes, not on every keystroke: typing only filters this list, O(n), and keeps its order.
-    private List<Game> _sorted = [];
-    // Stats are recomputed only when the session list changes (it's replaced when a game ends).
-    private IReadOnlyList<Session>? _statsFor;
-    private int _statsCount = -1;
-    private string _filter = "All";
-    private Settings _settings = new();
     private bool _listMode;
     private int _columns;
     private double _tileWidth = 121, _tileHeight = 161;
-    private string _chipKey = "";
-    private bool _buildingChips;
+    private bool _buildingChips, _updatingSpotlight;
 
-    // Launcher filters shown directly; the rest go under "More" (spec §7, §8).
-    private const int VisibleLauncherChips = 3;
-    private Game? _continueGame;
+    public ShelfViewModel? ViewModel { get; private set; }
+
+    private List<Game> Visible => ViewModel?.Visible ?? [];
 
     public ShelfView()
     {
@@ -66,105 +45,97 @@ public sealed partial class ShelfView : UserControl
             _gridWidth = e.NewSize.Width;
             if (_listMode) return;
             SizeTiles();
-            Refresh(force: true); // shown tiles take the new size
+            ShowItems(); // shown tiles take the new size
         };
     }
 
-    public void SetData(List<Game> games, IReadOnlyList<Session> sessions, Settings settings)
+    /// <summary>Connects the page to its owner once, before it's first shown.</summary>
+    public void Initialize(IShelfActions actions)
     {
-        _settings = settings;
-        _games = games.Where(g => !g.Hidden && settings.IsSourceEnabled(g.Source)).ToList();
-        if (!ReferenceEquals(sessions, _statsFor) || sessions.Count != _statsCount)
+        if (ViewModel is not null) throw new InvalidOperationException("The shelf is already initialized.");
+        ViewModel = new ShelfViewModel(actions);
+        ViewModel.PropertyChanged += OnViewModelChanged;
+        Bindings.Update();
+    }
+
+    private void OnViewModelChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        var vm = ViewModel!;
+        switch (e.PropertyName)
         {
-            (_lastPlayed, _playtime) = ShelfOrder.Stats(sessions);
-            _statsFor = sessions;
-            _statsCount = sessions.Count;
+            case null or "":
+                // New data: everything again.
+                ApplyDensity(vm.Columns, vm.ListMode);
+                BuildChips();
+                BuildSortMenu();
+                WeekChart.Show(vm.WeekBars, "Playtime this week");
+                ToolTipService.SetToolTip(WeekDetail, vm.WeekToolTip);
+                // The banner's art may have changed for the same game.
+                if (vm.ContinueGame is not null && ReferenceEquals(ContinueArt.Game, vm.ContinueGame)) ContinueArt.Refresh();
+                ShowItems();
+                ShowSpotlight();
+                break;
+            case nameof(ShelfViewModel.Visible):
+                ShowItems();
+                break;
+            case nameof(ShelfViewModel.ShownChips): // also when only the selected filter changed
+                BuildChips();
+                break;
+            case nameof(ShelfViewModel.SwitchVisible): // the last of the top slot's names
+                ShowSpotlight();
+                break;
+            case nameof(ShelfViewModel.SortBy):
+            case nameof(ShelfViewModel.FavoritesFirst):
+                BuildSortMenu();
+                break;
         }
-        foreach (var game in _games)
-            game.LastPlayedText = _lastPlayed.TryGetValue(game.Id, out var when) ? Format.RelativeDay(when) : "Never";
-
-        ApplyDensity(settings.GridDensity);
-        BuildChips();
-        BuildSortMenu();
-
-        // Worked out when the panel gets its data (it opens, a session ends), never on a timer.
-        GreetingText.Text = Format.Greeting(DateTime.Now);
-        // The footer teaches hide and return; after a few games from the shelf it has done its job.
-        _footerHint = sessions.Count < FooterHintSessions;
-        Footer.Visibility = _footerHint && !_padMode ? Visibility.Visible : Visibility.Collapsed;
-        var hides = settings.HideDelaySeconds <= 0 ? "Hides when a game starts" : $"Hides {settings.HideDelaySeconds} s after a game starts";
-        FooterText.Text = settings.ComeBackOnClose ? hides + " · comes back when it closes" : hides;
-        UpdateContinueCard();
-        UpdateWeekCard(sessions);
-        UpdateHelperBar(games);
-        Resort();
     }
 
-    // ---- Game mode helper notice ---------------------------------------------------------------------------
-
-    /// <summary>The Game mode helper needs updating; the owner runs it (UAC) and calls <see cref="SetData"/> again.</summary>
-    public event Func<Task>? HelperUpdateRequested;
-
-    private bool _helperBarClosed; // closed with its ✕: not again while this panel lives
-    private bool _helperNeedsUpdate;
-
-    /// <summary>The notice, and the "…" button's dot and name (Game mode on or off).</summary>
-    private void UpdateHelperBar(List<Game> games)
+    /// <summary>Hands the visible games to the grid or the list (only the one showing has items).</summary>
+    private void ShowItems()
     {
-        _helperNeedsUpdate = GameModeService.HelperNeedsUpdate(_settings, games);
-        HelperBar.IsOpen = !_helperBarClosed && _helperNeedsUpdate;
-        HelperUpdateButton.IsEnabled = true;
-        bool on = _settings.GameModeEnabled;
-        GameModeDot.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
-        AutomationProperties.SetName(ActionsButton, on ? "More actions, Game mode on" : "More actions");
-    }
-
-    private async void OnHelperUpdateClick(object sender, RoutedEventArgs e)
-    {
-        if (HelperUpdateRequested is null) return;
-        HelperUpdateButton.IsEnabled = false;
-        await HelperUpdateRequested();
-        HelperUpdateButton.IsEnabled = true;
-    }
-
-    private void OnHelperBarClosed(InfoBar sender, InfoBarClosedEventArgs args)
-    {
-        if (args.Reason == InfoBarCloseReason.CloseButton) _helperBarClosed = true;
+        Tiles.ItemsSource = _listMode ? null : Visible;
+        Rows.ItemsSource = _listMode ? Visible : null;
     }
 
     // ---- Quick actions (§16) -------------------------------------------------------------------------------
 
-    /// <summary>Game mode for all games turned on (true) or off; the owner saves it.</summary>
-    public event Action<bool>? GameModeToggled;
-    public event Action? GameModeSettingsRequested;
-    public event Action? FreeSpaceRequested;
-    public event Action? RefreshRequested;
+    private async void OnHelperUpdateClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel is { } vm) await vm.UpdateHelperAsync();
+    }
+
+    private void OnHelperBarClosed(InfoBar sender, InfoBarClosedEventArgs args)
+    {
+        if (args.Reason == InfoBarCloseReason.CloseButton) ViewModel?.CloseHelperBar();
+    }
 
     /// <summary>Built each time it opens, so it holds nothing while closed and always shows the current state.</summary>
     private void OnActionsMenuOpening(object? sender, object e)
     {
+        var vm = ViewModel!;
         ActionsMenu.Items.Clear();
-        if (_helperNeedsUpdate)
+        if (vm.HelperNeedsUpdate)
         {
-            ActionsMenu.Items.Add(MenuItem("Game mode (needs update)", "", () => GameModeSettingsRequested?.Invoke(), "Ctrl+G"));
+            ActionsMenu.Items.Add(MenuItem("Game mode (needs update)", "", vm.OpenGameMode, "Ctrl+G"));
         }
         else
         {
             var toggle = new ToggleMenuFlyoutItem
             {
                 Text = "Game mode",
-                IsChecked = _settings.GameModeEnabled,
-                Icon = new FontIcon { Glyph = "" },
+                IsChecked = vm.GameModeOn,
+                Icon = new FontIcon { Glyph = "" },
                 KeyboardAcceleratorTextOverride = "Ctrl+G",
             };
-            toggle.Click += (_, _) => GameModeToggled?.Invoke(toggle.IsChecked);
+            toggle.Click += (_, _) => vm.SetGameMode(toggle.IsChecked);
             ActionsMenu.Items.Add(toggle);
         }
-        ActionsMenu.Items.Add(MenuItem("Game mode settings…", "", () => GameModeSettingsRequested?.Invoke()));
+        ActionsMenu.Items.Add(MenuItem("Game mode settings…", "", vm.OpenGameMode));
         ActionsMenu.Items.Add(new MenuFlyoutSeparator());
-        ActionsMenu.Items.Add(MenuItem("Free up space…", "", () => FreeSpaceRequested?.Invoke()));
-        ActionsMenu.Items.Add(MenuItem("Add a game…", "", () => AddGameRequested?.Invoke()));
-        ActionsMenu.Items.Add(MenuItem("Refresh library", "", () => RefreshRequested?.Invoke(), "F5"));
+        ActionsMenu.Items.Add(MenuItem("Free up space…", "", vm.OpenFreeSpace));
+        ActionsMenu.Items.Add(MenuItem("Add a game…", "", vm.AddGame));
+        ActionsMenu.Items.Add(MenuItem("Refresh library", "", vm.RefreshLibrary, "F5"));
     }
 
     private static MenuFlyoutItem MenuItem(string text, string glyph, Action action, string? shortcut = null)
@@ -178,22 +149,16 @@ public sealed partial class ShelfView : UserControl
     private void OnGameModeAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
         args.Handled = true; // not the button's own click, which would open the menu
-        if (_helperNeedsUpdate) GameModeSettingsRequested?.Invoke();
-        else GameModeToggled?.Invoke(!_settings.GameModeEnabled);
+        ViewModel?.ToggleGameMode();
     }
 
     private void OnRefreshAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
         args.Handled = true;
-        RefreshRequested?.Invoke();
+        ViewModel?.RefreshLibrary();
     }
 
-    /// <summary>Sorts once for the current data and sort order, then shows the filtered result.</summary>
-    private void Resort()
-    {
-        _sorted = ShelfOrder.Sort(_games, _settings.SortBy, _settings.FavoritesFirst, _lastPlayed, _playtime);
-        Refresh(force: true);
-    }
+    // ---- Search ----------------------------------------------------------------------------------------------
 
     public void FocusSearch() => SearchBox.Focus(FocusState.Programmatic);
 
@@ -206,111 +171,66 @@ public sealed partial class ShelfView : UserControl
         if (FindDescendant<TextBox>(SearchBox) is { } box) box.SelectionStart = box.Text.Length;
     }
 
-    /// <summary>
-    /// Filters the sorted shelf by filter and search text. <paramref name="force"/> re-renders even when the same
-    /// games match (their contents changed); otherwise an unchanged result keeps the realized tiles as they are.
-    /// </summary>
-    private void Refresh(bool force = false)
+    private void OnSearchChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
-        var query = SearchBox.Text.Trim();
-        Func<Game, bool>? chip = _filter switch
-        {
-            "All" => null,
-            "Favorites" => g => g.Favorite,
-            "Recent" => g => _lastPlayed.ContainsKey(g.Id),
-            "Other" => g => !LauncherIcons.HasBadge(g.Source),
-            _ when Enum.TryParse<GameSource>(_filter, out var source) => g => g.Source == source,
-            _ => null,
-        };
-        var visible = new List<Game>(_sorted.Count);
-        foreach (var game in _sorted)
-        {
-            if (chip is not null && !chip(game)) continue;
-            if (query.Length > 0 && !game.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)) continue;
-            visible.Add(game);
-        }
-        // "Recent" is its own order (only played games, usually a few); everything else follows the sort menu.
-        if (_filter == "Recent") visible.Sort((a, b) => _lastPlayed[b.Id].CompareTo(_lastPlayed[a.Id]));
-
-        bool same = !force && visible.Count == _visible.Count && visible.SequenceEqual(_visible, ReferenceEqualityComparer.Instance);
-        _visible = visible;
-        if (!same)
-        {
-            Tiles.ItemsSource = _listMode ? null : _visible;
-            Rows.ItemsSource = _listMode ? _visible : null;
-        }
-        SearchBox.PlaceholderText = _sorted.Count == 1 ? "Search 1 game" : $"Search {_sorted.Count} games";
-        SortButton.Visibility = _filter == "Recent" ? Visibility.Collapsed : Visibility.Visible;
-
-        EmptyState.Visibility = _visible.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        bool noMatch = _games.Count > 0 && query.Length > 0;
-        EmptyIcon.Glyph = _games.Count == 0 ? "\uE7FC" : query.Length > 0 ? "\uE721" : _filter == "Favorites" ? "\uE734" : "\uE81C";
-        EmptyActions.Visibility = _games.Count == 0 || noMatch ? Visibility.Visible : Visibility.Collapsed;
-        EmptyClearButton.Visibility = noMatch ? Visibility.Visible : Visibility.Collapsed;
-        EmptyImportButton.Visibility = noMatch ? Visibility.Collapsed : Visibility.Visible;
-        EmptyText.Text =
-            _games.Count == 0 ? "No games found yet. Games from Steam, Epic, GOG, EA, Ubisoft, Xbox, Rockstar and Hytale show up here automatically, or bring in your own." :
-            query.Length > 0 ? $"No games match “{query}”. Check the spelling, or add the game if it isn't installed through a launcher." :
-            _filter == "Recent" ? "Games you play from the shelf show up here." :
-            _filter == "Favorites" ? "No favorites yet. Star a game in its details or its right-click menu." :
-            "No games from this store.";
-
-        UpdateSpotlight(searching: query.Length > 0);
+        if (ViewModel is { } vm) vm.Query = SearchBox.Text;
     }
 
-    private const int FooterHintSessions = 3;
-    private bool _updatingSpotlight;
-
-    /// <summary>
-    /// The top slot: "Continue playing" or "This week", whichever the user picked last; the switch only when both
-    /// have something to show. Hidden while searching. The hero art loads only while its pane is shown.
-    /// </summary>
-    private void UpdateSpotlight(bool searching)
+    private void OnSearchKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (_crashShown)
+        switch (e.Key)
         {
-            Crash.Visibility = searching ? Visibility.Collapsed : Visibility.Visible;
-            Spotlight.Visibility = Visibility.Collapsed;
-            return;
+            case VirtualKey.Down or VirtualKey.Enter when Visible.Count > 0:
+                FocusIndex(0);
+                e.Handled = true;
+                break;
+            case VirtualKey.Escape when SearchBox.Text.Length > 0:
+                SearchBox.Text = "";
+                e.Handled = true;
+                break;
         }
-        bool hasContinue = _continueGame is not null;
-        Spotlight.Visibility = !searching && (hasContinue || _hasWeek) ? Visibility.Visible : Visibility.Collapsed;
-        if (Spotlight.Visibility == Visibility.Collapsed) return;
+    }
 
-        bool showWeek = _hasWeek && (!hasContinue || _settings.SpotlightShowsWeek);
-        WeekPane.Visibility = showWeek ? Visibility.Visible : Visibility.Collapsed;
-        ContinuePane.Visibility = showWeek ? Visibility.Collapsed : Visibility.Visible;
-        SpotlightSwitchSurface.Visibility = hasContinue && _hasWeek ? Visibility.Visible : Visibility.Collapsed;
-        var item = showWeek ? WeekItem : ContinueItem;
+    private void OnEmptyClearClick(object sender, RoutedEventArgs e)
+    {
+        SearchBox.Text = "";
+        FocusSearch();
+    }
+
+    // ---- Top slot ----------------------------------------------------------------------------------------------
+
+    /// <summary>The switch's selection and the banner's art, which loads only while its pane is shown.</summary>
+    private void ShowSpotlight()
+    {
+        var vm = ViewModel!;
+        if (!vm.SpotlightVisible) return;
+        var item = vm.ShowWeek ? WeekItem : ContinueItem;
         if (!ReferenceEquals(SpotlightSwitch.SelectedItem, item))
         {
             _updatingSpotlight = true;
             SpotlightSwitch.SelectedItem = item;
             _updatingSpotlight = false;
         }
-        if (!showWeek && !ReferenceEquals(ContinueArt.Game, _continueGame)) ContinueArt.Game = _continueGame;
-        ContinueLogo.Game = showWeek ? null : _continueGame; // loaded only while the banner shows
+        if (!vm.ShowWeek && !ReferenceEquals(ContinueArt.Game, vm.ContinueGame)) ContinueArt.Game = vm.ContinueGame;
+        ContinueLogo.Game = vm.ShowWeek ? null : vm.ContinueGame; // loaded only while the banner shows
     }
 
-    private bool _crashShown;
+    private void OnSpotlightChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+    {
+        if (_updatingSpotlight || sender.SelectedItem is null) return;
+        ViewModel?.ShowWeekCard(ReferenceEquals(sender.SelectedItem, WeekItem));
+    }
 
     /// <summary>The crash card instead of the top slot, until <see cref="HideCrash"/> (dismissed or played again).</summary>
     public void ShowCrash(Game game, CrashRecord record, IReadOnlyList<Session> sessions, IReadOnlyList<CrashRecord> records)
     {
         Crash.Show(game, record, sessions, records);
-        _crashShown = true;
-        UpdateSpotlight(searching: SearchBox.Text.Length > 0);
+        ViewModel!.SetCrashShown(true);
     }
 
-    public void HideCrash()
-    {
-        if (!_crashShown) return;
-        _crashShown = false;
-        Crash.Visibility = Visibility.Collapsed;
-        UpdateSpotlight(searching: SearchBox.Text.Length > 0);
-    }
+    public void HideCrash() => ViewModel!.SetCrashShown(false);
 
-    public CrashRecord? ShownCrash => _crashShown ? Crash.Record : null;
+    public CrashRecord? ShownCrash => ViewModel?.CrashShown == true ? Crash.Record : null;
 
     public event Action<Game>? CrashPlayRequested
     {
@@ -324,63 +244,7 @@ public sealed partial class ShelfView : UserControl
         remove => Crash.Dismissed -= value;
     }
 
-    private void OnSpotlightChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
-    {
-        if (_updatingSpotlight || sender.SelectedItem is null) return;
-        bool week = ReferenceEquals(sender.SelectedItem, WeekItem);
-        if (week == _settings.SpotlightShowsWeek) return;
-        _settings.SpotlightShowsWeek = week;
-        UpdateSpotlight(searching: false);
-        ViewSettingsChanged?.Invoke();
-    }
-
-    private void OnEmptyClearClick(object sender, RoutedEventArgs e)
-    {
-        SearchBox.Text = "";
-        FocusSearch();
-    }
-
-    private bool _hasWeek;
-
-    /// <summary>
-    /// "This week" in the top slot: total, how many games, the most played one and a bar per day, Monday to Sunday. Worked out
-    /// when the shelf gets its data (the panel opening, a session ending), never on a timer.
-    /// </summary>
-    private void UpdateWeekCard(IReadOnlyList<Session> sessions)
-    {
-        _hasWeek = false;
-        if (!_settings.ShowWeeklySummary) return;
-        var week = PlaytimeStats.Week(sessions, DateTime.Now);
-        if (week.Total <= TimeSpan.Zero) return;
-        _hasWeek = true;
-
-        WeekTotal.Text = Format.Duration(week.Total);
-        var games = week.GameCount == 1 ? "1 game" : $"{week.GameCount} games";
-        var top = week.TopGameId is { } id ? _games.FirstOrDefault(g => g.Id == id)?.Name : null;
-        var detail = top is null || week.GameCount == 1 ? (top is null ? games : top) : $"{games} · most: {top}";
-        WeekDetail.Text = "This week · " + detail;
-        ToolTipService.SetToolTip(WeekDetail, top is null ? null : $"Most played: {top}, {Format.Duration(week.TopGameTime)}");
-        WeekChart.Show(
-            week.Days.Select(d => new Bar(
-                PlaytimeStats.DayLetter(d.Start),
-                $"{PlaytimeStats.DayName(d.Start)}: {(d.Time > TimeSpan.Zero ? Format.Duration(d.Time) : "not played")}",
-                d.Time.TotalMinutes)).ToList(),
-            "Playtime this week");
-    }
-
-    /// <summary>The last played game, worked out when the data changes (not per keystroke).</summary>
-    private void UpdateContinueCard()
-    {
-        _continueGame = _lastPlayed.Count == 0 ? null : _games
-            .Where(g => _lastPlayed.ContainsKey(g.Id))
-            .MaxBy(g => _lastPlayed[g.Id]);
-        if (_continueGame is null) return;
-        // The art itself is set by UpdateSpotlight, only while the banner is shown.
-        if (ReferenceEquals(ContinueArt.Game, _continueGame)) ContinueArt.Refresh(); // its art may have changed
-        ContinueTitle.Text = _continueGame.Name;
-        ContinueDetail.Text = $"{Format.RelativeDay(_lastPlayed[_continueGame.Id])} · {_continueGame.SourceLabel}";
-        AutomationProperties.SetName(ContinuePlay, "Play " + _continueGame.Name);
-    }
+    // ---- Grid layout -------------------------------------------------------------------------------------------
 
     /// <summary>
     /// How many items fit in the grid (or list) as laid out now, rounded up to whole rows: the covers that must
@@ -399,18 +263,15 @@ public sealed partial class ShelfView : UserControl
     /// <summary>A list row's height, near enough for <see cref="VisibleItemCount"/> (rounds the count up).</summary>
     private const double ListRowHeight = 52;
 
-    /// <summary>Cover size: Small = 5 columns, Medium = 4, Large = 3, or the list (board 11).</summary>
-    private void ApplyDensity(GridDensity density)
+    private void ApplyDensity(int columns, bool listMode)
     {
-        bool listMode = density == GridDensity.List;
-        int columns = density switch { GridDensity.Small => 5, GridDensity.Large => 3, GridDensity.List => 1, _ => 4 };
         if (columns == _columns && listMode == _listMode) return;
         _columns = columns;
         _listMode = listMode;
+        // Set here, before sizing: the grid's panel only takes its item size while the grid is shown.
         Tiles.Visibility = listMode ? Visibility.Collapsed : Visibility.Visible;
         Rows.Visibility = listMode ? Visibility.Visible : Visibility.Collapsed;
         if (listMode) return;
-
         SizeTiles();
     }
 
@@ -437,7 +298,7 @@ public sealed partial class ShelfView : UserControl
         if (args.InRecycleQueue || args.Item is not Game game) return;
         if (args.ItemContainer.ContentTemplateRoot is GameTile tile)
         {
-            tile.DetailsRequested ??= g => OpenRequested?.Invoke(g);
+            tile.DetailsRequested ??= g => ViewModel?.OpenDetails(g);
             tile.Show(game, _tileWidth, _tileHeight, args.ItemIndex);
             if (_padMode && args.ItemContainer.FocusState != FocusState.Unfocused) tile.SetPadFocus(true);
         }
@@ -451,7 +312,7 @@ public sealed partial class ShelfView : UserControl
         if (args.InRecycleQueue || args.Item is not Game game) return;
         if (args.ItemContainer.ContentTemplateRoot is GameRow row)
         {
-            row.DetailsRequested ??= g => OpenRequested?.Invoke(g);
+            row.DetailsRequested ??= g => ViewModel?.OpenDetails(g);
             row.Show(game, args.ItemIndex);
         }
         Describe(args.ItemContainer, game);
@@ -462,32 +323,11 @@ public sealed partial class ShelfView : UserControl
     // open WinUI shows the next at once, so they'd follow the mouse across the grid. Cut-off titles get one (GameTile).
     private static void Describe(SelectorItem container, Game game) => AutomationProperties.SetName(container, game.Name);
 
-    /// <summary>
-    /// All, Favorites, Recent, then the launchers that have games (most games first), "Other" for manual games
-    /// and shortcuts; launchers beyond the first few go under "More". Rebuilt only when that set changes.
-    /// </summary>
+    // ---- Filter chips and the sort menu --------------------------------------------------------------------
+
     private void BuildChips()
     {
-        var launchers = _games.Where(g => LauncherIcons.HasBadge(g.Source))
-            .GroupBy(g => g.Source)
-            .OrderByDescending(group => group.Count())
-            .Select(group => group.Key.ToString())
-            .ToList();
-        if (_games.Any(g => !LauncherIcons.HasBadge(g.Source))) launchers.Add("Other");
-
-        // The current filter stays visible even if it would be under More.
-        var shown = launchers.Take(VisibleLauncherChips).ToList();
-        if (launchers.Contains(_filter) && !shown.Contains(_filter))
-            shown[^1] = _filter;
-        var more = launchers.Except(shown).ToList();
-        _allFilters = ["All", "Favorites", "Recent", .. launchers];
-
-        if (_filter != "All" && _filter is not ("Favorites" or "Recent") && !launchers.Contains(_filter)) _filter = "All";
-
-        var key = string.Join(",", shown) + "|" + string.Join(",", more) + "|" + _filter;
-        if (key == _chipKey) return;
-        _chipKey = key;
-
+        var vm = ViewModel!;
         _buildingChips = true;
         try
         {
@@ -495,7 +335,7 @@ public sealed partial class ShelfView : UserControl
             AddChip("All", "All");
             AddChip("Favorites", "Favorites");
             AddChip("Recent", "Recent");
-            foreach (var launcher in shown) AddChip(launcher, ChipLabel(launcher));
+            foreach (var launcher in vm.ShownChips) AddChip(launcher, ShelfViewModel.ChipLabel(launcher));
         }
         finally
         {
@@ -503,116 +343,58 @@ public sealed partial class ShelfView : UserControl
         }
 
         MoreMenu.Items.Clear();
-        foreach (var launcher in more)
-            GameMenu.AddItem(MoreMenu, ChipLabel(launcher), null, () =>
-            {
-                _filter = launcher;
-                BuildChips();
-                Refresh();
-            });
-        MoreFilters.Visibility = more.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        foreach (var launcher in vm.MoreChips)
+            GameMenu.AddItem(MoreMenu, ShelfViewModel.ChipLabel(launcher), null, () => vm.SelectFilter(launcher));
     }
 
     private void AddChip(string filter, string label)
     {
         var item = new SelectorBarItem { Text = label, Tag = filter };
         Filters.Items.Add(item);
-        if (_filter == filter) Filters.SelectedItem = item;
+        if (ViewModel!.CurrentFilter == filter) Filters.SelectedItem = item;
     }
 
     private void OnFilterChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
     {
-        if (_buildingChips || sender.SelectedItem is not { Tag: string filter } || filter == _filter) return;
-        _filter = filter;
-        BuildChips();
-        Refresh();
-    }
-
-    private static string ChipLabel(string filter) => filter switch
-    {
-        nameof(GameSource.Gog) => "GOG",
-        nameof(GameSource.Ea) => "EA",
-        _ => filter,
-    };
-
-    private static string SortLabel(SortBy sort) => sort switch
-    {
-        SortBy.MostPlayed => "Most played",
-        SortBy.Name => "Name (A–Z)",
-        SortBy.RecentlyAdded => "Recently added",
-        SortBy.Size => "Size on disk",
-        _ => "Recently played",
-    };
-
-    /// <summary>The sort button is an icon; its tooltip and screen-reader name say the current order.</summary>
-    private void ShowSort(SortBy sort)
-    {
-        var label = "Sort: " + SortLabel(sort);
-        ToolTipService.SetToolTip(SortButton, label);
-        AutomationProperties.SetName(SortButton, label);
+        if (_buildingChips || sender.SelectedItem is not { Tag: string filter }) return;
+        ViewModel?.SelectFilter(filter);
     }
 
     /// <summary>Sort menu (board 7): five orders as radio items, then "Favorites first".</summary>
     private void BuildSortMenu()
     {
-        ShowSort(_settings.SortBy);
+        var vm = ViewModel!;
         SortMenu.Items.Clear();
-        foreach (var sort in Enum.GetValues<SortBy>())
-            GameMenu.AddChoice(SortMenu, SortLabel(sort), "Sort", _settings.SortBy == sort, () =>
-            {
-                _settings.SortBy = sort;
-                ShowSort(sort);
-                Resort();
-                ViewSettingsChanged?.Invoke();
-            });
+        foreach (var sort in ShelfViewModel.SortChoices)
+            GameMenu.AddChoice(SortMenu, ShelfViewModel.SortLabel(sort), "Sort", vm.SortBy == sort, () => vm.SetSort(sort));
         SortMenu.Items.Add(new MenuFlyoutSeparator());
-        var favoritesFirst = new ToggleMenuFlyoutItem { Text = "Favorites first", IsChecked = _settings.FavoritesFirst };
-        favoritesFirst.Click += (_, _) =>
-        {
-            _settings.FavoritesFirst = favoritesFirst.IsChecked;
-            Resort();
-            ViewSettingsChanged?.Invoke();
-        };
+        var favoritesFirst = new ToggleMenuFlyoutItem { Text = "Favorites first", IsChecked = vm.FavoritesFirst };
+        favoritesFirst.Click += (_, _) => vm.SetFavoritesFirst(favoritesFirst.IsChecked);
         SortMenu.Items.Add(favoritesFirst);
     }
 
-    private void OnSearchChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args) => Refresh();
-
-    private void OnSearchKeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        switch (e.Key)
-        {
-            case VirtualKey.Down or VirtualKey.Enter when _visible.Count > 0:
-                FocusIndex(0);
-                e.Handled = true;
-                break;
-            case VirtualKey.Escape when SearchBox.Text.Length > 0:
-                SearchBox.Text = "";
-                e.Handled = true;
-                break;
-        }
-    }
+    // ---- Playing, menus, focus ---------------------------------------------------------------------------------
 
     /// <summary>Clicking a cover or row plays it, like Enter and like the desktop shortcuts it replaces.</summary>
     private void OnItemClick(object sender, ItemClickEventArgs e)
     {
-        if (e.ClickedItem is Game game) PlayRequested?.Invoke(game);
+        if (e.ClickedItem is Game game) ViewModel?.Play(game);
     }
 
     /// <summary>The game menu on right-click, the Menu key or Shift+F10 on a cover or row.</summary>
     private void OnItemContextRequested(UIElement sender, ContextRequestedEventArgs args)
     {
         if (sender is not ListViewBase list || FindContainer(args.OriginalSource as DependencyObject) is not { } container ||
-            list.ItemFromContainer(container) is not Game game) return;
+            list.ItemFromContainer(container) is not Game game || ViewModel is not { } vm) return;
         args.Handled = true;
         Windows.Foundation.Point? at = args.TryGetPosition(container, out var point) ? point : null;
         GameMenu.Show(container, at, game, includePlayAndDetails: true, action =>
         {
             switch (action)
             {
-                case GameAction.Play: PlayRequested?.Invoke(game); break;
-                case GameAction.Details: OpenRequested?.Invoke(game); break;
-                default: ActionRequested?.Invoke(game, action); break;
+                case GameAction.Play: vm.Play(game); break;
+                case GameAction.Details: vm.OpenDetails(game); break;
+                default: vm.Act(game, action); break;
             }
         });
     }
@@ -629,15 +411,14 @@ public sealed partial class ShelfView : UserControl
     /// </summary>
     public void FocusGame(Game game, FocusState how = FocusState.Programmatic)
     {
-        int index = _visible.FindIndex(g => g.Id == game.Id);
+        int index = Visible.FindIndex(g => g.Id == game.Id);
         if (index >= 0) FocusIndex(index, how);
         else FocusSearch();
     }
 
     // ---- Controller (spec §4, board 3) ----
 
-    private bool _padMode, _footerHint;
-    private List<string> _allFilters = ["All", "Favorites", "Recent"];
+    private bool _padMode;
 
     /// <summary>
     /// Controller look on (a pad was used) or off (mouse or keyboard again): the button hints replace the footer,
@@ -647,10 +428,8 @@ public sealed partial class ShelfView : UserControl
     {
         if (_padMode == on) return;
         _padMode = on;
-        PadHints.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
-        LbPill.Visibility = RbPill.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
-        Footer.Visibility = _footerHint && !on ? Visibility.Visible : Visibility.Collapsed;
-        for (int i = 0; i < _visible.Count; i++)
+        ViewModel!.PadMode = on;
+        for (int i = 0; i < Visible.Count; i++)
         {
             if (Tiles.ContainerFromIndex(i) is not SelectorItem container) continue;
             container.UseSystemFocusVisuals = !on;
@@ -658,9 +437,6 @@ public sealed partial class ShelfView : UserControl
                 tile.SetPadFocus(on && container.FocusState != FocusState.Unfocused);
         }
     }
-
-    /// <summary>B's hint: Close in the flyout (it closes it), hidden on the desktop (there's nothing to go back to).</summary>
-    public void SetBackHint(bool flyout) => BackHint.Visibility = flyout ? Visibility.Visible : Visibility.Collapsed;
 
     private void OnTilesGotFocus(object sender, RoutedEventArgs e)
     {
@@ -689,7 +465,7 @@ public sealed partial class ShelfView : UserControl
     {
         if (FindContainer(focused) is not { } container || ItemsControl.ItemsControlFromItemContainer(container) is not ListViewBase list ||
             (list != Tiles && list != Rows)) return false;
-        int i = list.IndexFromContainer(container), count = _visible.Count;
+        int i = list.IndexFromContainer(container), count = Visible.Count;
         if (i < 0 || i >= count) return false;
         int columns = _listMode ? 1 : Math.Max(1, _columns);
         int target = direction switch
@@ -706,18 +482,9 @@ public sealed partial class ShelfView : UserControl
         return true;
     }
 
-    /// <summary>LB / RB: the previous or next filter, including the ones under More, wrapping around.</summary>
-    public void CycleFilter(int step)
-    {
-        int at = _allFilters.IndexOf(_filter);
-        _filter = _allFilters[((at < 0 ? 0 : at) + step + _allFilters.Count) % _allFilters.Count];
-        BuildChips();
-        Refresh();
-    }
-
     public void FocusFirstGame()
     {
-        if (_visible.Count > 0) FocusIndex(0);
+        if (Visible.Count > 0) FocusIndex(0);
     }
 
     /// <summary>The scroll viewer of the grid or list that's showing, for the right stick.</summary>
@@ -726,7 +493,7 @@ public sealed partial class ShelfView : UserControl
     private void FocusIndex(int index, FocusState how = FocusState.Keyboard)
     {
         ListViewBase list = _listMode ? Rows : Tiles;
-        list.ScrollIntoView(_visible[index]);
+        list.ScrollIntoView(Visible[index]);
         list.UpdateLayout();
         if (list.ContainerFromIndex(index) is Control container) container.Focus(how);
     }
@@ -739,16 +506,17 @@ public sealed partial class ShelfView : UserControl
     {
         if (sender is not ListViewBase list || FindContainer(e.OriginalSource as DependencyObject) is not { } container) return;
         int i = list.IndexFromContainer(container);
-        if (i < 0 || i >= _visible.Count) return;
+        var visible = Visible;
+        if (i < 0 || i >= visible.Count) return;
         int columns = _listMode ? 1 : _columns;
         switch (e.Key)
         {
             case VirtualKey.Enter:
-                PlayRequested?.Invoke(_visible[i]);
+                ViewModel?.Play(visible[i]);
                 e.Handled = true;
                 break;
             case VirtualKey.Space:
-                OpenRequested?.Invoke(_visible[i]);
+                ViewModel?.OpenDetails(visible[i]);
                 e.Handled = true;
                 break;
             case VirtualKey.Up when i < columns:
@@ -757,29 +525,6 @@ public sealed partial class ShelfView : UserControl
                 break;
         }
     }
-
-    private void OnContinuePlayClick(object sender, RoutedEventArgs e)
-    {
-        if (_continueGame is not null) PlayRequested?.Invoke(_continueGame);
-    }
-
-    private void OnSettingsClick(object sender, RoutedEventArgs e) => SettingsRequested?.Invoke();
-
-    private void OnPinClick(object sender, RoutedEventArgs e) => PinRequested?.Invoke();
-
-    /// <summary>Shows the pin button in Flyout mode, pressed while pinned open.</summary>
-    public void SetFlyout(bool flyout, bool pinned)
-    {
-        PinButton.Visibility = flyout ? Visibility.Visible : Visibility.Collapsed;
-        PinButton.IsChecked = pinned;
-        var label = pinned ? "Unpin (closes when you click elsewhere)" : "Pin open";
-        ToolTipService.SetToolTip(PinButton, label);
-        AutomationProperties.SetName(PinButton, label);
-    }
-
-    private void OnEmptyImportClick(object sender, RoutedEventArgs e) => ImportRequested?.Invoke();
-
-    private void OnEmptyAddClick(object sender, RoutedEventArgs e) => AddGameRequested?.Invoke();
 
     private static T? FindDescendant<T>(DependencyObject root) where T : DependencyObject
     {

@@ -21,19 +21,21 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="GreetingText" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center"
+            <TextBlock Text="{x:Bind ViewModel.Greeting, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center"
                        TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" AutomationProperties.HeadingLevel="Level1" />
             <!-- Flyout only: keep it open when clicking elsewhere (board 6). -->
             <ToggleButton x:Name="PinButton" Grid.Column="1" Style="{StaticResource IconToggleButton}" Content="&#xE718;"
-                          Click="OnPinClick" Visibility="Collapsed" />
+                          Command="{x:Bind ViewModel.PinCommand}" Visibility="{x:Bind ViewModel.PinVisible, Mode=OneWay}"
+                          IsChecked="{x:Bind ViewModel.PinChecked, Mode=OneWay}" ToolTipService.ToolTip="{x:Bind ViewModel.PinLabel, Mode=OneWay}"
+                          AutomationProperties.Name="{x:Bind ViewModel.PinLabel, Mode=OneWay}" />
             <!-- Quick actions (§16, board 18). The menu's items are made when it opens; the dot shows Game mode is on. -->
             <Button x:Name="ActionsButton" Grid.Column="2" Style="{StaticResource IconButton}"
-                    ToolTipService.ToolTip="More actions" AutomationProperties.Name="More actions"
+                    ToolTipService.ToolTip="More actions" AutomationProperties.Name="{x:Bind ViewModel.ActionsName, Mode=OneWay}"
                     KeyboardAcceleratorPlacementMode="Hidden">
                 <Grid Width="34" Height="34">
                     <TextBlock Text="&#xE712;" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     <Ellipse x:Name="GameModeDot" Width="7" Height="7" Margin="0,7,7,0" HorizontalAlignment="Right"
-                             VerticalAlignment="Top" Fill="{ThemeResource AccentFillColorDefaultBrush}" Visibility="Collapsed" />
+                             VerticalAlignment="Top" Fill="{ThemeResource AccentFillColorDefaultBrush}" Visibility="{x:Bind ViewModel.GameModeOn, Mode=OneWay}" />
                 </Grid>
                 <Button.Flyout>
                     <MenuFlyout x:Name="ActionsMenu" Placement="BottomEdgeAlignedRight" Opening="OnActionsMenuOpening" />
@@ -43,33 +45,33 @@
                     <KeyboardAccelerator Key="F5" Invoked="OnRefreshAccelerator" />
                 </Button.KeyboardAccelerators>
             </Button>
-            <Button Grid.Column="3" Style="{StaticResource IconButton}" Content="&#xE713;" Click="OnSettingsClick"
+            <Button Grid.Column="3" Style="{StaticResource IconButton}" Content="&#xE713;" Command="{x:Bind ViewModel.SettingsCommand}"
                     ToolTipService.ToolTip="Settings" AutomationProperties.Name="Settings" />
         </Grid>
 
         <!-- The Game mode helper notice shares the search box's row, so the rows' spacing stays the same while
              it's closed. -->
         <StackPanel Grid.Row="1" Spacing="14">
-            <InfoBar x:Name="HelperBar" Title="Game mode needs an update" IsOpen="False" Severity="Informational"
+            <InfoBar x:Name="HelperBar" Title="Game mode needs an update" IsOpen="{x:Bind ViewModel.HelperBarOpen, Mode=OneWay}" Severity="Informational"
                      Message="Its admin helper is from an older version of Game Shelf. Update it so pausing services and network priority keep working. Windows asks once."
                      Closed="OnHelperBarClosed">
                 <InfoBar.ActionButton>
-                    <Button x:Name="HelperUpdateButton" Content="Update…" Click="OnHelperUpdateClick" />
+                    <Button Content="Update…" Click="OnHelperUpdateClick" IsEnabled="{x:Bind ViewModel.HelperUpdateEnabled, Mode=OneWay}" />
                 </InfoBar.ActionButton>
             </InfoBar>
-            <AutoSuggestBox x:Name="SearchBox" PlaceholderText="Search games" QueryIcon="Find"
+            <AutoSuggestBox x:Name="SearchBox" PlaceholderText="{x:Bind ViewModel.Placeholder, Mode=OneWay}" QueryIcon="Find"
                             AutomationProperties.Name="Search games" TextChanged="OnSearchChanged"
                             PreviewKeyDown="OnSearchKeyDown" />
         </StackPanel>
 
         <!-- After a crash (milestone 11, board 13) the crash card takes the top slot until it's dismissed. -->
-        <v:CrashCard x:Name="Crash" Grid.Row="2" Visibility="Collapsed" />
+        <v:CrashCard x:Name="Crash" Grid.Row="2" Visibility="{x:Bind ViewModel.CrashVisible, Mode=OneWay}" />
 
         <!-- One fixed-height slot (board 16): the "Continue playing" hero banner or "This week", switched in the
              corner and remembered, so switching never moves the grid. Hidden while searching. -->
         <Grid x:Name="Spotlight" Grid.Row="2" Height="168" CornerRadius="{ThemeResource OverlayCornerRadius}"
-              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" Visibility="Collapsed">
-            <Grid x:Name="ContinuePane">
+              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" Visibility="{x:Bind ViewModel.SpotlightVisible, Mode=OneWay}">
+            <Grid Visibility="{x:Bind ViewModel.ContinueVisible, Mode=OneWay}">
                 <!-- The hero art loads only while this pane is shown (ShelfView.UpdateSpotlight). -->
                 <v:CoverView x:Name="ContinueArt" Kind="Hero" DecodeWidth="520" CornerRadius="0" />
                 <Border Background="{StaticResource BannerScrimBrush}" />
@@ -83,11 +85,12 @@
                         <TextBlock Text="Continue playing" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{StaticResource BannerSecondaryTextBrush}" />
                         <!-- The game's logo instead of its title when Steam has one (§13 a). -->
                         <v:BannerLogo x:Name="ContinueLogo" MaxLogoHeight="56" Margin="0,4,0,4" />
-                        <TextBlock x:Name="ContinueTitle" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="22"
+                        <TextBlock x:Name="ContinueTitle" Text="{x:Bind ViewModel.ContinueTitle, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="22"
                                    Foreground="White" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
-                        <TextBlock x:Name="ContinueDetail" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{StaticResource BannerSecondaryTextBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.ContinueDetail, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{StaticResource BannerSecondaryTextBrush}" />
                     </StackPanel>
-                    <Button x:Name="ContinuePlay" Grid.Column="1" Style="{StaticResource AccentButtonStyle}" Click="OnContinuePlayClick"
+                    <Button Grid.Column="1" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.ContinuePlayCommand}"
+                            AutomationProperties.Name="{x:Bind ViewModel.ContinuePlayName, Mode=OneWay}"
                             VerticalAlignment="Bottom" Padding="18,6">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xF5B0;" FontSize="12" />
@@ -98,24 +101,24 @@
             </Grid>
             <!-- Total top-left (the switch sits top-right), the chart in its own full-width row below, so the two
                  never meet. -->
-            <Grid x:Name="WeekPane" Padding="16,12,16,10" RowSpacing="6" Visibility="Collapsed"
+            <Grid Padding="16,12,16,10" RowSpacing="6" Visibility="{x:Bind ViewModel.ShowWeek, Mode=OneWay}"
                   Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <StackPanel Margin="0,0,230,0" Spacing="0">
-                    <TextBlock x:Name="WeekTotal" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="24" />
-                    <TextBlock x:Name="WeekDetail" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="NoWrap"
+                    <TextBlock Text="{x:Bind ViewModel.WeekTotal, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="24" />
+                    <TextBlock x:Name="WeekDetail" Text="{x:Bind ViewModel.WeekDetail, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="NoWrap"
                                TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
                 <v:BarChart x:Name="WeekChart" Grid.Row="1" PlotHeight="44" BarWidth="16" VerticalAlignment="Bottom" />
             </Grid>
             <!-- The switch: WinUI's own SelectorBar (like the filters), on a solid surface so it reads over any art.
                  Shown only when both sides have something to show. -->
-            <Border x:Name="SpotlightSwitchSurface" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Top"
+            <Border Margin="8" HorizontalAlignment="Right" VerticalAlignment="Top"
                     Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
-                    BorderThickness="1" CornerRadius="{ThemeResource ControlCornerRadius}" Visibility="Collapsed">
+                    BorderThickness="1" CornerRadius="{ThemeResource ControlCornerRadius}" Visibility="{x:Bind ViewModel.SwitchVisible, Mode=OneWay}">
                 <!-- Compact, as on board 16: 12 px text, ~11 px icons (the template draws icons at 0.8 of their
                      size), 28 px items with the selection pill, and a subtle fill on the selected one. -->
                 <SelectorBar x:Name="SpotlightSwitch" Padding="2" AutomationProperties.Name="Top card" SelectionChanged="OnSpotlightChanged">
@@ -152,21 +155,23 @@
             </Grid.ColumnDefinitions>
             <!-- LB and RB beside the filters while a controller is in use (board 3). -->
             <StackPanel Orientation="Horizontal">
-                <Border x:Name="LbPill" Style="{StaticResource PadPill}" Margin="12,0,0,0" Visibility="Collapsed">
+                <Border Style="{StaticResource PadPill}" Margin="12,0,0,0" Visibility="{x:Bind ViewModel.PadMode, Mode=OneWay}">
                     <TextBlock Text="LB" Style="{StaticResource PadPillText}" />
                 </Border>
                 <SelectorBar x:Name="Filters" AutomationProperties.Name="Filter" SelectionChanged="OnFilterChanged" />
-                <Border x:Name="RbPill" Style="{StaticResource PadPill}" Visibility="Collapsed">
+                <Border Style="{StaticResource PadPill}" Visibility="{x:Bind ViewModel.PadMode, Mode=OneWay}">
                     <TextBlock Text="RB" Style="{StaticResource PadPillText}" />
                 </Border>
             </StackPanel>
             <DropDownButton x:Name="MoreFilters" Grid.Column="1" Content="More" VerticalAlignment="Center"
-                            AutomationProperties.Name="More launchers" Visibility="Collapsed">
+                            AutomationProperties.Name="More launchers" Visibility="{x:Bind ViewModel.MoreVisible, Mode=OneWay}">
                 <DropDownButton.Flyout>
                     <MenuFlyout x:Name="MoreMenu" Placement="BottomEdgeAlignedLeft" />
                 </DropDownButton.Flyout>
             </DropDownButton>
             <DropDownButton x:Name="SortButton" Grid.Column="3" VerticalAlignment="Center" Padding="8,6"
+                            Visibility="{x:Bind ViewModel.SortVisible, Mode=OneWay}" ToolTipService.ToolTip="{x:Bind ViewModel.SortName, Mode=OneWay}"
+                            AutomationProperties.Name="{x:Bind ViewModel.SortName, Mode=OneWay}"
                             Background="Transparent" BorderBrush="Transparent">
                 <FontIcon Glyph="&#xE8CB;" FontSize="14" />
                 <DropDownButton.Flyout>
@@ -232,39 +237,40 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <StackPanel x:Name="EmptyState" Margin="24,48,24,24" MaxWidth="360" Visibility="Collapsed" HorizontalAlignment="Center" Spacing="12">
+            <StackPanel Margin="24,48,24,24" MaxWidth="360" Visibility="{x:Bind ViewModel.EmptyVisible, Mode=OneWay}" HorizontalAlignment="Center" Spacing="12">
                 <!-- A large Fluent icon, one plain sentence and, where it helps, the way forward (board 14). -->
                 <Border Width="72" Height="72" CornerRadius="36" HorizontalAlignment="Center"
                         Background="{ThemeResource ControlFillColorSecondaryBrush}">
-                    <FontIcon x:Name="EmptyIcon" FontSize="32" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <FontIcon Glyph="{x:Bind ViewModel.EmptyGlyph, Mode=OneWay}" FontSize="32" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </Border>
-                <TextBlock x:Name="EmptyText" TextAlignment="Center" TextWrapping="Wrap" Style="{StaticResource BodyTextBlockStyle}"
+                <TextBlock Text="{x:Bind ViewModel.EmptyText, Mode=OneWay}" TextAlignment="Center" TextWrapping="Wrap" Style="{StaticResource BodyTextBlockStyle}"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 <!-- Nothing found: the ways to add games. No search match: clear it, or add the game. -->
-                <StackPanel x:Name="EmptyActions" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8"
-                            Margin="0,4,0,0" Visibility="Collapsed">
-                    <Button x:Name="EmptyClearButton" Content="Clear search" Click="OnEmptyClearClick" />
-                    <Button x:Name="EmptyImportButton" Content="Import desktop shortcuts" Click="OnEmptyImportClick" />
-                    <Button Content="Add a game" Click="OnEmptyAddClick" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8"
+                            Margin="0,4,0,0" Visibility="{x:Bind ViewModel.EmptyActionsVisible, Mode=OneWay}">
+                    <Button Content="Clear search" Click="OnEmptyClearClick" Visibility="{x:Bind ViewModel.EmptyClearVisible, Mode=OneWay}" />
+                    <Button Content="Import desktop shortcuts" Command="{x:Bind ViewModel.ImportCommand}"
+                            Visibility="{x:Bind ViewModel.EmptyImportVisible, Mode=OneWay}" />
+                    <Button Content="Add a game" Command="{x:Bind ViewModel.AddGameCommand}" />
                 </StackPanel>
             </StackPanel>
         </Grid>
 
         <!-- Footer hint: teaches hide and return during the first few games, then steps aside (ShelfView.SetData). -->
-        <Grid x:Name="Footer" Grid.Row="5" ColumnSpacing="8" Padding="0,12,0,0" BorderThickness="0,1,0,0"
+        <Grid Grid.Row="5" ColumnSpacing="8" Visibility="{x:Bind ViewModel.FooterVisible, Mode=OneWay}" Padding="0,12,0,0" BorderThickness="0,1,0,0"
               BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <FontIcon Glyph="&#xED1A;" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-            <TextBlock x:Name="FooterText" Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"
+            <TextBlock Text="{x:Bind ViewModel.FooterText, Mode=OneWay}" Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </Grid>
 
         <!-- Controller hints (board 3), in the footer's place while a controller is in use. -->
         <StackPanel x:Name="PadHints" Grid.Row="5" Orientation="Horizontal" Spacing="16" Padding="0,12,0,0"
-                    BorderThickness="0,1,0,0" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" Visibility="Collapsed"
+                    BorderThickness="0,1,0,0" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" Visibility="{x:Bind ViewModel.PadMode, Mode=OneWay}"
                     AutomationProperties.Name="Controller: A play, X details, Y favorite, B close, Menu settings">
             <StackPanel Orientation="Horizontal" Spacing="6">
                 <Border Style="{StaticResource PadKey}"><TextBlock Text="A" Style="{StaticResource PadKeyText}" /></Border>
@@ -278,7 +284,7 @@
                 <Border Style="{StaticResource PadKey}"><TextBlock Text="Y" Style="{StaticResource PadKeyText}" /></Border>
                 <TextBlock Text="Favorite" VerticalAlignment="Center" />
             </StackPanel>
-            <StackPanel x:Name="BackHint" Orientation="Horizontal" Spacing="6">
+            <StackPanel Orientation="Horizontal" Spacing="6" Visibility="{x:Bind ViewModel.BackHintVisible, Mode=OneWay}">
                 <Border Style="{StaticResource PadKey}"><TextBlock Text="B" Style="{StaticResource PadKeyText}" /></Border>
                 <TextBlock Text="Close" VerticalAlignment="Center" />
             </StackPanel>
