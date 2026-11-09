@@ -57,10 +57,15 @@ src/GameShelf/            the WinUI widget
   Services/               Launcher, CoverCache, Storage, Windows integration (DesktopLayer, Monitors, Placement,
                           Autostart, ShellNotify, PcChecks, …), Gamepad (XInput, polled only while the panel is
                           active and a pad is connected), GameModeService, Chime/Sound
-  ViewModels/             MVVM: ObservableObject, RelayCommand, one <Page>ViewModel per page (SettingsViewModel so far)
+  ViewModels/             MVVM: ObservableObject, RelayCommand, one <Page>ViewModel + I<Page>Actions per page (Shelf,
+                          Detail, Settings, Setup, FreeSpace, GameMode)
   Views/                  ShelfView, DetailView, SettingsView, SetupView, ImportView, FreeSpaceView, GameModeView,
-                          GameModeToast; Format.cs the text formatting
+                          GameModeToast; Format.cs the text formatting, GameAction.cs (menu actions, chart bars)
   Themes/Theme.xaml        shared styles and brushes
+  MainWindow.xaml.cs      the panel: start, first frame, page navigation, rescan; partial files by area:
+                          MainWindow.<Page>.cs (that page's actions), .Flyout (slide, placement), .Games (import,
+                          add, game actions), .Input (Esc, controller, type-to-search), .Launch (play, countdown,
+                          return), .Notices (toast, errors, crash card)
   Program.cs, MessageWindow.cs   single instance, tray icon, hotkey
 src/GameShelf.Watcher/    windowless; Program.cs, GameMode.cs (apply/restore + journal), ElevatedClient.cs,
                           GameModeShared.cs (also compiled into the widget, helper and setup)
@@ -103,19 +108,25 @@ The version lives in `Directory.Build.props`.
 Single instance: `Program.Main` holds a mutex before WinUI starts; a second start forwards its arguments to the
 hidden `MessageWindow` (WM_COPYDATA). With no arguments that toggles the flyout.
 
-## Code structure (MVVM, being migrated page by page)
+## Code structure (MVVM)
 
-- A page's state and logic go in `ViewModels/<Page>ViewModel.cs` (derives from `ObservableObject`; setters use
-  `SetProperty` or report only real changes, so filling a page never counts as a user change). The view binds with
-  `x:Bind` (`Mode=OneWay`/`TwoWay`, `Command=`); its code-behind keeps only pure view work (focus, animation,
-  `Disclosure`, drawing rows). Classes handed to WinUI (view models, commands) must be `partial`: under Native AOT
-  CsWinRT only generates their WinRT interfaces then, and the panel crashes at the first binding otherwise. An `ItemsSource` from a view model is a plain array (`string[]`), never a
-  collection expression typed as an interface (`IReadOnlyList<T> x = [..]` makes a hidden compiler type AOT can't
-  pass to WinUI); bind a ComboBox's selection by item, not index, when its list changes with it.
-- What a page asks its owner to do is an interface (`ISettingsActions`), implemented by `MainWindow` in its own
-  partial file (`MainWindow.Settings.cs`), so a missing action is a compile error, not a dead button.
+- Each page (the shelf, Detail, Settings, Setup, Free up space, Game mode) has a view model: its state and logic go
+  in `ViewModels/<Page>ViewModel.cs` (derives from `ObservableObject`; setters use `SetProperty` or report only real
+  changes, so filling a page never counts as a user change). The view creates it in `Initialize(actions)` and binds
+  with `x:Bind` (`Mode=OneWay`/`TwoWay`, `Command=`); its code-behind keeps only pure view work (focus, animation,
+  `Disclosure`, menus, drawing rows, and on the shelf the cover grid's sizing, covers and keyboard/controller
+  focus), redrawing code-built parts from the view model's `PropertyChanged`. Classes handed to WinUI (view models, commands) must be `partial`: under Native AOT
+  CsWinRT only generates their WinRT interfaces then, and the panel crashes at the first binding otherwise. An
+  `ItemsSource` from a view model is a plain array (`string[]`), never a collection expression typed as an interface
+  (`IReadOnlyList<T> x = [..]` makes a hidden compiler type AOT can't pass to WinUI); bind a ComboBox's selection by
+  item, not index, when its list changes with it.
+- What a page asks its owner to do is an interface (`I<Page>Actions`), implemented by `MainWindow` with explicit
+  interface members in the page's partial file (`MainWindow.<Page>.cs`), so a missing action is a compile error,
+  not a dead button. What the page needs from Windows (drives, running apps, the helper) goes through it too.
 - View models don't reference WinUI types, so `tests/GameShelf.Tests` compiles them and tests them with a spy for
   the actions interface (`ViewModelTests.cs`). Add checks there with each view model.
+- `MainWindow` itself is split by area into partial files (see Layout); a new area gets its own file rather than
+  growing `MainWindow.xaml.cs`.
 
 ## Library sources
 
