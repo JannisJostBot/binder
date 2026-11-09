@@ -74,6 +74,25 @@ public static class Keys {
     [DllImport("user32.dll")] static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
     public static void Press(byte vk) { keybd_event(vk, 0, 0, UIntPtr.Zero); keybd_event(vk, 0, 2, UIntPtr.Zero); }
 }
+// The install/update window is a classic Win32 dialog. Windows PowerShell's managed UIA client sees its controls only
+// as plain panes (no Toggle/Invoke, not focusable), so they are driven with the messages a click would send:
+// set the check state, then tell the dialog the control was clicked (WM_COMMAND BN_CLICKED), as the button itself does.
+public static class Win32Button {
+    [DllImport("user32.dll")] static extern IntPtr SendMessageW(IntPtr hwnd, uint msg, IntPtr w, IntPtr l);
+    [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)] static extern bool PostMessageW(IntPtr hwnd, uint msg, IntPtr w, IntPtr l);
+    [DllImport("user32.dll")] static extern IntPtr GetParent(IntPtr hwnd);
+    [DllImport("user32.dll")] static extern int GetDlgCtrlID(IntPtr hwnd);
+    const uint WM_COMMAND = 0x0111, BM_GETCHECK = 0xF0, BM_SETCHECK = 0xF1;
+    public static bool IsChecked(IntPtr button) { return SendMessageW(button, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1; }
+    public static void Check(IntPtr box) {
+        SendMessageW(box, BM_SETCHECK, (IntPtr)1, IntPtr.Zero);
+        SendMessageW(GetParent(box), WM_COMMAND, (IntPtr)(GetDlgCtrlID(box) & 0xFFFF), box);
+    }
+    // Posted: the dialog's handler for this button runs the install, which shouldn't block the test.
+    public static void Click(IntPtr button) {
+        PostMessageW(GetParent(button), WM_COMMAND, (IntPtr)(GetDlgCtrlID(button) & 0xFFFF), button);
+    }
+}
 '@
 # Everything in a window, for a failed run: name, control type, class and whether it can be invoked.
 function Dump([object] $root, [string] $file) {
@@ -135,15 +154,15 @@ try {
     $installButton = Wait-Until { & $named 'Install' } 5 'Install button'
     if ($installButton.Current.IsEnabled) { Fail 'Install is enabled before the disclaimer is confirmed' }
     $accept = Wait-Until { & $named "I've read and understood the disclaimer" } 5 'disclaimer checkbox'
-    if ($accept.GetCurrentPropertyValue($UIA::IsTogglePatternAvailableProperty)) {
-        $accept.GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern).Toggle()
-    } else {
-        $accept.SetFocus(); [Keys]::Press(0x20)
-    }
+    $acceptHwnd = [IntPtr] $accept.Current.NativeWindowHandle
+    if ($accept.Current.ClassName -ne 'Button' -or $acceptHwnd -eq [IntPtr]::Zero) { Fail "The disclaimer checkbox is a $($accept.Current.ClassName), not a Win32 button" }
+    if ([Win32Button]::IsChecked($acceptHwnd)) { Fail 'The disclaimer checkbox is ticked from the start' }
+    [Win32Button]::Check($acceptHwnd)
     Wait-Until { $installButton.Current.IsEnabled } 5 'Install enabled after confirming the disclaimer' | Out-Null
     $metrics += "Disclaimer: Install disabled until confirmed"
     $sw.Restart()
-    Click $dialog 'Install'
+    [Win32Button]::Click([IntPtr] $installButton.Current.NativeWindowHandle)
+    Write-Host 'clicked: Install'
     $done = Get-Dialog 'Game Shelf is installed'
     $metrics += "Install took $($sw.ElapsedMilliseconds) ms (to the done dialog)"
     Start-Sleep -Milliseconds 500
