@@ -51,11 +51,7 @@ internal static class CrashStore
         }
     }
 
-    public static CrashRecord? For(IReadOnlyList<CrashRecord> records, Session s)
-    {
-        var key = Key(s);
-        return records.FirstOrDefault(r => Key(r) == key);
-    }
+    public static CrashRecord? For(IReadOnlyList<CrashRecord> records, Session s) => CrashAnalysis.For(records, s);
 
     /// <summary>
     /// The newest problem whose card hasn't been seen yet (last 7 days), unless that game was played again since.

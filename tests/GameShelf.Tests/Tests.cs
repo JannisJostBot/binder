@@ -85,6 +85,7 @@ static partial class Tests
         SpaceTests();
         GameModeTests();
         SettingsViewModelTests();
+        DetailViewModelTests();
 
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");

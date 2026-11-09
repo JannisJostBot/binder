@@ -18,7 +18,7 @@ public static class LauncherIcons
     private static readonly Dictionary<GameSource, List<Action<IconPixels?>>> Waiting = [];
 
     /// <summary>Manually added games and imported shortcuts get no badge.</summary>
-    public static bool HasBadge(GameSource source) => source is not (GameSource.Manual or GameSource.Shortcut);
+    public static bool HasBadge(GameSource source) => Views.Format.HasBadge(source);
 
     /// <summary>
     /// The icon if it's loaded. Otherwise starts loading it and calls <paramref name="whenReady"/> on the UI

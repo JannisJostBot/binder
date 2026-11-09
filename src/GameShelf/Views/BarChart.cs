@@ -6,9 +6,6 @@ using Microsoft.UI.Xaml.Media;
 
 namespace GameShelf.Views;
 
-/// <summary>One bar: its axis label, its tooltip and its value.</summary>
-public readonly record struct Bar(string Label, string ToolTip, double Value);
-
 /// <summary>
 /// A single-series bar chart in the accent color: thin bars with 4 px rounded tops on a recessive baseline,
 /// a tooltip per bar and one automation name that reads out every value. Built once per Show; static after

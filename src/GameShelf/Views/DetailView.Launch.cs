@@ -1,6 +1,6 @@
 using GameShelf.Library;
-using GameShelf.Models;
 using GameShelf.Services;
+using GameShelf.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -9,120 +9,28 @@ using Microsoft.UI.Xaml.Media;
 
 namespace GameShelf.Views;
 
-/// <summary>Launch options and anti-cheat (milestone 10): both come from a look at the game's files when the view opens.</summary>
+/// <summary>Launch options and anti-cheat (milestone 10): the rows <see cref="DetailViewModel"/> describes, drawn here.</summary>
 public sealed partial class DetailView
 {
-    /// <summary>What the last look at the game's folder and this PC found, for the game on show.</summary>
-    private sealed record ScanInfo(
-        string GameId,
-        GameScanResult? Result,
-        List<(PcRequirement Requirement, bool? Met)> Requirements,
-        List<PcChecks.Conflict> Conflicts,
-        List<string> DriverTools);
-
-    private ScanInfo? _scan;
-    private readonly List<(CheckBox Box, LaunchSuggestion Suggestion)> _suggestionBoxes = [];
+    private readonly List<CheckBox> _suggestionBoxes = [];
     private bool _updatingArgs;
-
-    /// <summary>
-    /// Engine and anti-cheat from the install folder (cached on the game until it updates), then the PC checks and
-    /// running programs. Off the UI thread; the result is dropped if another game is on show by then.
-    /// </summary>
-    private async Task ScanAsync(Game game)
-    {
-        ScanInfo info;
-        try
-        {
-            info = await Task.Run(() =>
-            {
-                var result = GameScan.Get(game);
-                IReadOnlyList<AntiCheatKind> kinds = result?.AntiCheats ?? game.AntiCheats ?? [];
-                var requirements = AntiCheat.Requirements(kinds, game.Name, PcChecks.IsWindows11)
-                    .Select(r => (r, PcChecks.Meets(r)))
-                    .ToList();
-                bool any = kinds.Count > 0;
-                return new ScanInfo(game.Id, result, requirements,
-                    any ? PcChecks.RunningConflicts() : [],
-                    any ? PcChecks.BlockedDriverTools() : []);
-            });
-        }
-        catch (Exception e)
-        {
-            ErrorLog.Write(e, "game scan");
-            return;
-        }
-        if (_game is null || _game.Id != game.Id) return;
-        _scan = info;
-        if (info.Result is { } result && GameScan.Store(game, result)) GameEdited?.Invoke(game);
-        UpdateLaunchOptions();
-        UpdateAntiCheat();
-    }
 
     // ---- Launch options ----
 
-    private void UpdateLaunchOptions()
+    /// <summary>One check box per suggested option for the game's engine.</summary>
+    private void DrawSuggestions()
     {
-        if (_game is not { } game) return;
-        var route = LaunchOptions.RouteFor(game);
-        bool supported = route != LaunchOptions.Route.NotSupported;
-
-        bool canPick = game.InstallDir is not null && GameActions.InstallFolder(game) is not null;
-        var startWith = LaunchOptions.ValidOverride(game);
-        StartWithButton.IsEnabled = canPick;
-        StartWithText.Text = startWith is not null ? Path.GetFileName(startWith)
-            : canPick ? "Automatic" : "Automatic (there's no install folder to choose from)";
-        ToolTipService.SetToolTip(StartWithText, startWith);
-        AutoStartWithItem.IsEnabled = game.ExeOverride is not null;
-
-        var engine = _scan?.Result?.Engine ?? game.Engine ?? GameEngine.Unknown;
-        bool scanning = _scan is null && game.Engine is null && game.InstallDir is not null;
-        bool known = engine != GameEngine.Unknown;
-        EngineTagText.Text = known ? LaunchOptions.EngineName(engine) : scanning ? "Checking…" : "Not recognized";
-        EngineTagText.Foreground = Resource<Brush>(known ? "TextFillColorPrimaryBrush" : "TextFillColorSecondaryBrush");
-        EngineGlyph.Visibility = known ? Visibility.Visible : Visibility.Collapsed;
-        AutomationProperties.SetName(EngineTag, "Engine: " + EngineTagText.Text);
-        EngineText.Text = LaunchOptions.Suggestions(engine).Count > 0 ? "Suggested options" : "Add the arguments this game understands below.";
-        _updatingArgs = true;
-        try
+        var vm = ViewModel!;
+        SuggestionList.Children.Clear();
+        _suggestionBoxes.Clear();
+        foreach (var choice in vm.Suggestions)
         {
-            var tokens = LaunchOptions.Split(game.LaunchArgs);
-            SuggestionList.Children.Clear();
-            _suggestionBoxes.Clear();
-            foreach (var suggestion in LaunchOptions.Suggestions(engine))
-            {
-                bool on = LaunchOptions.IndexOf(tokens, suggestion.Tokens) >= 0;
-                if (on) tokens = LaunchOptions.Without(tokens, suggestion);
-                var box = new CheckBox { IsChecked = on, IsEnabled = supported, Content = SuggestionContent(suggestion) };
-                AutomationProperties.SetName(box, $"{suggestion.Label} ({suggestion.Args})");
-                box.Click += OnSuggestionClick;
-                _suggestionBoxes.Add((box, suggestion));
-                SuggestionList.Children.Add(box);
-            }
-            SuggestionList.Visibility = _suggestionBoxes.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-            // Don't rewrite the field under the user's cursor.
-            if (!ReferenceEquals(FocusManager.GetFocusedElement(XamlRoot), ExtraArgsBox))
-                ExtraArgsBox.Text = LaunchOptions.Join(tokens);
-            ExtraArgsBox.IsEnabled = supported;
+            var box = new CheckBox { IsChecked = choice.IsOn, IsEnabled = vm.LaunchSupported, Content = SuggestionContent(choice.Suggestion) };
+            AutomationProperties.SetName(box, choice.Name);
+            box.Click += OnSuggestionClick;
+            _suggestionBoxes.Add(box);
+            SuggestionList.Children.Add(box);
         }
-        finally
-        {
-            _updatingArgs = false;
-        }
-        UpdateStartsAs();
-    }
-
-    /// <summary>The closed Launch options card's line: the engine, then what's changed (arguments, the program it starts with).</summary>
-    private void UpdateLaunchSummary(Game game)
-    {
-        var parts = new List<string>(3);
-        var engine = _scan?.Result?.Engine ?? game.Engine ?? GameEngine.Unknown;
-        if (engine != GameEngine.Unknown) parts.Add(LaunchOptions.EngineName(engine));
-        bool changed = false;
-        if (!string.IsNullOrWhiteSpace(game.LaunchArgs)) { parts.Add(game.LaunchArgs.Trim()); changed = true; }
-        if (LaunchOptions.ValidOverride(game) is { } exe) { parts.Add("starts " + Path.GetFileName(exe)); changed = true; }
-        if (!changed) parts.Add("Default");
-        LaunchSummaryText.Text = string.Join(" · ", parts);
-        ToolTipService.SetToolTip(LaunchSummaryText, LaunchSummaryText.Text);
     }
 
     private static StackPanel SuggestionContent(LaunchSuggestion suggestion)
@@ -135,217 +43,101 @@ public sealed partial class DetailView
             FontFamily = new FontFamily("Cascadia Mono, Consolas"),
             FontSize = 12,
             VerticalAlignment = VerticalAlignment.Center,
-            Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+            Foreground = Resource<Brush>("TextFillColorSecondaryBrush"),
         });
         return panel;
     }
 
-    private void UpdateStartsAs()
-    {
-        if (_game is not { } game) return;
-        var route = LaunchOptions.RouteFor(game);
-        StartsAsText.Text = "Starts as: " + Launcher.Describe(game);
-        string? note = route switch
-        {
-            LaunchOptions.Route.Steam when !string.IsNullOrWhiteSpace(game.LaunchArgs) =>
-                "Steam may ask you to confirm these arguments the first time.",
-            LaunchOptions.Route.NotSupported when game.Source == GameSource.Epic =>
-                "Epic games take arguments only from the Epic Games Launcher: Library, the game's … menu, Manage, Launch options.",
-            LaunchOptions.Route.NotSupported when game.Source == GameSource.Shortcut =>
-                "This shortcut can't pass arguments. Choose the game's program under Start with to use them.",
-            LaunchOptions.Route.NotSupported =>
-                $"{game.SourceLabel} games start through their launcher, which doesn't take arguments from other apps. Choose the game's program under Start with to use them.",
-            _ => null,
-        };
-        LaunchNoteText.Text = note ?? "";
-        LaunchNoteText.Visibility = note is null ? Visibility.Collapsed : Visibility.Visible;
-        ResetLaunchButton.IsEnabled = game.LaunchArgs is not null || game.ExeOverride is not null;
-        UpdateLaunchSummary(game);
-        TestLaunchButton.IsEnabled = route != LaunchOptions.Route.NotSupported;
-    }
-
-    /// <summary>The arguments as the checkboxes and the field show them: ticked suggestions first, then the extras.</summary>
-    private void ComposeArgs()
-    {
-        if (_game is not { } game) return;
-        var tokens = new List<string>();
-        foreach (var (box, suggestion) in _suggestionBoxes)
-            if (box.IsChecked == true) tokens.AddRange(suggestion.Tokens);
-        tokens.AddRange(LaunchOptions.Split(ExtraArgsBox.Text));
-        var joined = LaunchOptions.Join(tokens);
-        game.LaunchArgs = joined.Length == 0 ? null : joined.Length > LaunchOptions.MaxLength ? joined[..LaunchOptions.MaxLength] : joined;
-    }
-
     private void OnSuggestionClick(object sender, RoutedEventArgs e)
     {
-        if (_game is not { } game || sender is not CheckBox clicked) return;
-        var group = _suggestionBoxes.FirstOrDefault(s => s.Box == clicked).Suggestion?.Group;
-        if (clicked.IsChecked == true && group is not null)
-            foreach (var (box, suggestion) in _suggestionBoxes)
-                if (box != clicked && suggestion.Group == group) box.IsChecked = false;
-        ComposeArgs();
-        UpdateStartsAs();
-        GameEdited?.Invoke(game);
+        if (ViewModel is not { } vm || sender is not CheckBox clicked) return;
+        vm.SetSuggestion(_suggestionBoxes.IndexOf(clicked), clicked.IsChecked == true);
+        // Another option of the same group may have been unticked.
+        for (int i = 0; i < _suggestionBoxes.Count && i < vm.Suggestions.Length; i++)
+            _suggestionBoxes[i].IsChecked = vm.Suggestions[i].IsOn;
+    }
+
+    /// <summary>The extra arguments, except while the user is typing in the field (don't rewrite it under the cursor).</summary>
+    private void WriteExtraArgs()
+    {
+        if (ReferenceEquals(FocusManager.GetFocusedElement(XamlRoot), ExtraArgsBox)) return;
+        _updatingArgs = true;
+        try
+        {
+            ExtraArgsBox.Text = ViewModel!.ExtraArgs;
+        }
+        finally
+        {
+            _updatingArgs = false;
+        }
     }
 
     private void OnExtraArgsChanged(object sender, TextChangedEventArgs e)
     {
-        if (_updatingArgs) return;
-        ComposeArgs();
-        UpdateStartsAs(); // saved when the field loses focus, not per keystroke
+        if (!_updatingArgs && ViewModel is not null) ViewModel.ExtraArgs = ExtraArgsBox.Text;
     }
 
-    private void OnExtraArgsLostFocus(object sender, RoutedEventArgs e)
-    {
-        if (_game is { } game) GameEdited?.Invoke(game);
-    }
+    private void OnExtraArgsLostFocus(object sender, RoutedEventArgs e) => ViewModel?.CommitExtraArgs();
 
-    /// <summary>"Start with": another exe, only from inside the game's install folder.</summary>
+    /// <summary>"Start with": another exe, only from inside the game's install folder (checked by the view model).</summary>
     private void OnPickStartWith(object sender, RoutedEventArgs e)
     {
-        if (_game is not { } game || game.InstallDir is null) return;
-        var path = FilePicker.Open(this, $"Choose the program to start {game.Name} with", "Programs (*.exe)|*.exe",
-            GameActions.InstallFolder(game));
-        if (path is null) return;
-        if (!LaunchOptions.IsInside(path, game.InstallDir) || !path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-        {
-            LaunchNoteText.Text = "Choose a program inside the game's own folder.";
-            LaunchNoteText.Visibility = Visibility.Visible;
-            return;
-        }
-        game.ExeOverride = Path.GetFullPath(path);
-        SaveLaunchOptions(game);
-    }
-
-    private void OnAutoStartWith(object sender, RoutedEventArgs e)
-    {
-        if (_game is not { } game) return;
-        game.ExeOverride = null;
-        SaveLaunchOptions(game);
-    }
-
-    private void OnTestLaunchClick(object sender, RoutedEventArgs e)
-    {
-        if (_game is not { } game) return;
-        ComposeArgs();
-        GameEdited?.Invoke(game);
-        Raise(GameAction.TestLaunch);
-    }
-
-    private void OnResetLaunchClick(object sender, RoutedEventArgs e)
-    {
-        if (_game is not { } game) return;
-        game.LaunchArgs = null;
-        game.ExeOverride = null;
-        _updatingArgs = true;
-        ExtraArgsBox.Text = "";
-        _updatingArgs = false;
-        SaveLaunchOptions(game);
-    }
-
-    private void SaveLaunchOptions(Game game)
-    {
-        GameEdited?.Invoke(game);
-        UpdateLaunchOptions();
+        if (ViewModel is not { Game: { InstallDir: not null } game } vm) return;
+        var path = FilePicker.Open(this, $"Choose the program to start {game.Name} with", "Programs (*.exe)|*.exe", vm.InstallFolder);
+        if (path is not null) vm.SetStartWith(path);
     }
 
     // ---- Anti-cheat ----
 
-    private void UpdateAntiCheat()
+    private void DrawAntiCheat()
     {
-        if (_game is not { } game) return;
-        IReadOnlyList<AntiCheatKind> kinds = _scan?.Result?.AntiCheats ?? game.AntiCheats ?? [];
-        if (kinds.Count == 0)
+        var vm = ViewModel!;
+        if (!vm.HasAntiCheat)
         {
-            AntiCheatLabel.Visibility = Visibility.Collapsed;
-            AntiCheatSection.Visibility = Visibility.Collapsed;
             _antiCheat.Set(false);
             return;
         }
 
-        var names = string.Join(", ", kinds.Select(AntiCheat.Name));
-        AntiCheatNames.Text = names;
-        RemindCheck.IsChecked = game.AntiCheatReminder;
         RequirementList.Children.Clear();
         ConflictList.Children.Clear();
-
-        int issues = 0;
-        if (_scan is null)
-        {
+        if (vm.Checking)
             RequirementList.Children.Add(new TextBlock { Text = "Checking this PC…", Style = Resource<Style>("RowDetail") });
-        }
-        else
-        {
-            foreach (var (requirement, met) in _scan.Requirements)
-            {
-                if (met == false) issues++;
-                RequirementList.Children.Add(RequirementRow(requirement, met));
-            }
-            foreach (var conflict in _scan.Conflicts)
-            {
-                issues++;
-                ConflictList.Children.Add(ConflictRow(conflict, names));
-            }
-            foreach (var tool in _scan.DriverTools)
-                ConflictList.Children.Add(StatusRow("", "TextFillColorSecondaryBrush",
-                    $"A driver from {tool} is loaded. Some anti-cheats block it; updating the tool usually helps.", null));
-        }
+        foreach (var requirement in vm.Requirements)
+            RequirementList.Children.Add(RequirementRow(requirement));
+        foreach (var (conflict, text) in vm.Conflicts)
+            ConflictList.Children.Add(ConflictRow(conflict, text));
+        foreach (var note in vm.DriverToolNotes)
+            ConflictList.Children.Add(StatusRow("", "TextFillColorSecondaryBrush", note, null));
         ConflictList.Visibility = ConflictList.Children.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-        AntiCheatGlyph.Glyph = issues == 0 ? "" : "";
-        AntiCheatGlyph.Foreground = Resource<Brush>(issues == 0 ? "SystemFillColorSuccessBrush" : "SystemFillColorCautionBrush");
-        AntiCheatLabelText.Text = issues == 0 ? names : $"{names} · {issues} {(issues == 1 ? "issue" : "issues")}";
-        AutomationProperties.SetName(AntiCheatLabel, AntiCheatLabelText.Text + ". Show details");
-        AntiCheatLabel.Visibility = Visibility.Visible;
-        AntiCheatSection.Visibility = Visibility.Visible;
+        var glyph = vm.AntiCheatOk ? "" : "";
+        var brush = Resource<Brush>(vm.AntiCheatOk ? "SystemFillColorSuccessBrush" : "SystemFillColorCautionBrush");
+        AntiCheatGlyph.Glyph = glyph;
+        AntiCheatGlyph.Foreground = brush;
+        AntiCheatStateGlyph.Glyph = glyph;
+        AntiCheatStateGlyph.Foreground = brush;
 
         // Board 21: the card stays closed when all is well and opens by itself when something needs attention,
         // unless the user already opened or closed it for this game.
-        AntiCheatStateGlyph.Glyph = AntiCheatGlyph.Glyph;
-        AntiCheatStateGlyph.Foreground = AntiCheatGlyph.Foreground;
-        AntiCheatStateGlyph.Visibility = _scan is null ? Visibility.Collapsed : Visibility.Visible;
-        AntiCheatStateText.Text = _scan is null ? "Checking…" : issues == 0 ? "All set" : $"{issues} {(issues == 1 ? "issue" : "issues")}";
-        AutomationProperties.SetName(AntiCheatCard, "Anti-cheat: " + names + ", " + AntiCheatStateText.Text);
-        if (!_antiCheatTouched) _antiCheat.Set(issues > 0);
+        if (!vm.AntiCheatTouched) _antiCheat.Set(vm.AntiCheatIssues > 0);
     }
 
-    private static Grid RequirementRow(PcRequirement requirement, bool? met)
+    private Grid RequirementRow(RequirementInfo requirement)
     {
-        // The tag states the setting's state; its color says whether that's what the anti-cheat needs.
-        string status = (requirement, met) switch
-        {
-            (_, null) => "Couldn't check",
-            (PcRequirement.NoTestSigning or PcRequirement.NoKernelDebugging, true) => "Off",
-            (PcRequirement.NoTestSigning or PcRequirement.NoKernelDebugging, false) => "On",
-            (PcRequirement.Tpm20, true) => "Found",
-            (PcRequirement.Tpm20, false) => "Not found",
-            (PcRequirement.VanguardLoaded, true) => "Running",
-            (PcRequirement.VanguardLoaded, false) => "Restart needed",
-            (_, true) => "On",
-            (_, false) => "Off",
-        };        string name = requirement switch
-        {
-            // The tag says whether it's on, so the row names the setting itself.
-            PcRequirement.NoTestSigning => "Test signing",
-            PcRequirement.NoKernelDebugging => "Kernel debugging",
-            PcRequirement.VanguardLoaded => "Vanguard driver",
-            _ => AntiCheat.RequirementName(requirement),
-        };
-
         var row = new Grid { ColumnSpacing = 10, MinHeight = 28 };
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        row.Children.Add(new TextBlock { Text = name, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap });
-        var tag = StatusTag(status, met);
+        row.Children.Add(new TextBlock { Text = requirement.Name, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap });
+        var tag = StatusTag(requirement.Status, requirement.Met);
         Grid.SetColumn(tag, 1);
         row.Children.Add(tag);
-        AutomationProperties.SetName(row, $"{name}: {status}");
-        if (met == false && AntiCheat.HelpUrl(requirement) is { } help)
+        AutomationProperties.SetName(row, $"{requirement.Name}: {requirement.Status}");
+        if (requirement.HelpUrl is { } help)
         {
             var link = new HyperlinkButton { Content = "How to fix", VerticalAlignment = VerticalAlignment.Center, Padding = new Thickness(4, 2, 4, 2) };
-            link.Click += (_, _) => GameActions.ShellOpen(help);
-            AutomationProperties.SetName(link, $"How to fix {name}");
+            link.Click += (_, _) => ViewModel?.OpenLink(help);
+            AutomationProperties.SetName(link, $"How to fix {requirement.Name}");
             Grid.SetColumn(link, 2);
             row.Children.Add(link);
         }
@@ -387,15 +179,16 @@ public sealed partial class DetailView
             VerticalAlignment = VerticalAlignment.Center,
         };
     }
-    private Grid ConflictRow(PcChecks.Conflict conflict, string antiCheat)
+
+    private Grid ConflictRow(DetailConflict conflict, string text)
     {
-        var row = StatusRow("", "SystemFillColorCautionBrush", $"{conflict.Name} is running. {antiCheat} may refuse to start next to it.", null);
+        var row = StatusRow("", "SystemFillColorCautionBrush", text, null);
         var close = new Button { Content = "Close", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
         AutomationProperties.SetName(close, "Close " + conflict.Name);
         ToolTipService.SetToolTip(close, $"Ask {conflict.Name} to close, like clicking its X");
         close.Click += (_, _) =>
         {
-            PcChecks.AskToClose(conflict);
+            ViewModel?.CloseConflict(conflict);
             close.IsEnabled = false;
             close.Content = "Asked to close";
         };
@@ -405,7 +198,7 @@ public sealed partial class DetailView
     }
 
     /// <summary>An icon, a sentence and optionally a "How to fix" link to Microsoft's help.</summary>
-    private static Grid StatusRow(string glyph, string brushKey, string text, string? helpUrl)
+    private Grid StatusRow(string glyph, string brushKey, string text, string? helpUrl)
     {
         var row = new Grid { ColumnSpacing = 10 };
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -418,7 +211,7 @@ public sealed partial class DetailView
         if (helpUrl is not null)
         {
             var link = new HyperlinkButton { Content = "How to fix", VerticalAlignment = VerticalAlignment.Center };
-            link.Click += (_, _) => GameActions.ShellOpen(helpUrl);
+            link.Click += (_, _) => ViewModel?.OpenLink(helpUrl);
             AutomationProperties.SetName(link, "How to fix: " + text);
             Grid.SetColumn(link, 2);
             row.Children.Add(link);
@@ -431,14 +224,7 @@ public sealed partial class DetailView
     private void OnAntiCheatLabelClick(object sender, RoutedEventArgs e)
     {
         _antiCheat.Set(true);
-        _antiCheatTouched = true;
+        if (ViewModel is not null) ViewModel.AntiCheatTouched = true;
         AntiCheatSection.StartBringIntoView(new BringIntoViewOptions { VerticalAlignmentRatio = 0 });
-    }
-
-    private void OnRemindClick(object sender, RoutedEventArgs e)
-    {
-        if (_game is not { } game) return;
-        game.AntiCheatReminder = RemindCheck.IsChecked == true;
-        GameEdited?.Invoke(game);
     }
 }

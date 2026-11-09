@@ -25,7 +25,7 @@ namespace GameShelf;
 /// The panel: a borderless WinUI window docked to the screen edge, with Acrylic behind it. In Flyout mode it's
 /// created on open and closed for good on close; on the desktop it stays.
 /// </summary>
-public sealed partial class MainWindow : Window, ISettingsActions
+public sealed partial class MainWindow : Window, ISettingsActions, IDetailActions
 {
     // The library lives in App.State, so it survives the flyout window being closed and rebuilt.
     private List<Game> _games { get => App.State.Games; set => App.State.Games = value; }
@@ -59,13 +59,7 @@ public sealed partial class MainWindow : Window, ISettingsActions
         Shelf.PlayRequested += Play;
         Shelf.OpenRequested += ShowDetail;
         Shelf.ActionRequested += OnGameAction;
-        Detail.BackRequested += ShowShelf;
-        Detail.ActionRequested += OnGameAction;
-        Detail.GameEdited += _ =>
-        {
-            SaveLibrary();
-            Shelf.SetData(_games, _sessions, App.Settings); // e.g. a new cover shows on the tile too
-        };
+        Detail.Initialize(this); // its actions: MainWindow.Detail.cs
         Shelf.SettingsRequested += ShowSettings;
         Shelf.ViewSettingsChanged += SaveSettings;
         Shelf.ImportRequested += () => _ = ShowImportAsync();
@@ -507,7 +501,7 @@ public sealed partial class MainWindow : Window, ISettingsActions
 
         var game = FindGame(shown.Id);
         if (game is null || game.Hidden || !App.Settings.IsSourceEnabled(game.Source)) ShowShelf();
-        else Detail.Show(game, _sessions, App.Settings);
+        else Detail.ViewModel!.Show(game, _sessions, App.Settings, App.State.Crashes);
     }
 
     private void RefreshSettingsPage()
@@ -693,7 +687,7 @@ public sealed partial class MainWindow : Window, ISettingsActions
 
     private void ShowDetail(Game game)
     {
-        Detail.Show(game, _sessions, App.Settings);
+        Detail.ViewModel!.Show(game, _sessions, App.Settings, App.State.Crashes);
         ShowPage(Detail);
         Detail.UpdateLayout();
         Detail.FocusPlay();

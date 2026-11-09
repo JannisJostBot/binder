@@ -41,11 +41,13 @@
                      lower edge. -->
                 <v:BannerLogo x:Name="Logo" MaxLogoHeight="72" MaxWidthShare="0.6" Margin="138,0,20,12" />
                 <Border Style="{StaticResource OverlaySurface}" HorizontalAlignment="Left">
-                    <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Click="OnBackClick"
+                    <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Command="{x:Bind ViewModel.BackCommand}"
                             ToolTipService.ToolTip="Back to all games (Esc)" AutomationProperties.Name="Back to all games" />
                 </Border>
                 <Border Style="{StaticResource OverlaySurface}" HorizontalAlignment="Right">
-                    <Button x:Name="FavoriteButton" Style="{StaticResource IconButton}" Click="OnFavoriteClick">
+                    <Button x:Name="FavoriteButton" Style="{StaticResource IconButton}" Command="{x:Bind ViewModel.FavoriteCommand}"
+                            ToolTipService.ToolTip="{x:Bind ViewModel.FavoriteLabel, Mode=OneWay}"
+                            AutomationProperties.Name="{x:Bind ViewModel.FavoriteLabel, Mode=OneWay}">
                         <FontIcon x:Name="FavoriteGlyph" FontSize="16" />
                     </Button>
                 </Border>
@@ -63,14 +65,16 @@
                 </Border>
                 <StackPanel Grid.Column="1" Margin="0,0,0,4" VerticalAlignment="Bottom" Spacing="4">
                     <TextBlock x:Name="TitleText" Style="{StaticResource TitleTextBlockStyle}" FontSize="24"
+                               Text="{x:Bind ViewModel.Title, Mode=OneWay}" ToolTipService.ToolTip="{x:Bind ViewModel.Title, Mode=OneWay}"
                                TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
-                    <TextBlock x:Name="SubtitleText" Style="{StaticResource BodyTextBlockStyle}"
+                    <TextBlock x:Name="SubtitleText" Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Subtitle, Mode=OneWay}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <HyperlinkButton x:Name="AntiCheatLabel" Padding="0" Margin="0,-2,0,0" Visibility="Collapsed"
+                    <HyperlinkButton x:Name="AntiCheatLabel" Padding="0" Margin="0,-2,0,0" Visibility="{x:Bind ViewModel.HasAntiCheat, Mode=OneWay}"
+                                     AutomationProperties.Name="{x:Bind ViewModel.AntiCheatLabelName, Mode=OneWay}"
                                      Click="OnAntiCheatLabelClick" ToolTipService.ToolTip="Show anti-cheat details">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <FontIcon x:Name="AntiCheatGlyph" FontSize="12" />
-                            <TextBlock x:Name="AntiCheatLabelText" Style="{StaticResource CaptionTextBlockStyle}" />
+                            <TextBlock x:Name="AntiCheatLabelText" Style="{StaticResource CaptionTextBlockStyle}" Text="{x:Bind ViewModel.AntiCheatLabel, Mode=OneWay}" />
                         </StackPanel>
                     </HyperlinkButton>
                 </StackPanel>
@@ -84,14 +88,16 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Button x:Name="PlayButton" Style="{StaticResource AccentButtonStyle}" Height="44" FontSize="16"
-                        HorizontalAlignment="Stretch" Click="OnPlayClick">
+                        HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.PlayCommand}"
+                        AutomationProperties.Name="{x:Bind ViewModel.PlayName, Mode=OneWay}">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <FontIcon Glyph="&#xF5B0;" FontSize="14" />
                         <TextBlock Text="Play" />
                     </StackPanel>
                 </Button>
-                <Button x:Name="FolderButton" Grid.Column="1" Width="44" Height="44" Padding="0" Click="OnFolderClick"
-                        ToolTipService.ToolTip="Open install folder" AutomationProperties.Name="Open install folder">
+                <Button x:Name="FolderButton" Grid.Column="1" Width="44" Height="44" Padding="0" Command="{x:Bind ViewModel.FolderCommand}"
+                        IsEnabled="{x:Bind ViewModel.HasFolder, Mode=OneWay}" ToolTipService.ToolTip="{x:Bind ViewModel.FolderToolTip, Mode=OneWay}"
+                        AutomationProperties.Name="Open install folder">
                     <FontIcon Glyph="&#xE838;" FontSize="16" />
                 </Button>
                 <Button x:Name="MoreButton" Grid.Column="2" Width="44" Height="44" Padding="0" Click="OnMoreClick"
@@ -110,19 +116,19 @@
                 <Border Style="{StaticResource StatTile}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource StatLabel}" Text="Playtime" />
-                        <TextBlock x:Name="PlaytimeText" Style="{StaticResource StatValue}" />
+                        <TextBlock x:Name="PlaytimeText" Style="{StaticResource StatValue}" Text="{x:Bind ViewModel.PlaytimeText, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="1" Style="{StaticResource StatTile}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource StatLabel}" Text="Last played" />
-                        <TextBlock x:Name="LastPlayedText" Style="{StaticResource StatValue}" />
+                        <TextBlock x:Name="LastPlayedText" Style="{StaticResource StatValue}" Text="{x:Bind ViewModel.LastPlayedText, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
                 <Border Grid.Column="2" Style="{StaticResource StatTile}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource StatLabel}" Text="Size on disk" />
-                        <TextBlock x:Name="SizeText" Style="{StaticResource StatValue}" />
+                        <TextBlock x:Name="SizeText" Style="{StaticResource StatValue}" Text="{x:Bind ViewModel.SizeText, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -138,7 +144,7 @@
             <Border Style="{StaticResource Card}">
                 <StackPanel>
                     <!-- Playtime chart: hours per week (8 weeks) or per month (12 months), from our own sessions -->
-                    <StackPanel x:Name="PlaytimeSection" Visibility="Collapsed">
+                    <StackPanel x:Name="PlaytimeSection" Visibility="{x:Bind ViewModel.HasSessions, Mode=OneWay}">
                         <StackPanel Padding="0,14,0,10" Spacing="12">
                             <Grid ColumnSpacing="12">
                                 <Grid.ColumnDefinitions>
@@ -146,8 +152,8 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock x:Name="PeriodTotalText" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="18" />
-                                    <TextBlock x:Name="PeriodDetailText" Style="{StaticResource RowDetail}" />
+                                    <TextBlock x:Name="PeriodTotalText" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="18" Text="{x:Bind ViewModel.PeriodTotal, Mode=OneWay}" />
+                                    <TextBlock x:Name="PeriodDetailText" Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.PeriodDetail, Mode=OneWay}" />
                                 </StackPanel>
                                 <SelectorBar x:Name="PeriodChoice" Grid.Column="1" VerticalAlignment="Center"
                                              AutomationProperties.Name="Chart period" SelectionChanged="OnPeriodChanged">
@@ -161,13 +167,14 @@
                     </StackPanel>
                     <!-- Recent sessions (tracked by the watcher) -->
                     <StackPanel x:Name="SessionsList" AutomationProperties.Name="Recent sessions" Padding="0,4" />
-                    <TextBlock x:Name="NoSessionsText" Margin="0,14" TextWrapping="Wrap" Style="{StaticResource BodyTextBlockStyle}"
+                    <TextBlock x:Name="NoSessionsText" Margin="0,14" Visibility="{x:Bind ViewModel.NoSessions, Mode=OneWay}" TextWrapping="Wrap" Style="{StaticResource BodyTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Text="No sessions yet. Playtime is tracked when you start the game from the shelf." />
                 </StackPanel>
             </Border>
             <TextBlock x:Name="CrashPatternText" Margin="24,6,20,0" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap"
-                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" Visibility="Collapsed" />
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind ViewModel.CrashPattern, Mode=OneWay}"
+                       Visibility="{x:Bind ViewModel.HasCrashPattern, Mode=OneWay}" />
 
             <!-- Per-game settings -->
             <TextBlock Style="{StaticResource GroupLabel}" Text="This game" />
@@ -181,7 +188,8 @@
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE916;" />
                     <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Hide delay" />
                     <ComboBox x:Name="HideDelayBox" Grid.Column="2" VerticalAlignment="Center" MinWidth="150"
-                              AutomationProperties.Name="Hide delay" SelectionChanged="OnHideDelayChanged" />
+                              AutomationProperties.Name="Hide delay" ItemsSource="{x:Bind ViewModel.HideDelayChoices, Mode=OneWay}"
+                              SelectedItem="{x:Bind ViewModel.SelectedHideDelay, Mode=TwoWay}" />
                 </Grid>
             </Border>
             <Border Style="{StaticResource SettingCard}">
@@ -194,7 +202,8 @@
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7FC;" />
                     <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Game mode" />
                     <ComboBox x:Name="GameModeBox" Grid.Column="2" VerticalAlignment="Center" MinWidth="150"
-                              AutomationProperties.Name="Game mode for this game" SelectionChanged="OnGameModeChanged" />
+                              AutomationProperties.Name="Game mode for this game" ItemsSource="{x:Bind ViewModel.GameModeChoices, Mode=OneWay}"
+                              SelectedItem="{x:Bind ViewModel.SelectedGameMode, Mode=TwoWay}" />
                 </Grid>
             </Border>
             <Border Style="{StaticResource SettingCard}">
@@ -207,7 +216,7 @@
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xEB9F;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
                         <TextBlock Style="{StaticResource RowTitle}" Text="Cover image" />
-                        <TextBlock x:Name="CoverText" Style="{StaticResource RowDetail}" />
+                        <TextBlock x:Name="CoverText" Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.CoverText, Mode=OneWay}" />
                     </StackPanel>
                     <DropDownButton x:Name="CoverButton" Grid.Column="2" Content="Change" VerticalAlignment="Center"
                                     AutomationProperties.Name="Change cover image">
@@ -216,7 +225,8 @@
                                 <MenuFlyoutItem Text="Choose image…" Click="OnPickCover">
                                     <MenuFlyoutItem.Icon><FontIcon Glyph="&#xEB9F;" /></MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
-                                <MenuFlyoutItem x:Name="DefaultCoverItem" Text="Use default" Click="OnDefaultCover">
+                                <MenuFlyoutItem x:Name="DefaultCoverItem" Text="Use default" Command="{x:Bind ViewModel.DefaultCoverCommand}"
+                                                IsEnabled="{x:Bind ViewModel.HasCustomCover, Mode=OneWay}">
                                     <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE72C;" /></MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
                             </MenuFlyout>
@@ -236,7 +246,8 @@
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE9E9;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
                         <TextBlock Style="{StaticResource RowTitle}" Text="Launch options" />
-                        <TextBlock x:Name="LaunchSummaryText" Style="{StaticResource RowDetail}" />
+                        <TextBlock x:Name="LaunchSummaryText" Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.LaunchSummary, Mode=OneWay}"
+                                   ToolTipService.ToolTip="{x:Bind ViewModel.LaunchSummary, Mode=OneWay}" />
                     </StackPanel>
                     <Button x:Name="LaunchChevron" Grid.Column="2" Style="{StaticResource DisclosureButton}" />
                 </Grid>
@@ -248,29 +259,33 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="EngineText" Style="{StaticResource RowDetail}" VerticalAlignment="Center" Margin="0" />
+                        <TextBlock x:Name="EngineText" Style="{StaticResource RowDetail}" VerticalAlignment="Center" Margin="0" Text="{x:Bind ViewModel.EngineText, Mode=OneWay}" />
                         <Border x:Name="EngineTag" Grid.Column="1" Padding="8,3,9,4" CornerRadius="10" BorderThickness="1"
+                                AutomationProperties.Name="{x:Bind ViewModel.EngineTagName, Mode=OneWay}"
                                 VerticalAlignment="Center" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 Background="{ThemeResource SystemFillColorNeutralBackgroundBrush}">
                             <StackPanel Orientation="Horizontal" Spacing="5">
-                                <FontIcon x:Name="EngineGlyph" Glyph="&#xE7FC;" FontSize="11" VerticalAlignment="Center"
+                                <FontIcon x:Name="EngineGlyph" Glyph="&#xE7FC;" FontSize="11" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.EngineKnown, Mode=OneWay}"
                                           Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                                <TextBlock x:Name="EngineTagText" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
+                                <TextBlock x:Name="EngineTagText" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" Text="{x:Bind ViewModel.EngineTag, Mode=OneWay}" />
                             </StackPanel>
                         </Border>
                     </Grid>
-                    <StackPanel x:Name="SuggestionList" AutomationProperties.Name="Suggested launch options" />
+                    <StackPanel x:Name="SuggestionList" AutomationProperties.Name="Suggested launch options" Visibility="{x:Bind ViewModel.HasSuggestions, Mode=OneWay}" />
                     <TextBox x:Name="ExtraArgsBox" Header="Extra arguments" PlaceholderText="For example -windowed"
                              MaxLength="1024" TextChanged="OnExtraArgsChanged" LostFocus="OnExtraArgsLostFocus"
-                             AutomationProperties.Name="Extra arguments" IsSpellCheckEnabled="False" />
-                    <TextBlock x:Name="StartsAsText" Style="{StaticResource RowDetail}" IsTextSelectionEnabled="True"
+                             AutomationProperties.Name="Extra arguments" IsSpellCheckEnabled="False" IsEnabled="{x:Bind ViewModel.LaunchSupported, Mode=OneWay}" />
+                    <TextBlock x:Name="StartsAsText" Style="{StaticResource RowDetail}" IsTextSelectionEnabled="True" Text="{x:Bind ViewModel.StartsAs, Mode=OneWay}"
                                TextWrapping="Wrap" TextTrimming="None" />
-                    <TextBlock x:Name="LaunchNoteText" Style="{StaticResource RowDetail}" Visibility="Collapsed"
+                    <TextBlock x:Name="LaunchNoteText" Style="{StaticResource RowDetail}" Visibility="{x:Bind ViewModel.HasLaunchNote, Mode=OneWay}"
+                               Text="{x:Bind ViewModel.LaunchNote, Mode=OneWay}"
                                TextWrapping="Wrap" TextTrimming="None" />
                     <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,4">
-                        <Button x:Name="TestLaunchButton" Content="Test launch" Click="OnTestLaunchClick"
+                        <Button x:Name="TestLaunchButton" Content="Test launch" Command="{x:Bind ViewModel.TestLaunchCommand}"
+                                IsEnabled="{x:Bind ViewModel.CanTestLaunch, Mode=OneWay}"
                                 ToolTipService.ToolTip="Start the game with these options and keep Game Shelf open" />
-                        <Button x:Name="ResetLaunchButton" Content="Reset" Click="OnResetLaunchClick"
+                        <Button x:Name="ResetLaunchButton" Content="Reset" Command="{x:Bind ViewModel.ResetLaunchCommand}"
+                                IsEnabled="{x:Bind ViewModel.CanResetLaunch, Mode=OneWay}"
                                 ToolTipService.ToolTip="Start the game the normal way again" />
                     </StackPanel>
                     <Border Style="{StaticResource RowDivider}" Margin="0,0,-16,0" />
@@ -281,16 +296,18 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Style="{StaticResource RowText}">
                             <TextBlock Style="{StaticResource RowTitle}" Text="Start with" />
-                            <TextBlock x:Name="StartWithText" Style="{StaticResource RowDetail}" />
+                            <TextBlock x:Name="StartWithText" Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.StartWithText, Mode=OneWay}"
+                                       ToolTipService.ToolTip="{x:Bind ViewModel.StartWithToolTip, Mode=OneWay}" />
                         </StackPanel>
-                        <DropDownButton x:Name="StartWithButton" Grid.Column="1" Content="Change" VerticalAlignment="Center"
+                        <DropDownButton x:Name="StartWithButton" Grid.Column="1" Content="Change" VerticalAlignment="Center" IsEnabled="{x:Bind ViewModel.CanPickStartWith, Mode=OneWay}"
                                         AutomationProperties.Name="Change the program to start with">
                             <DropDownButton.Flyout>
                                 <MenuFlyout Placement="BottomEdgeAlignedRight">
                                     <MenuFlyoutItem Text="Choose program…" Click="OnPickStartWith">
                                         <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8E5;" /></MenuFlyoutItem.Icon>
                                     </MenuFlyoutItem>
-                                    <MenuFlyoutItem x:Name="AutoStartWithItem" Text="Automatic" Click="OnAutoStartWith">
+                                    <MenuFlyoutItem x:Name="AutoStartWithItem" Text="Automatic" Command="{x:Bind ViewModel.AutoStartWithCommand}"
+                                                    IsEnabled="{x:Bind ViewModel.HasStartWith, Mode=OneWay}">
                                         <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE72C;" /></MenuFlyoutItem.Icon>
                                     </MenuFlyoutItem>
                                 </MenuFlyout>
@@ -305,7 +322,8 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Style="{StaticResource RowText}">
                             <TextBlock Style="{StaticResource RowTitle}" Text="Process to watch" />
-                            <TextBlock x:Name="ProcessText" Style="{StaticResource RowDetail}" />
+                            <TextBlock x:Name="ProcessText" Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.ProcessText, Mode=OneWay}"
+                                       ToolTipService.ToolTip="{x:Bind ViewModel.ProcessToolTip, Mode=OneWay}" />
                         </StackPanel>
                         <DropDownButton x:Name="ProcessButton" Grid.Column="1" Content="Change" VerticalAlignment="Center"
                                         AutomationProperties.Name="Change process to watch">
@@ -314,7 +332,8 @@
                                     <MenuFlyoutItem Text="Choose program…" Click="OnPickProcess">
                                         <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8E5;" /></MenuFlyoutItem.Icon>
                                     </MenuFlyoutItem>
-                                    <MenuFlyoutItem x:Name="AutoProcessItem" Text="Use auto-detect" Click="OnAutoProcess">
+                                    <MenuFlyoutItem x:Name="AutoProcessItem" Text="Use auto-detect" Command="{x:Bind ViewModel.AutoProcessCommand}"
+                                                    IsEnabled="{x:Bind ViewModel.HasCustomProcess, Mode=OneWay}">
                                         <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE72C;" /></MenuFlyoutItem.Icon>
                                     </MenuFlyoutItem>
                                 </MenuFlyout>
@@ -326,8 +345,8 @@
 
             <!-- Anti-cheat: what the game uses, what it needs from this PC, and programs it may refuse to run next to.
                  Closed when all is well, open when something needs attention. -->
-            <StackPanel x:Name="AntiCheatSection" Visibility="Collapsed">
-                <Border x:Name="AntiCheatCard" Style="{StaticResource SettingCard}">
+            <StackPanel x:Name="AntiCheatSection" Visibility="{x:Bind ViewModel.HasAntiCheat, Mode=OneWay}">
+                <Border x:Name="AntiCheatCard" Style="{StaticResource SettingCard}" AutomationProperties.Name="{x:Bind ViewModel.AntiCheatCardName, Mode=OneWay}">
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -338,11 +357,11 @@
                         <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xEA18;" />
                         <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
                             <TextBlock Style="{StaticResource RowTitle}" Text="Anti-cheat" />
-                            <TextBlock x:Name="AntiCheatNames" Style="{StaticResource RowDetail}" />
+                            <TextBlock x:Name="AntiCheatNames" Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.AntiCheatNames, Mode=OneWay}" />
                         </StackPanel>
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <FontIcon x:Name="AntiCheatStateGlyph" FontSize="14" VerticalAlignment="Center" />
-                            <TextBlock x:Name="AntiCheatStateText" VerticalAlignment="Center" Style="{StaticResource BodyTextBlockStyle}" />
+                            <FontIcon x:Name="AntiCheatStateGlyph" FontSize="14" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.Checked, Mode=OneWay}" />
+                            <TextBlock x:Name="AntiCheatStateText" VerticalAlignment="Center" Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.AntiCheatState, Mode=OneWay}" />
                         </StackPanel>
                         <Button x:Name="AntiCheatChevron" Grid.Column="3" Style="{StaticResource DisclosureButton}" />
                     </Grid>
@@ -351,7 +370,7 @@
                     <StackPanel Spacing="10">
                         <StackPanel x:Name="RequirementList" Spacing="6" AutomationProperties.Name="Requirements" />
                         <StackPanel x:Name="ConflictList" Spacing="6" AutomationProperties.Name="Programs that may conflict" />
-                        <CheckBox x:Name="RemindCheck" Content="Remind me before launching" Click="OnRemindClick"
+                        <CheckBox x:Name="RemindCheck" Content="Remind me before launching" IsChecked="{x:Bind ViewModel.AntiCheatReminder, Mode=TwoWay}"
                                   ToolTipService.ToolTip="When you press Play, offer to close programs this anti-cheat may refuse to run next to" />
                         <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" TextTrimming="None"
                                    Text="Requirements can change with game updates. Game Shelf only checks these settings and never changes them." />
@@ -362,14 +381,15 @@
             <!-- Links -->
             <StackPanel Orientation="Horizontal" Margin="8,16,20,0">
                 <!-- Opens the store in the browser, so it carries the "opens outside the app" glyph. -->
-                <HyperlinkButton x:Name="StoreLink" Click="OnStoreClick" AutomationProperties.Name="Store page"
+                <HyperlinkButton x:Name="StoreLink" Command="{x:Bind ViewModel.StoreCommand}" AutomationProperties.Name="Store page"
+                                 Visibility="{x:Bind ViewModel.HasStorePage, Mode=OneWay}"
                                  ToolTipService.ToolTip="Opens in your browser">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <TextBlock Text="Store page" />
                         <FontIcon Glyph="&#xE8A7;" FontSize="12" VerticalAlignment="Center" />
                     </StackPanel>
                 </HyperlinkButton>
-                <HyperlinkButton Content="Hide from shelf" Click="OnHideClick" />
+                <HyperlinkButton Content="Hide from shelf" Command="{x:Bind ViewModel.HideCommand}" />
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

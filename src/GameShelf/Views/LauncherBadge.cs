@@ -95,18 +95,7 @@ public sealed partial class LauncherBadge : Grid
     }
 
     /// <summary>The accessible launcher name.</summary>
-    public static string Label(GameSource source) => source switch
-    {
-        GameSource.Steam => "Steam",
-        GameSource.Epic => "Epic Games",
-        GameSource.Gog => "GOG",
-        GameSource.Ea => "EA app",
-        GameSource.Ubisoft => "Ubisoft Connect",
-        GameSource.Xbox => "Xbox app",
-        GameSource.Rockstar => "Rockstar Games Launcher",
-        GameSource.Hytale => "Hytale Launcher",
-        _ => source.ToString(),
-    };
+    public static string Label(GameSource source) => Format.LauncherName(source);
 
     /// <summary>A Grid isn't in the UI Automation tree by itself; this exposes the badge as an image named after the launcher.</summary>
     protected override AutomationPeer OnCreateAutomationPeer() => new BadgePeer(this);

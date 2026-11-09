@@ -8,8 +8,6 @@ using Windows.Foundation;
 
 namespace GameShelf.Views;
 
-public enum GameAction { Play, Details, OpenFolder, StorePage, VerifyFiles, Uninstall, ToggleFavorite, Hide, TestLaunch, FreeUpSpace }
-
 /// <summary>
 /// The per-game menu, on a cover's right-click (or Menu key / Shift+F10) and the detail view's "…" button: a
 /// WinUI menu flyout, as in Windows 11's own apps, built only when it opens.

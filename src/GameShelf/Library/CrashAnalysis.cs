@@ -39,6 +39,10 @@ public static class CrashAnalysis
     public static bool NeedsCheck(Session s) =>
         s.ExitCode is { } code && (IsFailureCode(code) || (code != 0 && s.End - s.Start < StartWindow)) || s.CrashReporter;
 
+    /// <summary>The check's record for a session (same game and start), or null when it wasn't checked.</summary>
+    public static CrashRecord? For(IReadOnlyList<CrashRecord> records, Session s) =>
+        records.FirstOrDefault(r => r.GameId == s.GameId && r.Start.UtcTicks == s.Start.UtcTicks);
+
     /// <summary>Classifies one session from its exit code and the events in its time window.</summary>
     public static CrashRecord Analyze(Session s, string? installFolder, IReadOnlyList<WindowsEvent> events)
     {
