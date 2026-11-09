@@ -25,7 +25,7 @@ namespace GameShelf;
 /// The panel: a borderless WinUI window docked to the screen edge, with Acrylic behind it. In Flyout mode it's
 /// created on open and closed for good on close; on the desktop it stays.
 /// </summary>
-public sealed partial class MainWindow : Window, ISettingsActions, IDetailActions, IGameModeActions, IFreeSpaceActions
+public sealed partial class MainWindow : Window, ISettingsActions, IDetailActions, IGameModeActions, IFreeSpaceActions, ISetupActions
 {
     // The library lives in App.State, so it survives the flyout window being closed and rebuilt.
     private List<Game> _games { get => App.State.Games; set => App.State.Games = value; }
@@ -73,14 +73,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         FreeSpacePage.Initialize(this); // its actions: MainWindow.FreeSpace.cs
         ImportPage.Cancelled += ShowSettings;
         ImportPage.ImportRequested += ImportShortcuts;
-        SetupPage.Skipped += () => FinishSetup(null);
-        SetupPage.Finished += choices => FinishSetup(choices);
-        SetupPage.ShortcutsNeeded += () => _ = LoadSetupShortcutsAsync();
-        SetupPage.ImportRequested += picked =>
-        {
-            ShowImportResult(StoreShortcuts(picked));
-            SetupPage.ImportDone();
-        };
+        SetupPage.Initialize(this); // its actions: MainWindow.Setup.cs
         Shelf.PinRequested += () =>
         {
             App.Pinned = !App.Pinned;
@@ -494,7 +487,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     {
         Shelf.SetData(_games, _sessions, App.Settings);
         RefreshSettingsPage();
-        if (SetupPage.Visibility == Visibility.Visible) SetupPage.UpdateLibrary(_games);
+        if (SetupPage.Visibility == Visibility.Visible) SetupPage.ViewModel!.UpdateLibrary(_games);
         if (Detail.Visibility != Visibility.Visible || Detail.Game is not { } shown) return;
 
         var game = FindGame(shown.Id);
@@ -631,7 +624,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     private void ShowSetup()
     {
         _sourcesBeforeSetup = LibraryScanner.StoreSources.Where(App.Settings.IsSourceEnabled).ToHashSet();
-        SetupPage.Start(App.Settings, _games, Autostart.IsEnabled());
+        SetupPage.ViewModel!.Start(App.Settings, _games, Autostart.IsEnabled());
         ShowPage(SetupPage);
         _ = CountLaunchersForSetupAsync();
     }
@@ -644,13 +637,13 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         Dictionary<GameSource, int> counts;
         try { counts = await Task.Run(LibraryScanner.CountAll); }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return; }
-        if (!IsClosing && SetupPage.Visibility == Visibility.Visible) SetupPage.SetFoundCounts(counts);
+        if (!IsClosing && SetupPage.Visibility == Visibility.Visible) SetupPage.ViewModel!.SetFoundCounts(counts);
     }
 
     private async Task LoadSetupShortcutsAsync()
     {
         var found = await Task.Run(ShortcutFile.ScanDesktops);
-        SetupPage.SetShortcuts(found, _games);
+        SetupPage.ViewModel!.SetShortcuts(found, _games);
     }
 
     /// <summary>Applies the setup's answers. <paramref name="choices"/> is null for "Skip setup" (keep the defaults).</summary>

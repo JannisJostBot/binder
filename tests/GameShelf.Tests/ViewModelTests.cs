@@ -405,4 +405,72 @@ static partial class Tests
         vm.BackCommand.Execute(null);
         Check(spy.Calls.Skip(1).SequenceEqual(["allow", "allow", "remove", "restore", "log", "back"]), "game mode: buttons reach the owner");
     }
+
+    sealed class SetupActionsSpy : ISetupActions
+    {
+        public readonly List<string> Calls = [];
+        public SetupChoices? Finished;
+        public IReadOnlyList<GameSource> Launchers { get; } = [GameSource.Steam, GameSource.Epic, GameSource.Gog];
+        public void Skip() => Calls.Add("skip");
+        public void LoadShortcuts() => Calls.Add("load");
+        public void Import(IReadOnlyList<ShortcutFile> picked) => Calls.Add($"import {picked.Count}");
+        public void Finish(SetupChoices choices) { Calls.Add("finish"); Finished = choices; }
+    }
+
+    static void SetupViewModelTests()
+    {
+        var spy = new SetupActionsSpy();
+        var vm = new SetupViewModel(spy);
+        var settings = new Settings { GogEnabled = false };
+        var games = new List<Game>
+        {
+            new() { Id = "1", Name = "One", Source = GameSource.Epic },
+            new() { Id = "2", Name = "Two", Source = GameSource.Epic },
+            new() { Id = "3", Name = "Three", Source = GameSource.Manual },
+        };
+        var notified = new List<string?>();
+        vm.PropertyChanged += (_, e) => notified.Add(e.PropertyName);
+
+        vm.Start(settings, games, startWithWindows: true);
+        Check(spy.Calls.Count == 0 && notified.Contains(""), "setup: starting refreshes every binding and asks nothing");
+        Check(vm.IsStep1 && !vm.IsStep2 && !vm.IsStep3, "setup: starts at step 1");
+        Check(vm.Launchers.Select(l => l.Source).SequenceEqual([GameSource.Epic, GameSource.Steam, GameSource.Gog]) &&
+              vm.Launchers[0].Count == "2 games" && vm.Launchers[1].Count == "None found" && !vm.Launchers[2].Enabled,
+            "setup: launchers with games first, unticked as in the settings");
+        Check(vm.FoundTitle == "We found 2 games" && !vm.NothingFound, "setup: manual games aren't counted");
+        Check(vm.Flyout == true && vm.Desktop == false && vm.StartWithWindows && vm.HotkeyText.Length > 0, "setup: step 3 from the settings");
+
+        vm.Launchers[0].Enabled = false; // unticked before the counts come in
+        vm.SetFoundCounts(new Dictionary<GameSource, int> { [GameSource.Gog] = 1, [GameSource.Epic] = 2 });
+        Check(vm.FoundTitle == "We found 3 games" && vm.Launchers[0].Source == GameSource.Epic && !vm.Launchers[0].Enabled &&
+              vm.Launchers[1].Source == GameSource.Gog && vm.Launchers[1].Count == "1 game", "setup: counts come in, ticks kept");
+
+        vm.NextCommand.Execute(null);
+        Check(!settings.EpicEnabled && vm.IsStep2 && spy.Calls is ["load"], "setup: Next applies the ticks and loads shortcuts");
+        Check(vm.MoveText == "Move" && !vm.CanMove && vm.SelectionText == "Nothing selected", "setup: nothing picked yet");
+        var picked = new List<ShortcutFile> { new("a.lnk", "A", @"C:\Games\A\a.exe", null), new("b.lnk", "B", @"C:\Games\B\b.exe", null) };
+        vm.SetShortcuts(picked, games);
+        vm.SetSelection(picked);
+        Check(vm.Shortcuts.Length == 2 && vm.MoveText == "Move 2" && vm.CanMove && vm.SelectionText == "2 selected", "setup: picked shortcuts");
+        vm.MoveCommand.Execute(null);
+        vm.ImportDone();
+        Check(vm.IsStep3 && spy.Calls[^1] == "import 2", "setup: moving goes on to step 3");
+        vm.BackToStep2Command.Execute(null);
+        vm.BackToStep1Command.Execute(null);
+        vm.NextCommand.Execute(null);
+        Check(spy.Calls.Count(c => c == "load") == 1, "setup: shortcuts are loaded once per run");
+        vm.NotNowCommand.Execute(null);
+
+        vm.Flyout = false;
+        vm.Desktop = true;
+        vm.StartWithWindows = false;
+        vm.DoneCommand.Execute(null);
+        Check(spy.Finished == new SetupChoices(DisplayMode.Desktop, false), "setup: Done hands over the choices");
+        vm.SkipCommand.Execute(null);
+        Check(spy.Calls[^1] == "skip", "setup: Skip reaches the owner");
+
+        vm.Start(new Settings(), [], startWithWindows: false);
+        Check(vm.IsStep1 && vm.FoundTitle == "Let's set up your shelf" && vm.NothingFound && vm.SelectionText == "Nothing selected",
+            "setup: a new run starts over, nothing found");
+    }
 }

@@ -19,7 +19,7 @@
 
     <Grid Padding="28">
         <!-- Step 1: launchers found -->
-        <Grid x:Name="Step1" RowSpacing="18">
+        <Grid x:Name="Step1" RowSpacing="18" Visibility="{x:Bind ViewModel.IsStep1, Mode=OneWay}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -27,27 +27,27 @@
             </Grid.RowDefinitions>
             <StackPanel>
                 <TextBlock Style="{StaticResource StepLabel}" Text="Step 1 of 3" />
-                <TextBlock x:Name="FoundTitle" Style="{StaticResource StepTitle}" />
+                <TextBlock Style="{StaticResource StepTitle}" Text="{x:Bind ViewModel.FoundTitle, Mode=OneWay}" />
                 <TextBlock Style="{StaticResource StepText}"
                            Text="Untick any launcher you don't want on the shelf. You can change this later in Settings." />
             </StackPanel>
             <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0" VerticalAlignment="Top">
                 <StackPanel>
                     <StackPanel x:Name="LauncherList" Margin="0,6" AutomationProperties.Name="Launchers" />
-                    <TextBlock x:Name="NothingFoundText" Margin="0,14" TextWrapping="Wrap" Visibility="Collapsed"
+                    <TextBlock Margin="0,14" TextWrapping="Wrap" Visibility="{x:Bind ViewModel.NothingFound, Mode=OneWay}"
                                Style="{StaticResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Text="No store games found yet. You can import desktop shortcuts next, or add games later." />
                 </StackPanel>
             </Border>
             <Grid Grid.Row="2">
-                <Button HorizontalAlignment="Left" Content="Skip setup" Click="OnSkipClick" />
+                <Button HorizontalAlignment="Left" Content="Skip setup" Command="{x:Bind ViewModel.SkipCommand}" />
                 <Button Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Right" Padding="22,6" Content="Next"
-                        Click="OnStep1Next" AutomationProperties.Name="Next" />
+                        Command="{x:Bind ViewModel.NextCommand}" AutomationProperties.Name="Next" />
             </Grid>
         </Grid>
 
         <!-- Step 2: tidy the desktop -->
-        <Grid x:Name="Step2" Visibility="Collapsed" RowSpacing="14">
+        <Grid x:Name="Step2" RowSpacing="14" Visibility="{x:Bind ViewModel.IsStep2, Mode=OneWay}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -61,19 +61,20 @@
                            Text="Tick the game shortcuts to move onto the shelf. They're kept in a safe folder, never deleted, and you can put them back anytime." />
             </StackPanel>
             <v:ImportView x:Name="Picker" Grid.Row="1" />
-            <TextBlock x:Name="SelectionText" Grid.Row="2" Style="{StaticResource CaptionTextBlockStyle}"
+            <TextBlock Grid.Row="2" Style="{StaticResource CaptionTextBlockStyle}" Text="{x:Bind ViewModel.SelectionText, Mode=OneWay}"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             <Grid Grid.Row="3">
-                <Button HorizontalAlignment="Left" Content="Back" Click="OnBackToStep1" />
+                <Button HorizontalAlignment="Left" Content="Back" Command="{x:Bind ViewModel.BackToStep1Command}" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                    <Button Content="Not now" Click="OnStep2Skip" />
-                    <Button x:Name="MoveButton" Style="{StaticResource AccentButtonStyle}" Padding="22,6" Click="OnStep2Move" />
+                    <Button Content="Not now" Command="{x:Bind ViewModel.NotNowCommand}" />
+                    <Button Style="{StaticResource AccentButtonStyle}" Padding="22,6" Command="{x:Bind ViewModel.MoveCommand}"
+                            Content="{x:Bind ViewModel.MoveText, Mode=OneWay}" IsEnabled="{x:Bind ViewModel.CanMove, Mode=OneWay}" />
                 </StackPanel>
             </Grid>
         </Grid>
 
         <!-- Step 3: how it opens -->
-        <Grid x:Name="Step3" Visibility="Collapsed" RowSpacing="18">
+        <Grid x:Name="Step3" RowSpacing="18" Visibility="{x:Bind ViewModel.IsStep3, Mode=OneWay}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -90,7 +91,7 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <RadioButton x:Name="FlyoutCard" GroupName="SetupMode" AutomationProperties.Name="Flyout"
+                        <RadioButton GroupName="SetupMode" AutomationProperties.Name="Flyout" IsChecked="{x:Bind ViewModel.Flyout, Mode=TwoWay}"
                                      HorizontalAlignment="Stretch" VerticalAlignment="Top">
                             <StackPanel>
                                 <v:ModePreview Height="100" Margin="0,0,0,10" />
@@ -100,7 +101,7 @@
                                            Text="Slides in from the tray icon or shortcut, hides when you click away." />
                             </StackPanel>
                         </RadioButton>
-                        <RadioButton x:Name="DesktopCard" Grid.Column="1" GroupName="SetupMode" AutomationProperties.Name="On the desktop"
+                        <RadioButton Grid.Column="1" GroupName="SetupMode" AutomationProperties.Name="On the desktop" IsChecked="{x:Bind ViewModel.Desktop, Mode=TwoWay}"
                                      HorizontalAlignment="Stretch" VerticalAlignment="Top">
                             <StackPanel>
                                 <v:ModePreview IsDesktop="True" Height="100" Margin="0,0,0,10" />
@@ -116,13 +117,13 @@
                         <StackPanel>
                             <Grid Style="{StaticResource SettingRow}">
                                 <TextBlock Style="{StaticResource RowTitle}" Text="Start with Windows" />
-                                <ToggleSwitch x:Name="AutostartSwitch" Style="{StaticResource RowSwitch}"
+                                <ToggleSwitch Style="{StaticResource RowSwitch}" IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}"
                                               AutomationProperties.Name="Start with Windows" />
                             </Grid>
                             <Border Style="{StaticResource RowDivider}" />
                             <Grid Style="{StaticResource SettingRow}">
                                 <TextBlock Style="{StaticResource RowTitle}" Text="Open anytime with" />
-                                <TextBlock x:Name="HotkeyText" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Text="{x:Bind ViewModel.HotkeyText, Mode=OneWay}"
                                            Style="{StaticResource BodyStrongTextBlockStyle}" />
                             </Grid>
                         </StackPanel>
@@ -133,9 +134,9 @@
                 </StackPanel>
             </ScrollViewer>
             <Grid Grid.Row="2">
-                <Button HorizontalAlignment="Left" Content="Back" Click="OnBackToStep2" />
+                <Button HorizontalAlignment="Left" Content="Back" Command="{x:Bind ViewModel.BackToStep2Command}" />
                 <Button Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Right" Padding="22,6" Content="Done"
-                        Click="OnDone" AutomationProperties.Name="Done" />
+                        Command="{x:Bind ViewModel.DoneCommand}" AutomationProperties.Name="Done" />
             </Grid>
         </Grid>
     </Grid>
