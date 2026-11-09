@@ -240,6 +240,13 @@ public sealed partial class SettingsViewModel : ObservableObject
         set => Set(_settings.ShowWeeklySummary, value, v => _settings.ShowWeeklySummary = v, SettingChange.Shelf, [], nameof(ShowWeeklySummary));
     }
 
+    /// <summary>Favorite covers get a sheen that follows the pointer (proposals §13 d).</summary>
+    public bool ShinyFavorites
+    {
+        get => _settings.ShinyFavorites;
+        set => Set(_settings.ShinyFavorites, value, v => _settings.ShinyFavorites = v, SettingChange.Shelf, [], nameof(ShinyFavorites));
+    }
+
     // --- Library ------------------------------------------------------------------------------------------
 
     /// <summary>The sources in the order of their check boxes; the count in <see cref="LibraryText"/> follows this list.</summary>

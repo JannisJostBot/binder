@@ -59,8 +59,14 @@ public sealed partial class BannerLogo : Grid
     {
         int load = ++_load;
         var game = _game;
-        Show(null);
-        if (game is null || game.Source != GameSource.Steam) return;
+        // Cleared quietly: the page keeps its title hidden until the answer (logo or none) is known, so a logo
+        // that's found never replaces a title that just appeared.
+        Show(null, announce: false);
+        if (game is null || game.Source != GameSource.Steam)
+        {
+            Show(null);
+            return;
+        }
         double scale = XamlRoot?.RasterizationScale ?? 1;
         double width = Parent is FrameworkElement { ActualWidth: > 0 } banner ? banner.ActualWidth * MaxWidthShare : 340;
         int pixelWidth = (int)Math.Ceiling(width * scale);
@@ -69,7 +75,7 @@ public sealed partial class BannerLogo : Grid
         Show(image);
     }
 
-    private void Show(ImageSource? image)
+    private void Show(ImageSource? image, bool announce = true)
     {
         _image.Source = image;
         HasLogo = image is not null;
@@ -77,7 +83,7 @@ public sealed partial class BannerLogo : Grid
         AutomationProperties.SetName(_image, _game?.Name ?? "");
         if (_shadow is not null) _shadow.IsVisible = HasLogo;
         Fit();
-        LogoChanged?.Invoke(HasLogo);
+        if (announce) LogoChanged?.Invoke(HasLogo);
     }
 
     /// <summary>Height-limited, and no wider than its share of the banner (the parent's width).</summary>

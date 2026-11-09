@@ -173,5 +173,7 @@ public sealed partial class MainWindow
             HideCountdown();
         }
         RefreshViews();
+        // On screen (Keep open, or the desktop panel): welcome back now. Hidden: when it next opens (Reopen).
+        if (!IsClosing) PickWelcome();
     }
 }

@@ -13,7 +13,16 @@ public sealed record GameModeStatus(
     bool PowerFastest,
     bool GameBarRecording,
     string[] VoiceApps,
-    IReadOnlyDictionary<string, ServiceState.Kind> Services);
+    IReadOnlyDictionary<string, ServiceState.Kind> Services,
+    WindowsGamingStatus Windows);
+
+/// <summary>Windows' own gaming settings and OneDrive, as they are now (changed only in Windows Settings).</summary>
+public sealed record WindowsGamingStatus(
+    bool GameModeOn,
+    bool HasWindowedOptimizations,
+    bool WindowedOptimizationsOn,
+    bool OneDriveRunning,
+    bool DocumentsInOneDrive);
 
 /// <summary>The last restore and whether one can run now.</summary>
 public sealed record RestoreStatus((DateTimeOffset When, RestoreResult Result)? Last, bool HasLog, bool CanRestoreNow, bool Pending);
@@ -21,8 +30,8 @@ public sealed record RestoreStatus((DateTimeOffset When, RestoreResult Result)? 
 /// <summary>An app with a window, to pick from a menu.</summary>
 public sealed record AppChoice(string Path, string Name);
 
-/// <summary>One app closed while playing, as its row shows it.</summary>
-public sealed record CloseAppRow(string Path, string Name, string Detail);
+/// <summary>One app closed (or calmed: efficiency mode) while playing, as its row shows it.</summary>
+public sealed record CloseAppRow(string Path, string Name, string Detail, bool Calm);
 
 /// <summary>One service the helper can pause, as its row shows it.</summary>
 public sealed record ServiceRow(string Id, string Name, string Detail, bool IsOn);
@@ -48,6 +57,8 @@ public interface IGameModeActions
     bool RestoreNow();
     void OpenLog();
     void PlayRestoredSound();
+    /// <summary>Opens a page of Windows Settings (an <c>ms-settings:</c> URI).</summary>
+    void OpenWindowsSettings(string uri);
 }
 
 /// <summary>
@@ -68,7 +79,8 @@ public sealed partial class GameModeViewModel : ObservableObject
 
     private readonly IGameModeActions _actions;
     private Settings _settings = new();
-    private GameModeStatus _status = new(false, false, false, "", false, false, [], new Dictionary<string, ServiceState.Kind>());
+    private GameModeStatus _status = new(false, false, false, "", false, false, [], new Dictionary<string, ServiceState.Kind>(),
+        new(false, false, false, false, false));
     private RestoreStatus _restore = new(null, false, false, false);
     private bool _fromShelf;
     private bool _allowRunning, _removeRunning, _restoring;
@@ -80,11 +92,17 @@ public sealed partial class GameModeViewModel : ObservableObject
         BackCommand = new(actions.GoBack);
         LogCommand = new(actions.OpenLog);
         RestoreCommand = new(Restore);
+        OpenGameModeSettingsCommand = new(() => actions.OpenWindowsSettings("ms-settings:gaming-gamemode"));
+        OpenGraphicsSettingsCommand = new(() => actions.OpenWindowsSettings("ms-settings:display-advancedgraphics"));
+        OpenNotificationSettingsCommand = new(() => actions.OpenWindowsSettings("ms-settings:notifications"));
     }
 
     public RelayCommand BackCommand { get; }
     public RelayCommand LogCommand { get; }
     public RelayCommand RestoreCommand { get; }
+    public RelayCommand OpenGameModeSettingsCommand { get; }
+    public RelayCommand OpenGraphicsSettingsCommand { get; }
+    public RelayCommand OpenNotificationSettingsCommand { get; }
 
     /// <summary>Fills the page and reads the state of Windows once.</summary>
     public void Show(Settings settings, bool fromShelf)
@@ -148,6 +166,7 @@ public sealed partial class GameModeViewModel : ObservableObject
     public bool PowerOn { get => IsItemOn(GameModeInfo.Power); set => SetItem(GameModeInfo.Power, value, nameof(PowerOn)); }
     public bool PriorityOn { get => IsItemOn(GameModeInfo.Priority); set => SetItem(GameModeInfo.Priority, value, nameof(PriorityOn)); }
     public bool GameBarOn { get => IsItemOn(GameModeInfo.GameBar); set => SetItem(GameModeInfo.GameBar, value, nameof(GameBarOn)); }
+    public bool OneDriveOn { get => IsItemOn(GameModeInfo.OneDrive); set => SetItem(GameModeInfo.OneDrive, value, nameof(OneDriveOn)); }
     public bool SmoothOn { get => IsItemOn(GameModeInfo.Smooth); set => SetItem(GameModeInfo.Smooth, value, nameof(SmoothOn)); }
     public bool UploadsOn { get => IsItemOn(GameModeInfo.Uploads); set => SetItem(GameModeInfo.Uploads, value, nameof(UploadsOn)); }
     public bool UpdatesOn { get => IsItemOn(GameModeInfo.Updates); set => SetItem(GameModeInfo.Updates, value, nameof(UpdatesOn)); }
@@ -205,7 +224,25 @@ public sealed partial class GameModeViewModel : ObservableObject
 
     public string GameBarText => "Turns off “Record what happened” while you play. Now: " + (_status.GameBarRecording ? "on." : "off.");
 
-    public string UpdatesText => $"Windows Update uses at most {ElevatedPart.UpdatePercent}% of the bandwidth for background downloads.";
+    public string OneDriveText => _status.Windows.DocumentsInOneDrive
+        ? "Left running on this PC: your Documents folder is in OneDrive, and games often keep their saves there."
+        : "Closes OneDrive while you play and starts it again after. " + (_status.Windows.OneDriveRunning ? "Now: running." : "Now: not running.");
+
+    // ---- Windows' own settings (read when the page opens; changed only in Windows Settings) ----------------
+
+    public string WinGameModeText => _status.Windows.GameModeOn
+        ? "On. Windows gives the game more of the PC and holds back updates' restarts."
+        : "Off. Turning it on gives the game more of the PC.";
+    public string WinGameModeState => _status.Windows.GameModeOn ? "On" : "Off";
+
+    /// <summary>"Optimizations for windowed games" exists on Windows 11 only.</summary>
+    public bool WindowedVisible => _status.Windows.HasWindowedOptimizations;
+    public string WindowedText => _status.Windows.WindowedOptimizationsOn
+        ? "On. Windowed and borderless games get lower latency."
+        : "Off. Turning it on lowers latency in windowed and borderless games.";
+    public string WindowedState => _status.Windows.WindowedOptimizationsOn ? "On" : "Off";
+
+    public string UpdatesText =>$"Windows Update uses at most {ElevatedPart.UpdatePercent}% of the bandwidth for background downloads.";
 
     public string SmoothText => "Marks their traffic as urgent (DSCP 46); helps only if your router honors it. Always included: the game" +
                                 (_status.VoiceApps.Length > 0 ? ", " + string.Join(", ", _status.VoiceApps) : "") + ".";
@@ -291,16 +328,42 @@ public sealed partial class GameModeViewModel : ObservableObject
 
     // ---- App lists ----------------------------------------------------------------------------------------
 
-    /// <summary>The apps closed while playing.</summary>
+    /// <summary>The apps closed or calmed while playing.</summary>
     public CloseAppRow[] CloseApps { get; private set; } = [];
+
+    private IReadOnlySet<string> _running = new HashSet<string>();
 
     private void FillApps()
     {
-        var running = _settings.GameModeCloseApps.Count > 0 ? _actions.RunningPaths() : new HashSet<string>();
-        CloseApps = [.. _settings.GameModeCloseApps.Select(path => new CloseAppRow(path, _actions.AppName(path),
-            !_actions.AppExists(path) ? "Not found: it may have been uninstalled"
-            : running.Contains(path) ? "Running · reopened after the game"
-            : "Not running now"))];
+        _running = _settings.GameModeCloseApps.Count > 0 ? _actions.RunningPaths() : new HashSet<string>();
+        CloseApps = [.. _settings.GameModeCloseApps.Select(path => Row(path, IsCalmed(path)))];
+    }
+
+    private bool IsCalmed(string path) => _settings.GameModeCalmApps.Contains(path, StringComparer.OrdinalIgnoreCase);
+
+    private CloseAppRow Row(string path, bool calm) => new(path, _actions.AppName(path),
+        !_actions.AppExists(path) ? "Not found: it may have been uninstalled"
+        : !_running.Contains(path) ? "Not running now"
+        : calm ? "Running · in efficiency mode while you play"
+        : "Running · reopened after the game",
+        calm);
+
+    /// <summary>
+    /// Close the app (reopened after) or Calm it (efficiency mode, it keeps running). Returns the row as it is now;
+    /// the list itself isn't redrawn, so the choice keeps the focus.
+    /// </summary>
+    public CloseAppRow SetCalm(string path, bool calm)
+    {
+        int index = Array.FindIndex(CloseApps, r => string.Equals(r.Path, path, StringComparison.OrdinalIgnoreCase));
+        if (IsCalmed(path) != calm)
+        {
+            _settings.GameModeCalmApps.RemoveAll(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase));
+            if (calm) _settings.GameModeCalmApps.Add(path);
+            Save();
+        }
+        var row = Row(path, calm);
+        if (index >= 0) CloseApps[index] = row;
+        return row;
     }
 
     /// <summary>Apps with a window that aren't closed while playing yet.</summary>
@@ -318,6 +381,7 @@ public sealed partial class GameModeViewModel : ObservableObject
     public void RemoveCloseApp(string path)
     {
         _settings.GameModeCloseApps.RemoveAll(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase));
+        _settings.GameModeCalmApps.RemoveAll(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase));
         Save();
         FillApps();
         OnPropertyChanged(nameof(CloseApps));

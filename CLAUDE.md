@@ -52,15 +52,18 @@ their games, and it must feel like part of Windows. When an idea doesn't clearly
 ```
 src/GameShelf/            the WinUI widget
   Library/                sources (*Source.cs), InstallFolder (folder safety), Vdf, ShortcutFile/ShortcutImporter,
-                          LaunchOptions, GameScan, AntiCheat, PlaytimeStats, CrashAnalysis, SpacePlanner (pure logic)
+                          LaunchOptions, GameScan, AntiCheat, PlaytimeStats, CrashAnalysis, SpacePlanner,
+                          Moments ("Welcome back") (pure logic)
   Models/                 Game, Session, Settings, ImportedShortcut, CrashRecord
   Services/               Launcher, CoverCache, Storage, Windows integration (DesktopLayer, Monitors, Placement,
                           Autostart, ShellNotify, PcChecks, …), Gamepad (XInput, polled only while the panel is
-                          active and a pad is connected), GameModeService, Chime/Sound
+                          active and a pad is connected), GameModeService, WindowsGaming (Windows' Game Mode,
+                          OneDrive; read when the Game mode page opens), Chime/Sound
   ViewModels/             MVVM: ObservableObject, RelayCommand, one <Page>ViewModel + I<Page>Actions per page (Shelf,
                           Detail, Settings, Setup, FreeSpace, GameMode)
   Views/                  ShelfView, DetailView, SettingsView, SetupView, ImportView, FreeSpaceView, GameModeView,
-                          GameModeToast; Format.cs the text formatting, GameAction.cs (menu actions, chart bars)
+                          GameModeToast, BannerLogo, Sheen (shiny favorites); Format.cs the text formatting,
+                          GameAction.cs (menu actions, chart bars)
   Themes/Theme.xaml        shared styles and brushes
   MainWindow.xaml.cs      the panel: start, first frame, page navigation, rescan; partial files by area:
                           MainWindow.<Page>.cs (that page's actions), .Flyout (slide, placement), .Games (import,
@@ -169,6 +172,9 @@ the reference for what exists; these rules apply to every change:
   168 px so switching never moves the grid; favorites pinned first; launcher icon badges, none for manual games;
   filter chips All, Favorites, Recent, then launchers that have games (most first, beyond three under "More") and
   "Other", in one row with the sort button right above the grid.
+- Look and moments (`docs/proposals.md` §13): "Welcome back" takes the top slot once after a session of 2 min or
+  longer, with a quiet playtime milestone line; shiny favorites (`Sheen`, a Settings toggle; still with animations
+  off, none in high contrast or List). Details open and close without a cover animation (§13 b was removed).
 
 Display modes: **Flyout** (default; tray icon and Win+Shift+G) or **On the desktop** (docked, kept at the bottom of
 the z-order with `HWND_BOTTOM`, no WorkerW hack). **Stay ready** (default on): closing the flyout destroys the

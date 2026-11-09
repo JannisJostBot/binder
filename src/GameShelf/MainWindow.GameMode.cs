@@ -22,7 +22,13 @@ public sealed partial class MainWindow
             PowerFastest: PowerMode.IsFastest(plan, plan == PowerMode.BalancedPlan ? PowerMode.ActiveMode() : null),
             GameBarRecording: GameModeService.GameBarRecording(),
             VoiceApps: [.. ElevatedPart.InstalledVoiceApps().Select(a => a.Name)],
-            Services: ElevatedPart.Services.ToDictionary(s => s.Id, s => GameModeService.ServiceStateOf(s.Id)));
+            Services: ElevatedPart.Services.ToDictionary(s => s.Id, s => GameModeService.ServiceStateOf(s.Id)),
+            Windows: new WindowsGamingStatus(
+                GameModeOn: WindowsGaming.GameModeOn(),
+                HasWindowedOptimizations: WindowsGaming.HasWindowedOptimizations,
+                WindowedOptimizationsOn: WindowsGaming.HasWindowedOptimizations && WindowsGaming.WindowedOptimizationsOn(),
+                OneDriveRunning: WindowsGaming.OneDriveRunning(),
+                DocumentsInOneDrive: WindowsGaming.DocumentsInOneDrive()));
     }
 
     RestoreStatus IGameModeActions.ReadRestore() =>
@@ -39,6 +45,7 @@ public sealed partial class MainWindow
     bool IGameModeActions.RestoreNow() => GameModeService.RestoreNow();
     void IGameModeActions.OpenLog() => GameModeService.OpenLog();
     void IGameModeActions.PlayRestoredSound() => App.Current.PlayRestoredSound();
+    void IGameModeActions.OpenWindowsSettings(string uri) => WindowsGaming.OpenSettings(uri);
 
     /// <summary>The shelf's "Game mode needs an update" › Update…: the same UAC prompt as Settings › Game mode.</summary>
     private async Task UpdateGameModeHelperAsync()

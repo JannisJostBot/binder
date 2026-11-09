@@ -147,6 +147,7 @@ public sealed partial class MainWindow
     public void Reopen()
     {
         IsClosing = false;
+        PickWelcome();
         PlaceOnScreen();
         if (IsFlyout) PrepareSlide();
         Activate();

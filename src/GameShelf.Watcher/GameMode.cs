@@ -58,7 +58,8 @@ internal sealed class GameMode
     /// Applies the chosen items (comma-separated ids). Null when another game's changes are still applied
     /// (two games started with "Keep open"): the first one's restore stays in charge.
     /// </summary>
-    public static GameMode? Begin(string gameId, string items, List<string> closeApps, NetworkOptions? network = null)
+    public static GameMode? Begin(string gameId, string items, List<string> closeApps, NetworkOptions? network = null,
+        List<string>? calmApps = null)
     {
         var mutex = TryTakeMutex();
         if (mutex is null)
@@ -82,6 +83,8 @@ internal sealed class GameMode
             if (chosen.Contains(GameModeInfo.Power)) mode.Count(mode.ApplyPower(), "Power mode");
             if (chosen.Contains(GameModeInfo.GameBar)) mode.Count(mode.ApplyGameBar(), "Game Bar recording");
             if (closeApps.Count > 0) mode.CloseApps(closeApps);
+            if (chosen.Contains(GameModeInfo.OneDrive)) mode.Count(mode.PauseOneDrive(), "OneDrive");
+            if (calmApps is { Count: > 0 }) mode.CalmApps(calmApps);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
@@ -335,6 +338,121 @@ internal sealed class GameMode
         _journal.Save();
     }
 
+    private const int OneDriveWaitMs = 10_000;
+
+    /// <summary>
+    /// Pauses OneDrive's syncing (proposals §20): its own "/shutdown" closes it the way "Quit OneDrive" does, and
+    /// "/background" starts it again after the game, only if we closed it. Left running when the Documents folder
+    /// is in OneDrive (see <see cref="GameModeInfo.OneDriveHoldsDocuments()"/>).
+    /// </summary>
+    private bool? PauseOneDrive()
+    {
+        foreach (var exe in GameModeInfo.OneDriveCandidates())
+        {
+            var handles = Processes.Find(exe, Native.SYNCHRONIZE);
+            if (handles.Count == 0) continue;
+            try
+            {
+                if (GameModeInfo.OneDriveHoldsDocuments())
+                {
+                    Log("OneDrive: left running, your Documents folder is in OneDrive (games may keep their saves there)");
+                    return null;
+                }
+                _journal.OneDriveExe = exe;
+                _journal.Save(); // before closing: a crash now must still start it again
+                if (Program.StartProcess(exe, ["/shutdown"]))
+                {
+                    Native.WaitForMultipleObjects((uint)Math.Min(handles.Count, 64), handles.ToArray(), true, OneDriveWaitMs);
+                    if (handles.TrueForAll(h => Native.WaitForSingleObject(h, 0) == Native.WAIT_OBJECT_0))
+                    {
+                        Log("OneDrive: syncing paused (closed until the game ends)");
+                        return true;
+                    }
+                    // Asked, but still closing: kept in the journal, so it's started again after the game if it
+                    // did close (restore leaves a running OneDrive alone).
+                    Log("OneDrive: asked to close, still closing after 10 s");
+                    return true;
+                }
+                _journal.OneDriveExe = null;
+                _journal.Save();
+                Log("OneDrive: didn't close, left running");
+                return false;
+            }
+            finally
+            {
+                foreach (var h in handles) Native.CloseHandle(h);
+            }
+        }
+        Log("OneDrive: isn't running");
+        return null;
+    }
+
+    /// <summary>
+    /// Puts chosen apps in efficiency mode (EcoQoS, the green leaf in Task Manager; proposals §20) instead of
+    /// closing them: Windows runs them at the most efficient speed, on the efficient cores of hybrid CPUs. Only
+    /// the execution-speed throttling is set, not Task Manager's idle priority. Each process's previous state is
+    /// journaled first, with its id and start time, so only that same process is changed back.
+    /// </summary>
+    private void CalmApps(List<string> paths)
+    {
+        foreach (var path in paths.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            if (!IsClosableApp(path)) continue;
+            var name = AppName(path);
+            var handles = Processes.Find(path, Native.PROCESS_SET_INFORMATION);
+            if (handles.Count == 0)
+            {
+                Log($"Apps: {Path.GetFileName(path)} isn't running");
+                continue;
+            }
+            int calmed = 0, already = 0;
+            bool failed = false;
+            foreach (var h in handles)
+            {
+                try
+                {
+                    var before = Native.GetThrottling(h);
+                    if (Native.IsEfficiencyMode(before))
+                    {
+                        already++;
+                        continue;
+                    }
+                    var entry = new CalmedApp(path, Native.GetProcessId(h), Native.CreationTime(h), before.ControlMask, before.StateMask);
+                    _journal.CalmedApps.Add(entry);
+                    _journal.Save();
+                    if (Native.SetThrottling(h, before.ControlMask | Native.EXECUTION_SPEED, before.StateMask | Native.EXECUTION_SPEED))
+                    {
+                        calmed++;
+                    }
+                    else
+                    {
+                        _journal.CalmedApps.Remove(entry);
+                        _journal.Save();
+                        failed = true;
+                    }
+                }
+                finally
+                {
+                    Native.CloseHandle(h);
+                }
+            }
+            if (calmed > 0)
+            {
+                _applied++;
+                Log($"Apps: {name} in efficiency mode ({calmed} process{(calmed == 1 ? "" : "es")})");
+            }
+            else if (failed)
+            {
+                _notApplied.Add(name);
+                Log($"Apps: couldn't put {name} in efficiency mode (it may run as admin)");
+            }
+            else if (already > 0)
+            {
+                Log($"Apps: {name} is already in efficiency mode, left as is");
+            }
+        }
+    }
+
     /// <summary>
     /// A full path to an exe that isn't part of Windows, a Store app or Game Shelf (the list comes from
     /// settings.json; the widget checks the same).
@@ -377,6 +495,60 @@ internal sealed class GameMode
             {
                 failed.Add(name);
                 Log($"Apps: couldn't reopen {name}");
+            }
+        }
+
+        foreach (var group in journal.CalmedApps.GroupBy(a => a.Path, StringComparer.OrdinalIgnoreCase))
+        {
+            total++;
+            var name = AppName(group.Key);
+            bool ok = true;
+            foreach (var app in group)
+            {
+                var h = Native.OpenProcess(Native.PROCESS_QUERY_LIMITED_INFORMATION | Native.PROCESS_SET_INFORMATION, false, app.Pid);
+                if (h == IntPtr.Zero) continue; // it ended: nothing to put back
+                try
+                {
+                    // Only the same process (start time), and only if it's still in efficiency mode.
+                    if (Native.CreationTime(h) != app.Created || !Native.IsEfficiencyMode(Native.GetThrottling(h))) continue;
+                    if (!Native.SetThrottling(h, app.Control, app.State)) ok = false;
+                }
+                finally
+                {
+                    Native.CloseHandle(h);
+                }
+            }
+            if (ok)
+            {
+                restored++;
+                Log($"Apps: {name} out of efficiency mode");
+            }
+            else
+            {
+                failed.Add(name);
+                Log($"Apps: couldn't take {name} out of efficiency mode");
+            }
+        }
+
+        if (journal.OneDriveExe is { } oneDrive)
+        {
+            total++;
+            var running = Processes.Find(oneDrive, 0);
+            foreach (var h in running) Native.CloseHandle(h);
+            if (running.Count > 0)
+            {
+                restored++;
+                Log("OneDrive: already running again");
+            }
+            else if (File.Exists(oneDrive) && Program.StartProcess(oneDrive, ["/background"]))
+            {
+                restored++;
+                Log("OneDrive: started again, syncing resumes");
+            }
+            else
+            {
+                failed.Add("OneDrive");
+                Log("OneDrive: couldn't start it again");
             }
         }
 
@@ -468,6 +640,9 @@ internal sealed class GameMode
 
     // ---- Journal ----------------------------------------------------------------------------------------
 
+    /// <summary>A process put in efficiency mode: which one exactly (id and start time) and its masks before.</summary>
+    internal sealed record CalmedApp(string Path, uint Pid, long Created, uint Control, uint State);
+
     internal sealed record PowerChange(string Kind, Guid Before, Guid Set)
     {
         public const string Mode = "mode", Plan = "plan";
@@ -481,6 +656,9 @@ internal sealed class GameMode
         public PowerChange? Power { get; set; }
         public bool GameBarOff { get; set; }
         public List<string> ClosedApps { get; } = [];
+        /// <summary>The OneDrive exe we closed (started again with /background after the game).</summary>
+        public string? OneDriveExe { get; set; }
+        public List<CalmedApp> CalmedApps { get; } = [];
 
         public void Save()
         {
@@ -515,6 +693,22 @@ internal sealed class GameMode
                 w.WriteStartArray("ClosedApps");
                 foreach (var app in ClosedApps) w.WriteStringValue(app);
                 w.WriteEndArray();
+                if (OneDriveExe is not null) w.WriteString("OneDriveExe", OneDriveExe);
+                if (CalmedApps.Count > 0)
+                {
+                    w.WriteStartArray("CalmedApps");
+                    foreach (var app in CalmedApps)
+                    {
+                        w.WriteStartObject();
+                        w.WriteString("Path", app.Path);
+                        w.WriteNumber("Pid", app.Pid);
+                        w.WriteNumber("Created", app.Created);
+                        w.WriteNumber("Control", app.Control);
+                        w.WriteNumber("State", app.State);
+                        w.WriteEndObject();
+                    }
+                    w.WriteEndArray();
+                }
                 w.WriteEndObject();
             }
             return buffer.WrittenSpan.ToArray();
@@ -567,6 +761,21 @@ internal sealed class GameMode
                 {
                     // Reopened only if it's still a plain app path (see IsClosableApp), and at most 32 of them.
                     if (app.GetString() is { } p && IsClosableApp(p) && journal.ClosedApps.Count < 32) journal.ClosedApps.Add(p);
+                }
+            }
+            // Started again only if it's one of OneDrive's own install places.
+            if (root.TryGetProperty("OneDriveExe", out var oneDrive) && oneDrive.GetString() is { } exe &&
+                GameModeInfo.OneDriveCandidates().Contains(exe, StringComparer.OrdinalIgnoreCase))
+                journal.OneDriveExe = exe;
+            if (root.TryGetProperty("CalmedApps", out var calmed))
+            {
+                foreach (var app in calmed.EnumerateArray())
+                {
+                    if (journal.CalmedApps.Count >= 64) break;
+                    var path = app.GetProperty("Path").GetString();
+                    if (path is null || !IsClosableApp(path)) continue;
+                    journal.CalmedApps.Add(new CalmedApp(path, app.GetProperty("Pid").GetUInt32(), app.GetProperty("Created").GetInt64(),
+                        app.GetProperty("Control").GetUInt32() & Native.THROTTLE_VALID, app.GetProperty("State").GetUInt32() & Native.THROTTLE_VALID));
                 }
             }
             return journal;
@@ -640,6 +849,51 @@ internal static unsafe partial class Native
     public const uint WAIT_OBJECT_0 = 0;
     public const uint WM_CLOSE = 0x0010;
     public const uint GW_OWNER = 4;
+
+    // Efficiency mode (EcoQoS): SetProcessInformation(ProcessPowerThrottling) with EXECUTION_SPEED.
+    private const int ProcessPowerThrottling = 4;
+    public const uint EXECUTION_SPEED = 0x1;
+    public const uint THROTTLE_VALID = 0x7; // EXECUTION_SPEED | 0x2 | IGNORE_TIMER_RESOLUTION
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct PowerThrottling
+    {
+        public uint Version, ControlMask, StateMask;
+    }
+
+    public static PowerThrottling GetThrottling(IntPtr process)
+    {
+        var state = new PowerThrottling { Version = 1 };
+        // Older Windows doesn't answer this query; "nothing set" is then the truth for our purpose.
+        if (!GetProcessInformation(process, ProcessPowerThrottling, &state, (uint)sizeof(PowerThrottling)))
+            state = new PowerThrottling { Version = 1 };
+        return state;
+    }
+
+    public static bool IsEfficiencyMode(PowerThrottling state) =>
+        (state.ControlMask & EXECUTION_SPEED) != 0 && (state.StateMask & EXECUTION_SPEED) != 0;
+
+    public static bool SetThrottling(IntPtr process, uint control, uint state)
+    {
+        var value = new PowerThrottling { Version = 1, ControlMask = control & THROTTLE_VALID, StateMask = state & control & THROTTLE_VALID };
+        return SetProcessInformation(process, ProcessPowerThrottling, &value, (uint)sizeof(PowerThrottling));
+    }
+
+    /// <summary>The process's start time (FILETIME ticks), so a reused process id isn't mistaken for it.</summary>
+    public static long CreationTime(IntPtr process) =>
+        GetProcessTimes(process, out var created, out _, out _, out _) ? created : 0;
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetProcessInformation(IntPtr process, int infoClass, void* info, uint size);
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetProcessInformation(IntPtr process, int infoClass, void* info, uint size);
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetProcessTimes(IntPtr process, out long creation, out long exit, out long kernel, out long user);
 
     [LibraryImport("kernel32.dll")]
     public static partial uint GetPriorityClass(IntPtr process);

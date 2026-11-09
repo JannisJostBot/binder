@@ -212,7 +212,10 @@ public sealed partial class ShelfView : UserControl
             _updatingSpotlight = false;
         }
         if (!vm.ShowWeek && !ReferenceEquals(ContinueArt.Game, vm.ContinueGame)) ContinueArt.Game = vm.ContinueGame;
-        ContinueLogo.Game = vm.ShowWeek ? null : vm.ContinueGame; // loaded only while the banner shows
+        var logoGame = vm.ShowWeek ? null : vm.ContinueGame; // loaded only while the banner shows
+        // No title-to-logo swap: the title waits until the logo lookup answers.
+        if (logoGame is not null && !ReferenceEquals(ContinueLogo.Game, logoGame)) ContinueTitle.Visibility = Visibility.Collapsed;
+        ContinueLogo.Game = logoGame;
     }
 
     private void OnSpotlightChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)

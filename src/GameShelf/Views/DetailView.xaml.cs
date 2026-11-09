@@ -73,6 +73,7 @@ public sealed partial class DetailView : UserControl
                 if (vm.Game is not { } game) return;
                 SetArt(Banner, game);
                 SetArt(Cover, game);
+                if (!ReferenceEquals(Logo.Game, game)) TitleText.Visibility = Visibility.Collapsed; // until the logo lookup answers
                 Logo.Game = game;
                 ShowFavorite();
                 DrawSessions();

@@ -82,12 +82,17 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel VerticalAlignment="Bottom" Spacing="0">
-                        <TextBlock Text="Continue playing" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{StaticResource BannerSecondaryTextBrush}" />
+                        <!-- "Continue playing", or "Welcome back" once after a session (§13 c). -->
+                        <TextBlock Text="{x:Bind ViewModel.ContinueEyebrow, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{StaticResource BannerSecondaryTextBrush}" />
                         <!-- The game's logo instead of its title when Steam has one (§13 a). -->
                         <v:BannerLogo x:Name="ContinueLogo" MaxLogoHeight="56" Margin="0,4,0,4" />
                         <TextBlock x:Name="ContinueTitle" Text="{x:Bind ViewModel.ContinueTitle, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="22"
                                    Foreground="White" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
                         <TextBlock Text="{x:Bind ViewModel.ContinueDetail, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{StaticResource BannerSecondaryTextBrush}" />
+                        <!-- A quiet playtime milestone ("100 hours in …", §13 e), only in "Welcome back". -->
+                        <TextBlock Text="{x:Bind ViewModel.ContinueMilestone, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="SemiBold"
+                                   Foreground="White" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"
+                                   Visibility="{x:Bind ViewModel.MilestoneVisible, Mode=OneWay}" />
                     </StackPanel>
                     <Button Grid.Column="1" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.ContinuePlayCommand}"
                             AutomationProperties.Name="{x:Bind ViewModel.ContinuePlayName, Mode=OneWay}"

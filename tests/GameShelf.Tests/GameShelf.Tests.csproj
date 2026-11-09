@@ -40,6 +40,7 @@
     <Compile Include="..\..\src\GameShelf\Library\PlaytimeStats.cs" Link="Linked\Library\PlaytimeStats.cs" />
     <Compile Include="..\..\src\GameShelf\Library\CrashAnalysis.cs" Link="Linked\Library\CrashAnalysis.cs" />
     <Compile Include="..\..\src\GameShelf\Library\SpacePlanner.cs" Link="Linked\Library\SpacePlanner.cs" />
+    <Compile Include="..\..\src\GameShelf\Library\Moments.cs" Link="Linked\Library\Moments.cs" />
     <Compile Include="..\..\src\GameShelf\Views\Format.cs" Link="Linked\Views\Format.cs" />
     <Compile Include="..\..\src\GameShelf\Views\GameAction.cs" Link="Linked\Views\GameAction.cs" />
     <Compile Include="..\..\src\GameShelf\ViewModels\*.cs" Link="Linked\ViewModels\%(Filename)%(Extension)" />

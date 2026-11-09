@@ -15,7 +15,7 @@ namespace GameShelf.Watcher;
 /// records the session and brings the widget back. Uses only kernel waits once the game is found.
 ///
 /// Args: --game &lt;id&gt; --dir &lt;install folder&gt; [--process &lt;name&gt;] [--timeout &lt;s&gt;] [--return 0|1]
-///       [--mode &lt;game mode items, comma-separated&gt; [--close &lt;app exe&gt;]… [--toast 0|1]
+///       [--mode &lt;game mode items, comma-separated&gt; [--close &lt;app exe&gt;]… [--calm &lt;app exe&gt;]… [--toast 0|1]
 ///        [--smooth &lt;exe name&gt;]… [--throttle &lt;exe name&gt;]… [--limit &lt;Mbit/s&gt;]]
 /// Or:   --restore (put back Game mode changes left by a session that didn't end normally)
 /// </summary>
@@ -41,6 +41,7 @@ internal static class Program
         int timeoutSeconds = 180;
         bool comeBack = true, toast = true;
         var closeApps = new List<string>();
+        var calmApps = new List<string>();
         var network = new GameMode.NetworkOptions();
         for (int i = 0; i + 1 < args.Length; i += 2)
         {
@@ -53,6 +54,7 @@ internal static class Program
                 case "--return": comeBack = args[i + 1] != "0"; break;
                 case "--mode": modeItems = args[i + 1]; break;
                 case "--close": if (closeApps.Count < 32) closeApps.Add(args[i + 1]); break;
+                case "--calm": if (calmApps.Count < 32) calmApps.Add(args[i + 1]); break;
                 case "--toast": toast = args[i + 1] != "0"; break;
                 case "--smooth": if (network.Smooth.Count < 32) network.Smooth.Add(args[i + 1]); break;
                 case "--throttle": if (network.Throttle.Count < 32) network.Throttle.Add(args[i + 1]); break;
@@ -62,7 +64,8 @@ internal static class Program
         if (gameId is null || (dir is null && processName is null)) return 2;
 
         // Game mode: applied now, while the game starts; put back once it's closed (or never showed up).
-        var gameMode = modeItems is null ? null : GameMode.Begin(gameId, modeItems, closeApps, network);
+        var gameMode = modeItems is null ? null : GameMode.Begin(gameId, modeItems, closeApps, network,
+            calmApps.FindAll(p => dir is null || !p.StartsWith(Path.TrimEndingDirectorySeparator(dir) + "\\", StringComparison.OrdinalIgnoreCase)));
         // "Game mode is on": only for a widget that is still up (the countdown, or Keep open); one that isn't
         // running doesn't start for it, since it's gone while a game runs.
         if (AppliedArgument(gameMode?.Applied, toast) is { } applied) StartWidget("--applied", applied);

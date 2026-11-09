@@ -63,14 +63,27 @@ public sealed partial class GameModeView : UserControl
         foreach (var app in ViewModel!.CloseApps)
         {
             if (AppList.Children.Count > 0) AppList.Children.Add(new Border { Style = Resource<Style>("RowDivider") });
-            var row = new Grid { Style = Resource<Style>("SettingRow") };
+            var row = new Grid { Style = Resource<Style>("SettingRow"), ColumnSpacing = 8 };
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             var text = new StackPanel { Style = Resource<Style>("RowText") };
             text.Children.Add(new TextBlock { Text = app.Name, Style = Resource<Style>("RowTitle"), TextTrimming = TextTrimming.CharacterEllipsis });
-            text.Children.Add(new TextBlock { Text = app.Detail, Style = Resource<Style>("RowDetail") });
+            var detail = new TextBlock { Text = app.Detail, Style = Resource<Style>("RowDetail") };
+            text.Children.Add(detail);
             ToolTipService.SetToolTip(text, app.Path);
             row.Children.Add(text);
+
+            // Close it (reopened after), or Calm it: efficiency mode, so it keeps running but uses less.
+            var choice = new ComboBox { VerticalAlignment = VerticalAlignment.Center, MinWidth = 96 };
+            choice.Items.Add("Close");
+            choice.Items.Add("Calm");
+            choice.SelectedIndex = app.Calm ? 1 : 0;
+            AutomationProperties.SetName(choice, $"While playing, {app.Name}");
+            ToolTipService.SetToolTip(choice, "Close: closed, and reopened after the game.\nCalm: keeps running in efficiency mode (Task Manager's green leaf).");
+            choice.SelectionChanged += (_, _) => detail.Text = ViewModel!.SetCalm(app.Path, choice.SelectedIndex == 1).Detail;
+            Grid.SetColumn(choice, 1);
+            row.Children.Add(choice);
             var remove = new Button { Content = "", Style = Resource<Style>("IconButton"), VerticalAlignment = VerticalAlignment.Center };
             AutomationProperties.SetName(remove, "Remove " + app.Name);
             ToolTipService.SetToolTip(remove, "Remove");
@@ -79,7 +92,7 @@ public sealed partial class GameModeView : UserControl
                 ViewModel!.RemoveCloseApp(app.Path);
                 AddAppButton.Focus(FocusState.Programmatic);
             };
-            Grid.SetColumn(remove, 1);
+            Grid.SetColumn(remove, 2);
             row.Children.Add(remove);
             AppList.Children.Add(row);
         }

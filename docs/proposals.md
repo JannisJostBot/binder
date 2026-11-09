@@ -23,15 +23,16 @@ break the user's system.
 | 11 Crash detection | §10 | Done. With "Come back" off the crash card shows the next time the panel opens instead of a toast (Game mode's "Restored" toast doesn't exist yet); memory is the installed amount (`GetPhysicallyInstalledSystemMemory`) |
 | 12 More launchers | §8 | **In progress.** Done: EA app, Ubisoft Connect, Xbox app (tile logo as the cover picture) and Rockstar (tested with synthetic data only, no Rockstar game installed). Not yet: Battle.net, Riot, Amazon, itch, Humble and Meta |
 | 13 Controller | §4 | Built (`Services/Gamepad`, XInput; the hint bar, LB/RB pills and bold focus ring of board 3, without its "Controller" header pill). B closes menus and dialogs too; A on other controls goes through their UI Automation pattern; Menu toggles Settings. To try with a real pad. `Windows.Gaming.Input` (PlayStation, Switch) not yet |
-| 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Game mode toast ("Game mode is on" after applying, while the widget is still up, and "Windows is back to normal" after the restore; animated badge) and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\GameShelf\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `GameShelf.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `GameShelf Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\GameShelf\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing). Tested live on the owner's PC on 2026-11-07: the tasks register and run, the Print Spooler is paused and restarted, the QoS policies and the Windows Update limit are applied and restored. Windows keeps ActiveStore policy names lowercased, so ours are matched ignoring case. The shelf shows "Game mode needs an update" with Update… when Game mode uses the helper and it's from another version. Still to check: Delivery Optimization picks up the policy without a restart |
+| 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Game mode toast ("Game mode is on" after applying, while the widget is still up, and "Windows is back to normal" after the restore; animated badge) and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\GameShelf\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `GameShelf.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `GameShelf Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\GameShelf\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing). Tested live on the owner's PC on 2026-11-07: the tasks register and run, the Print Spooler is paused and restarted, the QoS policies and the Windows Update limit are applied and restored. Windows keeps ActiveStore policy names lowercased, so ours are matched ignoring case. The shelf shows "Game mode needs an update" with Update… when Game mode uses the helper and it's from another version. Still to check: Delivery Optimization picks up the policy without a restart. Also built: §20 (board 24), the "Windows' own settings" card, Pause OneDrive syncing and Close / Calm per app (efficiency mode) |
 | 19 Quick actions | §16 | Done (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); tried on the real PC |
 | 20 Restart after a crash | §17 | To do |
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
-| 16 Look and moments | §13 | **In progress.** Done: a, the logo on banners (`ArtKind.Logo`, `BannerLogo`; Steam keeps `librarycache\{appid}\logo.png`, 188 of 400 games on the owner's PC, the rest downloaded once; shadow from the logo's alpha via `Image.GetAlphaMask`; in Detail it sits right of the cover, which overlaps the banner's bottom left). Not yet: b–e |
+| 16 Look and moments | §13 | **In progress.** Done: a, the logo on banners (`ArtKind.Logo`, `BannerLogo`; Steam keeps `librarycache\{appid}\logo.png`, 188 of 400 games on the owner's PC, the rest downloaded once; shadow from the logo's alpha via `Image.GetAlphaMask`; in Detail it sits right of the cover, which overlaps the banner's bottom left). Built: b–e, to try on the real PC.<br>b (the cover growing into details) was built and then removed on 2026-11-09, owner's choice: it looked bad.<br>c and e are `Library/Moments`, picked each time the panel opens; tested live with a session written into `sessions.json`. With a crash, the crash card still takes the slot.<br>d is `Views/Sheen`, plain alpha layers tuned below the prototype's "Medium", since blend modes would need Win2D. The rest look was checked on screen; following the pointer couldn't be tested here, because injected mouse input didn't reach the panel |
 | Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
 | 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
 | 17 Advanced: sources and artwork | §14 | To do |
 | 18 Performance | §15 | To do |
+| 22 Open a launcher | §21 | To do |
 
 ### Still to carry into `CLAUDE.md`
 
@@ -120,6 +121,10 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   (didn't fit "back to normal") and falling dark ones ("like horror sounds").
 - **Cover hover (§19 b, board 26):** option C "Media tile": eased lift to 1.04 with a shadow, a fine light edge, a
   bottom scrim and a round Play button; no dark veil or accent outline.
+
+**2026-11-09**
+- **Open a launcher** approved (§21): from a launcher filter chip's right-click menu and as a group in the tray
+  menu. Not chosen: a launcher row on the shelf, deep links into launchers.
 
 ---
 
@@ -676,7 +681,10 @@ Five small things that make the app pleasant to look at without getting in the w
 - Loaded only while the banner is shown, like the hero art. The image's screen-reader name is the game's title.
 - No logo (not Steam, or none found): the title text as today.
 
-### b. The cover grows into the detail view
+### b. The cover grows into the detail view (dropped)
+
+**Removed on 2026-11-09 (owner's choice): it looked bad.** Details open and close without it. Kept here only as a
+record; don't build it again.
 
 - Opening details from a cover animates that cover into the Detail view's cover position (WinUI's
   `ConnectedAnimationService`, default duration, about 250 ms). Back plays it in reverse into the grid, if that
@@ -1232,6 +1240,167 @@ a: `Services/Chime`, `Services/Sound`, `App` (wait time), `GameModeView` (previe
 length and level. b: `Views/GameTile.xaml(.cs)`, `Themes/Theme.xaml` (`CoverScrimBrush`, `CoverHoverEdgeBrush`;
 `CoverOverlayBrush` goes), `ShelfView` (item container clipping, if needed). No new settings.
 
+## 20. Game mode: more items (board 24, milestone 14)
+
+**Approved by the owner (2026-11-08) and built**, all four as recommended:
+- Item 1 is the "Windows' own settings" card on the Game mode page (`Services/WindowsGaming`). Each row shows On/Off
+  on its button, which opens the Settings page. The values are read when the page opens.
+- Item 2 is "Pause OneDrive syncing", a switch in the services card (id `onedrive`, off by default, no admin rights).
+  - The watcher journals the exe before it sends `/shutdown`, and waits up to 10 s.
+  - The exe is kept in the journal even when OneDrive is still closing, so it's started again after the game. It
+    isn't started again if it's already running.
+  - OneDrive is left running when Documents is inside a OneDrive folder.
+- Item 3 is a Close / Calm choice on each app row ("Apps while playing", `Settings.GameModeCalmApps`, watcher
+  `--calm`).
+  - Only `EXECUTION_SPEED` is set; the priority isn't changed.
+  - Each process is journaled with its pid, start time and previous masks. Restore touches only that same process,
+    and only if it's still in efficiency mode.
+  - Never the game: the watcher drops paths inside its install folder, and the widget drops the game's own files.
+    Windows' own programs, Store apps and Game Shelf are never calmed either (`IsClosableApp`).
+  - Tested live on 2026-11-08: one process went into efficiency mode, and the same process was restored.
+- Item 4 is the Do not disturb row in that card.
+
+Research for "what else could Game mode safely do" (2026-11-08). Only items that measurably help a game *and* can
+be put back exactly passed; everything already in §11 (done or excluded) is not re-proposed unless there's new
+evidence. Honest summary: **§11 already covers nearly everything that really helps.** What's left is small, so two
+of the four picks don't change anything at all: they only *show* Windows' own gaming switches and link to them.
+
+### Recommended, ranked
+
+| # | Item | Benefit (source) | Admin | Restore | Risk | Suggested default |
+|---|---|---|---|---|---|---|
+| 1 | **"Windows' own gaming settings" card**: shows Windows Game Mode and "Optimizations for windowed games", each with its state and an "Open" link | Windows Game Mode: no driver installs or restart prompts from Windows Update during play, "more stable frame rate" depending on game ([Xbox Support][xbox-gm]). Windowed optimizations: DX10/11 windowed and borderless games move from blt to flip model, which lowers frame latency and enables VRR and Auto HDR ([Microsoft Support][winopt]) | No | Nothing to restore: read-only, Game Shelf never changes them | None. Reads two undocumented HKCU values behind documented settings; if they can't be read, the row shows only "Open" | On (it's just a card) |
+| 2 | **OneDrive: pause sync while playing** (closes OneDrive with its own `/shutdown`, reopens it with `/background`) | Stops sync hashing, disk I/O and downloads; the existing upload limit only slows what it *sends*. Helps only while OneDrive is actually syncing; no benchmark exists, so measure it on the PC | No | Journal "we closed it" + exe path, flushed before; reopen only if we closed it and it isn't running again. Crash: the normal journal recovery reopens it on the next start | `/shutdown` is community-documented, not on Microsoft Learn (flag). Online-only files can't open while it's off: a game whose saves are in a OneDrive-backed Documents folder with online-only saves would fail to load, so skip when Documents is redirected to OneDrive and not all local. Files changed during play sync afterwards | Off |
+| 3 | **Calm chosen apps** (efficiency mode, the green leaf in Task Manager) instead of closing them | EcoQoS "always selects most efficient CPU frequency and schedules to efficient cores" ([Microsoft Learn, Quality of Service][qos]): on hybrid Intel CPUs it keeps those apps off the P-cores the game uses. Helps only when the app is busy (encoding, syncing, a heavy browser tab); on non-hybrid CPUs only that app's clocks drop | No (same user's processes) | `SetProcessInformation(ProcessPowerThrottling)`. Journal pid + start time + exe path + the previous state (`GetProcessInformation`, verify it returns what the app set itself) before; restore only that state, only on the same process, only if it's still EcoQoS. Crash: an app that is still running gets it back on the next start; one that closed has nothing to restore | Owner decision: §11 excluded "lowering other apps' priority". This is not priority (Task Manager's mode also sets Idle priority; we wouldn't), but it touches other apps. Never the game, its launcher, the "kept smooth" apps, Windows or security processes (`IsSystemApp`), or our own | Off, empty list |
+| 4 | **Do not disturb**: a link row only | Windows turns DND on automatically "when playing a game" by default ([Microsoft Support, Focus][focus]) | No | Nothing | None | Link only |
+
+Notes:
+- **1 instead of toggling them per session:** both switches only affect games, so there's no reason to turn them
+  off between sessions. Flipping them per game would add journal entries and crash recovery for no gain, and
+  windowed optimizations must be set before the game creates its swap chain. Showing them keeps the user in charge
+  and feels native (Settings › Gaming › Game Mode, `ms-settings:gaming-gamemode`; Settings › Display › Graphics,
+  `ms-settings:display-advancedgraphics`). Read them when the Game mode page opens, never on a timer
+  (`HKCU\Software\Microsoft\GameBar\AutoGameModeEnabled`, missing = on; `HKCU\Software\Microsoft\DirectX\UserGpuPreferences`
+  `DirectXUserGlobalSettings` containing `SwapEffectUpgradeEnable=1`). On Windows 10, the windowed row hides.
+- **4 has no new evidence for building more:** starting a focus session (`FocusSessionManager.TryStartFocusSession`)
+  is a Limited Access Feature that needs a token from Microsoft ([Microsoft Learn][fsm]); reading it
+  (`IsFocusActive`) is public but tells us nothing useful. So §11's "link to `ms-settings:notifications`" stands.
+- **2 and 3 change the close-apps section**: OneDrive would appear as a row in "Close apps while playing" with its own
+  method (today it's left open because it has no window), and 3 adds a third choice per app: Close / Calm.
+
+### Rejected, and why
+
+- **Transparency and visual effects:** in fullscreen and independent-flip (borderless with flip model) DWM isn't
+  composing the game, so there's nothing to win; the windowed case is covered by item 1. Placebo.
+- **Timer resolution:** since Windows 10 2004 `timeBeginPeriod` only affects the calling process
+  ([Microsoft Learn][timer]); games set their own. A global setting would only cost battery.
+- **Core parking / processor policy:** Best performance power mode is already there. Unparking by hand fights AMD
+  X3D parking that keeps games on the cache CCD. Harmful, as §11 already says.
+- **HAGS, MPO (`OverlayTestMode`), memory compression (`Disable-MMAgent`):** need a restart or driver reset, and
+  are HKLM troubleshooting knobs, not gaming tweaks. MPO off is a flicker workaround that *adds* latency.
+- **Disabling fullscreen optimizations** (the per-exe compatibility flag): Microsoft's DirectX team shows FSO
+  gives exclusive-fullscreen performance with faster Alt+Tab ([DirectX blog][fso]); turning it off can break VRR
+  and HDR. No benefit to measure.
+- **Standby list cleaning, working-set trimming of other apps:** the pages fault back in; placebo or harmful.
+- **Nagle, interrupt moderation, `NetworkThrottlingIndex`:** most game traffic is UDP and games set
+  `TCP_NODELAY` themselves; adapter settings reset the network link. Already excluded in §11; no new evidence.
+- **Mouse acceleration ("Enhance pointer precision"):** not a performance setting, and games that use raw input
+  never see pointer ballistics ([Microsoft Learn][rawinput]). Changing it would change how the desktop feels.
+- **Pausing Windows Update / active hours:** undocumented HKLM values; Windows Game Mode already blocks driver
+  installs and restart prompts; the bandwidth limit (§11) handles the network part. Services stay excluded.
+- **Delivery Optimization peer upload:** uploading to Internet peers is off by default (local network only); the
+  existing limit covers downloads. Nothing to add.
+- **Defender scan schedule, Automatic Maintenance:** scheduled scans start only when the PC isn't in use
+  (`ScanOnlyIfIdleEnabled`, on by default) and maintenance waits for idle ([Microsoft Learn][maint]). Nothing runs
+  during play to pause; touching Defender stays excluded.
+- **Steam / Epic / Battle.net downloads:** Steam pauses during games by default; the others have no API, only
+  their own settings (already pointed to in §11).
+- **Browser background tabs:** browsers already throttle background tabs; Edge even puts tabs to sleep when a PC
+  game starts ("PC gaming boost", [Microsoft][edge]). Item 3 covers a browser the user wants calmer anyway.
+- **RGB / vendor utilities (iCUE, Armoury Crate…):** a real source of DPC spikes on some PCs, but they're tray apps
+  with no window to close politely, and ending them is excluded. Users can add them to "Close apps" where they do
+  have a window.
+
+### Not decided (noticed on the way)
+
+- **"Use the high-performance GPU" per game** on laptops with two GPUs (`UserGpuPreferences` `GpuPreference=2;`,
+  the per-app Graphics setting). A real, large win when Windows picks the integrated GPU, but it's a permanent
+  per-game preference, so it belongs in Game detail, not Game mode.
+
+[xbox-gm]: https://support.xbox.com/help/games-apps/game-setup-and-play/use-game-mode-gaming-on-pc
+[winopt]: https://support.microsoft.com/topic/3f006843-2c7e-4ed0-9a5e-f9389e535952
+[qos]: https://learn.microsoft.com/windows/win32/procthread/quality-of-service
+[focus]: https://support.microsoft.com/topic/81ed1b25-809b-741d-549c-7696474d15d3
+[fsm]: https://learn.microsoft.com/uwp/api/windows.ui.shell.focussessionmanager.trystartfocussession
+[timer]: https://learn.microsoft.com/windows/win32/api/timeapi/nf-timeapi-timebeginperiod
+[fso]: https://devblogs.microsoft.com/directx/demystifying-full-screen-optimizations/
+[rawinput]: https://learn.microsoft.com/windows/win32/dxtecharts/taking-advantage-of-high-dpi-mouse-movement
+[maint]: https://learn.microsoft.com/windows/win32/taskschd/task-maintenence
+[edge]: https://www.microsoft.com/edge/features/pc-gaming-performance
+
+## 21. Open a launcher (milestone 22, no board yet)
+
+After the shortcut import, the launchers' own icons (Steam, Epic, …) are often the last game shortcuts left on the
+desktop. People still open them for game reasons: updates, installing something new, the store, friends. Game Shelf
+can open them, so the desktop can be cleared completely. Two entry points, both menus, nothing new on the shelf.
+
+### a. Filter chip menu
+- Right-clicking a launcher's filter chip (or Shift+F10 / the Menu key on it) opens a small `MenuFlyout` with one
+  item: "Open Steam" (the launcher's own name, with its icon from `LauncherIcons`). Built when it opens.
+- A normal click still only filters the grid.
+- All, Favorites, Recent and Other get no menu. Launchers under "More" get no entry here; the tray menu covers them.
+- Screen readers: the chip's help text says "Right-click to open Steam".
+
+### b. Tray menu
+- The tray menu (§16 b) gets the launchers that have games, in the chip order, as their own group before Settings:
+
+  ```
+  Open Game Shelf
+  ───────────
+  Game mode
+  Free up space…
+  ───────────
+  Open Steam
+  Open Epic Games Launcher
+  Open EA app
+  ───────────
+  Settings
+  Quit
+  ```
+- Only launchers that have games on the shelf and whose launcher is installed (`LauncherIcons.LauncherExe` returns a
+  path). None: no launcher group and no extra separator.
+- Works while the panel is closed: the game list stays in memory in "Stay ready", so the item doesn't open the panel
+  or load any view. Plain text items, like the rest of the native menu.
+
+### How a launcher is opened
+- One helper, e.g. `GameActions.OpenLauncher(GameSource)`, used by both menus and by Free up space's "open the
+  launcher" step (§12) instead of its own copy.
+- Target: `LauncherIcons.LauncherExe(source)`, started with `UseShellExecute` and no arguments. Xbox opens its
+  `shell:AppsFolder` item.
+- **Steam opens with its window,** i.e. `steam.exe` without `-silent`. The user asked for the launcher here, unlike a
+  game launch.
+- When the launcher is already running, starting its exe again should bring its window to the front. **Verify on the
+  real PC** for each installed launcher; if one starts a second copy or does nothing, note it here.
+- The panel behaves as after any other outside action (in Flyout mode it closes on click-away as usual). No toast.
+- Display names: one table shared with `GameActions.LauncherName` (Steam, Epic Games Launcher, GOG Galaxy, EA app,
+  Ubisoft Connect, Xbox app, Rockstar Games Launcher, Hytale Launcher).
+
+### Security
+- Only the paths `LauncherExe` already returns: Steam's from `SteamPath`, Rockstar's and Hytale's from their own
+  lookups, the others from the program registered for the launcher's link (`HKCR\{scheme}\shell\open\command`),
+  which is what Windows runs for those links anyway. The file must exist and end in `.exe`; no arguments.
+- Nothing runs until the user picks the item.
+
+### Not chosen
+- A launcher row or tiles on the shelf: permanent space taken from the grid for something used far less than games.
+- Deep links into launchers (store pages, friends, downloads): that turns Game Shelf into a front-end for them.
+
+### Touches
+`ShelfView` (chip menu), `App.ShowTrayMenu`, `GameActions`, `LauncherIcons`, `FreeSpaceView` (reuse the helper).
+No new settings. Cost: nothing while idle; the items are built when a menu opens (a few registry reads).
+
+---
+
 ## Build order (after milestone 7)
 
 8. **Quick wins:** *(Done.)*
@@ -1262,6 +1431,8 @@ length and level. b: `Views/GameTile.xaml(.cs)`, `Themes/Theme.xaml` (`CoverScri
     relaunch with "Come back" off.
 21. **Softer sound and cover hover** (§19): the Lullaby sound (compare the C# render with board 25's), then the
     Media tile hover; check both on the real PC (speakers and headphones; mouse, keyboard and controller).
+22. **Open a launcher** (§21): the shared helper first (Free up space switches to it), then the tray group, then
+    the chip menu. Verify each installed launcher on the real PC.
 
 ## Not decided (don't build)
 
@@ -1295,3 +1466,4 @@ Suggested but neither approved nor rejected yet:
 - Backup / restore
 - Portable mode (likely dropped, since it conflicts with the installer)
 - A Windows 11 Widgets-board card
+- "Use the high-performance GPU" per game (noticed in §20; it would belong in Game detail, not Game mode)

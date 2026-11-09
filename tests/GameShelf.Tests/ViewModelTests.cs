@@ -78,6 +78,11 @@ static partial class Tests
         Check(settings.Position == DockPosition.Free && vm.PositionIsFree && spy.Changes[^1] == SettingChange.Position, "settings: Free position");
         vm.StartWithWindows = true;
         Check(settings.StartWithWindows && spy.Changes[^1] == SettingChange.Autostart, "settings: Start with Windows reported");
+        int before = spy.Changes.Count;
+        vm.ShinyFavorites = true; // the default: no change
+        vm.ShinyFavorites = false;
+        Check(!settings.ShinyFavorites && spy.Changes.Count == before + 1 && spy.Changes[^1] == SettingChange.Shelf,
+            "settings: Shiny favorites off writes it and reports Shelf once");
 
         vm.Load(settings, games, false, refreshing: true, importedShortcuts: 3, monitors, null, hotkeyFree: false);
         Check(vm.LibraryText == "Scanning your stores…" && !vm.CanRefresh && vm.ShortcutsText == "3 imported" && vm.CanRestoreShortcuts,
@@ -296,7 +301,8 @@ static partial class Tests
         public readonly List<string> Calls = [];
         public int Saves;
         public GameModeStatus Status = new(false, false, true, "Balanced", false, true, ["Discord"],
-            new Dictionary<string, Shared.ServiceState.Kind> { ["wsearch"] = Shared.ServiceState.Kind.Running });
+            new Dictionary<string, Shared.ServiceState.Kind> { ["wsearch"] = Shared.ServiceState.Kind.Running },
+            new WindowsGamingStatus(GameModeOn: true, HasWindowedOptimizations: false, WindowedOptimizationsOn: false, OneDriveRunning: true, DocumentsInOneDrive: false));
         public RestoreStatus Restore = new(null, false, false, false);
         public int AllowCode;
         public AppChoice[] Running = [new(@"C:\Apps\Sync\sync.exe", "Sync"), new(@"C:\Apps\Chat\chat.exe", "Chat")];
@@ -327,6 +333,7 @@ static partial class Tests
         }
         public void OpenLog() => Calls.Add("log");
         public void PlayRestoredSound() => Calls.Add("sound");
+        public void OpenWindowsSettings(string uri) => Calls.Add(uri);
     }
 
     static void GameModeViewModelTests()
@@ -343,6 +350,10 @@ static partial class Tests
         Check(vm.BackName == "Back to the shelf" && vm.BackToolTip == "Back to the shelf (Esc)", "game mode: back says where it goes");
         Check(vm.PowerText == "Now: Balanced. Switched back after the game." && vm.GameBarText.EndsWith("Now: on.") &&
               vm.SmoothText.EndsWith("Always included: the game, Discord."), "game mode: what Windows does now");
+        Check(vm.WinGameModeState == "On" && !vm.WindowedVisible && vm.OneDriveText.EndsWith("Now: running."), "game mode: Windows' own settings and OneDrive");
+        vm.OpenGameModeSettingsCommand.Execute(null);
+        Check(spy.Calls is ["ms-settings:gaming-gamemode"], "game mode: opens Windows' Game Mode settings");
+        spy.Calls.Clear();
         Check(vm.CloseApps.Length == 2 && vm.CloseApps[0].Detail == "Running · reopened after the game" &&
               vm.CloseApps[1].Detail == "Not found: it may have been uninstalled", "game mode: closed apps with their state");
         Check(vm.Services.Length == 4 && vm.Services[0].Detail.EndsWith("Now: running.") && vm.Services[1].Detail.EndsWith("Now: not on this PC."),
@@ -376,6 +387,16 @@ static partial class Tests
         vm.AddCloseApp(@"C:\Apps\Sync\sync.exe");
         vm.RemoveCloseApp(@"c:\apps\gone\OLD.exe");
         Check(vm.CloseApps.Select(a => a.Name).SequenceEqual(["chat", "sync"]), "game mode: add and remove closed apps (any case)");
+        int saves = spy.Saves;
+        var calmed = vm.SetCalm(@"C:\Apps\Chat\chat.exe", true);
+        vm.SetCalm(@"C:\Apps\Chat\chat.exe", true);
+        Check(calmed.Calm && calmed.Detail == "Running · in efficiency mode while you play" && vm.CloseApps[0].Calm &&
+              settings.GameModeCalmApps is [@"C:\Apps\Chat\chat.exe"] && spy.Saves == saves + 1, "game mode: Calm an app (saved once)");
+        Check(vm.SetCalm(@"C:\Apps\Chat\chat.exe", false).Detail == "Running · reopened after the game" && settings.GameModeCalmApps.Count == 0,
+            "game mode: back to Close");
+        vm.SetCalm(@"C:\Apps\Chat\chat.exe", true);
+        vm.RemoveCloseApp(@"C:\Apps\Chat\chat.exe");
+        Check(settings.GameModeCalmApps.Count == 0 && vm.CloseApps is [{ Name: "sync" }], "game mode: removing an app also forgets Calm");
         int uploads = vm.UploadApps.Length;
         vm.AddName(smooth: false, @"C:\Apps\Chat\chat.exe");
         Check(vm.UploadApps.Length == uploads + 1 && vm.UploadApps[^1] == "chat.exe" && !vm.AppsFor(smooth: false).Any(a => a.Name == "Chat"),
@@ -574,6 +595,14 @@ static partial class Tests
         Check(vm.CrashVisible && !vm.SpotlightVisible && vm.CrashShown, "shelf: the crash card takes the top slot");
         vm.SetCrashShown(false);
         Check(!vm.CrashVisible && vm.SpotlightVisible, "shelf: the top slot comes back");
+
+        vm.SetWelcome(new Library.WelcomeMoment("e1", now.AddHours(-2), TimeSpan.FromMinutes(45), TimeSpan.FromHours(3), 10));
+        Check(vm.ShowsWelcome && vm.ContinueGame?.Id == "e1" && vm.ContinueEyebrow == "Welcome back" && !vm.ShowWeek && !vm.SwitchVisible &&
+              vm.ContinueDetail.EndsWith(" this week") && vm.MilestoneVisible && vm.ContinueMilestone == "10 hours in Charlie",
+            "shelf: Welcome back takes the top slot, with its milestone and no switch");
+        vm.SetWelcome(null);
+        Check(!vm.ShowsWelcome && vm.ContinueGame?.Id == "s1" && vm.ContinueEyebrow == "Continue playing" && !vm.MilestoneVisible &&
+              vm.ShowWeek && vm.SwitchVisible, "shelf: the next opening shows the normal slot again");
 
         vm.SetFlyout(true, false);
         Check(vm.PinVisible && vm.PinChecked == false && vm.PinLabel == "Pin open", "shelf: pin button in the flyout");

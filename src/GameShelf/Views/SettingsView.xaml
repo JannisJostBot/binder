@@ -246,6 +246,19 @@
                                   AutomationProperties.Name="Show this week's playtime" />
                 </Grid>
             </Border>
+            <Border Style="{StaticResource SettingCard}">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="Favorite covers get a faint rainbow shine that follows the pointer">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE734;" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Shiny favorites" />
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.ShinyFavorites, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="Shiny favorites" />
+                </Grid>
+            </Border>
 
             <!-- Library -->
             <TextBlock Style="{StaticResource GroupLabel}" Text="Library" />

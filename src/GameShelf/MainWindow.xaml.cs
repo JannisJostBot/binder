@@ -57,6 +57,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         SetupPage.Initialize(this); // its actions: MainWindow.Setup.cs
         Shelf.ViewModel!.SetFlyout(IsFlyout, App.Pinned);
         Shelf.ViewModel!.SetData(_games, _sessions, App.Settings);
+        PickWelcome();
         Shelf.CrashPlayRequested += game =>
         {
             CrashSeen();

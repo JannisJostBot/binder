@@ -320,11 +320,41 @@ public sealed partial class ShelfViewModel : ObservableObject
 
     private bool _crashShown;
 
-    /// <summary>The last played game, worked out when the data changes (not per keystroke).</summary>
+    private static readonly string[] ContinueNames =
+    [
+        nameof(ContinueGame), nameof(ContinueEyebrow), nameof(ContinueTitle), nameof(ContinueDetail),
+        nameof(ContinueMilestone), nameof(MilestoneVisible), nameof(ContinuePlayName),
+    ];
+
+    /// <summary>The last played game (or the one "Welcome back" is for), worked out when the data changes.</summary>
     public Game? ContinueGame { get; private set; }
+    /// <summary>"Continue playing", or "Welcome back" once after a session (§13 c).</summary>
+    public string ContinueEyebrow { get; private set; } = "Continue playing";
     public string ContinueTitle { get; private set; } = "";
     public string ContinueDetail { get; private set; } = "";
+    /// <summary>A quiet playtime milestone ("100 hours in …", §13 e), only in "Welcome back".</summary>
+    public string ContinueMilestone { get; private set; } = "";
+    public bool MilestoneVisible { get; private set; }
     public string ContinuePlayName { get; private set; } = "Play";
+
+    private WelcomeMoment? _welcome;
+
+    /// <summary>
+    /// "Welcome back" (proposals §13 c) in the top slot for this opening of the panel, or null for the normal
+    /// slot. Chosen (and stored as shown) by the window each time the panel opens.
+    /// </summary>
+    public void SetWelcome(WelcomeMoment? moment)
+    {
+        if (_welcome is null && moment is null) return;
+        _welcome = moment;
+        UpdateContinue();
+        UpdateSpotlight();
+        foreach (var name in ContinueNames) OnPropertyChanged(name);
+        RaiseSpotlight();
+    }
+
+    /// <summary>"Welcome back" takes the slot for this opening, without the switch.</summary>
+    public bool ShowsWelcome => _welcome is not null && ContinueGame?.Id == _welcome.GameId;
 
     public bool HasWeek { get; private set; }
     public string WeekTotal { get; private set; } = "";
@@ -366,8 +396,9 @@ public sealed partial class ShelfViewModel : ObservableObject
         bool hasContinue = ContinueGame is not null;
         SpotlightVisible = !searching && (hasContinue || HasWeek);
         if (!SpotlightVisible) return;
-        ShowWeek = HasWeek && (!hasContinue || _settings.SpotlightShowsWeek);
-        SwitchVisible = hasContinue && HasWeek;
+        bool welcome = ShowsWelcome;
+        ShowWeek = !welcome && HasWeek && (!hasContinue || _settings.SpotlightShowsWeek);
+        SwitchVisible = !welcome && hasContinue && HasWeek;
     }
 
     private void RaiseSpotlight()
@@ -390,9 +421,22 @@ public sealed partial class ShelfViewModel : ObservableObject
         ContinueGame = _lastPlayed.Count == 0 ? null : _games
             .Where(g => _lastPlayed.ContainsKey(g.Id))
             .MaxBy(g => _lastPlayed[g.Id]);
+        if (_welcome is not null && _games.FirstOrDefault(g => g.Id == _welcome.GameId) is { } welcomeGame) ContinueGame = welcomeGame;
         if (ContinueGame is null) return;
         ContinueTitle = ContinueGame.Name;
-        ContinueDetail = $"{Format.RelativeDay(_lastPlayed[ContinueGame.Id])} · {ContinueGame.SourceLabel}";
+        if (ShowsWelcome)
+        {
+            ContinueEyebrow = "Welcome back";
+            ContinueDetail = $"{Format.Duration(_welcome!.Length)} played · {Format.Playtime(_welcome.Week)} this week";
+            ContinueMilestone = $"{_welcome.Milestone:N0} hours in {ContinueGame.Name}";
+            MilestoneVisible = _welcome.Milestone > 0;
+        }
+        else
+        {
+            ContinueEyebrow = "Continue playing";
+            ContinueDetail = $"{Format.RelativeDay(_lastPlayed[ContinueGame.Id])} · {ContinueGame.SourceLabel}";
+            MilestoneVisible = false;
+        }
         ContinuePlayName = "Play " + ContinueGame.Name;
     }
 
