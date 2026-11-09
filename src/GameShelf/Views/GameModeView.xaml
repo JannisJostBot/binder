@@ -93,6 +93,19 @@
                         <ToggleSwitch x:Name="GameBarSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="gamebar"
                                       AutomationProperties.Name="Pause Game Bar background recording" Toggled="OnItemToggled" />
                     </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Pause OneDrive syncing" />
+                            <TextBlock x:Name="OneDriveText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch x:Name="OneDriveSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="onedrive"
+                                      AutomationProperties.Name="Pause OneDrive syncing" Toggled="OnItemToggled" />
+                    </Grid>
                 </StackPanel>
             </Border>
 
@@ -174,12 +187,12 @@
                        Text="Downloads can't be slowed from this PC. Steam pauses its downloads while you play; Epic and Battle.net have a download limit in their own settings." />
 
             <!-- Close apps while playing -->
-            <TextBlock Style="{StaticResource SectionLabel}" Text="Close apps while playing" />
+            <TextBlock Style="{StaticResource SectionLabel}" Text="Apps while playing" />
             <Border Style="{StaticResource Card}">
                 <StackPanel Padding="0,4,0,12">
-                    <StackPanel x:Name="AppList" AutomationProperties.Name="Apps closed while playing" />
+                    <StackPanel x:Name="AppList" AutomationProperties.Name="Apps closed or calmed while playing" />
                     <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" Margin="0,10,0,10"
-                               Text="Apps are asked to close politely and reopened after the game. If one wants to save something first, or has no window to close, it's left open." />
+                               Text="Close: asked to close politely and reopened after the game; if one wants to save something first, or has no window to close, it's left open. Calm: keeps running in efficiency mode, using less of the PC, and is back to normal after the game." />
                     <Button x:Name="AddAppButton" Click="OnAddAppClick" HorizontalAlignment="Left"
                             AutomationProperties.Name="Add a running app">
                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -187,6 +200,67 @@
                             <TextBlock Text="Add a running app" />
                         </StackPanel>
                     </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Windows' own gaming settings: read when the page opens, changed only in Windows Settings -->
+            <TextBlock Style="{StaticResource SectionLabel}" Text="Windows' own settings" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <Grid Style="{StaticResource SettingRow}" ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Game Mode" />
+                            <TextBlock x:Name="WinGameModeText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Grid.Column="1" VerticalAlignment="Center" Click="OnOpenGameModeSettings"
+                                AutomationProperties.Name="Open Game Mode in Windows Settings">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock x:Name="WinGameModeState" />
+                                <FontIcon Glyph="&#xE8A7;" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <Border x:Name="WindowedDivider" Style="{StaticResource RowDivider}" />
+                    <Grid x:Name="WindowedRow" Style="{StaticResource SettingRow}" ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Optimizations for windowed games" />
+                            <TextBlock x:Name="WindowedText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Grid.Column="1" VerticalAlignment="Center" Click="OnOpenGraphicsSettings"
+                                AutomationProperties.Name="Open optimizations for windowed games in Windows Settings">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock x:Name="WindowedState" />
+                                <FontIcon Glyph="&#xE8A7;" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <Border Style="{StaticResource RowDivider}" />
+                    <Grid Style="{StaticResource SettingRow}" ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Style="{StaticResource RowText}">
+                            <TextBlock Style="{StaticResource RowTitle}" Text="Do not disturb" />
+                            <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
+                                       Text="Windows can turn it on by itself while you play a game full screen: “When playing a game” under Turn on do not disturb automatically." />
+                        </StackPanel>
+                        <Button Grid.Column="1" VerticalAlignment="Center" Click="OnOpenNotificationSettings"
+                                AutomationProperties.Name="Open notification settings in Windows Settings">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="Open" />
+                                <FontIcon Glyph="&#xE8A7;" FontSize="12" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
                 </StackPanel>
             </Border>
 

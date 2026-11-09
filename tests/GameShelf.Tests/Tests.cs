@@ -79,6 +79,7 @@ static class Tests
         ShelfTests();
         PayloadTests();
         ChimeTests();
+        MomentTests();
         LaunchTests(dir);
         PlaytimeTests();
         CrashTests();
@@ -774,6 +775,28 @@ static class Tests
             "{\"GameId\":\"a\",\"Started\":\"2026-11-07T21:00:00+01:00\",\"ClosedApps\":[\"cmd.exe\",\"C:\\\\x\\\\..\\\\y.exe\",\"C:\\\\Program Files\\\\WindowsApps\\\\a.exe\",\"C:\\\\a.bat\"]}"));
         Check(hostile.ClosedApps.Count == 0, "journal apps that aren't plain full exe paths are never reopened");
 
+        // Proposals §20: OneDrive and calmed apps survive a crash in the journal, and only safe values come back.
+        var oneDrive = GameShelf.Shared.GameModeInfo.OneDriveCandidates().First();
+        var calmJournal = new GameShelf.Watcher.GameMode.Journal { GameId = "steam:570", Started = DateTimeOffset.Now, OneDriveExe = oneDrive };
+        calmJournal.CalmedApps.Add(new(@"C:\Program Files\Spotify\Spotify.exe", 4242, 133_000_000_000_000_000, 1, 0));
+        var calmBack = GameShelf.Watcher.GameMode.Journal.Parse(calmJournal.ToJson());
+        Check(calmBack.OneDriveExe == oneDrive && calmBack.CalmedApps.SequenceEqual(calmJournal.CalmedApps), "journal keeps OneDrive and calmed apps");
+        var calmHostile = GameShelf.Watcher.GameMode.Journal.Parse(Encoding.UTF8.GetBytes(
+            "{\"GameId\":\"a\",\"Started\":\"2026-11-07T21:00:00+01:00\",\"OneDriveExe\":\"C:\\\\Evil\\\\OneDrive.exe\"," +
+            "\"CalmedApps\":[{\"Path\":\"cmd.exe\",\"Pid\":4,\"Created\":1,\"Control\":1,\"State\":1}," +
+            "{\"Path\":\"C:\\\\Apps\\\\a.exe\",\"Pid\":8,\"Created\":2,\"Control\":4294967295,\"State\":4294967295}]}"));
+        Check(calmHostile.OneDriveExe is null, "only OneDrive's own exe is started again");
+        Check(calmHostile.CalmedApps.Count == 1 && calmHostile.CalmedApps[0].Control == 7 && calmHostile.CalmedApps[0].State == 7,
+            "calmed apps: plain exe paths only, masks limited to the known bits");
+        Check(GameShelf.Shared.GameModeInfo.OneDriveHoldsDocuments(@"C:\Users\a\OneDrive\Documents", [null, @"C:\Users\a\OneDrive"]) &&
+              !GameShelf.Shared.GameModeInfo.OneDriveHoldsDocuments(@"C:\Users\a\Documents", [@"C:\Users\a\OneDrive"]) &&
+              !GameShelf.Shared.GameModeInfo.OneDriveHoldsDocuments(@"C:\Users\a\OneDriveX\Documents", [@"C:\Users\a\OneDrive"]) &&
+              !GameShelf.Shared.GameModeInfo.OneDriveHoldsDocuments(@"C:\Users\a\Documents", ["OneDrive"]),
+            "OneDrive stays running when Documents is in it");
+        Check(GameShelf.Shared.GameModeInfo.IsSwapEffectUpgradeOn("VRROptimizeEnable=0;SwapEffectUpgradeEnable=1;") &&
+              !GameShelf.Shared.GameModeInfo.IsSwapEffectUpgradeOn("SwapEffectUpgradeEnable=0;") &&
+              !GameShelf.Shared.GameModeInfo.IsSwapEffectUpgradeOn(""), "windowed games optimizations read from Windows' value");
+
         Check(!GameShelf.Watcher.GameMode.IsClosableApp("notepad.exe") && !GameShelf.Watcher.GameMode.IsClosableApp(@"C:\Apps\run.bat") &&
               !GameShelf.Watcher.GameMode.IsClosableApp(Path.Combine(AppContext.BaseDirectory, "GameShelf.exe")),
             "relative paths, non-exes and Game Shelf itself aren't closed");
@@ -868,6 +891,29 @@ static class Tests
             Check(false, "a helper journal without a user SID is rejected");
         }
         catch (FormatException) { Check(true, "a helper journal without a user SID is rejected"); }
+    }
+
+    static void MomentTests()
+    {
+        // Proposals §13 c and e: "Welcome back" once per session (2 min or longer), milestones once each.
+        var t0 = new DateTimeOffset(2026, 11, 2, 18, 0, 0, TimeSpan.FromHours(1));
+        Session S(string id, DateTimeOffset start, double hours) => new() { GameId = id, Start = start, End = start.AddHours(hours) };
+        var sessions = new List<Session> { S("a", t0, 9.5), S("b", t0.AddDays(1), 1), S("a", t0.AddDays(2), 1.7) };
+        var now = t0.AddDays(2).AddHours(3).DateTime;
+        var moment = GameShelf.Library.Moments.Pick(sessions, t0.AddDays(1), _ => 0, now);
+        Check(moment is { GameId: "a", Milestone: 10 } && moment.Length == TimeSpan.FromHours(1.7) && moment.SessionStart == sessions[2].Start,
+            "welcome back: the last session, with the 10 h milestone it passed");
+        Check(GameShelf.Library.Moments.Pick(sessions, sessions[2].Start, _ => 0, now) is null, "welcome back shows once per session");
+        Check(GameShelf.Library.Moments.Pick(sessions, t0, _ => 10, now) is { Milestone: 0 }, "a milestone already shown isn't shown again");
+        var shortOne = new List<Session>(sessions) { new() { GameId = "b", Start = t0.AddDays(3), End = t0.AddDays(3).AddSeconds(90) } };
+        Check(GameShelf.Library.Moments.Pick(shortOne, sessions[2].Start, _ => 0, now) is null, "no welcome back after a session under 2 min");
+        Check(GameShelf.Library.Moments.Reached(TimeSpan.FromHours(260)) == 250 && GameShelf.Library.Moments.Reached(TimeSpan.FromHours(9.9)) == 0 &&
+              GameShelf.Library.Moments.Reached(TimeSpan.FromHours(5000)) == 1000, "crossing several milestones shows only the highest");
+        var games = new List<Game> { new() { Id = "a", Name = "A" }, new() { Id = "b", Name = "B" } };
+        var seeded = GameShelf.Library.Moments.Seed(sessions, games);
+        Check(seeded == sessions[2].Start && games[0].MilestoneShownHours == 10 && games[1].MilestoneShownHours == 0,
+            "first run: old sessions and milestones count as shown");
+        Check(GameShelf.Library.Moments.Seed([], games) == DateTimeOffset.MinValue, "first run without sessions: the first session gets its welcome");
     }
 
     static void ChimeTests()

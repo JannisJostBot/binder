@@ -82,7 +82,16 @@ public sealed partial class GameTile : UserControl
         PlaceholderTitle.Visibility = Cover.HasImage ? Visibility.Collapsed : Visibility.Visible;
         Badge.Source = game.Source;
         FavoriteBadge.Visibility = game.Favorite ? Visibility.Visible : Visibility.Collapsed;
+        Shine.SetOn(game.Favorite && App.Settings.ShinyFavorites && !Accessibility.HighContrast);
         AutomationProperties.SetName(DetailsButton, "Details for " + game.Name);
+    }
+
+    /// <summary>The sheen follows the pointer over a favourite (§13 d); still with "Animation effects" off.</summary>
+    private void OnCoverPointerMoved(object sender, PointerRoutedEventArgs e)
+    {
+        if (!Shine.IsOn || !UiSettings.AnimationsEnabled || CoverArea.ActualWidth <= 0) return;
+        var p = e.GetCurrentPoint(CoverArea).Position;
+        Shine.Follow((float)(p.X / CoverArea.ActualWidth), (float)(p.Y / CoverArea.ActualHeight));
     }
 
     private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
@@ -95,6 +104,7 @@ public sealed partial class GameTile : UserControl
     {
         _hover = _pressed = false;
         Apply(animate: true);
+        Shine.Rest(UiSettings.AnimationsEnabled);
     }
 
     private void OnPointerPressed(object sender, PointerRoutedEventArgs e)

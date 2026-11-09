@@ -44,6 +44,13 @@ public sealed class Settings
     public bool ShowWeeklySummary { get; set; } = true;
     /// <summary>The shelf's top slot shows "This week" instead of "Continue playing" (the last choice is kept).</summary>
     public bool SpotlightShowsWeek { get; set; }
+    /// <summary>
+    /// The start of the last session "Welcome back" was shown for (proposals §13 c), so it shows once even though
+    /// the widget exits while a game runs. Null until it first runs: then it's set without showing anything.
+    /// </summary>
+    public DateTimeOffset? WelcomeBackSessionStart { get; set; }
+    /// <summary>Favourite covers get a rainbow sheen that follows the pointer (proposals §13 d).</summary>
+    public bool ShinyFavorites { get; set; } = true;
 
     public DisplayMode DisplayMode { get; set; } = DisplayMode.Flyout;
     public bool TrayIcon { get; set; } = true;
@@ -67,6 +74,11 @@ public sealed class Settings
     public List<string> GameModeItems { get; set; } = [.. Shared.GameModeInfo.DefaultItems];
     /// <summary>Apps (full exe paths) asked to close while a game runs and reopened after.</summary>
     public List<string> GameModeCloseApps { get; set; } = [];
+    /// <summary>
+    /// Those of <see cref="GameModeCloseApps"/> put in efficiency mode instead of closed (proposals §20, "Calm"):
+    /// they keep running, only slower and on efficient cores.
+    /// </summary>
+    public List<string> GameModeCalmApps { get; set; } = [];
     /// <summary>Show "Restored successfully" when the game closes (problems are always shown).</summary>
     public bool ShowRestoreToast { get; set; } = true;
     /// <summary>Play the Windows notification sound with "Windows is back to normal" (not when something failed).</summary>

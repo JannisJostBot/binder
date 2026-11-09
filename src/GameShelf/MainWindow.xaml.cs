@@ -105,6 +105,7 @@ public sealed partial class MainWindow : Window
         Shelf.SetFlyout(IsFlyout, App.Pinned);
         Shelf.HelperUpdateRequested += UpdateGameModeHelperAsync;
         Shelf.SetData(_games, _sessions, App.Settings);
+        PickWelcome();
         Shelf.CrashPlayRequested += game =>
         {
             CrashSeen();
@@ -345,6 +346,7 @@ public sealed partial class MainWindow : Window
     public void Reopen()
     {
         IsClosing = false;
+        PickWelcome();
         PlaceOnScreen();
         if (IsFlyout) PrepareSlide();
         Activate();
@@ -1411,5 +1413,37 @@ public sealed partial class MainWindow : Window
             HideCountdown();
         }
         RefreshViews();
+        // On screen (Keep open, or the desktop panel): welcome back now. Hidden: when it next opens (Reopen).
+        if (!IsClosing) PickWelcome();
+    }
+
+    /// <summary>
+    /// Proposals §13 c and e: each time the panel opens, "Welcome back" shows the session that ended since the
+    /// last one shown (2 min or longer), with a playtime milestone it passed. Stored as shown right away, so the
+    /// next opening shows the normal slot. The first run only records what's there, showing nothing.
+    /// </summary>
+    private void PickWelcome()
+    {
+        var settings = App.Settings;
+        if (settings.WelcomeBackSessionStart is not { } shownFor)
+        {
+            settings.WelcomeBackSessionStart = Moments.Seed(_sessions, _games);
+            SaveSettings();
+            SaveLibrary();
+            Shelf.SetWelcome(null);
+            return;
+        }
+        var moment = Moments.Pick(_sessions, shownFor, id => FindGame(id)?.MilestoneShownHours ?? 0, DateTime.Now);
+        if (moment is not null)
+        {
+            settings.WelcomeBackSessionStart = moment.SessionStart;
+            SaveSettings();
+            if (moment.Milestone > 0 && FindGame(moment.GameId) is { } game)
+            {
+                game.MilestoneShownHours = moment.Milestone;
+                SaveLibrary();
+            }
+        }
+        Shelf.SetWelcome(moment);
     }
 }

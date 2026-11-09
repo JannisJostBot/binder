@@ -38,6 +38,7 @@ public sealed partial class GameModeView : UserControl
             PowerSwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.Power);
             PrioritySwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.Priority);
             GameBarSwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.GameBar);
+            OneDriveSwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.OneDrive);
             SmoothSwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.Smooth);
             UploadsSwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.Uploads);
             UpdatesSwitch.IsOn = settings.GameModeItems.Contains(GameModeInfo.Updates);
@@ -60,6 +61,7 @@ public sealed partial class GameModeView : UserControl
         GameBarText.Text = "Turns off “Record what happened” while you play. Now: " +
                            (GameModeService.GameBarRecording() ? "on." : "off.");
         FillApps();
+        FillWindowsSettings();
         UpdateLastRestore();
     }
 
@@ -110,35 +112,89 @@ public sealed partial class GameModeView : UserControl
         {
             if (AppList.Children.Count > 0) AppList.Children.Add(new Border { Style = Resource<Style>("RowDivider") });
             var name = GameModeService.AppName(path);
-            var row = new Grid { Style = Resource<Style>("SettingRow") };
+            var row = new Grid { Style = Resource<Style>("SettingRow"), ColumnSpacing = 8 };
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            bool calm = GameModeService.IsCalmed(path, _settings);
             var text = new StackPanel { Style = Resource<Style>("RowText") };
             text.Children.Add(new TextBlock { Text = name, Style = Resource<Style>("RowTitle"), TextTrimming = TextTrimming.CharacterEllipsis });
-            text.Children.Add(new TextBlock
-            {
-                Text = !File.Exists(path) ? "Not found: it may have been uninstalled"
-                    : running.Contains(path) ? "Running · reopened after the game"
-                    : "Not running now",
-                Style = Resource<Style>("RowDetail"),
-            });
+            var detail = new TextBlock { Text = AppDetail(path, calm, running), Style = Resource<Style>("RowDetail") };
+            text.Children.Add(detail);
             ToolTipService.SetToolTip(text, path);
             row.Children.Add(text);
+
+            // Close it (reopened after), or Calm it: efficiency mode, so it keeps running but uses less.
+            var choice = new ComboBox { VerticalAlignment = VerticalAlignment.Center, MinWidth = 96 };
+            choice.Items.Add("Close");
+            choice.Items.Add("Calm");
+            choice.SelectedIndex = calm ? 1 : 0;
+            AutomationProperties.SetName(choice, $"While playing, {name}");
+            ToolTipService.SetToolTip(choice, "Close: closed, and reopened after the game.\nCalm: keeps running in efficiency mode (Task Manager's green leaf).");
+            choice.SelectionChanged += (_, _) =>
+            {
+                bool nowCalm = choice.SelectedIndex == 1;
+                _settings.GameModeCalmApps.RemoveAll(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase));
+                if (nowCalm) _settings.GameModeCalmApps.Add(path);
+                detail.Text = AppDetail(path, nowCalm, running);
+                Changed?.Invoke();
+            };
+            Grid.SetColumn(choice, 1);
+            row.Children.Add(choice);
             var remove = new Button { Content = "", Style = Resource<Style>("IconButton"), VerticalAlignment = VerticalAlignment.Center };
             AutomationProperties.SetName(remove, "Remove " + name);
             ToolTipService.SetToolTip(remove, "Remove");
             remove.Click += (_, _) =>
             {
                 _settings.GameModeCloseApps.RemoveAll(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase));
+                _settings.GameModeCalmApps.RemoveAll(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase));
                 Changed?.Invoke();
                 FillApps();
                 AddAppButton.Focus(FocusState.Programmatic);
             };
-            Grid.SetColumn(remove, 1);
+            Grid.SetColumn(remove, 2);
             row.Children.Add(remove);
             AppList.Children.Add(row);
         }
     }
+
+    private static string AppDetail(string path, bool calm, HashSet<string> running) =>
+        !File.Exists(path) ? "Not found: it may have been uninstalled"
+        : !running.Contains(path) ? "Not running now"
+        : calm ? "Running · in efficiency mode while you play"
+        : "Running · reopened after the game";
+
+    // ---- Windows' own settings (read when the page opens; changed only in Windows Settings) ------------------
+
+    private void FillWindowsSettings()
+    {
+        var gameMode = WindowsGaming.GameModeOn();
+        WinGameModeText.Text = gameMode
+            ? "On. Windows gives the game more of the PC and holds back updates' restarts."
+            : "Off. Turning it on gives the game more of the PC.";
+        WinGameModeState.Text = gameMode ? "On" : "Off";
+
+        bool hasWindowed = WindowsGaming.HasWindowedOptimizations;
+        WindowedRow.Visibility = hasWindowed ? Visibility.Visible : Visibility.Collapsed;
+        WindowedDivider.Visibility = WindowedRow.Visibility;
+        if (hasWindowed)
+        {
+            var windowed = WindowsGaming.WindowedOptimizationsOn();
+            WindowedText.Text = windowed
+                ? "On. Windowed and borderless games get lower latency."
+                : "Off. Turning it on lowers latency in windowed and borderless games.";
+            WindowedState.Text = windowed ? "On" : "Off";
+        }
+        bool oneDrive = WindowsGaming.OneDriveRunning();
+        bool docsInOneDrive = WindowsGaming.DocumentsInOneDrive();
+        OneDriveText.Text = docsInOneDrive
+            ? "Left running on this PC: your Documents folder is in OneDrive, and games often keep their saves there."
+            : "Closes OneDrive while you play and starts it again after. " + (oneDrive ? "Now: running." : "Now: not running.");
+    }
+
+    private void OnOpenGameModeSettings(object sender, RoutedEventArgs e) => WindowsGaming.OpenSettings("ms-settings:gaming-gamemode");
+    private void OnOpenGraphicsSettings(object sender, RoutedEventArgs e) => WindowsGaming.OpenSettings("ms-settings:display-advancedgraphics");
+    private void OnOpenNotificationSettings(object sender, RoutedEventArgs e) => WindowsGaming.OpenSettings("ms-settings:notifications");
 
     // ---- The admin part ------------------------------------------------------------------------------------
 

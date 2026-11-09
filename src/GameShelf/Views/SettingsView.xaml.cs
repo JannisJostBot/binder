@@ -72,6 +72,7 @@ public sealed partial class SettingsView : UserControl
             GameModeText.Text = settings.GameModeEnabled ? "On" : "Off";
             ComeBackSwitch.IsOn = settings.ComeBackOnClose;
             WeekSwitch.IsOn = settings.ShowWeeklySummary;
+            ShinySwitch.IsOn = settings.ShinyFavorites;
             Select(DensityBox, settings.GridDensity.ToString());
             SteamCheck.IsChecked = settings.SteamEnabled;
             EpicCheck.IsChecked = settings.EpicEnabled;
@@ -243,6 +244,13 @@ public sealed partial class SettingsView : UserControl
     {
         if (_loading) return;
         _settings.ShowWeeklySummary = WeekSwitch.IsOn;
+        Change(SettingChange.Shelf);
+    }
+
+    private void OnShinyChanged(object sender, RoutedEventArgs e)
+    {
+        if (_loading) return;
+        _settings.ShinyFavorites = ShinySwitch.IsOn;
         Change(SettingChange.Shelf);
     }
 

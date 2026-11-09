@@ -277,10 +277,12 @@ public sealed partial class ShelfView : UserControl
         Spotlight.Visibility = !searching && (hasContinue || _hasWeek) ? Visibility.Visible : Visibility.Collapsed;
         if (Spotlight.Visibility == Visibility.Collapsed) return;
 
-        bool showWeek = _hasWeek && (!hasContinue || _settings.SpotlightShowsWeek);
+        // "Welcome back" takes the slot for this opening, without the switch (§13 c).
+        bool welcome = ShowsWelcome;
+        bool showWeek = !welcome && _hasWeek && (!hasContinue || _settings.SpotlightShowsWeek);
         WeekPane.Visibility = showWeek ? Visibility.Visible : Visibility.Collapsed;
         ContinuePane.Visibility = showWeek ? Visibility.Collapsed : Visibility.Visible;
-        SpotlightSwitchSurface.Visibility = hasContinue && _hasWeek ? Visibility.Visible : Visibility.Collapsed;
+        SpotlightSwitchSurface.Visibility = !welcome && hasContinue && _hasWeek ? Visibility.Visible : Visibility.Collapsed;
         var item = showWeek ? WeekItem : ContinueItem;
         if (!ReferenceEquals(SpotlightSwitch.SelectedItem, item))
         {
@@ -289,7 +291,9 @@ public sealed partial class ShelfView : UserControl
             _updatingSpotlight = false;
         }
         if (!showWeek && !ReferenceEquals(ContinueArt.Game, _continueGame)) ContinueArt.Game = _continueGame;
-        ContinueLogo.Game = showWeek ? null : _continueGame; // loaded only while the banner shows
+        var logoGame = showWeek ? null : _continueGame; // loaded only while the banner shows
+        if (logoGame is not null && !ReferenceEquals(ContinueLogo.Game, logoGame)) ContinueTitle.Visibility = Visibility.Collapsed;
+        ContinueLogo.Game = logoGame;
     }
 
     private bool _crashShown;
@@ -368,17 +372,46 @@ public sealed partial class ShelfView : UserControl
             "Playtime this week");
     }
 
+    private WelcomeMoment? _welcome;
+
+    /// <summary>
+    /// "Welcome back" (proposals §13 c) in the top slot for this opening of the panel, or null for the normal
+    /// slot. Chosen (and stored as shown) by the window each time the panel opens.
+    /// </summary>
+    public void SetWelcome(WelcomeMoment? moment)
+    {
+        if (_welcome is null && moment is null) return;
+        _welcome = moment;
+        UpdateContinueCard();
+        UpdateSpotlight(searching: SearchBox.Text.Length > 0);
+    }
+
+    private bool ShowsWelcome => _welcome is not null && _continueGame?.Id == _welcome.GameId;
+
     /// <summary>The last played game, worked out when the data changes (not per keystroke).</summary>
     private void UpdateContinueCard()
     {
         _continueGame = _lastPlayed.Count == 0 ? null : _games
             .Where(g => _lastPlayed.ContainsKey(g.Id))
             .MaxBy(g => _lastPlayed[g.Id]);
+        if (_welcome is not null && _games.FirstOrDefault(g => g.Id == _welcome.GameId) is { } welcomeGame) _continueGame = welcomeGame;
         if (_continueGame is null) return;
         // The art itself is set by UpdateSpotlight, only while the banner is shown.
         if (ReferenceEquals(ContinueArt.Game, _continueGame)) ContinueArt.Refresh(); // its art may have changed
         ContinueTitle.Text = _continueGame.Name;
-        ContinueDetail.Text = $"{Format.RelativeDay(_lastPlayed[_continueGame.Id])} · {_continueGame.SourceLabel}";
+        if (ShowsWelcome)
+        {
+            ContinueEyebrow.Text = "Welcome back";
+            ContinueDetail.Text = $"{Format.Duration(_welcome!.Length)} played · {Format.Playtime(_welcome.Week)} this week";
+            ContinueMilestone.Text = $"{_welcome.Milestone:N0} hours in {_continueGame.Name}";
+            ContinueMilestone.Visibility = _welcome.Milestone > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        else
+        {
+            ContinueEyebrow.Text = "Continue playing";
+            ContinueDetail.Text = $"{Format.RelativeDay(_lastPlayed[_continueGame.Id])} · {_continueGame.SourceLabel}";
+            ContinueMilestone.Visibility = Visibility.Collapsed;
+        }
         AutomationProperties.SetName(ContinuePlay, "Play " + _continueGame.Name);
     }
 

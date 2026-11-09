@@ -18,6 +18,10 @@ internal static unsafe partial class GameModeService
 {
     public static bool IsOn(Game game, Settings settings) => game.GameMode ?? settings.GameModeEnabled;
 
+    /// <summary>True when this chosen app is calmed (efficiency mode) instead of closed.</summary>
+    public static bool IsCalmed(string path, Settings settings) =>
+        settings.GameModeCalmApps.Contains(path, StringComparer.OrdinalIgnoreCase);
+
     /// <summary>Adds the watcher's Game mode arguments, when it's on for this game and something is chosen.</summary>
     public static void AddWatcherArguments(Collection<string> args, Game game, Settings settings)
     {
@@ -30,7 +34,7 @@ internal static unsafe partial class GameModeService
         args.Add(string.Join(',', items));
         foreach (var app in apps)
         {
-            args.Add("--close");
+            args.Add(IsCalmed(app, settings) ? "--calm" : "--close");
             args.Add(app);
         }
         args.Add("--toast");
