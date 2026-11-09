@@ -11,8 +11,8 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Click="OnBackClick"
-                        ToolTipService.ToolTip="Back to settings (Esc)" AutomationProperties.Name="Back to settings" />
+                <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Command="{x:Bind ViewModel.BackCommand}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.BackToolTip, Mode=OneWay}" AutomationProperties.Name="{x:Bind ViewModel.BackName, Mode=OneWay}" />
                 <TextBlock Grid.Column="1" Text="Game mode" Style="{StaticResource SubtitleTextBlockStyle}" VerticalAlignment="Center" />
             </Grid>
 
@@ -29,15 +29,17 @@
                                    Text="Everything below is put back exactly as it was when the game closes." />
                     </StackPanel>
                     <ToggleSwitch x:Name="MasterSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Optimize Windows while I play" Toggled="OnMasterToggled" />
+                                  AutomationProperties.Name="Optimize Windows while I play" IsOn="{x:Bind ViewModel.MasterOn, Mode=TwoWay}" />
                 </Grid>
             </Border>
 
             <!-- The admin part: one "Allow…" (a UAC prompt) installs the helper. -->
             <InfoBar x:Name="AllowBar" Margin="20,10,20,0" IsClosable="False" Severity="Informational"
+                     IsOpen="{x:Bind ViewModel.AllowBarOpen, Mode=OneWay}" Message="{x:Bind ViewModel.AllowMessage, Mode=OneWay}"
                      Title="Services and network need administrator rights, once">
                 <InfoBar.ActionButton>
-                    <Button x:Name="AllowButton" Content="Allow…" Click="OnAllowClick"
+                    <Button x:Name="AllowButton" Content="{x:Bind ViewModel.AllowText, Mode=OneWay}" Click="OnAllowClick"
+                            Visibility="{x:Bind ViewModel.ShowAllow, Mode=OneWay}" IsEnabled="{x:Bind ViewModel.AllowEnabled, Mode=OneWay}"
                             AutomationProperties.Name="Allow Game mode to pause services and set network priority" />
                 </InfoBar.ActionButton>
             </InfoBar>
@@ -53,10 +55,9 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Style="{StaticResource RowText}">
                             <TextBlock Style="{StaticResource RowTitle}" Text="Best performance power mode" />
-                            <TextBlock x:Name="PowerText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                            <TextBlock x:Name="PowerText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" Text="{x:Bind ViewModel.PowerText, Mode=OneWay}" />
                         </StackPanel>
-                        <ToggleSwitch x:Name="PowerSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="power"
-                                      AutomationProperties.Name="Best performance power mode" Toggled="OnItemToggled" />
+                        <ToggleSwitch x:Name="PowerSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" AutomationProperties.Name="Best performance power mode" IsOn="{x:Bind ViewModel.PowerOn, Mode=TwoWay}" />
                     </Grid>
                     <Border Style="{StaticResource RowDivider}" />
                     <Grid Style="{StaticResource SettingRow}">
@@ -69,8 +70,7 @@
                             <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
                                        Text="Runs the game &#x201C;Above normal&#x201D; so background work waits its turn." />
                         </StackPanel>
-                        <ToggleSwitch x:Name="PrioritySwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="priority"
-                                      AutomationProperties.Name="Give the game priority" Toggled="OnItemToggled" />
+                        <ToggleSwitch x:Name="PrioritySwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" AutomationProperties.Name="Give the game priority" IsOn="{x:Bind ViewModel.PriorityOn, Mode=TwoWay}" />
                     </Grid>
                 </StackPanel>
             </Border>
@@ -88,10 +88,9 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Style="{StaticResource RowText}">
                             <TextBlock Style="{StaticResource RowTitle}" Text="Game Bar background recording" />
-                            <TextBlock x:Name="GameBarText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                            <TextBlock x:Name="GameBarText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" Text="{x:Bind ViewModel.GameBarText, Mode=OneWay}" />
                         </StackPanel>
-                        <ToggleSwitch x:Name="GameBarSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="gamebar"
-                                      AutomationProperties.Name="Pause Game Bar background recording" Toggled="OnItemToggled" />
+                        <ToggleSwitch x:Name="GameBarSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" AutomationProperties.Name="Pause Game Bar background recording" IsOn="{x:Bind ViewModel.GameBarOn, Mode=TwoWay}" />
                     </Grid>
                 </StackPanel>
             </Border>
@@ -107,13 +106,13 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Style="{StaticResource RowText}">
                             <TextBlock Style="{StaticResource RowTitle}" Text="Game and voice chat first" />
-                            <TextBlock x:Name="SmoothText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                            <TextBlock x:Name="SmoothText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" Text="{x:Bind ViewModel.SmoothText, Mode=OneWay}" />
                         </StackPanel>
-                        <ToggleSwitch x:Name="SmoothSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="smooth"
-                                      AutomationProperties.Name="Game and voice chat first" Toggled="OnItemToggled" />
+                        <ToggleSwitch x:Name="SmoothSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" AutomationProperties.Name="Game and voice chat first" IsOn="{x:Bind ViewModel.SmoothOn, Mode=TwoWay}"
+                                      IsEnabled="{x:Bind ViewModel.HelperAllowed, Mode=OneWay}" />
                     </Grid>
                     <StackPanel x:Name="SmoothList" AutomationProperties.Name="Apps kept smooth" />
-                    <Button x:Name="AddSmoothButton" Click="OnAddSmoothClick" HorizontalAlignment="Left" Margin="0,4,0,12"
+                    <Button x:Name="AddSmoothButton" Click="OnAddSmoothClick" IsEnabled="{x:Bind ViewModel.HelperAllowed, Mode=OneWay}" HorizontalAlignment="Left" Margin="0,4,0,12"
                             AutomationProperties.Name="Add an app to keep smooth">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE710;" FontSize="14" />
@@ -131,8 +130,8 @@
                             <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
                                        Text="Cloud sync is the usual cause of lag spikes. Only what these apps send is limited." />
                         </StackPanel>
-                        <ToggleSwitch x:Name="UploadsSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="uploads"
-                                      AutomationProperties.Name="Slow down background uploads" Toggled="OnItemToggled" />
+                        <ToggleSwitch x:Name="UploadsSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" AutomationProperties.Name="Slow down background uploads" IsOn="{x:Bind ViewModel.UploadsOn, Mode=TwoWay}"
+                                      IsEnabled="{x:Bind ViewModel.HelperAllowed, Mode=OneWay}" />
                     </Grid>
                     <Grid Margin="0,0,0,8" ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
@@ -140,7 +139,8 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Upload limit" Style="{StaticResource RowDetail}" VerticalAlignment="Center" />
-                        <ComboBox x:Name="LimitBox" Grid.Column="1" MinWidth="120" SelectionChanged="OnLimitChanged"
+                        <ComboBox x:Name="LimitBox" Grid.Column="1" MinWidth="120" IsEnabled="{x:Bind ViewModel.HelperAllowed, Mode=OneWay}"
+                                  SelectedIndex="{x:Bind ViewModel.LimitIndex, Mode=TwoWay}"
                                   AutomationProperties.Name="Upload limit">
                             <ComboBoxItem Content="1 Mbit/s" Tag="1" />
                             <ComboBoxItem Content="5 Mbit/s" Tag="5" />
@@ -148,7 +148,7 @@
                         </ComboBox>
                     </Grid>
                     <StackPanel x:Name="UploadList" AutomationProperties.Name="Apps whose uploads are slowed down" />
-                    <Button x:Name="AddUploadButton" Click="OnAddUploadClick" HorizontalAlignment="Left" Margin="0,4,0,12"
+                    <Button x:Name="AddUploadButton" Click="OnAddUploadClick" IsEnabled="{x:Bind ViewModel.HelperAllowed, Mode=OneWay}" HorizontalAlignment="Left" Margin="0,4,0,12"
                             AutomationProperties.Name="Add an app to slow down">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="&#xE710;" FontSize="14" />
@@ -163,10 +163,10 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Style="{StaticResource RowText}">
                             <TextBlock Style="{StaticResource RowTitle}" Text="Limit Windows Update downloads" />
-                            <TextBlock x:Name="UpdatesText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                            <TextBlock x:Name="UpdatesText" Style="{StaticResource RowDetail}" TextWrapping="Wrap" Text="{x:Bind ViewModel.UpdatesText}" />
                         </StackPanel>
-                        <ToggleSwitch x:Name="UpdatesSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" Tag="updates"
-                                      AutomationProperties.Name="Limit Windows Update downloads" Toggled="OnItemToggled" />
+                        <ToggleSwitch x:Name="UpdatesSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}" AutomationProperties.Name="Limit Windows Update downloads" IsOn="{x:Bind ViewModel.UpdatesOn, Mode=TwoWay}"
+                                      IsEnabled="{x:Bind ViewModel.HelperAllowed, Mode=OneWay}" />
                     </Grid>
                 </StackPanel>
             </Border>
@@ -205,7 +205,7 @@
                                        Text="Anything that couldn't be put back is always shown." />
                         </StackPanel>
                         <ToggleSwitch x:Name="ToastSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
-                                      AutomationProperties.Name="Show a Restored confirmation" Toggled="OnToastToggled" />
+                                      AutomationProperties.Name="Show a Restored confirmation" IsOn="{x:Bind ViewModel.ToastOn, Mode=TwoWay}" />
                     </Grid>
                     <Border Style="{StaticResource RowDivider}" />
                     <Grid Style="{StaticResource SettingRow}">
@@ -219,7 +219,8 @@
                                        Text="Your Windows notification sound, once everything is back. Quiet while notifications are held back." />
                         </StackPanel>
                         <ToggleSwitch x:Name="SoundSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
-                                      AutomationProperties.Name="Play a sound with the Restored confirmation" Toggled="OnSoundToggled" />
+                                      AutomationProperties.Name="Play a sound with the Restored confirmation" IsOn="{x:Bind ViewModel.SoundOn, Mode=TwoWay}"
+                                      IsEnabled="{x:Bind ViewModel.SoundEnabled, Mode=OneWay}" />
                     </Grid>
                     <Border Style="{StaticResource RowDivider}" />
                     <Grid Style="{StaticResource SettingRow}" ColumnSpacing="12">
@@ -231,23 +232,24 @@
                         <FontIcon x:Name="LastIcon" Glyph="&#xE930;" FontSize="18" VerticalAlignment="Center"
                                   Foreground="{ThemeResource SystemFillColorSuccessBrush}" AutomationProperties.AccessibilityView="Raw" />
                         <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
-                            <TextBlock x:Name="LastTitle" Style="{StaticResource RowTitle}" />
-                            <TextBlock x:Name="LastDetail" Style="{StaticResource RowDetail}" TextWrapping="Wrap" />
+                            <TextBlock x:Name="LastTitle" Style="{StaticResource RowTitle}" Text="{x:Bind ViewModel.LastTitle, Mode=OneWay}" />
+                            <TextBlock x:Name="LastDetail" Style="{StaticResource RowDetail}" TextWrapping="Wrap" Text="{x:Bind ViewModel.LastDetail, Mode=OneWay}" />
                         </StackPanel>
-                        <Button x:Name="LogButton" Grid.Column="2" Content="View log" Click="OnLogClick" VerticalAlignment="Center"
+                        <Button x:Name="LogButton" Grid.Column="2" Content="View log" Command="{x:Bind ViewModel.LogCommand}" IsEnabled="{x:Bind ViewModel.HasLog, Mode=OneWay}" VerticalAlignment="Center"
                                 AutomationProperties.Name="View the Game mode log" />
                     </Grid>
                 </StackPanel>
             </Border>
-            <Button x:Name="RestoreButton" Margin="20,10,20,0" Click="OnRestoreClick" HorizontalAlignment="Left"
+            <Button x:Name="RestoreButton" Margin="20,10,20,0" Command="{x:Bind ViewModel.RestoreCommand}" HorizontalAlignment="Left"
+                    Content="{x:Bind ViewModel.RestoreText, Mode=OneWay}" IsEnabled="{x:Bind ViewModel.CanRestore, Mode=OneWay}"
                     AutomationProperties.Name="Restore now" />
 
             <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" Margin="20,16,20,0"
                        Text="You can turn Game mode on or off for one game in its details, under &#x201C;This game only&#x201D;." />
-            <StackPanel x:Name="RemovePanel" Orientation="Horizontal" Spacing="4" Margin="20,8,20,0" Visibility="Collapsed">
+            <StackPanel x:Name="RemovePanel" Orientation="Horizontal" Spacing="4" Margin="20,8,20,0" Visibility="{x:Bind ViewModel.HelperAllowed, Mode=OneWay}">
                 <TextBlock Style="{StaticResource RowDetail}" VerticalAlignment="Center"
                            Text="Services and network use a helper in Program Files." />
-                <HyperlinkButton x:Name="RemoveButton" Content="Remove it" Click="OnRemoveClick" Padding="4,2"
+                <HyperlinkButton x:Name="RemoveButton" Content="Remove it" Click="OnRemoveClick" Padding="4,2" IsEnabled="{x:Bind ViewModel.RemoveEnabled, Mode=OneWay}"
                                  AutomationProperties.Name="Remove the Game mode helper" />
             </StackPanel>
         </StackPanel>

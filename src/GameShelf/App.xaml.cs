@@ -18,7 +18,7 @@ public sealed class AppState
     public bool Scanned { get; set; }
 
     /// <summary>Free up space while it's open; mid-uninstall it survives the flyout closing (memory only).</summary>
-    public Views.FreeSpaceState? FreeSpace { get; set; }
+    public ViewModels.FreeSpaceState? FreeSpace { get; set; }
 }
 
 /// <summary>

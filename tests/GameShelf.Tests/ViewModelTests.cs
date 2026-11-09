@@ -210,4 +210,199 @@ static partial class Tests
         Check(!vm.HasSessions && vm.NoSessions && vm.PlaytimeText == "—" && !vm.HasFolder && !vm.HasAntiCheat && !vm.AntiCheatTouched,
             "detail: a game without sessions, folder or anti-cheat");
     }
+
+    /// <summary>Records what the Free up space page asked for; two drives, nothing running.</summary>
+    sealed class FreeSpaceActionsSpy : IFreeSpaceActions
+    {
+        public readonly List<string> Calls = [];
+        public readonly HashSet<string> Running = [];
+        public DriveSpace[] Drives =
+        [
+            new(@"C:\", "System", 500 * SpacePlanner.GB, 20 * SpacePlanner.GB),
+            new(@"D:\", "Games", 2000 * SpacePlanner.GB, 100 * SpacePlanner.GB),
+        ];
+        public void GoBack() => Calls.Add("back");
+        public void CheckAgain() => Calls.Add("check");
+        public IReadOnlyList<DriveSpace> ReadDrives() => Drives;
+        public IReadOnlySet<string> RunningGameIds(IReadOnlyList<Game> games) => Running;
+        public string UninstallHint(Game game) => "Remove " + game.Name;
+        public void OpenUninstall(Game game) => Calls.Add("uninstall " + game.Name);
+    }
+
+    static void FreeSpaceViewModelTests()
+    {
+        var spy = new FreeSpaceActionsSpy();
+        var vm = new FreeSpaceViewModel(spy);
+        Game G(string id, string dir, long gb, bool favorite = false) =>
+            new() { Id = id, Name = id, Source = GameSource.Steam, InstallDir = dir, SizeOnDisk = gb * SpacePlanner.GB, Favorite = favorite };
+        var games = new List<Game>
+        {
+            G("big", @"D:\Games\Big", 150), G("mid", @"D:\Games\Mid", 60), G("small", @"D:\Games\Small", 30),
+            G("fav", @"D:\Games\Fav", 200, favorite: true), G("csys", @"C:\Games\Sys", 10), G("nosize", @"D:\Games\X", 0),
+            new() { Id = "manual", Name = "manual", Source = GameSource.Manual, InstallDir = @"D:\M", SizeOnDisk = 999 * SpacePlanner.GB },
+        };
+        var notified = new List<string?>();
+        vm.PropertyChanged += (_, e) => notified.Add(e.PropertyName);
+
+        var state = new FreeSpaceState { ReturnToShelf = true };
+        vm.Show(state, games, []);
+        Check(notified is [""] && spy.Calls.Count == 0, "free space: filling the page refreshes once, asks nothing");
+        Check(state.Drive == @"D:\" && !state.DrivePicked && vm.SelectedDrive == @"D:\", "free space: the drive with most game data first");
+        Check(vm.NeedText == "" && !vm.ShowSummary && vm.Drives.Length == 2 && vm.Drives[1].Text == "100 GB free of 2000 GB",
+            "free space: no size yet: no plan, drives without an outcome");
+        Check(vm.BackName == "Back to the shelf" && vm.UnknownText.StartsWith("Not counted") && vm.HasUnknown, "free space: back target and unknown sizes");
+
+        vm.SetNeed("150");
+        Check(state.Need == 150 * SpacePlanner.GB && vm.ShowSummary && vm.Headline.StartsWith("Frees ") && vm.Picked.Length > 0 &&
+              !vm.Picked.Any(g => g.Favorite), "free space: a plan that removes games, favorites kept");
+        Check(vm.Drives.Single(d => d.Best).Root == @"D:\" && vm.Drives[0].Text.EndsWith("not enough even after removing games"),
+            "free space: best drive marked, the other can't hold it");
+        Check(vm.StatusOk && vm.UninstallText.StartsWith("Uninstall ") && vm.CanUninstall, "free space: enough, ready to uninstall");
+
+        var first = vm.Picked[0];
+        vm.ToggleGame(first.Game.Id, removedNow: true);
+        Check(state.Overrides[first.Game.Id] == false && !vm.Picked.Contains(first), "free space: clicking a suggested tile keeps the game");
+        vm.ToggleGame(first.Game.Id, removedNow: false);
+        Check(vm.Picked.Contains(first), "free space: clicking it again adds it back");
+
+        int count = vm.Picked.Length;
+        vm.UninstallCommand.Execute(null);
+        Check(state.Uninstalling && vm.Uninstalling && vm.StepTitle.StartsWith($"1 of {count}: ") && vm.StepMessage.StartsWith("Remove ") &&
+              spy.Calls is [var u] && u.StartsWith("uninstall "), "free space: the first game goes to its launcher");
+        for (int i = 1; i < count; i++) vm.UninstallCommand.Execute(null);
+        Check(vm.UninstallText == "Done", "free space: the last step says Done");
+        vm.UninstallCommand.Execute(null);
+        Check(!state.Uninstalling && spy.Calls[^1] == "check", "free space: after the last one, check again");
+
+        vm.PickDrive(@"C:\");
+        Check(state.DrivePicked && vm.SelectedDrive == @"C:\" && state.Overrides.Count == 0 && vm.CurrentPlan!.Drive.Root == @"C:\",
+            "free space: picking a drive starts its plan from scratch");
+        vm.SetNeed("5");
+        Check(vm.Headline == "It fits already" && vm.Status == "15 GB free afterwards" && !vm.CanUninstall && vm.SelectedDrive == @"C:\",
+            "free space: it fits on the picked drive");
+        vm.PickDrive(@"Z:\");
+        Check(vm.SelectedDrive == @"C:\", "free space: an unknown drive is ignored");
+
+        vm.BackCommand.Execute(null);
+        vm.CheckAgainCommand.Execute(null);
+        Check(spy.Calls[^2..] is ["back", "check"], "free space: buttons reach the owner");
+        Check(FreeSpaceViewModel.Gb(4_500_000_000) == "4.2" && FreeSpaceViewModel.Gb(0) == "0" && FreeSpaceViewModel.Gb(128 * SpacePlanner.GB) == "128",
+            "free space: GB rounding");
+    }
+
+    /// <summary>Records what the Game mode page asked for; Windows' state is whatever the test sets.</summary>
+    sealed class GameModeActionsSpy : IGameModeActions
+    {
+        public readonly List<string> Calls = [];
+        public int Saves;
+        public GameModeStatus Status = new(false, false, true, "Balanced", false, true, ["Discord"],
+            new Dictionary<string, Shared.ServiceState.Kind> { ["wsearch"] = Shared.ServiceState.Kind.Running });
+        public RestoreStatus Restore = new(null, false, false, false);
+        public int AllowCode;
+        public AppChoice[] Running = [new(@"C:\Apps\Sync\sync.exe", "Sync"), new(@"C:\Apps\Chat\chat.exe", "Chat")];
+        public void GoBack() => Calls.Add("back");
+        public void SettingsChanged() => Saves++;
+        public GameModeStatus ReadStatus() => Status;
+        public RestoreStatus ReadRestore() => Restore;
+        public IReadOnlyList<AppChoice> RunningApps() => Running;
+        public IReadOnlySet<string> RunningPaths() => new HashSet<string>(StringComparer.OrdinalIgnoreCase) { @"C:\Apps\Chat\chat.exe" };
+        public string AppName(string path) => Path.GetFileNameWithoutExtension(path);
+        public bool AppExists(string path) => !path.Contains("gone");
+        public Task<int> AllowAsync()
+        {
+            Calls.Add("allow");
+            Status = Status with { Allowed = AllowCode == 0 };
+            return Task.FromResult(AllowCode);
+        }
+        public Task RemoveAsync()
+        {
+            Calls.Add("remove");
+            Status = Status with { Allowed = false };
+            return Task.CompletedTask;
+        }
+        public bool RestoreNow()
+        {
+            Calls.Add("restore");
+            return true;
+        }
+        public void OpenLog() => Calls.Add("log");
+        public void PlayRestoredSound() => Calls.Add("sound");
+    }
+
+    static void GameModeViewModelTests()
+    {
+        var spy = new GameModeActionsSpy();
+        var vm = new GameModeViewModel(spy);
+        var settings = new Settings { GameModeCloseApps = [@"C:\Apps\Chat\chat.exe", @"C:\Apps\gone\old.exe"] };
+        var notified = new List<string?>();
+        vm.PropertyChanged += (_, e) => notified.Add(e.PropertyName);
+
+        vm.Show(settings, fromShelf: true);
+        Check(spy.Saves == 0 && spy.Calls.Count == 0, "game mode: filling the page reports no change");
+        Check(notified is [""], "game mode: filling the page refreshes every binding once");
+        Check(vm.BackName == "Back to the shelf" && vm.BackToolTip == "Back to the shelf (Esc)", "game mode: back says where it goes");
+        Check(vm.PowerText == "Now: Balanced. Switched back after the game." && vm.GameBarText.EndsWith("Now: on.") &&
+              vm.SmoothText.EndsWith("Always included: the game, Discord."), "game mode: what Windows does now");
+        Check(vm.CloseApps.Length == 2 && vm.CloseApps[0].Detail == "Running · reopened after the game" &&
+              vm.CloseApps[1].Detail == "Not found: it may have been uninstalled", "game mode: closed apps with their state");
+        Check(vm.Services.Length == 4 && vm.Services[0].Detail.EndsWith("Now: running.") && vm.Services[1].Detail.EndsWith("Now: not on this PC."),
+            "game mode: services with their state");
+        Check(!vm.HelperAllowed && vm.AllowBarOpen && vm.ShowAllow && vm.AllowText == "Allow…" && !vm.AllowWarning,
+            "game mode: not allowed yet: the Allow bar");
+        Check(vm.LastTitle == "Nothing restored yet" && vm.LastOk is null && vm.RestoreText == "Restore now · nothing pending" && !vm.CanRestore,
+            "game mode: nothing restored yet");
+        Check(vm.LimitIndex == 1, "game mode: the default upload limit (5 Mbit/s)");
+
+        vm.MasterOn = settings.GameModeEnabled;
+        vm.PowerOn = vm.PowerOn;
+        vm.LimitIndex = -1;
+        vm.LimitIndex = vm.LimitIndex;
+        Check(spy.Saves == 0, "game mode: same value or no selection saves nothing");
+
+        vm.MasterOn = true;
+        vm.PowerOn = !vm.PowerOn;
+        vm.LimitIndex = 2;
+        Check(settings.GameModeEnabled && settings.UploadLimitMbps == 20 && spy.Saves == 3, "game mode: switches and the limit write and save");
+        bool sysMain = vm.IsItemOn(Shared.GameModeInfo.SysMain);
+        vm.SetItem(Shared.GameModeInfo.SysMain, !sysMain);
+        Check(settings.GameModeItems.Contains(Shared.GameModeInfo.SysMain) != sysMain && spy.Saves == 4, "game mode: a service row writes its item");
+        vm.ToastOn = false;
+        Check(!vm.SoundEnabled && !settings.ShowRestoreToast, "game mode: no confirmation, no sound choice");
+        vm.SoundOn = false;
+        vm.SoundOn = true;
+        Check(spy.Calls is ["sound"], "game mode: turning the sound on plays it once");
+
+        Check(vm.AppsToClose() is [{ Name: "Sync" }], "game mode: apps already closed aren't offered");
+        vm.AddCloseApp(@"C:\Apps\Sync\sync.exe");
+        vm.RemoveCloseApp(@"c:\apps\gone\OLD.exe");
+        Check(vm.CloseApps.Select(a => a.Name).SequenceEqual(["chat", "sync"]), "game mode: add and remove closed apps (any case)");
+        int uploads = vm.UploadApps.Length;
+        vm.AddName(smooth: false, @"C:\Apps\Chat\chat.exe");
+        Check(vm.UploadApps.Length == uploads + 1 && vm.UploadApps[^1] == "chat.exe" && !vm.AppsFor(smooth: false).Any(a => a.Name == "Chat"),
+            "game mode: uploads list stores the exe name, not offered again");
+        vm.RemoveName(smooth: false, "CHAT.EXE");
+        Check(vm.UploadApps.Length == uploads, "game mode: removing a name");
+
+        spy.AllowCode = 5;
+        vm.AllowAsync().Wait();
+        Check(vm.AllowWarning && vm.AllowMessage.Contains("code 5") && vm.AllowEnabled, "game mode: a failed Allow shows its code");
+        spy.AllowCode = 0;
+        vm.AllowAsync().Wait();
+        Check(vm.HelperAllowed && !vm.AllowBarOpen && !vm.AllowWarning, "game mode: allowed, the bar closes");
+        vm.RemoveAsync().Wait();
+        Check(!vm.HelperAllowed && vm.RemoveEnabled, "game mode: removed again");
+
+        spy.Restore = new(null, true, true, true);
+        vm.UpdateLastRestore();
+        Check(vm.CanRestore && vm.RestoreText == "Restore now" && vm.HasLog, "game mode: something to restore");
+        vm.RestoreCommand.Execute(null);
+        Check(!vm.CanRestore && vm.RestoreText == "Restoring…", "game mode: restoring");
+        spy.Restore = new((DateTimeOffset.Now, new Shared.RestoreResult(2, 3, ["Spooler"])), true, false, false);
+        vm.UpdateLastRestore();
+        Check(vm.LastOk == false && vm.LastDetail == "2 of 3 put back · Spooler couldn't be", "game mode: a partial restore");
+
+        vm.LogCommand.Execute(null);
+        vm.BackCommand.Execute(null);
+        Check(spy.Calls.Skip(1).SequenceEqual(["allow", "allow", "remove", "restore", "log", "back"]), "game mode: buttons reach the owner");
+    }
 }

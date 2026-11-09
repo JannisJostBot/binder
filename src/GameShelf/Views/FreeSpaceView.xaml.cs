@@ -1,6 +1,8 @@
+using System.ComponentModel;
 using GameShelf.Library;
 using GameShelf.Models;
 using GameShelf.Services;
+using GameShelf.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
@@ -14,44 +16,16 @@ using Windows.UI;
 namespace GameShelf.Views;
 
 /// <summary>
-/// What the Free up space page was doing, kept in <see cref="App.State"/> (memory only) while it's open: opening
-/// a launcher to uninstall a game takes the focus and closes the flyout, and reopening it continues here.
-/// </summary>
-public sealed class FreeSpaceState
-{
-    public long Need { get; set; }
-    public string? Drive { get; set; }
-    /// <summary>The drive was chosen (by the user, or opened from a game's details); otherwise it follows "Best choice".</summary>
-    public bool DrivePicked { get; set; }
-    /// <summary>Tiles the user clicked: game id → removed (true) or kept (false), over the plan's own choice.</summary>
-    public Dictionary<string, bool> Overrides { get; } = [];
-    /// <summary>The games being uninstalled one at a time, and which one is next (-1: not started).</summary>
-    public List<string> Queue { get; } = [];
-    public int Step { get; set; } = -1;
-    /// <summary>Where Back goes: the game whose details opened the page, the shelf (its "…" menu), else Settings.</summary>
-    public string? ReturnGameId { get; set; }
-    public bool ReturnToShelf { get; set; }
-
-    public bool Uninstalling => Step >= 0 && Step < Queue.Count;
-}
-
-/// <summary>
-/// Free up space (spec §12, board 17): the new game's size in, a plan per drive out, shown as a treemap of the
-/// chosen drive whose tiles can be added or left out, then each removal handed to the game's own launcher.
-/// Built when opened, static while shown (no timers); everything is released when the page closes.
+/// Free up space (spec §12, board 17). The plan and what each control does live in <see cref="FreeSpaceViewModel"/>
+/// (bound with x:Bind); this file draws the drive choices, the treemap of the chosen drive with the games' icons, and
+/// the list of games to remove. Built when shown, static while shown (no timers); <see cref="Release"/> drops it all.
 /// </summary>
 public sealed partial class FreeSpaceView : UserControl
 {
-    public event Action? BackRequested;
-    public event Action? CheckAgainRequested;
-
     private const double Gap = 2;
 
-    private FreeSpaceState _state = new();
-    private List<DriveSpace> _drives = [];
-    private Dictionary<string, List<SpaceGame>> _byDrive = [];
-    private List<DrivePlan> _plans = [];
-    private int _best = -1;
+    public FreeSpaceViewModel? ViewModel { get; private set; }
+
     private bool _updating;
     private readonly Dictionary<string, Border> _iconBoxes = [];
     // Icons loaded while the page is open (null: the game has none), and those on their way.
@@ -63,34 +37,13 @@ public sealed partial class FreeSpaceView : UserControl
         InitializeComponent();
     }
 
-    public FreeSpaceState State => _state;
-
-    /// <summary>
-    /// Shows the page for <paramref name="state"/>, reading drive space, the games on each drive and which games
-    /// are running right now. Called on open, on "Check again" and when the panel reopens mid-uninstall.
-    /// </summary>
-    public void Show(FreeSpaceState state, IReadOnlyList<Game> games, IReadOnlyList<Session> sessions)
+    /// <summary>Connects the page to its owner once, before it's first shown.</summary>
+    public void Initialize(IFreeSpaceActions actions)
     {
-        _state = state;
-        var (lastPlayed, playtime) = ShelfOrder.Stats(sessions);
-        var installed = games.Where(g => SpacePlanner.DriveOf(g) is not null).ToList();
-        _byDrive = SpacePlanner.ByDrive(installed, playtime, lastPlayed, DateTimeOffset.Now, RunningGames.Ids(installed));
-        _drives = ReadDrives();
-
-        if (_state.Drive is null || !_drives.Any(d => d.Root == _state.Drive))
-        {
-            _state.DrivePicked = false;
-            // Until there's a size to plan for: the drive with the most game data.
-            _state.Drive = _drives.OrderByDescending(d => GamesOn(d.Root).Sum(g => g.Size)).Select(d => d.Root).FirstOrDefault();
-        }
-
-        _updating = true;
-        NeedBox.Text = _state.Need > 0 ? (_state.Need / SpacePlanner.GB).ToString() : "";
-        _updating = false;
-        var back = _state.ReturnGameId is not null ? "Back to the game" : _state.ReturnToShelf ? "Back to the shelf" : "Back to settings";
-        BackButton.SetValue(ToolTipService.ToolTipProperty, back + " (Esc)");
-        AutomationProperties.SetName(BackButton, back);
-        Recalculate();
+        if (ViewModel is not null) throw new InvalidOperationException("The Free up space page is already initialized.");
+        ViewModel = new FreeSpaceViewModel(actions);
+        ViewModel.PropertyChanged += OnViewModelChanged;
+        Bindings.Update();
     }
 
     public void FocusFirst() => NeedBox.Focus(FocusState.Programmatic);
@@ -103,51 +56,35 @@ public sealed partial class FreeSpaceView : UserControl
         DriveChoice.Items.Clear();
         _iconBoxes.Clear();
         _icons.Clear();
-        _byDrive = [];
-        _plans = [];
-        _drives = [];
+        ViewModel?.Release();
     }
 
-    private List<SpaceGame> GamesOn(string root) => _byDrive.TryGetValue(root, out var list) ? list : [];
-
-    /// <summary>Fixed drives that are ready, read now (no watchers).</summary>
-    private static List<DriveSpace> ReadDrives()
+    private void OnViewModelChanged(object? sender, PropertyChangedEventArgs e)
     {
-        var drives = new List<DriveSpace>();
-        foreach (var drive in DriveInfo.GetDrives())
+        var vm = ViewModel!;
+        switch (e.PropertyName)
         {
-            try
-            {
-                if (drive.DriveType != DriveType.Fixed || !drive.IsReady) continue;
-                var label = string.IsNullOrWhiteSpace(drive.VolumeLabel) ? "Local Disk" : drive.VolumeLabel;
-                drives.Add(new DriveSpace(drive.RootDirectory.FullName.ToUpperInvariant(), label, drive.TotalSize, drive.AvailableFreeSpace));
-            }
-            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            case null or "":
+                _updating = true;
+                NeedBox.Text = vm.NeedText;
+                _updating = false;
+                ShowDrives();
+                ShowMap();
+                ShowSummary();
+                break;
+            case nameof(FreeSpaceViewModel.Drives):
+                ShowDrives();
+                break;
+            case nameof(FreeSpaceViewModel.SelectedDrive):
+                MapDriveTag.Content = vm.SelectedDrive is { } root ? DriveTag(root) : null;
+                break;
+            case nameof(FreeSpaceViewModel.CurrentPlan):
+                ShowMap();
+                break;
+            case nameof(FreeSpaceViewModel.Picked):
+                ShowSummary();
+                break;
         }
-        return drives.OrderBy(d => d.Root, StringComparer.OrdinalIgnoreCase).ToList();
-    }
-
-    // ---- The plan --------------------------------------------------------------------------------------------
-
-    private void Recalculate()
-    {
-        _plans = _drives.Select(d => SpacePlanner.PlanDrive(d, GamesOn(d.Root), _state.Need)).ToList();
-        _best = _state.Need > 0 ? SpacePlanner.Best(_plans) : -1;
-        if (!_state.DrivePicked && _best >= 0) _state.Drive = _plans[_best].Drive.Root;
-        ShowDrives();
-        ShowMap();
-        ShowSummary();
-    }
-
-    private DrivePlan? Current => _plans.FirstOrDefault(p => p.Drive.Root == _state.Drive);
-
-    /// <summary>The plan's picks with the user's tile clicks applied, in the plan's order then the added ones.</summary>
-    private List<SpaceGame> Chosen(DrivePlan plan)
-    {
-        var chosen = plan.Picked.Where(g => !_state.Overrides.TryGetValue(g.Game.Id, out var on) || on).ToList();
-        foreach (var g in plan.Games)
-            if (_state.Overrides.TryGetValue(g.Game.Id, out var on) && on && !chosen.Contains(g)) chosen.Add(g);
-        return chosen;
     }
 
     private void OnNeedTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args) =>
@@ -155,19 +92,7 @@ public sealed partial class FreeSpaceView : UserControl
 
     private void OnNeedChanged(object sender, TextChangedEventArgs e)
     {
-        if (_updating) return;
-        long gb = long.TryParse(NeedBox.Text, out var value) ? value : 0;
-        _state.Need = gb * SpacePlanner.GB;
-        ResetChoice();
-        Recalculate(); // cheap: a few dozen games per drive
-    }
-
-    /// <summary>A new size or drive starts from the plan again: clicked tiles and an unfinished uninstall no longer apply.</summary>
-    private void ResetChoice()
-    {
-        _state.Overrides.Clear();
-        _state.Queue.Clear();
-        _state.Step = -1;
+        if (!_updating) ViewModel?.SetNeed(NeedBox.Text);
     }
 
     // The TextBox's clear button would sit on top of the "GB" unit; the field is short enough without it.
@@ -201,23 +126,29 @@ public sealed partial class FreeSpaceView : UserControl
 
     private void ShowDrives()
     {
+        var vm = ViewModel!;
         _updating = true;
+        // Reset the index first: setting the same index again on new items wouldn't check any of them.
+        DriveChoice.SelectedIndex = -1;
         DriveChoice.Items.Clear();
         int selected = -1;
-        for (int i = 0; i < _plans.Count; i++)
+        foreach (var drive in vm.Drives)
         {
-            var plan = _plans[i];
-            DriveChoice.Items.Add(DriveItem(plan, i == _best));
-            if (plan.Drive.Root == _state.Drive) selected = i;
+            var item = DriveItem(drive);
+            if (drive.Root == vm.SelectedDrive)
+            {
+                selected = DriveChoice.Items.Count;
+                item.IsChecked = true;
+            }
+            DriveChoice.Items.Add(item);
         }
         DriveChoice.SelectedIndex = selected;
-        MapDriveTag.Content = Current is { } current ? DriveTag(current.Drive.Root) : null;
+        MapDriveTag.Content = vm.CurrentPlan is { } current ? DriveTag(current.Drive.Root) : null;
         _updating = false;
     }
 
-    private RadioButton DriveItem(DrivePlan plan, bool best)
+    private static RadioButton DriveItem(DriveRow drive)
     {
-        var drive = plan.Drive;
         var head = new Grid { ColumnSpacing = 8 };
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -226,7 +157,7 @@ public sealed partial class FreeSpaceView : UserControl
         var label = new TextBlock { Text = drive.Label, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
         Grid.SetColumn(label, 1);
         head.Children.Add(label);
-        if (best)
+        if (drive.Best)
         {
             var badge = new Border
             {
@@ -246,33 +177,21 @@ public sealed partial class FreeSpaceView : UserControl
             head.Children.Add(badge);
         }
 
-        double used = drive.Total > 0 ? (drive.Total - drive.Free) * 100.0 / drive.Total : 0;
-        var status = $"{Gb(drive.Free)} GB free of {Gb(drive.Total)} GB";
-        var outcome = Outcome(plan);
         var text = new TextBlock
         {
-            Text = outcome.Length > 0 ? $"{status} · {outcome}" : status,
+            Text = drive.Text,
             Style = Resource<Style>("CaptionTextBlockStyle"),
             Foreground = Resource<Brush>("TextFillColorSecondaryBrush"),
             TextWrapping = TextWrapping.Wrap,
         };
         var content = new StackPanel { Width = 196, Spacing = 6, Margin = new Thickness(0, 0, 0, 4) };
         content.Children.Add(head);
-        content.Children.Add(new ProgressBar { Value = used, Maximum = 100, IsHitTestVisible = false, IsTabStop = false });
+        content.Children.Add(new ProgressBar { Value = drive.UsedPercent, Maximum = 100, IsHitTestVisible = false, IsTabStop = false });
         content.Children.Add(text);
 
         var item = new RadioButton { Content = content, Tag = drive.Root };
-        AutomationProperties.SetName(item,
-            $"Drive {drive.Root.TrimEnd('\\')} {drive.Label}, {status}" + (outcome.Length > 0 ? ", " + outcome : "") + (best ? ", best choice" : ""));
+        AutomationProperties.SetName(item, drive.Name);
         return item;
-    }
-
-    private static string Outcome(DrivePlan plan)
-    {
-        if (plan.Missing <= -plan.Drive.Free) return ""; // no size typed yet
-        if (plan.FitsAlready) return "fits already";
-        if (!plan.Enough) return plan.Picked.Count == 0 ? "not enough space" : "not enough even after removing games";
-        return plan.Picked.Count == 1 ? "1 game to remove" : $"{plan.Picked.Count} games to remove";
     }
 
     /// <summary>A drive letter as a small tag with the drive glyph, so "D:" reads as a drive.</summary>
@@ -298,13 +217,7 @@ public sealed partial class FreeSpaceView : UserControl
 
     private void OnDriveChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_updating || DriveChoice.SelectedItem is not RadioButton { Tag: string root } || root == _state.Drive) return;
-        _state.Drive = root;
-        _state.DrivePicked = true;
-        ResetChoice();
-        MapDriveTag.Content = DriveTag(root);
-        ShowMap();
-        ShowSummary();
+        if (!_updating && DriveChoice.SelectedItem is RadioButton { Tag: string root }) ViewModel?.PickDrive(root);
     }
 
     // ---- Treemap ---------------------------------------------------------------------------------------------
@@ -319,15 +232,12 @@ public sealed partial class FreeSpaceView : UserControl
         Map.Children.Clear();
         _iconBoxes.Clear();
         double width = MapHost.ActualWidth, height = MapHost.ActualHeight;
-        if (Current is not { } plan || width <= 0) return;
+        if (ViewModel?.CurrentPlan is not { } plan || width <= 0) return;
 
-        var chosen = Chosen(plan).Select(g => g.Game.Id).ToHashSet();
+        var chosen = ViewModel.Chosen(plan).Select(g => g.Game.Id).ToHashSet();
         var games = plan.Games.Where(g => g.SizeKnown).OrderByDescending(g => g.Size).ToList();
         MapEmptyText.Visibility = games.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        MapEmptyText.Text = plan.Games.Count == 0
-            ? "No games from your launchers are installed on this drive."
-            : "None of the games on this drive has a known size.";
-        if (games.Count == 0) { ShowUnknown(plan); return; }
+        if (games.Count == 0) return;
 
         // The free space is a tile too, so it's clear how much is there already.
         var values = games.Select(g => (double)g.Size).ToList();
@@ -345,15 +255,14 @@ public sealed partial class FreeSpaceView : UserControl
             Canvas.SetTop(tile, r.Y + Gap / 2);
             Map.Children.Add(tile);
         }
-        ShowUnknown(plan);
         RequestIcons(games);
     }
 
-    private FrameworkElement FreeTile(long free, TileRect r)
+    private static FrameworkElement FreeTile(long free, TileRect r)
     {
         double w = Math.Max(0, r.W - Gap), h = Math.Max(0, r.H - Gap);
         var grid = new Grid { Width = w, Height = h };
-        AutomationProperties.SetName(grid, $"Free now, {Gb(free)} GB");
+        AutomationProperties.SetName(grid, $"Free now, {FreeSpaceViewModel.Gb(free)} GB");
         grid.Children.Add(new Rectangle
         {
             RadiusX = 6,
@@ -366,7 +275,7 @@ public sealed partial class FreeSpaceView : UserControl
         {
             var text = new StackPanel { Margin = new Thickness(8), VerticalAlignment = VerticalAlignment.Bottom };
             text.Children.Add(new TextBlock { Text = "Free now", FontSize = 12, FontWeight = FontWeights.SemiBold });
-            text.Children.Add(new TextBlock { Text = $"{Gb(free)} GB", FontSize = 11, Foreground = Resource<Brush>("TextFillColorSecondaryBrush") });
+            text.Children.Add(new TextBlock { Text = $"{FreeSpaceViewModel.Gb(free)} GB", FontSize = 11, Foreground = Resource<Brush>("TextFillColorSecondaryBrush") });
             grid.Children.Add(text);
         }
         return grid;
@@ -420,7 +329,7 @@ public sealed partial class FreeSpaceView : UserControl
             {
                 text.Children.Add(new TextBlock
                 {
-                    Text = $"{Gb(g.Size)} GB · {Played(g)}",
+                    Text = $"{FreeSpaceViewModel.Gb(g.Size)} GB · {FreeSpaceViewModel.Played(g)}",
                     FontSize = 11,
                     Foreground = new SolidColorBrush(Color.FromArgb(0xD9, 255, 255, 255)),
                     TextTrimming = TextTrimming.CharacterEllipsis,
@@ -443,8 +352,7 @@ public sealed partial class FreeSpaceView : UserControl
             });
         }
 
-        var label = $"{game.Name}, {Gb(g.Size)} GB, {Why(g).ToLowerInvariant()}" +
-                    (g.Favorite ? ", favorite" : "") + (g.Recent ? ", played in the last 14 days" : "");
+        var label = FreeSpaceViewModel.TileName(g);
         var tile = new ToggleButton
         {
             Width = w,
@@ -470,12 +378,8 @@ public sealed partial class FreeSpaceView : UserControl
         ToolTipService.SetToolTip(tile, label);
         tile.Click += (_, _) =>
         {
-            _state.Overrides[game.Id] = !on;
-            _state.Queue.Clear();
-            _state.Step = -1;
             int focus = Map.Children.IndexOf(tile);
-            ShowMap();
-            ShowSummary();
+            ViewModel!.ToggleGame(game.Id, on); // redraws the map and the summary
             if (focus >= 0 && focus < Map.Children.Count && Map.Children[focus] is Control again) again.Focus(FocusState.Programmatic);
         };
         return tile;
@@ -529,7 +433,7 @@ public sealed partial class FreeSpaceView : UserControl
     {
         var missing = games.Where(g => !_icons.ContainsKey(g.Game.Id) && _iconLoading.Add(g.Game.Id)).Select(g => g.Game).ToList();
         if (missing.Count == 0) return;
-        var view = _state;
+        var view = ViewModel!.State;
         bool tintChanged = false;
         using var gate = new SemaphoreSlim(4);
         await Task.WhenAll(missing.Select(async game =>
@@ -539,7 +443,7 @@ public sealed partial class FreeSpaceView : UserControl
             {
                 var hadTint = game.CoverTint;
                 var art = await CoverCache.GetFallbackAsync(game); // continues on the UI thread
-                if (view != _state) return; // the page closed or reopened meanwhile
+                if (view != ViewModel.State) return; // the page closed or reopened meanwhile
                 if (hadTint != game.CoverTint) tintChanged = true;
                 _icons[game.Id] = art.Icon;
                 if (_iconBoxes.TryGetValue(game.Id, out var box)) SetIcon(box, game, art.Icon);
@@ -550,79 +454,20 @@ public sealed partial class FreeSpaceView : UserControl
                 _iconLoading.Remove(game.Id);
             }
         }));
-        if (view != _state || _plans.Count == 0) return;
+        if (view != ViewModel.State || ViewModel.CurrentPlan is null) return;
         if (tintChanged) ShowMap(); // first time: tiles take their icons' colors
         ShowSummary(); // the picked list's rows, built before the icons arrived
     }
 
-    private void ShowUnknown(DrivePlan plan)
-    {
-        var unknown = plan.Games.Where(g => !g.SizeKnown).Select(g => g.Game.Name).ToList();
-        UnknownText.Visibility = unknown.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        UnknownText.Text = unknown.Count == 0 ? "" :
-            $"Not counted, their size isn't known: {string.Join(", ", unknown.Take(6))}" + (unknown.Count > 6 ? $" and {unknown.Count - 6} more" : "");
-    }
-
-    // ---- Summary and uninstall -------------------------------------------------------------------------------
+    // ---- Summary ---------------------------------------------------------------------------------------------
 
     private void ShowSummary()
     {
+        var vm = ViewModel!;
         PickedList.Children.Clear();
-        if (Current is not { } plan || _state.Need <= 0)
-        {
-            SummaryCard.Visibility = Visibility.Collapsed;
-            return;
-        }
-        SummaryCard.Visibility = Visibility.Visible;
-
-        var chosen = plan.FitsAlready ? [] : Chosen(plan);
-        long freed = chosen.Sum(g => g.Size);
-        if (plan.FitsAlready)
-        {
-            HeadlineText.Text = "It fits already";
-            StatusText.Text = $"{Gb(plan.Drive.Free - _state.Need)} GB free afterwards";
-            StatusText.Foreground = Resource<Brush>("SystemFillColorSuccessBrush");
-        }
-        else if (chosen.Count == 0 && plan.Picked.Count == 0)
-        {
-            HeadlineText.Text = $"{Gb(plan.Missing)} GB missing";
-            StatusText.Text = "No games here to remove";
-            StatusText.Foreground = Resource<Brush>("SystemFillColorCautionBrush");
-        }
-        else
-        {
-            HeadlineText.Text = $"Frees {Gb(freed)} GB of the {Gb(plan.Missing)} GB missing";
-            bool enough = freed >= plan.Missing;
-            StatusText.Text = enough ? $"{Gb(plan.Drive.Free + freed - _state.Need)} GB free afterwards" : $"{Gb(plan.Missing - freed)} GB still missing";
-            StatusText.Foreground = Resource<Brush>(enough ? "SystemFillColorSuccessBrush" : "SystemFillColorCautionBrush");
-        }
-
-        foreach (var g in chosen) PickedList.Children.Add(PickedRow(g));
-
-        if (_state.Uninstalling)
-        {
-            int n = _state.Queue.Count;
-            var next = FindChosen(chosen, _state.Queue[_state.Step]);
-            StepBar.Visibility = Visibility.Visible;
-            StepBar.Title = $"{_state.Step + 1} of {n}: {next?.Game.Name}";
-            StepBar.Message = next is null ? "" : GameActions.Uninstall(next.Game).Hint;
-            UninstallButton.Content = _state.Step + 1 < n ? "Next game" : "Done";
-            UninstallButton.IsEnabled = true;
-        }
-        else
-        {
-            StepBar.Visibility = Visibility.Collapsed;
-            UninstallButton.Content = chosen.Count switch
-            {
-                0 => "Nothing to uninstall",
-                1 => "Uninstall 1 game…",
-                _ => $"Uninstall {chosen.Count} games…",
-            };
-            UninstallButton.IsEnabled = chosen.Count > 0;
-        }
+        StatusText.Foreground = Resource<Brush>(vm.StatusOk ? "SystemFillColorSuccessBrush" : "SystemFillColorCautionBrush");
+        foreach (var g in vm.Picked) PickedList.Children.Add(PickedRow(g));
     }
-
-    private static SpaceGame? FindChosen(List<SpaceGame> chosen, string id) => chosen.FirstOrDefault(g => g.Game.Id == id);
 
     private Grid PickedRow(SpaceGame g)
     {
@@ -652,7 +497,7 @@ public sealed partial class FreeSpaceView : UserControl
 
         var why = new TextBlock
         {
-            Text = Why(g),
+            Text = FreeSpaceViewModel.Why(g),
             Style = Resource<Style>("CaptionTextBlockStyle"),
             Foreground = Resource<Brush>("TextFillColorSecondaryBrush"),
             VerticalAlignment = VerticalAlignment.Center,
@@ -660,73 +505,14 @@ public sealed partial class FreeSpaceView : UserControl
         };
         Grid.SetColumn(why, 2);
         row.Children.Add(why);
-        var size = new TextBlock { Text = $"{Gb(g.Size)} GB", TextAlignment = TextAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
+        var size = new TextBlock { Text = $"{FreeSpaceViewModel.Gb(g.Size)} GB", TextAlignment = TextAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
         Grid.SetColumn(size, 3);
         row.Children.Add(size);
-        AutomationProperties.SetName(row, $"{g.Game.Name}, {Gb(g.Size)} GB, {Why(g)}");
+        AutomationProperties.SetName(row, $"{g.Game.Name}, {FreeSpaceViewModel.Gb(g.Size)} GB, {FreeSpaceViewModel.Why(g)}");
         return row;
     }
 
-    /// <summary>
-    /// Why a game was picked: "3 h played · Yesterday", "Never played", or "Last played 8 months ago" when only the
-    /// store knows it was played (Steam's LastPlayed, with no playtime of ours).
-    /// </summary>
-    private static string Why(SpaceGame g)
-    {
-        if (g.Playtime > TimeSpan.Zero)
-            return Format.Playtime(g.Playtime) + " played" + (g.LastPlayed is { } when ? " · " + Ago(when) : "");
-        return g.LastPlayed is { } last ? "Last played " + Ago(last).ToLowerInvariant() : "Never played";
-    }
-
-    /// <summary>The short form on a tile: "3 h", "never played", "a year ago".</summary>
-    private static string Played(SpaceGame g) =>
-        g.Playtime > TimeSpan.Zero ? Format.Playtime(g.Playtime) : g.LastPlayed is { } last ? Ago(last).ToLowerInvariant() : "never played";
-
-    private static string Ago(DateTimeOffset when)
-    {
-        int days = (DateTime.Today - when.LocalDateTime.Date).Days;
-        if (days < 7) return Format.RelativeDay(when);
-        if (days < 30) return days < 14 ? "Last week" : $"{days / 7} weeks ago";
-        int months = days / 30;
-        if (months < 12) return months == 1 ? "A month ago" : $"{months} months ago";
-        int years = days / 365;
-        return years <= 1 ? "A year ago" : $"{years} years ago";
-    }
-
-    private void OnUninstallClick(object sender, RoutedEventArgs e)
-    {
-        if (Current is not { } plan) return;
-        var chosen = Chosen(plan);
-        if (!_state.Uninstalling)
-        {
-            if (chosen.Count == 0) return;
-            _state.Queue.Clear();
-            _state.Queue.AddRange(chosen.Select(g => g.Game.Id));
-            _state.Step = 0;
-        }
-        else if (++_state.Step >= _state.Queue.Count)
-        {
-            // All handed over: see what the launchers removed.
-            _state.Queue.Clear();
-            _state.Step = -1;
-            CheckAgainRequested?.Invoke();
-            return;
-        }
-        ShowSummary();
-        if (FindChosen(chosen, _state.Queue[_state.Step]) is { } next) GameActions.ShellOpen(GameActions.Uninstall(next.Game).Target);
-    }
-
-    private void OnCheckAgainClick(object sender, RoutedEventArgs e) => CheckAgainRequested?.Invoke();
-
     private void OnRulesClick(object sender, RoutedEventArgs e) => RulesTip.IsOpen = !RulesTip.IsOpen;
-
-    private void OnBackClick(object sender, RoutedEventArgs e) => BackRequested?.Invoke();
-
-    private static string Gb(long bytes)
-    {
-        double gb = bytes / (double)SpacePlanner.GB;
-        return gb >= 10 || gb == 0 ? $"{Math.Round(gb):0}" : $"{gb:0.#}";
-    }
 
     private static T Resource<T>(string key) => (T)Application.Current.Resources[key];
 }

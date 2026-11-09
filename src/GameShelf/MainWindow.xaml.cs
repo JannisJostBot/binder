@@ -25,7 +25,7 @@ namespace GameShelf;
 /// The panel: a borderless WinUI window docked to the screen edge, with Acrylic behind it. In Flyout mode it's
 /// created on open and closed for good on close; on the desktop it stays.
 /// </summary>
-public sealed partial class MainWindow : Window, ISettingsActions, IDetailActions
+public sealed partial class MainWindow : Window, ISettingsActions, IDetailActions, IGameModeActions, IFreeSpaceActions
 {
     // The library lives in App.State, so it survives the flyout window being closed and rebuilt.
     private List<Game> _games { get => App.State.Games; set => App.State.Games = value; }
@@ -69,10 +69,8 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         Shelf.FreeSpaceRequested += OpenFreeSpace;
         Shelf.RefreshRequested += () => _ = RescanAsync();
         SettingsPage.Initialize(this); // its actions: MainWindow.Settings.cs
-        GameModePage.BackRequested += GameModeBack;
-        GameModePage.Changed += SaveSettings;
-        FreeSpacePage.BackRequested += LeaveFreeSpace;
-        FreeSpacePage.CheckAgainRequested += () => _ = CheckFreeSpaceAgainAsync();
+        GameModePage.Initialize(this); // its actions: MainWindow.GameMode.cs
+        FreeSpacePage.Initialize(this); // its actions: MainWindow.FreeSpace.cs
         ImportPage.Cancelled += ShowSettings;
         ImportPage.ImportRequested += ImportShortcuts;
         SetupPage.Skipped += () => FinishSetup(null);
@@ -539,7 +537,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     private void ShowFreeSpace(FreeSpaceState state)
     {
         App.State.FreeSpace = state;
-        FreeSpacePage.Show(state, _games, _sessions);
+        FreeSpacePage.ViewModel!.Show(state, _games, _sessions);
         ShowPage(FreeSpacePage);
         FreeSpacePage.UpdateLayout();
         FreeSpacePage.FocusFirst();
@@ -601,8 +599,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     private void ShowGameMode(bool fromShelf)
     {
         _gameModeFromShelf = fromShelf;
-        GameModePage.SetBackTarget(fromShelf);
-        GameModePage.Show(App.Settings, _games);
+        GameModePage.ViewModel!.Show(App.Settings, fromShelf);
         ShowPage(GameModePage);
         GameModePage.UpdateLayout();
         GameModePage.FocusFirst();
@@ -611,7 +608,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     /// <summary>Game mode put Windows back (the toast is showing): update its page if it's open.</summary>
     public void GameModeRestored()
     {
-        if (GameModePage.Visibility == Visibility.Visible) GameModePage.UpdateLastRestore();
+        if (GameModePage.Visibility == Visibility.Visible) GameModePage.ViewModel!.UpdateLastRestore();
     }
 
     private void LeaveFreeSpace()
@@ -627,7 +624,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     {
         await RescanAsync();
         if (FreeSpacePage.Visibility == Visibility.Visible && App.State.FreeSpace is { } state)
-            FreeSpacePage.Show(state, _games, _sessions);
+            FreeSpacePage.ViewModel!.Show(state, _games, _sessions);
     }
 
     /// <summary>First-run setup (board 10). Also reachable from Settings → "Run first-time setup again".</summary>

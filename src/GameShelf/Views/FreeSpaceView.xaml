@@ -11,8 +11,8 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Click="OnBackClick"
-                        ToolTipService.ToolTip="Back (Esc)" AutomationProperties.Name="Back" />
+                <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Command="{x:Bind ViewModel.BackCommand}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.BackToolTip, Mode=OneWay}" AutomationProperties.Name="{x:Bind ViewModel.BackName, Mode=OneWay}" />
                 <TextBlock Grid.Column="1" Text="Free up space" Style="{StaticResource SubtitleTextBlockStyle}" VerticalAlignment="Center" />
             </Grid>
 
@@ -40,7 +40,7 @@
             <StackPanel Margin="20,0" Spacing="8">
                 <Grid>
                     <TextBlock Text="Install it on" Style="{StaticResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
-                    <Button x:Name="CheckButton" HorizontalAlignment="Right" Click="OnCheckAgainClick"
+                    <Button x:Name="CheckButton" HorizontalAlignment="Right" Command="{x:Bind ViewModel.CheckAgainCommand}"
                             ToolTipService.ToolTip="Read free space and your library again"
                             AutomationProperties.Name="Check again">
                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -77,8 +77,9 @@
                       Background="{ThemeResource ControlAltFillColorSecondaryBrush}" SizeChanged="OnMapSizeChanged">
                     <Canvas x:Name="Map" AutomationProperties.Name="Games on the drive by size" />
                     <TextBlock x:Name="MapEmptyText" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Text="{x:Bind ViewModel.MapEmptyText, Mode=OneWay}"
                                Margin="24" TextWrapping="Wrap" TextAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               Text="No games from your launchers are installed on this drive." />
+                               />
                 </Grid>
                 <!-- The legend explains the tiles only; the rules are in the (i) tip. -->
                 <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,2,0,0">
@@ -98,23 +99,28 @@
                         <TextBlock Text="Free now" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </StackPanel>
                 </StackPanel>
-                <TextBlock x:Name="UnknownText" Visibility="Collapsed" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
+                <TextBlock x:Name="UnknownText" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
+                           Visibility="{x:Bind ViewModel.HasUnknown, Mode=OneWay}" Text="{x:Bind ViewModel.UnknownText, Mode=OneWay}"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
             <!-- The plan -->
-            <Border x:Name="SummaryCard" Style="{StaticResource Card}" Padding="16,14">
+            <Border x:Name="SummaryCard" Style="{StaticResource Card}" Padding="16,14" Visibility="{x:Bind ViewModel.ShowSummary, Mode=OneWay}">
                 <StackPanel Spacing="10">
                     <Grid ColumnSpacing="8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="HeadlineText" Style="{StaticResource BodyStrongTextBlockStyle}" FontSize="18" TextWrapping="Wrap" />
-                        <TextBlock x:Name="StatusText" Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}" />
+                        <TextBlock x:Name="HeadlineText" Style="{StaticResource BodyStrongTextBlockStyle}" FontSize="18" TextWrapping="Wrap"
+                                   Text="{x:Bind ViewModel.Headline, Mode=OneWay}" />
+                        <TextBlock x:Name="StatusText" Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}"
+                                   Text="{x:Bind ViewModel.Status, Mode=OneWay}" />
                     </Grid>
                     <StackPanel x:Name="PickedList" AutomationProperties.Name="Games to remove" />
-                    <InfoBar x:Name="StepBar" IsClosable="False" Severity="Informational" Visibility="Collapsed" IsOpen="True" />
+                    <InfoBar x:Name="StepBar" IsClosable="False" Severity="Informational" IsOpen="True"
+                             Visibility="{x:Bind ViewModel.Uninstalling, Mode=OneWay}" Title="{x:Bind ViewModel.StepTitle, Mode=OneWay}"
+                             Message="{x:Bind ViewModel.StepMessage, Mode=OneWay}" />
                     <Grid ColumnSpacing="12" Padding="0,4,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -124,7 +130,8 @@
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    Text="Each game is removed by its own launcher, which asks first. Game Shelf never deletes game files itself." />
                         <Button x:Name="UninstallButton" Grid.Column="1" Style="{StaticResource AccentButtonStyle}" VerticalAlignment="Center"
-                                Click="OnUninstallClick" />
+                                Command="{x:Bind ViewModel.UninstallCommand}" Content="{x:Bind ViewModel.UninstallText, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.CanUninstall, Mode=OneWay}" />
                     </Grid>
                 </StackPanel>
             </Border>
