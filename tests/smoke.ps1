@@ -366,7 +366,12 @@ try {
     Wait-Until { (Get-Content (Join-Path $dataDir 'settings.json') -Raw) -match '"GridDensity":\s*"Medium"' } 5 'cover size saved' | Out-Null
     Invoke-Button $window 'Back to all games'
 
-    Invoke-Button $window 'Sort'
+    # The sort button's name says the current order ("Sort: Recently played"), so find it by its x:Name.
+    $sortButton = Find-ById $window 'SortButton'
+    $pattern = $null
+    if ($sortButton.TryGetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern, [ref] $pattern)) { $pattern.Expand() }
+    else { $sortButton.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke() }
+    Write-Host 'clicked: sort button'
     Start-Sleep -Milliseconds 500
     Shot '15-sort-menu'
     $byName = Wait-Until { $UIA::RootElement.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($UIA::NameProperty, ('Name (A' + [char]0x2013 + 'Z)')))) } 5 'sort menu item'
