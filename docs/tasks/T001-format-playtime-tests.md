@@ -1,5 +1,5 @@
 # T001 · Tests for `Format.Playtime`
-Status: ready
+Status: done
 Depends on: none
 Branch: agent/T001
 

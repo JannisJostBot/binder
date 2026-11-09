@@ -85,6 +85,7 @@ static class Tests
         CrashTests();
         SpaceTests();
         GameModeTests();
+        FormatTests();
 
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");
@@ -961,6 +962,19 @@ static class Tests
             File.WriteAllBytes(path, wav);
             File.WriteAllBytes(Path.ChangeExtension(path, null) + "-night.wav", GameShelf.Services.Chime.ToWav(nightL, nightR));
         }
+    }
+
+    /// <summary>Text formatting in Views/Format.cs: playtime, durations, delays, greetings, days.</summary>
+    static void FormatTests()
+    {
+        Check(Format.Playtime(TimeSpan.Zero) == "1 min", "Playtime: 0 shows 1 min");
+        Check(Format.Playtime(TimeSpan.FromMinutes(59)) == "59 min", "Playtime: 59 min");
+        Check(Format.Playtime(TimeSpan.FromSeconds(3599)) == "59 min", "Playtime: 59 min 59 s rounds down");
+        Check(Format.Playtime(TimeSpan.FromHours(1)) == "1 h 0 min", "Playtime: 1 h shows 1 h 0 min");
+        Check(Format.Playtime(new TimeSpan(4, 5, 0)) == "4 h 5 min", "Playtime: minutes not padded under 10 h");
+        Check(Format.Playtime(new TimeSpan(9, 59, 0)) == "9 h 59 min", "Playtime: 9 h 59 min");
+        Check(Format.Playtime(TimeSpan.FromHours(10)) == "10 h", "Playtime: from 10 h only hours");
+        Check(Format.Playtime(new TimeSpan(123, 45, 0)) == "123 h", "Playtime: 123 h 45 min shows 123 h");
     }
 
     static void PayloadTests()
