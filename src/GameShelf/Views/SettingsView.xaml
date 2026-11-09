@@ -26,7 +26,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Click="OnBackClick"
+                <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Command="{x:Bind ViewModel.BackCommand}"
                         ToolTipService.ToolTip="Back to all games (Esc)" AutomationProperties.Name="Back to all games" />
                 <TextBlock Grid.Column="1" Text="Settings" Style="{StaticResource SubtitleTextBlockStyle}" VerticalAlignment="Center" />
             </Grid>
@@ -43,14 +43,14 @@
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7C4;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
                         <TextBlock Style="{StaticResource RowTitle}" Text="Show it as" />
-                        <TextBlock x:Name="ModeText" Style="{StaticResource RowDetail}" />
+                        <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.ModeText, Mode=OneWay}" />
                     </StackPanel>
                     <Button x:Name="ModeChevron" Grid.Column="2" Style="{StaticResource DisclosureButton}" />
                 </Grid>
             </Border>
             <Border x:Name="ModeBody" Style="{StaticResource SettingCardBody}">
-                <RadioButtons x:Name="ModeChoice" MaxColumns="2" AutomationProperties.Name="Show it as"
-                              SelectionChanged="OnModeChanged">
+                <RadioButtons MaxColumns="2" AutomationProperties.Name="Show it as"
+                              SelectedIndex="{x:Bind ViewModel.ModeIndex, Mode=TwoWay}">
                     <RadioButton Tag="Flyout" ToolTipService.ToolTip="Slides in from the notification-area icon and hides when you click away">
                         <StackPanel Width="170">
                             <v:ModePreview HorizontalAlignment="Left" Width="150" Height="82" Margin="0,2,0,8" />
@@ -76,11 +76,12 @@
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE765;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
                         <TextBlock Style="{StaticResource RowTitle}" Text="Keyboard shortcut" />
-                        <TextBlock x:Name="HotkeyStatus" Style="{StaticResource RowDetail}" Visibility="Collapsed"
+                        <TextBlock Style="{StaticResource RowDetail}" Visibility="{x:Bind ViewModel.HotkeyTaken, Mode=OneWay}" Text="Taken by another app: choose a different one"
                                    Foreground="{ThemeResource SystemFillColorCautionBrush}" />
                     </StackPanel>
-                    <ComboBox x:Name="HotkeyBox" Grid.Column="2" Style="{StaticResource RowCombo}"
-                              AutomationProperties.Name="Keyboard shortcut" SelectionChanged="OnHotkeyChanged" />
+                    <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}" AutomationProperties.Name="Keyboard shortcut"
+                              ItemsSource="{x:Bind ViewModel.HotkeyLabels}" SelectedIndex="{x:Bind ViewModel.HotkeyIndex, Mode=TwoWay}"
+                              ToolTipService.ToolTip="{x:Bind ViewModel.HotkeyToolTip, Mode=OneWay}" />
                 </Grid>
             </Border>
 
@@ -93,8 +94,8 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xEA8F;" />
                     <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Icon in the notification area" />
-                    <ToggleSwitch x:Name="TraySwitch" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Icon in the notification area" Toggled="OnTrayChanged" />
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.TrayIcon, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="Icon in the notification area" />
                 </Grid>
             </Border>
 
@@ -107,8 +108,8 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7C9;" />
                     <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Hide when I click elsewhere" />
-                    <ToggleSwitch x:Name="ClickAwaySwitch" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Hide when I click elsewhere" Toggled="OnFlyoutOptionChanged" />
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.CloseOnClickAway, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="Hide when I click elsewhere" />
                 </Grid>
             </Border>
 
@@ -123,10 +124,10 @@
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE945;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
                         <TextBlock Style="{StaticResource RowTitle}" Text="Stay ready in the background" />
-                        <TextBlock x:Name="StayReadyText" Style="{StaticResource RowDetail}" />
+                        <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.StayReadyText, Mode=OneWay}" />
                     </StackPanel>
-                    <ToggleSwitch x:Name="StayReadySwitch" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Stay ready in the background" Toggled="OnFlyoutOptionChanged" />
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.StayReady, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="Stay ready in the background" />
                     <Button x:Name="StayReadyChevron" Grid.Column="3" Style="{StaticResource DisclosureButton}" />
                 </Grid>
             </Border>
@@ -138,13 +139,13 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Style="{StaticResource RowTitle}" Text="While it's closed" />
-                        <ComboBox x:Name="KeepLoadedBox" Grid.Column="1" Style="{StaticResource RowCombo}"
-                                  AutomationProperties.Name="While it's closed" SelectionChanged="OnFlyoutOptionChanged">
+                        <ComboBox Grid.Column="1" Style="{StaticResource RowCombo}" AutomationProperties.Name="While it's closed"
+                                  SelectedIndex="{x:Bind ViewModel.KeepLoadedIndex, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.KeepLoadedEnabled, Mode=OneWay}">
                             <ComboBoxItem Content="Open faster" Tag="Fast" />
                             <ComboBoxItem Content="Use less memory" Tag="Light" />
                         </ComboBox>
                     </Grid>
-                    <TextBlock x:Name="KeepLoadedDetail" Style="{StaticResource RowDetail}" TextWrapping="Wrap" TextTrimming="None" />
+                    <TextBlock Text="{x:Bind ViewModel.KeepLoadedDetail, Mode=OneWay}" Style="{StaticResource RowDetail}" TextWrapping="Wrap" TextTrimming="None" />
                 </StackPanel>
             </Border>
 
@@ -157,8 +158,8 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7E8;" />
                     <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Start with Windows" />
-                    <ToggleSwitch x:Name="AutostartSwitch" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Start with Windows" Toggled="OnAutostartChanged" />
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="Start with Windows" />
                 </Grid>
             </Border>
 
@@ -173,8 +174,8 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE916;" />
                     <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Hide Game Shelf" />
-                    <ComboBox x:Name="DelayBox" Grid.Column="2" Style="{StaticResource RowCombo}"
-                              AutomationProperties.Name="Hide delay" SelectionChanged="OnDelayChanged">
+                    <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}"
+                              AutomationProperties.Name="Hide delay" SelectedIndex="{x:Bind ViewModel.DelayIndex, Mode=TwoWay}">
                         <ComboBoxItem Content="Instantly" Tag="0" />
                         <ComboBoxItem Content="After 5 s" Tag="5" />
                         <ComboBoxItem Content="After 10 s" Tag="10" />
@@ -191,12 +192,12 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7A7;" />
                     <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Come back when the game closes" />
-                    <ToggleSwitch x:Name="ComeBackSwitch" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Come back when the game closes" Toggled="OnComeBackChanged" />
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.ComeBackOnClose, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="Come back when the game closes" />
                 </Grid>
             </Border>
             <!-- Game mode (spec §11): its own page -->
-            <Button Style="{StaticResource SettingLinkCard}" Click="OnGameModeClick" AutomationProperties.Name="Game mode settings">
+            <Button Style="{StaticResource SettingLinkCard}" Command="{x:Bind ViewModel.GameModeCommand}" AutomationProperties.Name="Game mode settings">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -206,7 +207,7 @@
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7FC;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
                         <TextBlock Style="{StaticResource RowTitle}" Text="Game mode" />
-                        <TextBlock x:Name="GameModeText" Style="{StaticResource RowDetail}" />
+                        <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.GameModeText, Mode=OneWay}" />
                     </StackPanel>
                     <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </Grid>
@@ -223,8 +224,8 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xECA5;" />
                     <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Cover size" />
-                    <ComboBox x:Name="DensityBox" Grid.Column="2" Style="{StaticResource RowCombo}"
-                              AutomationProperties.Name="Cover size" SelectionChanged="OnDensityChanged">
+                    <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}"
+                              AutomationProperties.Name="Cover size" SelectedIndex="{x:Bind ViewModel.DensityIndex, Mode=TwoWay}">
                         <ComboBoxItem Content="Small" Tag="Small" />
                         <ComboBoxItem Content="Medium" Tag="Medium" />
                         <ComboBoxItem Content="Large" Tag="Large" />
@@ -241,8 +242,8 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE9D2;" />
                     <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Show this week's playtime" />
-                    <ToggleSwitch x:Name="WeekSwitch" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Show this week's playtime" Toggled="OnWeekChanged" />
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.ShowWeeklySummary, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="Show this week's playtime" />
                 </Grid>
             </Border>
 
@@ -259,9 +260,9 @@
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE8F1;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
                         <TextBlock Style="{StaticResource RowTitle}" Text="Game sources" />
-                        <TextBlock x:Name="LibraryText" Style="{StaticResource RowDetail}" />
+                        <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.LibraryText, Mode=OneWay}" />
                     </StackPanel>
-                    <Button x:Name="RefreshButton" Grid.Column="2" Content="Refresh" Click="OnRefreshClick" VerticalAlignment="Center"
+                    <Button Grid.Column="2" Content="Refresh" Command="{x:Bind ViewModel.RefreshCommand}" IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}" VerticalAlignment="Center"
                             AutomationProperties.Name="Refresh library" ToolTipService.ToolTip="Look for new games" />
                     <Button x:Name="SourcesChevron" Grid.Column="3" Style="{StaticResource DisclosureButton}" />
                 </Grid>
@@ -273,19 +274,19 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <StackPanel>
-                        <CheckBox x:Name="SteamCheck" Style="{StaticResource SourceCheck}" Content="Steam" Click="OnSourceChanged" />
-                        <CheckBox x:Name="EpicCheck" Style="{StaticResource SourceCheck}" Content="Epic Games" Click="OnSourceChanged" />
-                        <CheckBox x:Name="GogCheck" Style="{StaticResource SourceCheck}" Content="GOG" Click="OnSourceChanged" />
-                        <CheckBox x:Name="EaCheck" Style="{StaticResource SourceCheck}" Content="EA app" Click="OnSourceChanged" />
+                        <CheckBox IsChecked="{x:Bind ViewModel.SteamEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="Steam" />
+                        <CheckBox IsChecked="{x:Bind ViewModel.EpicEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="Epic Games" />
+                        <CheckBox IsChecked="{x:Bind ViewModel.GogEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="GOG" />
+                        <CheckBox IsChecked="{x:Bind ViewModel.EaEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="EA app" />
                     </StackPanel>
                     <StackPanel Grid.Column="1">
-                        <CheckBox x:Name="UbisoftCheck" Style="{StaticResource SourceCheck}" Content="Ubisoft Connect" Click="OnSourceChanged" />
-                        <CheckBox x:Name="XboxCheck" Style="{StaticResource SourceCheck}" Content="Xbox app (Game Pass)" Click="OnSourceChanged" />
-                        <CheckBox x:Name="RockstarCheck" Style="{StaticResource SourceCheck}" Content="Rockstar Games" Click="OnSourceChanged"
+                        <CheckBox IsChecked="{x:Bind ViewModel.UbisoftEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="Ubisoft Connect" />
+                        <CheckBox IsChecked="{x:Bind ViewModel.XboxEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="Xbox app (Game Pass)" />
+                        <CheckBox IsChecked="{x:Bind ViewModel.RockstarEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="Rockstar Games"
                                   AutomationProperties.Name="Rockstar Games Launcher" />
-                        <CheckBox x:Name="HytaleCheck" Style="{StaticResource SourceCheck}" Content="Hytale" Click="OnSourceChanged"
+                        <CheckBox IsChecked="{x:Bind ViewModel.HytaleEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="Hytale"
                                   AutomationProperties.Name="Hytale Launcher" />
-                        <CheckBox x:Name="ShortcutsCheck" Style="{StaticResource SourceCheck}" Content="Desktop shortcuts" Click="OnSourceChanged"
+                        <CheckBox IsChecked="{x:Bind ViewModel.ShortcutsEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="Desktop shortcuts"
                                   AutomationProperties.Name="Imported desktop shortcuts" />
                     </StackPanel>
                 </Grid>
@@ -302,9 +303,9 @@
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE71B;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
                         <TextBlock Style="{StaticResource RowTitle}" Text="Desktop shortcuts" />
-                        <TextBlock x:Name="ShortcutsText" Style="{StaticResource RowDetail}" />
+                        <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.ShortcutsText, Mode=OneWay}" />
                     </StackPanel>
-                    <Button Grid.Column="2" Content="Import…" Click="OnImportClick" VerticalAlignment="Center"
+                    <Button Grid.Column="2" Content="Import…" Command="{x:Bind ViewModel.ImportCommand}" VerticalAlignment="Center"
                             AutomationProperties.Name="Import desktop shortcuts"
                             ToolTipService.ToolTip="Move game shortcuts off your desktop into the shelf" />
                     <Button x:Name="ShortcutsChevron" Grid.Column="3" Style="{StaticResource DisclosureButton}" />
@@ -318,7 +319,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" TextTrimming="None" VerticalAlignment="Center"
                                Text="Puts the imported shortcuts back on your desktop and takes them off the shelf." />
-                    <Button x:Name="RestoreButton" Grid.Column="1" Content="Restore" Click="OnRestoreClick" VerticalAlignment="Center"
+                    <Button Grid.Column="1" Content="Restore" Command="{x:Bind ViewModel.RestoreCommand}" IsEnabled="{x:Bind ViewModel.CanRestoreShortcuts, Mode=OneWay}" VerticalAlignment="Center"
                             AutomationProperties.Name="Restore shortcuts to desktop" />
                 </Grid>
             </Border>
@@ -332,7 +333,7 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE710;" />
                     <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Add a game" />
-                    <Button Grid.Column="2" Content="Browse…" Click="OnAddGameClick" VerticalAlignment="Center"
+                    <Button Grid.Column="2" Content="Browse…" Command="{x:Bind ViewModel.AddGameCommand}" VerticalAlignment="Center"
                             AutomationProperties.Name="Add a game" ToolTipService.ToolTip="A program (.exe) or a shortcut" />
                 </Grid>
             </Border>
@@ -347,7 +348,7 @@
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xED1A;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
                         <TextBlock Style="{StaticResource RowTitle}" Text="Hidden games" />
-                        <TextBlock x:Name="HiddenCountText" Style="{StaticResource RowDetail}" />
+                        <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.HiddenCountText, Mode=OneWay}" />
                     </StackPanel>
                     <Button x:Name="HiddenChevron" Grid.Column="2" Style="{StaticResource DisclosureButton}" />
                 </Grid>
@@ -355,13 +356,13 @@
             <Border x:Name="HiddenBody" Style="{StaticResource SettingCardBody}" Padding="52,0,16,0">
                 <StackPanel>
                     <StackPanel x:Name="HiddenList" AutomationProperties.Name="Hidden games" />
-                    <TextBlock x:Name="NoHiddenText" Margin="0,14" TextWrapping="Wrap" Style="{StaticResource RowDetail}" TextTrimming="None"
+                    <TextBlock Visibility="{x:Bind ViewModel.NoHiddenGames, Mode=OneWay}" Margin="0,14" TextWrapping="Wrap" Style="{StaticResource RowDetail}" TextTrimming="None"
                                Text="No hidden games. Hide one from its right-click menu or its details." />
                 </StackPanel>
             </Border>
 
             <!-- Storage (spec §12) -->
-            <Button Style="{StaticResource SettingLinkCard}" Click="OnFreeSpaceClick" AutomationProperties.Name="Free up space"
+            <Button Style="{StaticResource SettingLinkCard}" Command="{x:Bind ViewModel.FreeSpaceCommand}" AutomationProperties.Name="Free up space"
                     ToolTipService.ToolTip="See which games to remove to make room for a new one">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
@@ -387,18 +388,18 @@
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE8A9;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
                         <TextBlock Style="{StaticResource RowTitle}" Text="Position" />
-                        <TextBlock x:Name="PositionText" Style="{StaticResource RowDetail}" Visibility="Collapsed"
+                        <TextBlock Style="{StaticResource RowDetail}" Visibility="{x:Bind ViewModel.PositionIsFree, Mode=OneWay}"
                                    Text="Drag it by an empty spot to move it" />
                     </StackPanel>
-                    <ComboBox x:Name="PositionBox" Grid.Column="2" Style="{StaticResource RowCombo}"
-                              AutomationProperties.Name="Position" SelectionChanged="OnPositionChanged">
+                    <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}"
+                              AutomationProperties.Name="Position" SelectedIndex="{x:Bind ViewModel.PositionIndex, Mode=TwoWay}">
                         <ComboBoxItem Content="Left edge" Tag="Left" />
                         <ComboBoxItem Content="Right edge" Tag="Right" />
                         <ComboBoxItem Content="Free" Tag="Free" />
                     </ComboBox>
                 </Grid>
             </Border>
-            <Border x:Name="ScreenRow" Style="{StaticResource SettingCard}" Visibility="Collapsed">
+            <Border Style="{StaticResource SettingCard}" Visibility="{x:Bind ViewModel.ShowScreens, Mode=OneWay}">
                 <Grid ColumnSpacing="16" ToolTipService.ToolTip="Numbered from left to right">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -407,8 +408,8 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7F4;" />
                     <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Screen" />
-                    <ComboBox x:Name="ScreenBox" Grid.Column="2" Style="{StaticResource RowCombo}"
-                              AutomationProperties.Name="Screen" SelectionChanged="OnScreenChanged" />
+                    <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}" AutomationProperties.Name="Screen"
+                              ItemsSource="{x:Bind ViewModel.Screens, Mode=OneWay}" SelectedIndex="{x:Bind ViewModel.ScreenIndex, Mode=TwoWay}" />
                 </Grid>
             </Border>
             <Border Style="{StaticResource SettingCard}">
@@ -420,11 +421,11 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE81E;" />
                     <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Stay on the desktop layer" />
-                    <ToggleSwitch x:Name="DesktopSwitch" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Stay on the desktop layer" Toggled="OnDesktopChanged" />
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.StayOnDesktop, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="Stay on the desktop layer" />
                 </Grid>
             </Border>
-            <HyperlinkButton Margin="8,24,20,0" Content="Run first-time setup again" Click="OnSetupClick" />
+            <HyperlinkButton Margin="8,24,20,0" Content="Run first-time setup again" Command="{x:Bind ViewModel.SetupCommand}" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

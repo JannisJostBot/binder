@@ -57,6 +57,7 @@ src/GameShelf/            the WinUI widget
   Services/               Launcher, CoverCache, Storage, Windows integration (DesktopLayer, Monitors, Placement,
                           Autostart, ShellNotify, PcChecks, …), Gamepad (XInput, polled only while the panel is
                           active and a pad is connected), GameModeService, Chime/Sound
+  ViewModels/             MVVM: ObservableObject, RelayCommand, one <Page>ViewModel per page (SettingsViewModel so far)
   Views/                  ShelfView, DetailView, SettingsView, SetupView, ImportView, FreeSpaceView, GameModeView,
                           GameModeToast; Format.cs the text formatting
   Themes/Theme.xaml        shared styles and brushes
@@ -101,6 +102,17 @@ The version lives in `Directory.Build.props`.
 
 Single instance: `Program.Main` holds a mutex before WinUI starts; a second start forwards its arguments to the
 hidden `MessageWindow` (WM_COPYDATA). With no arguments that toggles the flyout.
+
+## Code structure (MVVM, being migrated page by page)
+
+- A page's state and logic go in `ViewModels/<Page>ViewModel.cs` (derives from `ObservableObject`; setters use
+  `SetProperty` or report only real changes, so filling a page never counts as a user change). The view binds with
+  `x:Bind` (`Mode=OneWay`/`TwoWay`, `Command=`); its code-behind keeps only pure view work (focus, animation,
+  `Disclosure`, drawing rows).
+- What a page asks its owner to do is an interface (`ISettingsActions`), implemented by `MainWindow` in its own
+  partial file (`MainWindow.Settings.cs`), so a missing action is a compile error, not a dead button.
+- View models don't reference WinUI types, so `tests/GameShelf.Tests` compiles them and tests them with a spy for
+  the actions interface (`ViewModelTests.cs`). Add checks there with each view model.
 
 ## Library sources
 

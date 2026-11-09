@@ -12,7 +12,7 @@ namespace GameShelf.Tests;
 /// Security and logic tests for the non-UI code. Private helpers are reached by reflection so the app code
 /// doesn't need test-only visibility changes. Exit code = number of failures.
 /// </summary>
-static class Tests
+static partial class Tests
 {
     static int fails;
     static void Check(bool ok, string what) { Console.WriteLine((ok ? "PASS " : "FAIL ") + what); if (!ok) fails++; }
@@ -84,6 +84,7 @@ static class Tests
         CrashTests();
         SpaceTests();
         GameModeTests();
+        SettingsViewModelTests();
 
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");

@@ -2,9 +2,6 @@ using System.Runtime.InteropServices;
 
 namespace GameShelf.Services;
 
-/// <summary>One display, in physical pixels.</summary>
-public sealed record MonitorInfo(IntPtr Handle, string Device, PixelRect Bounds, PixelRect WorkArea, bool IsPrimary, double Scale);
-
 /// <summary>Monitors and the taskbars on them. Only queried when placing the panel, never polled.</summary>
 internal static class Monitors
 {

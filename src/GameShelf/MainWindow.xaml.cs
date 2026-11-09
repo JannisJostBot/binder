@@ -1,6 +1,7 @@
 using GameShelf.Library;
 using GameShelf.Models;
 using GameShelf.Services;
+using GameShelf.ViewModels;
 using GameShelf.Views;
 using Microsoft.UI.Dispatching;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
@@ -24,7 +25,7 @@ namespace GameShelf;
 /// The panel: a borderless WinUI window docked to the screen edge, with Acrylic behind it. In Flyout mode it's
 /// created on open and closed for good on close; on the desktop it stays.
 /// </summary>
-public sealed partial class MainWindow : Window
+public sealed partial class MainWindow : Window, ISettingsActions
 {
     // The library lives in App.State, so it survives the flyout window being closed and rebuilt.
     private List<Game> _games { get => App.State.Games; set => App.State.Games = value; }
@@ -73,16 +74,7 @@ public sealed partial class MainWindow : Window
         Shelf.GameModeSettingsRequested += OpenGameMode;
         Shelf.FreeSpaceRequested += OpenFreeSpace;
         Shelf.RefreshRequested += () => _ = RescanAsync();
-        SettingsPage.BackRequested += ShowShelf;
-        SettingsPage.Changed += OnSettingChanged;
-        SettingsPage.RefreshRequested += () => _ = RescanAsync();
-        SettingsPage.UnhideRequested += Unhide;
-        SettingsPage.ImportRequested += () => _ = ShowImportAsync();
-        SettingsPage.RestoreRequested += RestoreShortcuts;
-        SettingsPage.AddGameRequested += AddGame;
-        SettingsPage.SetupRequested += ShowSetup;
-        SettingsPage.FreeSpaceRequested += () => ShowFreeSpace(new FreeSpaceState());
-        SettingsPage.GameModeRequested += ShowGameMode;
+        SettingsPage.Initialize(this); // its actions: MainWindow.Settings.cs
         GameModePage.BackRequested += GameModeBack;
         GameModePage.Changed += SaveSettings;
         FreeSpacePage.BackRequested += LeaveFreeSpace;
@@ -523,7 +515,7 @@ public sealed partial class MainWindow : Window
         if (SettingsPage.Visibility != Visibility.Visible) return;
         var bounds = NativeWindow.GetBounds(_hwnd);
         var current = Monitors.FromPoint(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
-        SettingsPage.Show(App.Settings, _games, Autostart.IsEnabled(), _scanning,
+        SettingsPage.ViewModel!.Load(App.Settings, _games, Autostart.IsEnabled(), _scanning,
             Storage.LoadImportedShortcuts().Count, Monitors.All(), current.Device, App.HotkeyFree);
     }
 

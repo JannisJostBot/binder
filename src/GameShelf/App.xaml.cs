@@ -419,14 +419,6 @@ public sealed partial class App : Application
         _ => (0, 0),
     };
 
-    public static string HotkeyLabel(Hotkey hotkey) => hotkey switch
-    {
-        Hotkey.WinShiftG => "Win+Shift+G",
-        Hotkey.WinShiftJ => "Win+Shift+J",
-        Hotkey.CtrlAltG => "Ctrl+Alt+G",
-        _ => "Off",
-    };
-
     private void ShowTrayMenu()
     {
         if (_messages is null) return;

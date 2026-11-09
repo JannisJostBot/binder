@@ -2,6 +2,9 @@ using GameShelf.Models;
 
 namespace GameShelf.Services;
 
+/// <summary>One display, in physical pixels.</summary>
+public sealed record MonitorInfo(IntPtr Handle, string Device, PixelRect Bounds, PixelRect WorkArea, bool IsPrimary, double Scale);
+
 /// <summary>A rectangle in physical screen pixels.</summary>
 public readonly record struct PixelRect(int Left, int Top, int Right, int Bottom)
 {

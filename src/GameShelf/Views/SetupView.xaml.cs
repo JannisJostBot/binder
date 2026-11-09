@@ -52,7 +52,7 @@ public sealed partial class SetupView : UserControl
         FlyoutCard.IsChecked = settings.DisplayMode == DisplayMode.Flyout;
         DesktopCard.IsChecked = settings.DisplayMode == DisplayMode.Desktop;
         AutostartSwitch.IsOn = startWithWindows;
-        HotkeyText.Text = App.HotkeyLabel(settings.Hotkey);
+        HotkeyText.Text = Format.HotkeyLabel(settings.Hotkey);
         ShowStep(1);
     }
 

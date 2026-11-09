@@ -61,4 +61,13 @@ public static class Format
 
     /// <summary>A hide delay: "Instantly" or "10 s".</summary>
     public static string Delay(int seconds) => seconds <= 0 ? "Instantly" : $"{seconds} s";
+
+    /// <summary>The global shortcut as Windows writes it: "Win+Shift+G".</summary>
+    public static string HotkeyLabel(Models.Hotkey hotkey) => hotkey switch
+    {
+        Models.Hotkey.WinShiftG => "Win+Shift+G",
+        Models.Hotkey.WinShiftJ => "Win+Shift+J",
+        Models.Hotkey.CtrlAltG => "Ctrl+Alt+G",
+        _ => "Off",
+    };
 }
