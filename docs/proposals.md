@@ -33,6 +33,8 @@ break the user's system.
 | 17 Advanced: sources and artwork | §14 | To do |
 | 18 Performance | §15 | To do |
 | 22 Open a launcher | §21 | To do |
+| 23 Faster than Start | §22 | To do |
+| 24 Lean speed-ups | §23 | To do |
 
 ### Still to carry into `CLAUDE.md`
 
@@ -125,6 +127,15 @@ The build order is at the end of this file. The ideas under "Not decided" at the
 **2026-11-09**
 - **Open a launcher** approved (§21): from a launcher filter chip's right-click menu and as a group in the tray
   menu. Not chosen: a launcher row on the shelf, deep links into launchers.
+- **Faster than Start, and showing why** approved (§22), all five parts: Enter plays the top match with smarter
+  matching (initials), Enter plays the last game on an empty search, optional Start search entries that launch
+  through Game Shelf (`--play`), the user's own numbers in setup / import / Welcome back, and a Play tooltip that
+  says what's different. This replaces "Start menu search integration" under "Not decided". Not chosen: opening
+  on controller pick-up, a "you saved" counter.
+- **Lean speed-ups** approved (§23), all six: hide when the game appears (the countdown becomes only the limit, and
+  the 5 / 10 / 30 s choices go), the last three games in the tray menu (replaces the jump list idea under "Not
+  decided"), open on the screen with the mouse, "Needs an update" on Steam covers, "New" on recently installed games,
+  and removing the footer hint. Rule: a feature that explains itself removes the help text it replaces.
 
 ---
 
@@ -1399,6 +1410,178 @@ can open them, so the desktop can be cleared completely. Two entry points, both 
 `ShelfView` (chip menu), `App.ShowTrayMenu`, `GameActions`, `LauncherIcons`, `FreeSpaceView` (reuse the helper).
 No new settings. Cost: nothing while idle; the items are built when a menu opens (a few registry reads).
 
+## 22. Faster than Start, and showing why (milestone 23, no board yet)
+
+The question this answers: "why not just press Windows and search for the game?" If you know the game, Start
+search is good. Game Shelf wins in three ways it doesn't show today:
+- **It finds every game.** Start only finds games that made a Start menu shortcut; Epic, EA, Ubisoft and GOG games
+  often don't, and Steam only when that box was ticked.
+- **It helps when you don't know what to play:** covers, Continue playing, Recent, Favorites.
+- **It handles the session, not only the launch:** Steam started silently, the widget gone while you play and back
+  afterwards, Game mode, playtime, crash help.
+
+So: make the launch itself at least as fast as Start (a, b), meet people in Start search (c), and show those
+advantages with the user's own numbers, at the moment they matter (d, e).
+
+### a. Type, Enter, playing
+
+- Today Enter in the search box only moves focus to the first cover, so it takes Enter twice. Enter in the search
+  box now **plays the top match**. Down still moves into the grid.
+- Matching (pure code, run per keystroke over the in-memory list):
+  1. The name starts with the query ("bal" → Baldur's Gate 3).
+  2. A word in the name starts with it ("gate").
+  3. **Initials:** the query matches the first letters of the words, digits included ("bg3" → Baldur's Gate 3,
+     "rdr2" → Red Dead Redemption 2; a leading "The" is skipped, as in `CoverColors.Initials`).
+  4. Anywhere in the name (today's rule).
+  Within a rank, the most recently played first, then the name. Case and accents are ignored (culture-aware, as
+  the Name sort).
+- The top match gets a quiet "Enter to play" hint (a small `KeyboardAccelerator`-style label on its tile, or the
+  row in List), so the shortcut is discoverable. Screen readers: the search box's help text says "Enter plays the
+  first result".
+- Results are games only: no web results, apps or settings, which is the difference from Start.
+- Tests: the ranking and initials rules are unit-tested (`Library/GameSearch`, no UI).
+
+### b. One keystroke to your last game
+
+- When the panel opens and nothing has been typed yet, **Enter plays the "Continue playing" game** (the slot's Play
+  button has focus semantics without stealing the search box's focus: typing still searches).
+- So the usual case is Win+Shift+G, Enter. The search box's placeholder says so while it's empty: "Search 72
+  games · Enter plays Hades II".
+- Only when the slot shows Continue playing (or Welcome back). With This week showing, or no game played yet,
+  Enter does nothing until something is typed.
+
+### c. Your games in Start search (optional)
+
+Instead of competing with Start, put the games there, launched through Game Shelf.
+- A setting, off by default and offered in first-run setup (next to the numbers in d): **"Add my games to Start
+  search"**.
+- Shortcuts go only into our own folder, `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Game Shelf games\`, one
+  `.lnk` per game, written with the Shell API (`IShellLinkW` + `IPersistFile.Save`, the same interfaces
+  `ShortcutFile` already loads).
+- Each shortcut runs **`GameShelf.exe --play <gameId>`**, so a launch from Start gets everything Game Shelf adds:
+  silent Steam, the watcher, Game mode, playtime, crash help. Its icon is the game's icon (`SteamSource.IconFor`,
+  the exe, or the fallback cover's icon saved as `.ico` in our cache).
+- **`--play <id>`:** the id must match a game in `library.json`; anything else is ignored. It plays the game
+  exactly as the Play button does, without opening the panel (the launch toast is skipped; the hide delay doesn't
+  apply since nothing is shown). Through the single-instance forwarding when Game Shelf is already running.
+- Only for games **without** a Start entry of their own (checked as in d), so Start search never shows a game
+  twice. Existing Start entries are never touched.
+- Kept in step on every rescan: added, renamed or removed with the library (hidden games are removed too). Turning
+  the setting off deletes the folder; uninstall deletes it too. Only files in that folder are ever written or
+  deleted, never through links (the files-we-own rule).
+- Cost: nothing while idle; written only on rescan when something changed.
+
+### d. Show the difference with the user's own numbers
+
+- **First-run setup, step 1** ("We found N games"): one line under the count, "23 of them aren't in Start search",
+  when that's more than zero. Worked out once, then, by reading the Start menu folders (the user's and the shared
+  `Programs` folders, bounded depth and file count, `.lnk` and `.url` read with `ShortcutFile`, never run) and
+  matching targets to games by install folder, exe or store link. No result is stored.
+- **After the desktop import:** the toast says "Your desktop has 14 fewer icons · Undo" (Undo = Restore to
+  desktop, as today).
+- **Welcome back, once:** the first Welcome back after setup adds one line, "Game Shelf was closed the whole time
+  you played", so the zero-cost promise is seen once. Not repeated.
+- Plain statements only; no badges, scores or "you saved" counters.
+
+### e. Say what Play does
+
+- The cover's hover Play mark gets a short tooltip that names the real difference for that game, where there is
+  one: Steam "Plays without opening Steam's window", any game with Game mode on "Plays with Game mode", otherwise
+  just "Play". One line, from facts the game already has.
+
+### Not chosen
+
+- Opening the panel when a controller is picked up: XInput can't notify, so it would need constant polling, which
+  breaks "zero cost while idle".
+- "Surprise me" and other discovery features: nice, but they don't answer "why not Start?" (it stays under "Not
+  decided").
+- A "you saved N clicks" or similar counter: noise.
+
+### Touches
+
+New `Library/GameSearch` (ranking, initials; tested), `ShelfView` (Enter, hint, placeholder), `Program`/`App`
+(`--play`), new `Services/StartMenuGames` (read Start entries for d; write our folder for c), `SetupView`,
+`MainWindow` (import toast), `Moments` (the one-time line), `GameTile` (tooltip), `Settings` (one setting), the
+installer's uninstall step. Security rules in `CLAUDE.md`: add the Start menu folder to the files we own, and
+`--play` to "only launch validated library entries".
+
+## 23. Lean speed-ups (milestone 24, no board yet)
+
+Six small changes that remove a step or a surprise, and pass the bloat test: nothing runs while idle, no new page,
+and where possible a setting or a line of text goes away instead of one being added.
+
+### a. Hide when the game appears
+
+- Today the panel hides after a fixed countdown (`Settings.HideDelaySeconds`, default 10 s, per game
+  `Game.HideDelaySeconds`), whatever the game is doing: too early while Steam is still updating, too late for a game
+  that's up in 3 s.
+- New: the watcher tells the widget the moment it finds the game's process, the same way it reports Game mode
+  today (`StartWidget("--applied", …)`): it starts `GameShelf.exe --detected <gameId>`, which the single instance
+  forwards to the running widget, or which exits at once when none is running. The widget then ends the countdown
+  and exits, as when the countdown ends today.
+- The countdown stays as the **upper limit** (if detection takes longer, the panel still hides then), and Keep open
+  still cancels everything. The toast reads "Starting [Game]… hides when it opens".
+- A `--detected` for another game, or after Keep open, is ignored.
+- **What it removes:** the hide delay setting becomes "When the game opens (default) / Instantly", with a per-game
+  override only for "Instantly". The 5 / 10 / 30 s choices go. Existing values migrate to the new default.
+
+### b. Recent games in the tray menu
+
+- The tray menu gets the last three games played (by our sessions), as its first group under "Open Game Shelf":
+  "Play Hades II", "Play Baldur's Gate 3", … Choosing one plays it exactly as the Play button does, without opening
+  the panel.
+- Built when the menu opens from the in-memory library and sessions, like the Game mode item. None played yet: no
+  group and no extra separator.
+- This resolves "A taskbar jump list with recent games" from "Not decided": the same reach, with the tray icon
+  Game Shelf already has, no taskbar pin needed.
+
+### c. Open on the screen with the mouse
+
+- The flyout opens on the screen chosen in Settings (`Settings.Monitor`). With several screens, the Screen choice
+  gets one more option, **"Where the mouse is"** (the new default for new installs, and for anyone who never chose a
+  screen): the monitor under the cursor when the shortcut or tray icon opens it (`Monitors.FromPoint`).
+- The desktop-docked mode keeps its fixed screen.
+
+### d. "Needs an update" on Steam covers
+
+- Steam's `appmanifest_*.acf` `StateFlags` already says when an update is pending (`SteamSource` reads it today
+  only to skip uninstalled games). **Verify the bits on the real PC** (update required, update queued or running)
+  before relying on them.
+- Kept as `Game.UpdatePending` during the existing scan; no extra reads.
+- The cover gets a small badge chip (bottom-left, the `BadgeBrush` style, a Fluent download/sync glyph) and the
+  Play tooltip says "Steam will update this first". Its screen-reader name includes "update pending".
+- Steam only for now; other launchers only where their local data says the same just as cheaply.
+
+### e. "New" on recently installed games
+
+- A small "New" label on the cover for games first seen in the last 7 days (`Game.AddedAt`, already recorded) and
+  not played yet. It goes away when the game is played or the 7 days pass. No filter chip; "Recently added" in the
+  sort menu already exists.
+- The very first scan (setup) marks nothing as new.
+
+### f. Retire teaching text that's no longer needed
+
+- The footer hint ("Hides 10 s after a game starts · comes back when it closes", shown until three sessions are
+  recorded) goes once a lands: the toast's "hides when it opens" teaches the same thing at the moment it matters.
+- The empty-search placeholder from §22 b ("Enter plays Hades II") already teaches Enter; no extra hint is added for
+  it.
+- Rule for later features: when a feature explains itself, remove the help text it replaces in the same milestone.
+
+### Not chosen
+
+- Starting Steam ahead of time when the panel opens: work done just in case.
+- Number keys to play favorites: they clash with typing names that contain digits.
+- An Explorer right-click "Add to Game Shelf": a shell extension; drag and drop onto the panel already adds games.
+- Ratings, tags or notes: a library manager, not a launcher.
+
+### Touches
+
+Watcher `Program.cs` (`--detected`), widget `Program`/`App` (forwarding, ignore rules), `MainWindow.Launch`
+(countdown as the limit), `Settings`/`Game` (hide delay migration, `UpdatePending`), `SettingsView`/`DetailView`
+(fewer delay choices, Screen option), `App.ShowTrayMenu` (recent group), `MainWindow.Flyout` (mouse screen),
+`SteamSource` (flags), `GameTile`/`GameRow` (update chip, "New"), `ShelfView` (footer removed). Unit tests for the
+flag parsing, the "New" rule and the delay migration.
+
 ---
 
 ## Build order (after milestone 7)
@@ -1433,6 +1616,11 @@ No new settings. Cost: nothing while idle; the items are built when a menu opens
     Media tile hover; check both on the real PC (speakers and headphones; mouse, keyboard and controller).
 22. **Open a launcher** (§21): the shared helper first (Free up space switches to it), then the tray group, then
     the chip menu. Verify each installed launcher on the real PC.
+23. **Faster than Start** (§22): a and b first (search ranking with tests, then Enter), then d and e, then c
+    (`--play` first, then the Start folder and the setting). Count the "not in Start search" games on the real PC
+    and compare with what Start actually finds.
+24. **Lean speed-ups** (§23): a first (with the footer removal in f), then d (check the Steam flags on the real PC
+    first), then b, e and c.
 
 ## Not decided (don't build)
 
@@ -1453,11 +1641,9 @@ Suggested but neither approved nor rejected yet:
   - Paths go through the security rules (detected install folders validated, user-picked exes only).
 - "Surprise me"
 - Pin to Start / desktop shortcut from a cover
-- A taskbar jump list with recent games
 - Free up space, faster size entry (§12): fill the size from a pending install the launcher has written to disk
   (Steam/Epic, check what Steam writes first), a "Paste" button that reads "Storage: 150 GB" from copied store
   text, and quick picks (50/100/150/200 GB, last used)
-- Start menu search integration
 - Importing playtime from Steam
 - Session notes
 - Refresh rate / HDR per game
