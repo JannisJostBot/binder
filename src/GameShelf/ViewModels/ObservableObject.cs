@@ -7,7 +7,7 @@ namespace GameShelf.ViewModels;
 /// Base class for view models: raises <see cref="PropertyChanged"/> so <c>x:Bind Mode=OneWay/TwoWay</c> updates the
 /// view. No reflection (Native AOT): <see cref="CallerMemberNameAttribute"/> fills in the property name at compile time.
 /// </summary>
-public abstract class ObservableObject : INotifyPropertyChanged
+public abstract partial class ObservableObject : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
 

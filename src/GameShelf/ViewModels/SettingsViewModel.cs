@@ -30,7 +30,7 @@ public interface ISettingsActions
 /// writes to <see cref="Settings"/> and reports a change only when the value really differs, so filling the
 /// controls never counts as the user changing something.
 /// </summary>
-public sealed class SettingsViewModel : ObservableObject
+public sealed partial class SettingsViewModel : ObservableObject
 {
     // The order of the choices in SettingsView.xaml.
     private static readonly DisplayMode[] Modes = [DisplayMode.Flyout, DisplayMode.Desktop];
