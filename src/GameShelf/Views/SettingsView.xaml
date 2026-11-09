@@ -409,7 +409,7 @@
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7F4;" />
                     <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Screen" />
                     <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}" AutomationProperties.Name="Screen"
-                              ItemsSource="{x:Bind ViewModel.Screens, Mode=OneWay}" SelectedIndex="{x:Bind ViewModel.ScreenIndex, Mode=TwoWay}" />
+                              ItemsSource="{x:Bind ViewModel.Screens, Mode=OneWay}" SelectedItem="{x:Bind ViewModel.SelectedScreen, Mode=TwoWay}" />
                 </Grid>
             </Border>
             <Border Style="{StaticResource SettingCard}">

@@ -49,7 +49,7 @@ static partial class Tests
         Check(vm.LibraryText == "9 of 9 on · 2 games", "settings: library line counts sources and shown games");
         Check(vm.HiddenGames.Count == 1 && vm.HiddenGames[0].Name == "Beta" && vm.HiddenCountText == "1 hidden" && !vm.NoHiddenGames,
             "settings: hidden games listed");
-        Check(vm.Screens.Count == 2 && vm.Screens[0] == "1 (main) · 1920 × 1080" && vm.ScreenIndex == 1,
+        Check(vm.Screens.Length == 2 && vm.Screens[0] == "1 (main) · 1920 × 1080" && vm.SelectedScreen == vm.Screens[1],
             "settings: screens left to right, the current one selected");
         Check(vm.DensityIndex == 1 && vm.PositionIndex == 1 && vm.DelayIndex == 2 && vm.ModeIndex == 0,
             "settings: choices show the defaults (Medium, Right edge, 10 s, Flyout)");
@@ -57,7 +57,8 @@ static partial class Tests
         // A control echoing the value it was given is not a change.
         vm.StayReady = settings.StayReady;
         vm.DensityIndex = vm.DensityIndex;
-        vm.ScreenIndex = -1;
+        vm.SelectedScreen = null;
+        vm.SelectedScreen = "not a screen";
         vm.DelayIndex = -1;
         Check(spy.Changes.Count == 0, "settings: same value or no selection reports nothing");
 
@@ -70,7 +71,7 @@ static partial class Tests
         vm.EpicEnabled = false;
         Check(!settings.EpicEnabled && spy.Changes[^1] == SettingChange.Sources && vm.LibraryText == "8 of 9 on · 2 games",
             "settings: a source off writes it, reports Sources and updates the count");
-        vm.ScreenIndex = 0;
+        vm.SelectedScreen = vm.Screens[0];
         Check(settings.Monitor == @"\\.\DISPLAY1" && spy.Changes[^1] == SettingChange.Screen, "settings: picking a screen stores its device");
         vm.PositionIndex = 2;
         Check(settings.Position == DockPosition.Free && vm.PositionIsFree && spy.Changes[^1] == SettingChange.Position, "settings: Free position");
@@ -80,7 +81,7 @@ static partial class Tests
         vm.Load(settings, games, false, refreshing: true, importedShortcuts: 3, monitors, null, hotkeyFree: false);
         Check(vm.LibraryText == "Scanning your stores…" && !vm.CanRefresh && vm.ShortcutsText == "3 imported" && vm.CanRestoreShortcuts,
             "settings: scanning and imported shortcuts shown");
-        Check(vm.HotkeyTaken && vm.HotkeyToolTip == "Taken by another app: choose a different one" && vm.ScreenIndex == -1,
+        Check(vm.HotkeyTaken && vm.HotkeyToolTip == "Taken by another app: choose a different one" && vm.SelectedScreen is null,
             "settings: a taken shortcut and an unknown screen shown");
 
         vm.BackCommand.Execute(null);

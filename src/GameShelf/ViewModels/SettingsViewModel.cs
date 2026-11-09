@@ -139,7 +139,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>Only a problem gets a line on the card; the rest is the tooltip.</summary>
-    public IReadOnlyList<string> HotkeyLabels => HotkeyNames;
+    public string[] HotkeyLabels => HotkeyNames; // an array: bound as ItemsSource (see Screens)
     public bool HotkeyTaken => _settings.Hotkey != Hotkey.Off && !_hotkeyFree;
     public string? HotkeyToolTip => _settings.Hotkey == Hotkey.Off ? null
         : HotkeyTaken ? "Taken by another app: choose a different one" : "Free, not used by Windows or other apps";
@@ -304,19 +304,28 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public bool PositionIsFree => _settings.Position == DockPosition.Free;
 
-    /// <summary>One entry per monitor, left to right; the choice only shows with more than one monitor.</summary>
-    public IReadOnlyList<string> Screens { get; private set; } = [];
-    public bool ShowScreens => Screens.Count > 1;
+    /// <summary>
+    /// One entry per monitor, left to right; the choice only shows with more than one monitor. A plain array: WinUI
+    /// receives it as ItemsSource, and under Native AOT it can't take the compiler's hidden list types (from
+    /// <c>IReadOnlyList&lt;T&gt; x = [..]</c>).
+    /// </summary>
+    public string[] Screens { get; private set; } = [];
+    public bool ShowScreens => Screens.Length > 1;
     private int _screenIndex = -1;
 
-    public int ScreenIndex
+    /// <summary>
+    /// The selected entry of <see cref="Screens"/>. Bound as an item, not an index: when the list and the selection
+    /// are refreshed together, an index could arrive before its list (an exception); an unknown item is ignored.
+    /// </summary>
+    public string? SelectedScreen
     {
-        get => _screenIndex;
+        get => _screenIndex >= 0 ? Screens[_screenIndex] : null;
         set
         {
-            if (value == _screenIndex || value < 0 || value >= _screenDevices.Length) return;
-            _screenIndex = value;
-            _settings.Monitor = _screenDevices[value];
+            int index = value is null ? -1 : Array.IndexOf(Screens, value);
+            if (index == _screenIndex || index < 0) return;
+            _screenIndex = index;
+            _settings.Monitor = _screenDevices[index];
             OnPropertyChanged();
             Changed(SettingChange.Screen);
         }

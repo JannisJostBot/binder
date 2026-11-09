@@ -109,7 +109,9 @@ hidden `MessageWindow` (WM_COPYDATA). With no arguments that toggles the flyout.
   `SetProperty` or report only real changes, so filling a page never counts as a user change). The view binds with
   `x:Bind` (`Mode=OneWay`/`TwoWay`, `Command=`); its code-behind keeps only pure view work (focus, animation,
   `Disclosure`, drawing rows). Classes handed to WinUI (view models, commands) must be `partial`: under Native AOT
-  CsWinRT only generates their WinRT interfaces then, and the panel crashes at the first binding otherwise.
+  CsWinRT only generates their WinRT interfaces then, and the panel crashes at the first binding otherwise. An `ItemsSource` from a view model is a plain array (`string[]`), never a
+  collection expression typed as an interface (`IReadOnlyList<T> x = [..]` makes a hidden compiler type AOT can't
+  pass to WinUI); bind a ComboBox's selection by item, not index, when its list changes with it.
 - What a page asks its owner to do is an interface (`ISettingsActions`), implemented by `MainWindow` in its own
   partial file (`MainWindow.Settings.cs`), so a missing action is a compile error, not a dead button.
 - View models don't reference WinUI types, so `tests/GameShelf.Tests` compiles them and tests them with a spy for
