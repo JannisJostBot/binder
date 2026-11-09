@@ -656,22 +656,6 @@ public sealed partial class ShelfView : UserControl
         return element as SelectorItem;
     }
 
-    public bool IsListMode => _listMode;
-
-    /// <summary>
-    /// A game's cover picture in the grid, for the connected animation (proposals §13 b): null in List view, or
-    /// when the cover isn't realized or isn't in view (at least partly) right now.
-    /// </summary>
-    public UIElement? CoverOf(Game game)
-    {
-        if (_listMode) return null;
-        int index = _visible.FindIndex(g => g.Id == game.Id);
-        if (index < 0 || Tiles.ContainerFromIndex(index) is not SelectorItem { ContentTemplateRoot: GameTile tile } item) return null;
-        var bounds = item.TransformToVisual(Tiles).TransformBounds(new Windows.Foundation.Rect(0, 0, item.ActualWidth, item.ActualHeight));
-        if (bounds.Bottom <= 0 || bounds.Top >= Tiles.ActualHeight) return null;
-        return tile.CoverElement;
-    }
-
     /// <summary>
     /// Puts focus back on a game when coming back from its detail view. Programmatic, so WinUI draws the focus
     /// ring only if the last input was the keyboard (Esc), not after clicking Back with the mouse.

@@ -54,9 +54,6 @@ public sealed partial class GameTile : UserControl
     private void OnCoverSizeChanged(object sender, SizeChangedEventArgs e) =>
         CoverArea.CenterPoint = new Vector3((float)e.NewSize.Width / 2, (float)e.NewSize.Height / 2, 0);
 
-    /// <summary>The cover picture, for the connected animation into the Detail view (proposals §13 b).</summary>
-    public UIElement CoverElement => Cover;
-
     /// <summary>Called when the Details (i) button is pressed.</summary>
     public Action<Game>? DetailsRequested { get; set; }
 

@@ -14,8 +14,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using ConnectedAnimation = Microsoft.UI.Xaml.Media.Animation.ConnectedAnimation;
-using ConnectedAnimationService = Microsoft.UI.Xaml.Media.Animation.ConnectedAnimationService;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.UI.ViewManagement;
@@ -703,26 +701,11 @@ public sealed partial class MainWindow : Window
         if (newLauncher) _ = RescanAsync();
     }
 
-    private const string CoverAnimation = "cover";
-
-    /// <summary>
-    /// Proposals §13 b: the cover grows from the grid into the Detail view (and back). WinUI's connected
-    /// animation, default timing; only from the cover grid, only a cover that's in view, never with "Animation
-    /// effects" off. Nothing runs outside the ~250 ms it plays.
-    /// </summary>
-    private static ConnectedAnimation? PrepareCover(UIElement? from)
-    {
-        if (from is null || !new UISettings().AnimationsEnabled) return null;
-        return ConnectedAnimationService.GetForCurrentView().PrepareToAnimate(CoverAnimation, from);
-    }
-
     private void ShowDetail(Game game)
     {
-        var animation = Shelf.Visibility == Visibility.Visible ? PrepareCover(Shelf.CoverOf(game)) : null;
         Detail.Show(game, _sessions, App.Settings);
         ShowPage(Detail);
         Detail.UpdateLayout();
-        animation?.TryStart(Detail.CoverElement);
         Detail.FocusPlay();
     }
 
@@ -738,17 +721,11 @@ public sealed partial class MainWindow : Window
     {
         if (Shelf.Visibility == Visibility.Visible) return;
         var shown = Detail.Visibility == Visibility.Visible ? Detail.Game : null;
-        var animation = shown is not null && !Shelf.IsListMode ? PrepareCover(Detail.CoverElement) : null;
         ShowPage(Shelf);
         Shelf.UpdateLayout();
         if (shown is not null) Shelf.FocusGame(shown);
         else if (_padMode) Shelf.FocusFirstGame(); // a search box is no use without a keyboard
         else Shelf.FocusSearch();
-        if (animation is null) return;
-        // Back into the grid only if that cover is in view (focusing it may just have scrolled it there).
-        Shelf.UpdateLayout();
-        if (Shelf.CoverOf(shown!) is { } target) animation.TryStart(target);
-        else animation.Cancel();
     }
 
     private void OnSettingChanged(SettingChange change)

@@ -27,7 +27,7 @@ break the user's system.
 | 19 Quick actions | §16 | Done (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); tried on the real PC |
 | 20 Restart after a crash | §17 | To do |
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
-| 16 Look and moments | §13 | **In progress.** Done: a, the logo on banners (`ArtKind.Logo`, `BannerLogo`; Steam keeps `librarycache\{appid}\logo.png`, 188 of 400 games on the owner's PC, the rest downloaded once; shadow from the logo's alpha via `Image.GetAlphaMask`; in Detail it sits right of the cover, which overlaps the banner's bottom left). Built: b–e, to try on the real PC.<br>b is `ConnectedAnimationService`, cancelled when the cover isn't in view or in List.<br>c and e are `Library/Moments`, picked each time the panel opens; tested live with a session written into `sessions.json`. With a crash, the crash card still takes the slot.<br>d is `Views/Sheen`, plain alpha layers tuned below the prototype's "Medium", since blend modes would need Win2D. The rest look was checked on screen; following the pointer couldn't be tested here, because injected mouse input didn't reach the panel |
+| 16 Look and moments | §13 | **In progress.** Done: a, the logo on banners (`ArtKind.Logo`, `BannerLogo`; Steam keeps `librarycache\{appid}\logo.png`, 188 of 400 games on the owner's PC, the rest downloaded once; shadow from the logo's alpha via `Image.GetAlphaMask`; in Detail it sits right of the cover, which overlaps the banner's bottom left). Built: b–e, to try on the real PC.<br>b (the cover growing into details) was built and then removed on 2026-11-09, owner's choice: it looked bad.<br>c and e are `Library/Moments`, picked each time the panel opens; tested live with a session written into `sessions.json`. With a crash, the crash card still takes the slot.<br>d is `Views/Sheen`, plain alpha layers tuned below the prototype's "Medium", since blend modes would need Win2D. The rest look was checked on screen; following the pointer couldn't be tested here, because injected mouse input didn't reach the panel |
 | Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
 | 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
 | 17 Advanced: sources and artwork | §14 | To do |
@@ -728,7 +728,10 @@ Five small things that make the app pleasant to look at without getting in the w
 - Loaded only while the banner is shown, like the hero art. The image's screen-reader name is the game's title.
 - No logo (not Steam, or none found): the title text as today.
 
-### b. The cover grows into the detail view
+### b. The cover grows into the detail view (dropped)
+
+**Removed on 2026-11-09 (owner's choice): it looked bad.** Details open and close without it. Kept here only as a
+record; don't build it again.
 
 - Opening details from a cover animates that cover into the Detail view's cover position (WinUI's
   `ConnectedAnimationService`, default duration, about 250 ms). Back plays it in reverse into the grid, if that

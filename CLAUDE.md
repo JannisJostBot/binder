@@ -217,8 +217,7 @@ The widget should feel like a part of Windows 11, not a foreign app sitting on t
 - Shiny favorites (§13 d, Settings › Appearance, on by default): favorite covers get a faint rainbow foil, glare
   and light edge (`Sheen`, composition layers). Over the pointer they follow it, and they ease back on leave. They
   stay still with animations off, and there's none in high contrast or List.
-- Opening details from a cover grows it into the Detail view's cover, and back (§13 b, `ConnectedAnimationService`).
-  This only happens from the grid, only for a cover in view, and never with animations off.
+- Details open and close without a cover animation (§13 b was built and then removed, owner's choice).
 - Footer hint: "Hides 10 s after a game starts · comes back when it closes", shown until three sessions are recorded.
 - "Game mode needs an update" (an `InfoBar` above the search box, with Update…): shown when Game mode is on with items
   that need the admin helper and the helper is from another version; checked when the shelf gets its data.
