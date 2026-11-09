@@ -282,7 +282,9 @@ $games = @(
 $sessions = @(
     @{ GameId = 'steam:570'; Start = $now.AddDays(-1).AddHours(-3).ToString('o'); End = $now.AddDays(-1).AddMinutes(-25).ToString('o') },
     @{ GameId = 'steam:570'; Start = $now.AddDays(-4).AddHours(-2).ToString('o'); End = $now.AddDays(-4).AddMinutes(-50).ToString('o') },
-    @{ GameId = 'steam:730'; Start = $now.AddDays(-2).AddHours(-1).ToString('o'); End = $now.AddDays(-2).ToString('o') }
+    @{ GameId = 'steam:730'; Start = $now.AddDays(-2).AddHours(-1).ToString('o'); End = $now.AddDays(-2).ToString('o') },
+    # One from just now, so "This week" has something even on a Monday (the others are then all last week).
+    @{ GameId = 'steam:570'; Start = $now.AddMinutes(-2).ToString('o'); End = $now.AddMinutes(-1).ToString('o') }
 )
 ConvertTo-Json -InputObject $games -Depth 3 | Set-Content -Encoding UTF8 (Join-Path $dataDir 'library.json')
 ConvertTo-Json -InputObject $sessions -Depth 3 | Set-Content -Encoding UTF8 (Join-Path $dataDir 'sessions.json')
