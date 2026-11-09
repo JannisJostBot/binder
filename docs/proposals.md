@@ -32,6 +32,7 @@ break the user's system.
 | 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
 | 17 Advanced: sources and artwork | §14 | To do |
 | 18 Performance | §15 | To do |
+| 22 Open a launcher | §21 | To do |
 
 ### Still to carry into `CLAUDE.md`
 
@@ -120,6 +121,10 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   (didn't fit "back to normal") and falling dark ones ("like horror sounds").
 - **Cover hover (§19 b, board 26):** option C "Media tile": eased lift to 1.04 with a shadow, a fine light edge, a
   bottom scrim and a round Play button; no dark veil or accent outline.
+
+**2026-11-09**
+- **Open a launcher** approved (§21): from a launcher filter chip's right-click menu and as a group in the tray
+  menu. Not chosen: a launcher row on the shelf, deep links into launchers.
 
 ---
 
@@ -1232,6 +1237,67 @@ a: `Services/Chime`, `Services/Sound`, `App` (wait time), `GameModeView` (previe
 length and level. b: `Views/GameTile.xaml(.cs)`, `Themes/Theme.xaml` (`CoverScrimBrush`, `CoverHoverEdgeBrush`;
 `CoverOverlayBrush` goes), `ShelfView` (item container clipping, if needed). No new settings.
 
+## 21. Open a launcher (milestone 22, no board yet)
+
+After the shortcut import, the launchers' own icons (Steam, Epic, …) are often the last game shortcuts left on the
+desktop. People still open them for game reasons: updates, installing something new, the store, friends. Game Shelf
+can open them, so the desktop can be cleared completely. Two entry points, both menus, nothing new on the shelf.
+
+### a. Filter chip menu
+- Right-clicking a launcher's filter chip (or Shift+F10 / the Menu key on it) opens a small `MenuFlyout` with one
+  item: "Open Steam" (the launcher's own name, with its icon from `LauncherIcons`). Built when it opens.
+- A normal click still only filters the grid.
+- All, Favorites, Recent and Other get no menu. Launchers under "More" get no entry here; the tray menu covers them.
+- Screen readers: the chip's help text says "Right-click to open Steam".
+
+### b. Tray menu
+- The tray menu (§16 b) gets the launchers that have games, in the chip order, as their own group before Settings:
+
+  ```
+  Open Game Shelf
+  ───────────
+  Game mode
+  Free up space…
+  ───────────
+  Open Steam
+  Open Epic Games Launcher
+  Open EA app
+  ───────────
+  Settings
+  Quit
+  ```
+- Only launchers that have games on the shelf and whose launcher is installed (`LauncherIcons.LauncherExe` returns a
+  path). None: no launcher group and no extra separator.
+- Works while the panel is closed: the game list stays in memory in "Stay ready", so the item doesn't open the panel
+  or load any view. Plain text items, like the rest of the native menu.
+
+### How a launcher is opened
+- One helper, e.g. `GameActions.OpenLauncher(GameSource)`, used by both menus and by Free up space's "open the
+  launcher" step (§12) instead of its own copy.
+- Target: `LauncherIcons.LauncherExe(source)`, started with `UseShellExecute` and no arguments. Xbox opens its
+  `shell:AppsFolder` item.
+- **Steam opens with its window,** i.e. `steam.exe` without `-silent`. The user asked for the launcher here, unlike a
+  game launch.
+- When the launcher is already running, starting its exe again should bring its window to the front. **Verify on the
+  real PC** for each installed launcher; if one starts a second copy or does nothing, note it here.
+- The panel behaves as after any other outside action (in Flyout mode it closes on click-away as usual). No toast.
+- Display names: one table shared with `GameActions.LauncherName` (Steam, Epic Games Launcher, GOG Galaxy, EA app,
+  Ubisoft Connect, Xbox app, Rockstar Games Launcher, Hytale Launcher).
+
+### Security
+- Only the paths `LauncherExe` already returns: Steam's from `SteamPath`, Rockstar's and Hytale's from their own
+  lookups, the others from the program registered for the launcher's link (`HKCR\{scheme}\shell\open\command`),
+  which is what Windows runs for those links anyway. The file must exist and end in `.exe`; no arguments.
+- Nothing runs until the user picks the item.
+
+### Not chosen
+- A launcher row or tiles on the shelf: permanent space taken from the grid for something used far less than games.
+- Deep links into launchers (store pages, friends, downloads): that turns Game Shelf into a front-end for them.
+
+### Touches
+`ShelfView` (chip menu), `App.ShowTrayMenu`, `GameActions`, `LauncherIcons`, `FreeSpaceView` (reuse the helper).
+No new settings. Cost: nothing while idle; the items are built when a menu opens (a few registry reads).
+
 ## Build order (after milestone 7)
 
 8. **Quick wins:** *(Done.)*
@@ -1262,6 +1328,8 @@ length and level. b: `Views/GameTile.xaml(.cs)`, `Themes/Theme.xaml` (`CoverScri
     relaunch with "Come back" off.
 21. **Softer sound and cover hover** (§19): the Lullaby sound (compare the C# render with board 25's), then the
     Media tile hover; check both on the real PC (speakers and headphones; mouse, keyboard and controller).
+22. **Open a launcher** (§21): the shared helper first (Free up space switches to it), then the tray group, then
+    the chip menu. Verify each installed launcher on the real PC.
 
 ## Not decided (don't build)
 
