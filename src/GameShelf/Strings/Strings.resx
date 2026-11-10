@@ -547,7 +547,7 @@
     <value>Steam may ask you to confirm these arguments the first time.</value>
   </data>
   <data name="NoteEpicArgs" xml:space="preserve">
-    <value>Set arguments for Epic games in the Epic Games Launcher: Library › … › Manage › Launch options.</value>
+    <value>For games from Epic, set arguments in the Epic Games Launcher: Library › … › Manage › Launch options.</value>
   </data>
   <data name="NoteShortcutArgs" xml:space="preserve">
     <value>Shortcuts can't pass arguments. To use them, choose the game's program under Start with.</value>
