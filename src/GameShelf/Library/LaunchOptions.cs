@@ -54,47 +54,50 @@ public static class LaunchOptions
     {
         GameEngine.Unity =>
         [
-            new("Borderless window", "-popupwindow"),
-            new("Windowed", "-screen-fullscreen 0"),
-            new("Use DirectX 11", "-force-d3d11", "api"),
-            new("Use DirectX 12", "-force-d3d12", "api"),
-            new("Use Vulkan", "-force-vulkan", "api"),
-            new("Start on the second monitor", "-monitor 2"),
+            new(Strings.OptBorderless, "-popupwindow"),
+            new(Strings.OptWindowed, "-screen-fullscreen 0"),
+            new(Strings.OptDx11, "-force-d3d11", "api"),
+            new(Strings.OptDx12, "-force-d3d12", "api"),
+            new(Strings.OptVulkan, "-force-vulkan", "api"),
+            new(Strings.OptSecondMonitor, "-monitor 2"),
         ],
         GameEngine.Unreal =>
         [
-            new("Use DirectX 11 (works in many games)", "-dx11", "api"),
-            new("Use DirectX 12 (works in many games)", "-dx12", "api"),
-            new("Windowed (works in many games)", "-windowed"),
-            new("Skip intro videos (works in many games)", "-nomovie"),
+            new(Many(Strings.OptDx11), "-dx11", "api"),
+            new(Many(Strings.OptDx12), "-dx12", "api"),
+            new(Many(Strings.OptWindowed), "-windowed"),
+            new(Many(Strings.OptSkipIntros), "-nomovie"),
         ],
         GameEngine.Source or GameEngine.Source2 =>
         [
-            new("Skip the intro video", "-novid"),
-            new("Windowed", "-windowed"),
-            new("Borderless window", "-noborder"),
-            new("Use Vulkan", "-vulkan"),
+            new(Strings.OptSkipIntro, "-novid"),
+            new(Strings.OptWindowed, "-windowed"),
+            new(Strings.OptBorderless, "-noborder"),
+            new(Strings.OptVulkan, "-vulkan"),
         ],
         // id Tech 6–8 console variables (DOOM 2016, Eternal, The Dark Ages; the newer Wolfenstein games).
         GameEngine.IdTech =>
         [
-            new("Skip the intro videos (works in many games)", "+com_skipIntroVideo 1"),
-            new("No key press after loading screens (works in many games)", "+com_skipKeyPressOnLoadScreens 1"),
+            new(Many(Strings.OptSkipIntros), "+com_skipIntroVideo 1"),
+            new(Many(Strings.OptNoKeyPress), "+com_skipKeyPressOnLoadScreens 1"),
         ],
         // HITMAN (2016), 2 and World of Assassination open a settings launcher first.
         GameEngine.Glacier =>
         [
-            new("Skip the launcher window", "-skip_launcher"),
+            new(Strings.OptSkipLauncher, "-skip_launcher"),
         ],
         GameEngine.Godot =>
         [
-            new("Use Vulkan", "--rendering-driver vulkan", "api"),
-            new("Use DirectX 12", "--rendering-driver d3d12", "api"),
-            new("Fullscreen", "--fullscreen", "mode"),
-            new("Windowed", "--windowed", "mode"),
+            new(Strings.OptVulkan, "--rendering-driver vulkan", "api"),
+            new(Strings.OptDx12, "--rendering-driver d3d12", "api"),
+            new(Strings.OptFullscreen, "--fullscreen", "mode"),
+            new(Strings.OptWindowed, "--windowed", "mode"),
         ],
         _ => [],
     };
+
+    /// <summary>An option that isn't in every game of the engine: "Windowed (many games)".</summary>
+    private static string Many(string label) => Strings.Format(Strings.OptManyGames, label);
 
     /// <summary>
     /// Splits an argument string the way a game's C runtime will (the CommandLineToArgvW rules): spaces separate,

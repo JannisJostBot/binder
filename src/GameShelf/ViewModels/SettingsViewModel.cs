@@ -126,7 +126,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
     }
 
-    public string ModeText => _settings.DisplayMode == DisplayMode.Desktop ? "On the desktop" : "Flyout from the notification area";
+    public string ModeText => _settings.DisplayMode == DisplayMode.Desktop ? Strings.ModeDesktop : Strings.ModeFlyoutText;
 
     public int HotkeyIndex
     {
@@ -142,7 +142,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     public string[] HotkeyLabels => HotkeyNames; // an array: bound as ItemsSource (see Screens)
     public bool HotkeyTaken => _settings.Hotkey != Hotkey.Off && !_hotkeyFree;
     public string? HotkeyToolTip => _settings.Hotkey == Hotkey.Off ? null
-        : HotkeyTaken ? "Taken by another app: choose a different one" : "Free, not used by Windows or other apps";
+        : HotkeyTaken ? Strings.HotkeyTaken : Strings.HotkeyFree;
 
     public bool TrayIcon
     {
@@ -179,14 +179,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     public bool KeepLoadedEnabled => _settings.StayReady;
 
     public string KeepLoadedDetail => !_settings.StayReady
-        ? "Only while it stays ready in the background"
-        : _settings.KeepPanelLoaded
-            ? "Opens at once; stays loaded (up to ~200 MB, which Windows reclaims first). Games aren't affected: it exits while you play."
-            : "Frees all but a few MB, so it opens a moment slower. Games aren't affected: it exits while you play.";
+        ? Strings.KeepLoadedNeedsStayReady
+        : _settings.KeepPanelLoaded ? Strings.KeepLoadedFastDetail : Strings.KeepLoadedSmallDetail;
 
-    public string StayReadyText => !_settings.StayReady ? "Off: closing it ends Game Shelf"
-        : _settings.KeepPanelLoaded ? "Opens faster while it's closed"
-        : "Uses less memory while it's closed";
+    public string StayReadyText => !_settings.StayReady ? Strings.StayReadyOff
+        : _settings.KeepPanelLoaded ? Strings.StayReadyFast
+        : Strings.StayReadySmall;
 
     /// <summary>The registry is the source of truth; the owner reads it back after trying the change.</summary>
     public bool StartWithWindows
@@ -275,10 +273,10 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         get
         {
-            if (_refreshing) return "Scanning your stores…";
+            if (_refreshing) return Strings.Scanning;
             int shown = _games.Count(g => !g.Hidden && _settings.IsSourceEnabled(g.Source));
             int on = Sources.Count(GetSource);
-            return $"{on} of {Sources.Length} on · {shown} games";
+            return Strings.Format(Strings.Dot, Strings.Format(Strings.SourcesOn, on, Sources.Length), Strings.Plural(shown, Strings.GameCountOne, Strings.GameCount));
         }
     }
 
@@ -286,15 +284,14 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public string ShortcutsText => _importedShortcuts switch
     {
-        0 => "None imported",
-        1 => "1 imported",
-        _ => $"{_importedShortcuts} imported",
+        0 => Strings.NoneImported,
+        _ => Strings.Plural(_importedShortcuts, Strings.ImportedCountOne, Strings.ImportedCount),
     };
 
     public bool CanRestoreShortcuts => _importedShortcuts > 0;
 
     public IReadOnlyList<Game> HiddenGames { get; private set; } = [];
-    public string HiddenCountText => HiddenGames.Count == 0 ? "None" : $"{HiddenGames.Count} hidden";
+    public string HiddenCountText => HiddenGames.Count == 0 ? Strings.None : Strings.Plural(HiddenGames.Count, Strings.HiddenCountOne, Strings.HiddenCount);
     public bool NoHiddenGames => HiddenGames.Count == 0;
 
     // --- Window -------------------------------------------------------------------------------------------
@@ -344,7 +341,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         Screens = [.. ordered.Select((m, i) =>
         {
             var number = (i + 1).ToString(CultureInfo.CurrentCulture);
-            return $"{(m.IsPrimary ? number + " (main)" : number)} · {m.Bounds.Width} × {m.Bounds.Height}";
+            return Strings.Format(Strings.ScreenEntry, m.IsPrimary ? Strings.Format(Strings.ScreenMain, number) : number, m.Bounds.Width, m.Bounds.Height);
         })];
         _screenDevices = [.. ordered.Select(m => m.Device)];
         _screenIndex = Array.FindIndex(_screenDevices, d => string.Equals(d, current, StringComparison.OrdinalIgnoreCase));

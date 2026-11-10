@@ -17,13 +17,14 @@ public sealed partial class SettingsView : UserControl
     public SettingsView()
     {
         InitializeComponent();
+        AutomationProperties.SetName(this, Strings.Settings);
 
         // The parts that open from their card (board 19). They start closed.
-        _ = new Disclosure(ModeChevron, ModeCard, ModeBody, "display modes");
-        _ = new Disclosure(StayReadyChevron, StayReadyCard, StayReadyBody, "stay ready options");
-        _ = new Disclosure(SourcesChevron, SourcesCard, SourcesBody, "game sources");
-        _ = new Disclosure(ShortcutsChevron, ShortcutsCard, ShortcutsBody, "desktop shortcut options");
-        _ = new Disclosure(HiddenChevron, HiddenCard, HiddenBody, "hidden games");
+        _ = new Disclosure(ModeChevron, ModeCard, ModeBody, Strings.DisclosureModes);
+        _ = new Disclosure(StayReadyChevron, StayReadyCard, StayReadyBody, Strings.DisclosureStayReady);
+        _ = new Disclosure(SourcesChevron, SourcesCard, SourcesBody, Strings.DisclosureSources);
+        _ = new Disclosure(ShortcutsChevron, ShortcutsCard, ShortcutsBody, Strings.DisclosureShortcuts);
+        _ = new Disclosure(HiddenChevron, HiddenCard, HiddenBody, Strings.DisclosureHidden);
     }
 
     /// <summary>Connects the page to its owner once, before it's first shown.</summary>
@@ -58,8 +59,8 @@ public sealed partial class SettingsView : UserControl
             text.Children.Add(new TextBlock { Text = game.Name, Style = (Style)Application.Current.Resources["RowTitle"], TextTrimming = TextTrimming.CharacterEllipsis });
             text.Children.Add(new TextBlock { Text = game.SourceLabel, Style = (Style)Application.Current.Resources["RowDetail"] });
             row.Children.Add(text);
-            var show = new Button { Content = "Show", VerticalAlignment = VerticalAlignment.Center };
-            AutomationProperties.SetName(show, "Show " + game.Name);
+            var show = new Button { Content = Strings.Show, VerticalAlignment = VerticalAlignment.Center };
+            AutomationProperties.SetName(show, Strings.Format(Strings.ShowGame, game.Name));
             show.Click += (_, _) => ViewModel?.Unhide(game);
             Grid.SetColumn(show, 1);
             row.Children.Add(show);

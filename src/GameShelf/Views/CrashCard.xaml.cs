@@ -45,10 +45,10 @@ public sealed partial class CrashCard : UserControl
 
         DetailsGrid.Children.Clear();
         DetailsGrid.RowDefinitions.Clear();
-        AddDetail("What happened", CrashAnalysis.WhatHappened(record));
-        if (CrashAnalysis.Where(record) is { } where) AddDetail("Where", where);
-        if (CrashAnalysis.AlsoAtThatTime(record) is { } also) AddDetail("Also at that time", also);
-        AddDetail("When", Format.SessionStart(record.End));
+        AddDetail(Strings.CrashWhatHappened, CrashAnalysis.WhatHappened(record));
+        if (CrashAnalysis.Where(record) is { } where) AddDetail(Strings.CrashWhere, where);
+        if (CrashAnalysis.AlsoAtThatTime(record) is { } also) AddDetail(Strings.CrashAlso, also);
+        AddDetail(Strings.CrashWhen, Format.SessionStart(record.End));
 
         var recent = sessions.Where(s => s.GameId == game.Id && s.Start <= record.Start)
             .OrderByDescending(s => s.Start).Take(RecentSessions).ToList();
@@ -61,7 +61,7 @@ public sealed partial class CrashCard : UserControl
         PromptButton.Visibility = CrashAnalysis.OffersAiPrompt(record) ? Visibility.Visible : Visibility.Collapsed;
         PlayAgainButton.Visibility = record.Ending == GameEnding.StartFailed && CrashAnalysis.OffersRedist(record)
             ? Visibility.Collapsed : Visibility.Visible;
-        AutomationProperties.SetName(PlayAgainButton, "Play " + game.Name + " again");
+        AutomationProperties.SetName(PlayAgainButton, Strings.Format(Strings.PlayAgainName, game.Name));
         CopiedPanel.Visibility = Visibility.Collapsed;
     }
 
@@ -82,7 +82,7 @@ public sealed partial class CrashCard : UserControl
             TextWrapping = TextWrapping.Wrap,
             IsTextSelectionEnabled = true,
         };
-        AutomationProperties.SetName(text, $"{label}: {value}");
+        AutomationProperties.SetName(text, Strings.Format(Strings.LabelValue, label, value));
         Grid.SetRow(name, row);
         Grid.SetRow(text, row);
         Grid.SetColumn(text, 1);
@@ -110,14 +110,14 @@ public sealed partial class CrashCard : UserControl
         if (_game is null || _record is null) return;
         var store = LauncherIcons.HasBadge(_game.Source) ? LauncherBadge.Label(_game.Source) : null;
         Copy(CrashAnalysis.BugReport(_game.Name, store, _record, PcInfo.Read(), _problems, _recent),
-            "Copied. Paste it into the game's forum, Steam discussions or the developer's support form:");
+            Strings.CopiedReport);
     }
 
     private void OnPromptClick(object sender, RoutedEventArgs e)
     {
         if (_game is null || _record is null) return;
         Copy(CrashAnalysis.AiPrompt(_game.Name, _record, PcInfo.Read(), _problems, _recent),
-            "Copied. Paste it into Copilot, ChatGPT or any AI assistant:");
+            Strings.CopiedPrompt);
     }
 
     private void Copy(string text, string note)
@@ -133,7 +133,7 @@ public sealed partial class CrashCard : UserControl
         catch (Exception ex) when (ex is System.Runtime.InteropServices.COMException or UnauthorizedAccessException)
         {
             // Another app holds the clipboard: show the text so it can still be selected and copied by hand.
-            CopiedNote.Text = "Couldn't reach the clipboard. Select the text and press Ctrl+C:";
+            CopiedNote.Text = Strings.ClipboardFailed;
         }
         CopiedText.Text = text;
         CopiedPanel.Visibility = Visibility.Visible;

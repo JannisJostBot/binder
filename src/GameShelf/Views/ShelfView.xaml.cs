@@ -36,6 +36,7 @@ public sealed partial class ShelfView : UserControl
     public ShelfView()
     {
         InitializeComponent();
+        AutomationProperties.SetName(this, Strings.ShelfName);
         ContinueLogo.LogoChanged += hasLogo => ContinueTitle.Visibility = hasLogo ? Visibility.Collapsed : Visibility.Visible;
         Tiles.Loaded += (_, _) => ApplyPanel();
         Tiles.SizeChanged += (_, e) =>
@@ -68,7 +69,7 @@ public sealed partial class ShelfView : UserControl
                 ApplyDensity(vm.Columns, vm.ListMode);
                 BuildChips();
                 BuildSortMenu();
-                WeekChart.Show(vm.WeekBars, "Playtime this week");
+                WeekChart.Show(vm.WeekBars, Strings.PlaytimeThisWeek);
                 ToolTipService.SetToolTip(WeekDetail, vm.WeekToolTip);
                 // The banner's art may have changed for the same game.
                 if (vm.ContinueGame is not null && ReferenceEquals(ContinueArt.Game, vm.ContinueGame)) ContinueArt.Refresh();
@@ -117,13 +118,13 @@ public sealed partial class ShelfView : UserControl
         ActionsMenu.Items.Clear();
         if (vm.HelperNeedsUpdate)
         {
-            ActionsMenu.Items.Add(MenuItem("Game mode (needs update)", "", vm.OpenGameMode, "Ctrl+G"));
+            ActionsMenu.Items.Add(MenuItem(Strings.GameModeNeedsUpdateMenu, "", vm.OpenGameMode, "Ctrl+G"));
         }
         else
         {
             var toggle = new ToggleMenuFlyoutItem
             {
-                Text = "Game mode",
+                Text = Strings.GameMode,
                 IsChecked = vm.GameModeOn,
                 Icon = new FontIcon { Glyph = "" },
                 KeyboardAcceleratorTextOverride = "Ctrl+G",
@@ -131,11 +132,11 @@ public sealed partial class ShelfView : UserControl
             toggle.Click += (_, _) => vm.SetGameMode(toggle.IsChecked);
             ActionsMenu.Items.Add(toggle);
         }
-        ActionsMenu.Items.Add(MenuItem("Game mode settings…", "", vm.OpenGameMode));
+        ActionsMenu.Items.Add(MenuItem(Strings.GameModeSettingsMenu, "", vm.OpenGameMode));
         ActionsMenu.Items.Add(new MenuFlyoutSeparator());
-        ActionsMenu.Items.Add(MenuItem("Free up space…", "", vm.OpenFreeSpace));
-        ActionsMenu.Items.Add(MenuItem("Add a game…", "", vm.AddGame));
-        ActionsMenu.Items.Add(MenuItem("Refresh library", "", vm.RefreshLibrary, "F5"));
+        ActionsMenu.Items.Add(MenuItem(Strings.FreeUpSpaceMenu, "", vm.OpenFreeSpace));
+        ActionsMenu.Items.Add(MenuItem(Strings.AddGameMenu, "", vm.AddGame));
+        ActionsMenu.Items.Add(MenuItem(Strings.RefreshLibrary, "", vm.RefreshLibrary, "F5"));
     }
 
     private static MenuFlyoutItem MenuItem(string text, string glyph, Action action, string? shortcut = null)
@@ -335,9 +336,9 @@ public sealed partial class ShelfView : UserControl
         try
         {
             Filters.Items.Clear();
-            AddChip("All", "All");
-            AddChip("Favorites", "Favorites");
-            AddChip("Recent", "Recent");
+            AddChip("All", ShelfViewModel.ChipLabel("All"));
+            AddChip("Favorites", ShelfViewModel.ChipLabel("Favorites"));
+            AddChip("Recent", ShelfViewModel.ChipLabel("Recent"));
             foreach (var launcher in vm.ShownChips) AddChip(launcher, ShelfViewModel.ChipLabel(launcher));
         }
         finally
@@ -371,7 +372,7 @@ public sealed partial class ShelfView : UserControl
         foreach (var sort in ShelfViewModel.SortChoices)
             GameMenu.AddChoice(SortMenu, ShelfViewModel.SortLabel(sort), "Sort", vm.SortBy == sort, () => vm.SetSort(sort));
         SortMenu.Items.Add(new MenuFlyoutSeparator());
-        var favoritesFirst = new ToggleMenuFlyoutItem { Text = "Favorites first", IsChecked = vm.FavoritesFirst };
+        var favoritesFirst = new ToggleMenuFlyoutItem { Text = Strings.FavoritesFirst, IsChecked = vm.FavoritesFirst };
         favoritesFirst.Click += (_, _) => vm.SetFavoritesFirst(favoritesFirst.IsChecked);
         SortMenu.Items.Add(favoritesFirst);
     }

@@ -45,7 +45,7 @@ internal sealed class Disclosure
         var margin = _header.Margin;
         _header.Margin = new Thickness(margin.Left, margin.Top, margin.Right, open ? 0 : 6);
         _chevron.Content = open ? "" : "";
-        var label = (open ? "Hide " : "Show ") + _name;
+        var label = Strings.Format(open ? Strings.DisclosureHide : Strings.DisclosureShow, _name);
         AutomationProperties.SetName(_chevron, label);
         ToolTipService.SetToolTip(_chevron, label);
         if (FrameworkElementAutomationPeer.FromElement(_chevron) is { } peer)

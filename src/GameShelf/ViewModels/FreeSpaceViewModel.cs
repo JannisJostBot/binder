@@ -107,8 +107,8 @@ public sealed partial class FreeSpaceViewModel : ObservableObject
     private List<SpaceGame> GamesOn(string root) => _byDrive.TryGetValue(root, out var list) ? list : [];
 
     /// <summary>Back goes to the game, the shelf or Settings, depending on where the page was opened.</summary>
-    public string BackName => State.ReturnGameId is not null ? "Back to the game" : State.ReturnToShelf ? "Back to the shelf" : "Back to settings";
-    public string BackToolTip => BackName + " (Esc)";
+    public string BackName => State.ReturnGameId is not null ? Strings.BackToGame : State.ReturnToShelf ? Strings.BackToShelf : Strings.BackToSettings;
+    public string BackToolTip => Strings.Format(Strings.WithEsc, BackName);
 
     // ---- The size typed --------------------------------------------------------------------------------------
 
@@ -162,18 +162,18 @@ public sealed partial class FreeSpaceViewModel : ObservableObject
             var drive = plan.Drive;
             bool best = i == _best;
             double used = drive.Total > 0 ? (drive.Total - drive.Free) * 100.0 / drive.Total : 0;
-            var status = $"{Gb(drive.Free)} GB free of {Gb(drive.Total)} GB";
+            var status = Strings.Format(Strings.DriveFreeOf, Gb(drive.Free), Gb(drive.Total));
             var outcome = Outcome(plan);
-            return new DriveRow(drive.Root, drive.Label, used, outcome.Length > 0 ? $"{status} · {outcome}" : status, best,
-                $"Drive {drive.Root.TrimEnd('\\')} {drive.Label}, {status}" + (outcome.Length > 0 ? ", " + outcome : "") + (best ? ", best choice" : ""));
+            return new DriveRow(drive.Root, drive.Label, used, outcome.Length > 0 ? Strings.Format(Strings.Dot, status, outcome) : status, best,
+                Strings.Format(Strings.DriveName, drive.Root.TrimEnd('\\'), drive.Label, status) + (outcome.Length > 0 ? ", " + outcome : "") + (best ? ", " + Strings.BestChoice : ""));
         })];
 
     private static string Outcome(DrivePlan plan)
     {
         if (plan.Missing <= -plan.Drive.Free) return ""; // no size typed yet
-        if (plan.FitsAlready) return "fits already";
-        if (!plan.Enough) return plan.Picked.Count == 0 ? "not enough space" : "not enough even after removing games";
-        return plan.Picked.Count == 1 ? "1 game to remove" : $"{plan.Picked.Count} games to remove";
+        if (plan.FitsAlready) return Strings.FitsAlreadyLower;
+        if (!plan.Enough) return plan.Picked.Count == 0 ? Strings.NotEnoughSpace : Strings.NotEnoughEvenAfter;
+        return Strings.Plural(plan.Picked.Count, Strings.ToRemoveOne, Strings.ToRemove);
     }
 
     /// <summary>The user picked a drive: its plan from scratch.</summary>
@@ -216,8 +216,8 @@ public sealed partial class FreeSpaceViewModel : ObservableObject
     }
 
     public string MapEmptyText => CurrentPlan is { Games.Count: > 0 }
-        ? "None of the games on this drive has a known size."
-        : "No games from your launchers are installed on this drive.";
+        ? Strings.MapNoSizes
+        : Strings.MapNoGames;
 
     public string UnknownText
     {
@@ -225,7 +225,9 @@ public sealed partial class FreeSpaceViewModel : ObservableObject
         {
             var unknown = CurrentPlan?.Games.Where(g => !g.SizeKnown).Select(g => g.Game.Name).ToList() ?? [];
             return unknown.Count == 0 ? "" :
-                $"Not counted, their size isn't known: {string.Join(", ", unknown.Take(6))}" + (unknown.Count > 6 ? $" and {unknown.Count - 6} more" : "");
+                Strings.Format(Strings.UnknownSizes, unknown.Count > 6
+                    ? Strings.Format(Strings.ListAnd, string.Join(Strings.ListSeparator, unknown.Take(6)), Strings.Format(Strings.MoreCount, unknown.Count - 6))
+                    : Strings.List(unknown));
         }
     }
 
@@ -265,21 +267,21 @@ public sealed partial class FreeSpaceViewModel : ObservableObject
         long freed = chosen.Sum(g => g.Size);
         if (plan.FitsAlready)
         {
-            Headline = "It fits already";
-            Status = $"{Gb(plan.Drive.Free - State.Need)} GB free afterwards";
+            Headline = Strings.FitsAlready;
+            Status = Strings.Format(Strings.FreeAfterwards, Gb(plan.Drive.Free - State.Need));
             StatusOk = true;
         }
         else if (chosen.Count == 0 && plan.Picked.Count == 0)
         {
-            Headline = $"{Gb(plan.Missing)} GB missing";
-            Status = "No games here to remove";
+            Headline = Strings.Format(Strings.Missing, Gb(plan.Missing));
+            Status = Strings.NothingToRemove;
             StatusOk = false;
         }
         else
         {
-            Headline = $"Frees {Gb(freed)} GB of the {Gb(plan.Missing)} GB missing";
+            Headline = Strings.Format(Strings.FreesOfMissing, Gb(freed), Gb(plan.Missing));
             StatusOk = freed >= plan.Missing;
-            Status = StatusOk ? $"{Gb(plan.Drive.Free + freed - State.Need)} GB free afterwards" : $"{Gb(plan.Missing - freed)} GB still missing";
+            Status = StatusOk ? Strings.Format(Strings.FreeAfterwards, Gb(plan.Drive.Free + freed - State.Need)) : Strings.Format(Strings.StillMissing, Gb(plan.Missing - freed));
         }
         Picked = [.. chosen];
 
@@ -287,19 +289,14 @@ public sealed partial class FreeSpaceViewModel : ObservableObject
         {
             int n = State.Queue.Count;
             var next = chosen.FirstOrDefault(g => g.Game.Id == State.Queue[State.Step]);
-            StepTitle = $"{State.Step + 1} of {n}: {next?.Game.Name}";
+            StepTitle = Strings.Format(Strings.UninstallStep, State.Step + 1, n, next?.Game.Name);
             StepMessage = next is null ? "" : _actions.UninstallHint(next.Game);
-            UninstallText = State.Step + 1 < n ? "Next game" : "Done";
+            UninstallText = State.Step + 1 < n ? Strings.NextGame : Strings.Done;
             CanUninstall = true;
         }
         else
         {
-            UninstallText = chosen.Count switch
-            {
-                0 => "Nothing to uninstall",
-                1 => "Uninstall 1 game…",
-                _ => $"Uninstall {chosen.Count} games…",
-            };
+            UninstallText = chosen.Count == 0 ? Strings.NothingToUninstall : Strings.Plural(chosen.Count, Strings.UninstallCountOne, Strings.UninstallCount);
             CanUninstall = chosen.Count > 0;
         }
     }
@@ -338,27 +335,29 @@ public sealed partial class FreeSpaceViewModel : ObservableObject
     public static string Why(SpaceGame g)
     {
         if (g.Playtime > TimeSpan.Zero)
-            return Format.Playtime(g.Playtime) + " played" + (g.LastPlayed is { } when ? " · " + Ago(when) : "");
-        return g.LastPlayed is { } last ? "Last played " + Ago(last).ToLowerInvariant() : "Never played";
+            return g.LastPlayed is { } when ? Strings.Format(Strings.Dot, Strings.Format(Strings.Played, Format.Playtime(g.Playtime)), Ago(when))
+                : Strings.Format(Strings.Played, Format.Playtime(g.Playtime));
+        return g.LastPlayed is { } last ? Strings.Format(Strings.LastPlayedAgo, Strings.LowerFirst(Ago(last))) : Strings.NeverPlayed;
     }
 
     /// <summary>The short form on a tile: "3 h", "never played", "a year ago".</summary>
     public static string Played(SpaceGame g) =>
-        g.Playtime > TimeSpan.Zero ? Format.Playtime(g.Playtime) : g.LastPlayed is { } last ? Ago(last).ToLowerInvariant() : "never played";
+        g.Playtime > TimeSpan.Zero ? Format.Playtime(g.Playtime) : g.LastPlayed is { } last ? Strings.LowerFirst(Ago(last)) : Strings.LowerFirst(Strings.NeverPlayed);
 
     /// <summary>What a tile reads out: name, size, why, favorite and recent.</summary>
     public static string TileName(SpaceGame g) =>
-        $"{g.Game.Name}, {Gb(g.Size)} GB, {Why(g).ToLowerInvariant()}" + (g.Favorite ? ", favorite" : "") + (g.Recent ? ", played in the last 14 days" : "");
+        Strings.Format(Strings.SpaceTileName, g.Game.Name, Gb(g.Size), Strings.LowerFirst(Why(g)))
+        + (g.Favorite ? ", " + Strings.FavoriteLower : "") + (g.Recent ? ", " + Strings.PlayedRecently : "");
 
     private static string Ago(DateTimeOffset when)
     {
         int days = (DateTime.Today - when.LocalDateTime.Date).Days;
         if (days < 7) return Format.RelativeDay(when);
-        if (days < 30) return days < 14 ? "Last week" : $"{days / 7} weeks ago";
+        if (days < 30) return days < 14 ? Strings.LastWeek : Strings.Format(Strings.WeeksAgo, days / 7);
         int months = days / 30;
-        if (months < 12) return months == 1 ? "A month ago" : $"{months} months ago";
+        if (months < 12) return months == 1 ? Strings.AMonthAgo : Strings.Format(Strings.MonthsAgo, months);
         int years = days / 365;
-        return years <= 1 ? "A year ago" : $"{years} years ago";
+        return years <= 1 ? Strings.AYearAgo : Strings.Format(Strings.YearsAgo, years);
     }
 
     /// <summary>Whole GB from 10 up, one decimal below: "128", "4.2", "0".</summary>

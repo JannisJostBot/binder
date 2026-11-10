@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using GameShelf.ViewModels;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 
 namespace GameShelf.Views;
@@ -16,6 +17,7 @@ public sealed partial class SetupView : UserControl
     public SetupView()
     {
         InitializeComponent();
+        AutomationProperties.SetName(this, Strings.SetupName);
         Picker.UseEmbedded();
         Picker.SelectionChanged += () => ViewModel?.SetSelection(Picker.Selected);
     }

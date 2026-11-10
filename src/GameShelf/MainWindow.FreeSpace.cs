@@ -20,7 +20,7 @@ public sealed partial class MainWindow
             try
             {
                 if (drive.DriveType != DriveType.Fixed || !drive.IsReady) continue;
-                var label = string.IsNullOrWhiteSpace(drive.VolumeLabel) ? "Local Disk" : drive.VolumeLabel;
+                var label = string.IsNullOrWhiteSpace(drive.VolumeLabel) ? Strings.LocalDisk : drive.VolumeLabel;
                 drives.Add(new DriveSpace(drive.RootDirectory.FullName.ToUpperInvariant(), label, drive.TotalSize, drive.AvailableFreeSpace));
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }

@@ -71,10 +71,10 @@ public sealed partial class GameModeViewModel : ObservableObject
 {
     private static readonly Dictionary<string, string> ServiceDetails = new()
     {
-        [GameModeInfo.WindowsSearch] = "Stops indexing files; search still works.",
-        [GameModeInfo.SysMain] = "Stops preloading apps into memory.",
-        [GameModeInfo.Telemetry] = "Stops sending diagnostic data to Microsoft.",
-        [GameModeInfo.PrintSpooler] = "Printing waits until the game closes.",
+        [GameModeInfo.WindowsSearch] = Strings.ServiceSearchDetail,
+        [GameModeInfo.SysMain] = Strings.ServiceSysMainDetail,
+        [GameModeInfo.Telemetry] = Strings.ServiceTelemetryDetail,
+        [GameModeInfo.PrintSpooler] = Strings.ServiceSpoolerDetail,
     };
 
     private readonly IGameModeActions _actions;
@@ -134,8 +134,8 @@ public sealed partial class GameModeViewModel : ObservableObject
     private void Save() => _actions.SettingsChanged();
 
     /// <summary>Back goes to the shelf (opened from its "…" menu) or to Settings; the button says which.</summary>
-    public string BackName => _fromShelf ? "Back to the shelf" : "Back to settings";
-    public string BackToolTip => BackName + " (Esc)";
+    public string BackName => _fromShelf ? Strings.BackToShelf : Strings.BackToSettings;
+    public string BackToolTip => Strings.Format(Strings.WithEsc, BackName);
 
     // ---- Switches -----------------------------------------------------------------------------------------
 
@@ -219,33 +219,32 @@ public sealed partial class GameModeViewModel : ObservableObject
     // ---- What Windows does now ----------------------------------------------------------------------------
 
     public string PowerText => _status.PowerFastest
-        ? $"Now: {_status.PowerNow}, already the fastest. Left as is."
-        : $"Now: {_status.PowerNow}. Switched back after the game.";
+        ? Strings.Format(Strings.GmPowerFastest, _status.PowerNow)
+        : Strings.Format(Strings.GmPowerSwitch, _status.PowerNow);
 
-    public string GameBarText => "Turns off “Record what happened” while you play. Now: " + (_status.GameBarRecording ? "on." : "off.");
+    public string GameBarText => Strings.Format(Strings.GmGameBarText, Strings.LowerFirst(_status.GameBarRecording ? Strings.On : Strings.Off));
 
     public string OneDriveText => _status.Windows.DocumentsInOneDrive
-        ? "Left running on this PC: your Documents folder is in OneDrive, and games often keep their saves there."
-        : "Closes OneDrive while you play and starts it again after. " + (_status.Windows.OneDriveRunning ? "Now: running." : "Now: not running.");
+        ? Strings.GmOneDriveDocuments
+        : Strings.Format(Strings.GmOneDriveText, _status.Windows.OneDriveRunning ? Strings.GmRunningLower : Strings.GmNotRunningLower);
 
     // ---- Windows' own settings (read when the page opens; changed only in Windows Settings) ----------------
 
     public string WinGameModeText => _status.Windows.GameModeOn
-        ? "On. Windows gives the game more of the PC and holds back updates' restarts."
-        : "Off. Turning it on gives the game more of the PC.";
-    public string WinGameModeState => _status.Windows.GameModeOn ? "On" : "Off";
+        ? Strings.GmWinGameModeOn
+        : Strings.GmWinGameModeOff;
+    public string WinGameModeState => _status.Windows.GameModeOn ? Strings.On : Strings.Off;
 
     /// <summary>"Optimizations for windowed games" exists on Windows 11 only.</summary>
     public bool WindowedVisible => _status.Windows.HasWindowedOptimizations;
     public string WindowedText => _status.Windows.WindowedOptimizationsOn
-        ? "On. Windowed and borderless games get lower latency."
-        : "Off. Turning it on lowers latency in windowed and borderless games.";
-    public string WindowedState => _status.Windows.WindowedOptimizationsOn ? "On" : "Off";
+        ? Strings.GmWindowedOn
+        : Strings.GmWindowedOff;
+    public string WindowedState => _status.Windows.WindowedOptimizationsOn ? Strings.On : Strings.Off;
 
-    public string UpdatesText =>$"Windows Update uses at most {ElevatedPart.UpdatePercent}% of the bandwidth for background downloads.";
+    public string UpdatesText => Strings.Format(Strings.GmUpdatesText, ElevatedPart.UpdatePercent);
 
-    public string SmoothText => "Marks their traffic as urgent (DSCP 46); helps only if your router honors it. Always included: the game" +
-                                (_status.VoiceApps.Length > 0 ? ", " + string.Join(", ", _status.VoiceApps) : "") + ".";
+    public string SmoothText => Strings.Format(Strings.GmSmoothText, Strings.List([Strings.GmTheGame, .. _status.VoiceApps]));
 
     // ---- The admin part -----------------------------------------------------------------------------------
 
@@ -262,13 +261,13 @@ public sealed partial class GameModeViewModel : ObservableObject
     public bool AllowBarOpen => !_status.Allowed || Outdated;
     public bool AllowWarning => _allowFailed is not null;
     public string AllowMessage => _allowFailed is { } code
-        ? $"That didn't work (code {code}). The helper's log is in ProgramData\\GameShelf\\elevated.log."
+        ? Strings.Format(Strings.GmAllowFailed, code, @"ProgramData\GameShelf\elevated.log")
         : Outdated
-            ? "This version of Game Shelf has a new helper. Update it to keep these working."
+            ? Strings.GmHelperOutdated
             : _status.CanAllow
-                ? "Pausing services and network priority use a small helper. Windows asks you once to allow it; it can only do what's listed here."
-                : "Only an administrator account can allow this. The other items work without it.";
-    public string AllowText => Outdated ? "Update…" : "Allow…";
+                ? Strings.GmHelperExplain
+                : Strings.GmHelperNeedsAdmin;
+    public string AllowText => Outdated ? Strings.UpdateEllipsis : Strings.AllowEllipsis;
     public bool ShowAllow => _status.CanAllow;
     public bool AllowEnabled => !_allowRunning;
     public bool RemoveEnabled => !_removeRunning;
@@ -316,14 +315,14 @@ public sealed partial class GameModeViewModel : ObservableObject
     public ServiceRow[] Services { get; private set; } = [];
 
     private void FillServices() =>
-        Services = [.. ElevatedPart.Services.Select(s => new ServiceRow(s.Id, s.Name,
-            ServiceDetails[s.Id] + " Now: " + (_status.Services.TryGetValue(s.Id, out var state) ? state : ServiceState.Kind.Missing) switch
+        Services = [.. ElevatedPart.Services.Select(s => new ServiceRow(s.Id, GameModeText.ItemName(s.Name),
+            Strings.Format(Strings.GmServiceNow, ServiceDetails[s.Id], (_status.Services.TryGetValue(s.Id, out var state) ? state : ServiceState.Kind.Missing) switch
             {
-                ServiceState.Kind.Running => "running.",
-                ServiceState.Kind.Stopped => "stopped, left as is.",
-                ServiceState.Kind.Disabled => "turned off, left as is.",
-                _ => "not on this PC.",
-            },
+                ServiceState.Kind.Running => Strings.GmRunningLower,
+                ServiceState.Kind.Stopped => Strings.GmServiceStopped,
+                ServiceState.Kind.Disabled => Strings.GmServiceDisabled,
+                _ => Strings.GmServiceMissing,
+            }),
             IsItemOn(s.Id)))];
 
     // ---- App lists ----------------------------------------------------------------------------------------
@@ -342,10 +341,10 @@ public sealed partial class GameModeViewModel : ObservableObject
     private bool IsCalmed(string path) => _settings.GameModeCalmApps.Contains(path, StringComparer.OrdinalIgnoreCase);
 
     private CloseAppRow Row(string path, bool calm) => new(path, _actions.AppName(path),
-        !_actions.AppExists(path) ? "Not found: it may have been uninstalled"
-        : !_running.Contains(path) ? "Not running now"
-        : calm ? "Running · in efficiency mode while you play"
-        : "Running · reopened after the game",
+        !_actions.AppExists(path) ? Strings.GmAppNotFound
+        : !_running.Contains(path) ? Strings.GmAppNotRunning
+        : calm ? Strings.GmAppCalmed
+        : Strings.GmAppClosed,
         calm);
 
     /// <summary>
@@ -418,22 +417,22 @@ public sealed partial class GameModeViewModel : ObservableObject
     private static readonly string[] RestoreNames =
         [nameof(LastTitle), nameof(LastDetail), nameof(LastOk), nameof(HasLog), nameof(CanRestore), nameof(RestoreText)];
 
-    public string LastTitle => _restore.Last is { } last ? "Last restore: " + Format.SessionStart(last.When) : "Nothing restored yet";
+    public string LastTitle => _restore.Last is { } last ? Strings.Format(Strings.GmLastRestore, Format.SessionStart(last.When)) : Strings.GmNothingRestored;
 
-    public string LastDetail => _restore.Last is not { } last ? "Game mode's changes are put back when the game closes."
+    public string LastDetail => _restore.Last is not { } last ? Strings.GmUndoneOnClose
         : last.Result.Success
-            ? $"{last.Result.Restored} of {last.Result.Total} {(last.Result.Total == 1 ? "change" : "changes")} put back"
-            : $"{last.Result.Restored} of {last.Result.Total} put back · {string.Join(", ", last.Result.Failed)} couldn't be";
+            ? Strings.Format(last.Result.Total == 1 ? Strings.GmPutBackOfOne : Strings.GmPutBackOf, last.Result.Restored, last.Result.Total)
+            : Strings.Format(Strings.GmPutBackOfFailed, last.Result.Restored, last.Result.Total, Strings.List([.. last.Result.Failed.Select(GameModeText.ItemName)]));
 
     /// <summary>True: all put back; false: something couldn't be; null: nothing restored yet.</summary>
     public bool? LastOk => _restore.Last?.Result.Success;
 
     public bool HasLog => _restore.HasLog;
     public bool CanRestore => !_restoring && _restore.CanRestoreNow;
-    public string RestoreText => _restoring ? "Restoring…" // the result comes back with the toast (UpdateLastRestore)
-        : _restore.CanRestoreNow ? "Restore now"
-        : _restore.Pending ? "Restore now · a game is running"
-        : "Restore now · nothing pending";
+    public string RestoreText => _restoring ? Strings.Restoring // the result comes back with the toast (UpdateLastRestore)
+        : _restore.CanRestoreNow ? Strings.RestoreNow
+        : _restore.Pending ? Strings.Format(Strings.Dot, Strings.RestoreNow, Strings.GmGameRunning)
+        : Strings.Format(Strings.Dot, Strings.RestoreNow, Strings.GmNothingPending);
 
     private void Restore()
     {

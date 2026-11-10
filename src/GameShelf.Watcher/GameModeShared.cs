@@ -154,42 +154,10 @@ public sealed record RestoreResult(int Restored, int Total, List<string> Failed)
     /// <summary>Both parts together: the watcher's own and the elevated helper's.</summary>
     public RestoreResult Plus(RestoreResult? other) =>
         other is null ? this : new RestoreResult(Restored + other.Restored, Total + other.Total, [.. Failed, .. other.Failed]);
-
-    /// <summary>
-    /// The Game mode toast's two lines: after a restore (<paramref name="applied"/> false) "Windows is back to
-    /// normal" or "Restored 4 of 5"; after Begin "Game mode is on", with what it changed or couldn't change.
-    /// </summary>
-    public (string Title, string Detail) ToastText(bool applied)
-    {
-        string changes = Restored == 1 ? "1 change" : $"{Restored} changes";
-        if (!applied)
-            return Success
-                ? ("Windows is back to normal", $"Game mode put back {changes}")
-                : ($"Restored {Restored} of {Total}", $"{Names()} couldn't be put back");
-        if (!Success)
-            return (Restored > 0 ? "Game mode is on" : "Game mode couldn't change Windows", $"{Names()} couldn't be changed");
-        return ("Game mode is on", Restored == 0
-            ? "Windows was already set up for gaming"
-            : $"{changes} · put back when the game closes");
-    }
-
-    /// <summary>"Spotify", "Spotify and Discord", "Spotify and 2 more".</summary>
-    private string Names() => Failed.Count switch
-    {
-        0 => "",
-        1 => Failed[0],
-        2 => Failed[0] + " and " + Failed[1],
-        _ => Failed[0] + $" and {Failed.Count - 1} more",
-    };
-
-    /// <summary>"Restored successfully", or "Restored 4 of 5 · Spotify couldn't be put back".</summary>
-    public string Summary()
-    {
-        if (Success) return "Restored successfully";
-        var names = Failed.Count == 1 ? Failed[0] : Failed[0] + $" and {Failed.Count - 1} more";
-        return $"Restored {Restored} of {Total} · {names} couldn't be put back";
-    }
 }
+
+/// <summary>The power plan or mode that is on: a plan other than Balanced, else Balanced's power mode.</summary>
+public enum PowerSetting { Balanced, BestPerformance, BestEfficiency, HighPerformancePlan, UltimatePlan, CustomPlan }
 
 /// <summary>
 /// The power plan and the power mode (the Settings › Power mode choice, an "overlay" on the Balanced plan). The
@@ -228,17 +196,17 @@ public static unsafe partial class PowerMode
     public static bool IsFastest(Guid? plan, Guid? mode) =>
         plan == HighPerformancePlan || plan == UltimatePlan || (plan == BalancedPlan && mode == BestPerformance);
 
-    /// <summary>"Balanced", "Best performance", … as Settings › Power names it now, for the Game mode page.</summary>
-    public static string Describe()
+    /// <summary>Which plan or mode is on now, for the Game mode page (the widget names it).</summary>
+    public static PowerSetting Describe()
     {
         var plan = ActivePlan();
-        if (plan == HighPerformancePlan) return "High performance plan";
-        if (plan == UltimatePlan) return "Ultimate performance plan";
-        if (plan != BalancedPlan) return "a custom power plan";
+        if (plan == HighPerformancePlan) return PowerSetting.HighPerformancePlan;
+        if (plan == UltimatePlan) return PowerSetting.UltimatePlan;
+        if (plan != BalancedPlan) return PowerSetting.CustomPlan;
         var mode = ActiveMode();
-        if (mode == BestPerformance) return "Best performance";
-        if (mode == BestEfficiency) return "Best power efficiency";
-        return "Balanced";
+        if (mode == BestPerformance) return PowerSetting.BestPerformance;
+        if (mode == BestEfficiency) return PowerSetting.BestEfficiency;
+        return PowerSetting.Balanced;
     }
 
     [LibraryImport("powrprof.dll")]

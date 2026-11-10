@@ -83,7 +83,7 @@ public sealed partial class DetailView
     private void OnPickStartWith(object sender, RoutedEventArgs e)
     {
         if (ViewModel is not { Game: { InstallDir: not null } game } vm) return;
-        var path = FilePicker.Open(this, $"Choose the program to start {game.Name} with", "Programs (*.exe)|*.exe", vm.InstallFolder);
+        var path = FilePicker.Open(this, Strings.Format(Strings.PickStartWithTitle, game.Name), Strings.Format(Strings.FilterPrograms, "*.exe") + "|*.exe", vm.InstallFolder);
         if (path is not null) vm.SetStartWith(path);
     }
 
@@ -101,7 +101,7 @@ public sealed partial class DetailView
         RequirementList.Children.Clear();
         ConflictList.Children.Clear();
         if (vm.Checking)
-            RequirementList.Children.Add(new TextBlock { Text = "Checking this PC…", Style = Resource<Style>("RowDetail") });
+            RequirementList.Children.Add(new TextBlock { Text = Strings.CheckingPc, Style = Resource<Style>("RowDetail") });
         foreach (var requirement in vm.Requirements)
             RequirementList.Children.Add(RequirementRow(requirement));
         foreach (var (conflict, text) in vm.Conflicts)
@@ -132,12 +132,12 @@ public sealed partial class DetailView
         var tag = StatusTag(requirement.Status, requirement.Met);
         Grid.SetColumn(tag, 1);
         row.Children.Add(tag);
-        AutomationProperties.SetName(row, $"{requirement.Name}: {requirement.Status}");
+        AutomationProperties.SetName(row, Strings.Format(Strings.LabelValue, requirement.Name, requirement.Status));
         if (requirement.HelpUrl is { } help)
         {
-            var link = new HyperlinkButton { Content = "How to fix", VerticalAlignment = VerticalAlignment.Center, Padding = new Thickness(4, 2, 4, 2) };
+            var link = new HyperlinkButton { Content = Strings.HowToFix, VerticalAlignment = VerticalAlignment.Center, Padding = new Thickness(4, 2, 4, 2) };
             link.Click += (_, _) => ViewModel?.OpenLink(help);
-            AutomationProperties.SetName(link, $"How to fix {requirement.Name}");
+            AutomationProperties.SetName(link, Strings.Format(Strings.HowToFixName, requirement.Name));
             Grid.SetColumn(link, 2);
             row.Children.Add(link);
         }
@@ -183,14 +183,14 @@ public sealed partial class DetailView
     private Grid ConflictRow(DetailConflict conflict, string text)
     {
         var row = StatusRow("", "SystemFillColorCautionBrush", text, null);
-        var close = new Button { Content = "Close", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
-        AutomationProperties.SetName(close, "Close " + conflict.Name);
-        ToolTipService.SetToolTip(close, $"Ask {conflict.Name} to close, like clicking its X");
+        var close = new Button { Content = Strings.Close, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
+        AutomationProperties.SetName(close, Strings.Format(Strings.CloseApp, conflict.Name));
+        ToolTipService.SetToolTip(close, Strings.Format(Strings.CloseAppToolTip, conflict.Name));
         close.Click += (_, _) =>
         {
             ViewModel?.CloseConflict(conflict);
             close.IsEnabled = false;
-            close.Content = "Asked to close";
+            close.Content = Strings.AskedToClose;
         };
         Grid.SetColumn(close, 2);
         row.Children.Add(close);
@@ -210,9 +210,9 @@ public sealed partial class DetailView
         row.Children.Add(label);
         if (helpUrl is not null)
         {
-            var link = new HyperlinkButton { Content = "How to fix", VerticalAlignment = VerticalAlignment.Center };
+            var link = new HyperlinkButton { Content = Strings.HowToFix, VerticalAlignment = VerticalAlignment.Center };
             link.Click += (_, _) => ViewModel?.OpenLink(helpUrl);
-            AutomationProperties.SetName(link, "How to fix: " + text);
+            AutomationProperties.SetName(link, Strings.Format(Strings.HowToFixName, text));
             Grid.SetColumn(link, 2);
             row.Children.Add(link);
         }

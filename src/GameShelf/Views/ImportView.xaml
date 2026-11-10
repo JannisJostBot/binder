@@ -1,7 +1,7 @@
 <UserControl x:Class="GameShelf.Views.ImportView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             AutomationProperties.Name="Import desktop shortcuts">
+             xmlns:s="using:GameShelf">
     <Grid x:Name="Root" Padding="0,20,0,16" RowSpacing="14">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -16,29 +16,29 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Click="OnCancelClick"
-                    ToolTipService.ToolTip="Back to settings (Esc)" AutomationProperties.Name="Back to settings" />
-            <TextBlock Grid.Column="1" Text="Import desktop shortcuts" Style="{StaticResource SubtitleTextBlockStyle}"
+                    ToolTipService.ToolTip="{x:Bind s:Strings.BackToSettingsEsc}" AutomationProperties.Name="{x:Bind s:Strings.BackToSettings}" />
+            <TextBlock Grid.Column="1" Text="{x:Bind s:Strings.ImportShortcuts}" Style="{StaticResource SubtitleTextBlockStyle}"
                        VerticalAlignment="Center" />
         </Grid>
         <TextBlock x:Name="IntroText" Grid.Row="1" Margin="20,0" TextWrapping="Wrap" Style="{StaticResource BodyTextBlockStyle}"
                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                   Text="Tick the shortcuts that are games. They move off your desktop into Game Shelf, and you can put them back anytime from Settings." />
+                   Text="{x:Bind s:Strings.ImportIntro}" />
 
         <!-- Found shortcuts -->
         <Border x:Name="ListCard" Grid.Row="2" Style="{StaticResource Card}" Padding="0">
             <Grid>
                 <ScrollViewer>
-                    <StackPanel x:Name="RowsList" Padding="16,6" AutomationProperties.Name="Shortcuts" />
+                    <StackPanel x:Name="RowsList" Padding="16,6" AutomationProperties.Name="{x:Bind s:Strings.Shortcuts}" />
                 </ScrollViewer>
                 <TextBlock x:Name="EmptyText" Margin="16,14" TextWrapping="Wrap" Visibility="Collapsed"
                            Style="{StaticResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                           Text="No program or game shortcuts found on your desktop." />
+                           Text="{x:Bind s:Strings.ImportNothingFound}" />
             </Grid>
         </Border>
 
         <!-- Actions -->
         <StackPanel x:Name="ActionsRow" Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,0" Spacing="8">
-            <Button Content="Cancel" Click="OnCancelClick" />
+            <Button Content="{x:Bind s:Strings.Cancel}" Click="OnCancelClick" />
             <Button x:Name="ImportButton" Style="{StaticResource AccentButtonStyle}" Click="OnImportClick"
                     AutomationProperties.AutomationId="ImportButton" />
         </StackPanel>

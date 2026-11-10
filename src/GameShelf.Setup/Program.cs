@@ -65,7 +65,7 @@ internal static class Program
         var options = Options.Parse(args);
         if (options is null)
         {
-            Dialogs.Error("Unknown option", "Run GameShelfSetup.exe without options to install, or with /S to install silently.");
+            Dialogs.Error(Text.UnknownOption, Text.Usage);
             return ExitCode.BadArguments;
         }
         Locations.Log($"setup {VersionText} started: {string.Join(' ', args)}");
@@ -76,7 +76,7 @@ internal static class Program
         catch (Exception ex)
         {
             Locations.Log("unexpected: " + ex);
-            if (!options.Silent) Dialogs.Error("Something went wrong", ex.Message + "\n\nDetails: " + Locations.LogFile);
+            if (!options.Silent) Dialogs.Error(Text.SomethingWentWrong, ex.Message + "\n\n" + Text.Details(Locations.LogFile));
             return ExitCode.Error;
         }
     }

@@ -1,8 +1,8 @@
 <UserControl x:Class="GameShelf.Views.SettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:v="using:GameShelf.Views"
-             AutomationProperties.Name="Settings">
+             xmlns:s="using:GameShelf"
+             xmlns:v="using:GameShelf.Views">
     <UserControl.Resources>
         <Style x:Key="SourceCheck" TargetType="CheckBox" BasedOn="{StaticResource DefaultCheckBoxStyle}">
             <Setter Property="Margin" Value="0,2" />
@@ -27,12 +27,12 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Button x:Name="BackButton" Style="{StaticResource IconButton}" Content="&#xE72B;" Command="{x:Bind ViewModel.BackCommand}"
-                        ToolTipService.ToolTip="Back to all games (Esc)" AutomationProperties.Name="Back to all games" />
-                <TextBlock Grid.Column="1" Text="Settings" Style="{StaticResource SubtitleTextBlockStyle}" VerticalAlignment="Center" />
+                        ToolTipService.ToolTip="{x:Bind s:Strings.BackToGamesEsc}" AutomationProperties.Name="{x:Bind s:Strings.BackToGames}" />
+                <TextBlock Grid.Column="1" Text="{x:Bind s:Strings.Settings}" Style="{StaticResource SubtitleTextBlockStyle}" VerticalAlignment="Center" />
             </Grid>
 
             <!-- Opening Game Shelf (board 9) -->
-            <TextBlock Style="{StaticResource GroupLabel}" Margin="20,20,20,12" Text="Opening Game Shelf" />
+            <TextBlock Style="{StaticResource GroupLabel}" Margin="20,20,20,12" Text="{x:Bind s:Strings.GroupOpening}" />
             <Border x:Name="ModeCard" Style="{StaticResource SettingCard}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
@@ -42,25 +42,25 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7C4;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
-                        <TextBlock Style="{StaticResource RowTitle}" Text="Show it as" />
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.ShowItAs}" />
                         <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.ModeText, Mode=OneWay}" />
                     </StackPanel>
                     <Button x:Name="ModeChevron" Grid.Column="2" Style="{StaticResource DisclosureButton}" />
                 </Grid>
             </Border>
             <Border x:Name="ModeBody" Style="{StaticResource SettingCardBody}">
-                <RadioButtons MaxColumns="2" AutomationProperties.Name="Show it as"
+                <RadioButtons MaxColumns="2" AutomationProperties.Name="{x:Bind s:Strings.ShowItAs}"
                               SelectedIndex="{x:Bind ViewModel.ModeIndex, Mode=TwoWay}">
-                    <RadioButton Tag="Flyout" ToolTipService.ToolTip="Slides in from the notification-area icon and hides when you click away">
+                    <RadioButton Tag="Flyout" ToolTipService.ToolTip="{x:Bind s:Strings.ModeFlyoutToolTip}">
                         <StackPanel Width="170">
                             <v:ModePreview HorizontalAlignment="Left" Width="150" Height="82" Margin="0,2,0,8" />
-                            <TextBlock Text="Flyout" />
+                            <TextBlock Text="{x:Bind s:Strings.ModeFlyout}" />
                         </StackPanel>
                     </RadioButton>
-                    <RadioButton Tag="Desktop" ToolTipService.ToolTip="Always there, behind your windows">
+                    <RadioButton Tag="Desktop" ToolTipService.ToolTip="{x:Bind s:Strings.ModeDesktopToolTip}">
                         <StackPanel Width="170">
                             <v:ModePreview HorizontalAlignment="Left" Width="150" IsDesktop="True" Height="82" Margin="0,2,0,8" />
-                            <TextBlock Text="On the desktop" />
+                            <TextBlock Text="{x:Bind s:Strings.ModeDesktop}" />
                         </StackPanel>
                     </RadioButton>
                 </RadioButtons>
@@ -75,46 +75,46 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE765;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
-                        <TextBlock Style="{StaticResource RowTitle}" Text="Keyboard shortcut" />
-                        <TextBlock Style="{StaticResource RowDetail}" Visibility="{x:Bind ViewModel.HotkeyTaken, Mode=OneWay}" Text="Taken by another app: choose a different one"
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.KeyboardShortcut}" />
+                        <TextBlock Style="{StaticResource RowDetail}" Visibility="{x:Bind ViewModel.HotkeyTaken, Mode=OneWay}" Text="{x:Bind s:Strings.HotkeyTaken}"
                                    Foreground="{ThemeResource SystemFillColorCautionBrush}" />
                     </StackPanel>
-                    <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}" AutomationProperties.Name="Keyboard shortcut"
+                    <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}" AutomationProperties.Name="{x:Bind s:Strings.KeyboardShortcut}"
                               ItemsSource="{x:Bind ViewModel.HotkeyLabels}" SelectedIndex="{x:Bind ViewModel.HotkeyIndex, Mode=TwoWay}"
                               ToolTipService.ToolTip="{x:Bind ViewModel.HotkeyToolTip, Mode=OneWay}" />
                 </Grid>
             </Border>
 
             <Border Style="{StaticResource SettingCard}">
-                <Grid ColumnSpacing="16" ToolTipService.ToolTip="Click it to open or close Game Shelf, like the volume and network icons">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.TrayIconToolTip}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xEA8F;" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Icon in the notification area" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.TrayIcon}" />
                     <ToggleSwitch IsOn="{x:Bind ViewModel.TrayIcon, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Icon in the notification area" />
+                                  AutomationProperties.Name="{x:Bind s:Strings.TrayIcon}" />
                 </Grid>
             </Border>
 
             <Border Style="{StaticResource SettingCard}">
-                <Grid ColumnSpacing="16" ToolTipService.ToolTip="Pin the flyout open from its header when you want it to stay">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.ClickAwayToolTip}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7C9;" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Hide when I click elsewhere" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.ClickAway}" />
                     <ToggleSwitch IsOn="{x:Bind ViewModel.CloseOnClickAway, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Hide when I click elsewhere" />
+                                  AutomationProperties.Name="{x:Bind s:Strings.ClickAway}" />
                 </Grid>
             </Border>
 
             <Border x:Name="StayReadyCard" Style="{StaticResource SettingCard}">
-                <Grid ColumnSpacing="16" ToolTipService.ToolTip="Keeps running in efficiency mode after you close it, so it opens quickly">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.StayReadyToolTip}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -123,11 +123,11 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE945;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
-                        <TextBlock Style="{StaticResource RowTitle}" Text="Stay ready in the background" />
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.StayReady}" />
                         <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.StayReadyText, Mode=OneWay}" />
                     </StackPanel>
                     <ToggleSwitch IsOn="{x:Bind ViewModel.StayReady, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Stay ready in the background" />
+                                  AutomationProperties.Name="{x:Bind s:Strings.StayReady}" />
                     <Button x:Name="StayReadyChevron" Grid.Column="3" Style="{StaticResource DisclosureButton}" />
                 </Grid>
             </Border>
@@ -138,11 +138,11 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource RowTitle}" Text="While it's closed" />
-                        <ComboBox Grid.Column="1" Style="{StaticResource RowCombo}" AutomationProperties.Name="While it's closed"
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.WhileClosed}" />
+                        <ComboBox Grid.Column="1" Style="{StaticResource RowCombo}" AutomationProperties.Name="{x:Bind s:Strings.WhileClosed}"
                                   SelectedIndex="{x:Bind ViewModel.KeepLoadedIndex, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.KeepLoadedEnabled, Mode=OneWay}">
-                            <ComboBoxItem Content="Open faster" Tag="Fast" />
-                            <ComboBoxItem Content="Use less memory" Tag="Light" />
+                            <ComboBoxItem Content="{x:Bind s:Strings.OpenFaster}" Tag="Fast" />
+                            <ComboBoxItem Content="{x:Bind s:Strings.UseLessMemory}" Tag="Light" />
                         </ComboBox>
                     </Grid>
                     <TextBlock Text="{x:Bind ViewModel.KeepLoadedDetail, Mode=OneWay}" Style="{StaticResource RowDetail}" TextWrapping="Wrap" TextTrimming="None" />
@@ -157,14 +157,14 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7E8;" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Start with Windows" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.StartWithWindows}" />
                     <ToggleSwitch IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Start with Windows" />
+                                  AutomationProperties.Name="{x:Bind s:Strings.StartWithWindows}" />
                 </Grid>
             </Border>
 
             <!-- When a game starts -->
-            <TextBlock Style="{StaticResource GroupLabel}" Text="When a game starts" />
+            <TextBlock Style="{StaticResource GroupLabel}" Text="{x:Bind s:Strings.GroupGameStarts}" />
             <Border Style="{StaticResource SettingCard}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
@@ -173,31 +173,31 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE916;" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Hide Game Shelf" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.HideGameShelf}" />
                     <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}"
-                              AutomationProperties.Name="Hide delay" SelectedIndex="{x:Bind ViewModel.DelayIndex, Mode=TwoWay}">
-                        <ComboBoxItem Content="Instantly" Tag="0" />
-                        <ComboBoxItem Content="After 5 s" Tag="5" />
-                        <ComboBoxItem Content="After 10 s" Tag="10" />
-                        <ComboBoxItem Content="After 30 s" Tag="30" />
+                              AutomationProperties.Name="{x:Bind s:Strings.HideDelay}" SelectedIndex="{x:Bind ViewModel.DelayIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="{x:Bind s:Strings.Instantly}" Tag="0" />
+                        <ComboBoxItem Content="{x:Bind s:Strings.After5s}" Tag="5" />
+                        <ComboBoxItem Content="{x:Bind s:Strings.After10s}" Tag="10" />
+                        <ComboBoxItem Content="{x:Bind s:Strings.After30s}" Tag="30" />
                     </ComboBox>
                 </Grid>
             </Border>
             <Border Style="{StaticResource SettingCard}">
-                <Grid ColumnSpacing="16" ToolTipService.ToolTip="Reopens Game Shelf automatically">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.ComeBackToolTip}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7A7;" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Come back when the game closes" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.ComeBack}" />
                     <ToggleSwitch IsOn="{x:Bind ViewModel.ComeBackOnClose, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Come back when the game closes" />
+                                  AutomationProperties.Name="{x:Bind s:Strings.ComeBack}" />
                 </Grid>
             </Border>
             <!-- Game mode (spec §11): its own page -->
-            <Button Style="{StaticResource SettingLinkCard}" Command="{x:Bind ViewModel.GameModeCommand}" AutomationProperties.Name="Game mode settings">
+            <Button Style="{StaticResource SettingLinkCard}" Command="{x:Bind ViewModel.GameModeCommand}" AutomationProperties.Name="{x:Bind s:Strings.GameModeSettings}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -206,7 +206,7 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7FC;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
-                        <TextBlock Style="{StaticResource RowTitle}" Text="Game mode" />
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.GameMode}" />
                         <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.GameModeText, Mode=OneWay}" />
                     </StackPanel>
                     <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -214,7 +214,7 @@
             </Button>
 
             <!-- Shelf (board 9) -->
-            <TextBlock Style="{StaticResource GroupLabel}" Text="Shelf" />
+            <TextBlock Style="{StaticResource GroupLabel}" Text="{x:Bind s:Strings.GroupShelf}" />
             <Border Style="{StaticResource SettingCard}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
@@ -223,45 +223,45 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xECA5;" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Cover size" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.CoverSize}" />
                     <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}"
-                              AutomationProperties.Name="Cover size" SelectedIndex="{x:Bind ViewModel.DensityIndex, Mode=TwoWay}">
-                        <ComboBoxItem Content="Small" Tag="Small" />
-                        <ComboBoxItem Content="Medium" Tag="Medium" />
-                        <ComboBoxItem Content="Large" Tag="Large" />
-                        <ComboBoxItem Content="List" Tag="List" />
+                              AutomationProperties.Name="{x:Bind s:Strings.CoverSize}" SelectedIndex="{x:Bind ViewModel.DensityIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="{x:Bind s:Strings.CoverSmall}" Tag="Small" />
+                        <ComboBoxItem Content="{x:Bind s:Strings.CoverMedium}" Tag="Medium" />
+                        <ComboBoxItem Content="{x:Bind s:Strings.CoverLarge}" Tag="Large" />
+                        <ComboBoxItem Content="{x:Bind s:Strings.CoverList}" Tag="List" />
                     </ComboBox>
                 </Grid>
             </Border>
             <Border Style="{StaticResource SettingCard}">
-                <Grid ColumnSpacing="16" ToolTipService.ToolTip="A card above the games with time played per day">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.WeekCardToolTip}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE9D2;" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Show this week's playtime" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.ShowWeek}" />
                     <ToggleSwitch IsOn="{x:Bind ViewModel.ShowWeeklySummary, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Show this week's playtime" />
+                                  AutomationProperties.Name="{x:Bind s:Strings.ShowWeek}" />
                 </Grid>
             </Border>
             <Border Style="{StaticResource SettingCard}">
-                <Grid ColumnSpacing="16" ToolTipService.ToolTip="Favorite covers get a faint rainbow shine that follows the pointer">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.ShinyToolTip}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE734;" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Shiny favorites" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.Shiny}" />
                     <ToggleSwitch IsOn="{x:Bind ViewModel.ShinyFavorites, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Shiny favorites" />
+                                  AutomationProperties.Name="{x:Bind s:Strings.Shiny}" />
                 </Grid>
             </Border>
 
             <!-- Library -->
-            <TextBlock Style="{StaticResource GroupLabel}" Text="Library" />
+            <TextBlock Style="{StaticResource GroupLabel}" Text="{x:Bind s:Strings.GroupLibrary}" />
             <Border x:Name="SourcesCard" Style="{StaticResource SettingCard}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
@@ -272,11 +272,11 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE8F1;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
-                        <TextBlock Style="{StaticResource RowTitle}" Text="Game sources" />
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.GameSources}" />
                         <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.LibraryText, Mode=OneWay}" />
                     </StackPanel>
-                    <Button Grid.Column="2" Content="Refresh" Command="{x:Bind ViewModel.RefreshCommand}" IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}" VerticalAlignment="Center"
-                            AutomationProperties.Name="Refresh library" ToolTipService.ToolTip="Look for new games" />
+                    <Button Grid.Column="2" Content="{x:Bind s:Strings.Refresh}" Command="{x:Bind ViewModel.RefreshCommand}" IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}" VerticalAlignment="Center"
+                            AutomationProperties.Name="{x:Bind s:Strings.RefreshLibrary}" ToolTipService.ToolTip="{x:Bind s:Strings.RefreshToolTip}" />
                     <Button x:Name="SourcesChevron" Grid.Column="3" Style="{StaticResource DisclosureButton}" />
                 </Grid>
             </Border>
@@ -294,13 +294,13 @@
                     </StackPanel>
                     <StackPanel Grid.Column="1">
                         <CheckBox IsChecked="{x:Bind ViewModel.UbisoftEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="Ubisoft Connect" />
-                        <CheckBox IsChecked="{x:Bind ViewModel.XboxEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="Xbox app (Game Pass)" />
+                        <CheckBox IsChecked="{x:Bind ViewModel.XboxEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="{x:Bind s:Strings.XboxAppGamePass}" />
                         <CheckBox IsChecked="{x:Bind ViewModel.RockstarEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="Rockstar Games"
                                   AutomationProperties.Name="Rockstar Games Launcher" />
                         <CheckBox IsChecked="{x:Bind ViewModel.HytaleEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="Hytale"
                                   AutomationProperties.Name="Hytale Launcher" />
-                        <CheckBox IsChecked="{x:Bind ViewModel.ShortcutsEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="Desktop shortcuts"
-                                  AutomationProperties.Name="Imported desktop shortcuts" />
+                        <CheckBox IsChecked="{x:Bind ViewModel.ShortcutsEnabled, Mode=TwoWay}" Style="{StaticResource SourceCheck}" Content="{x:Bind s:Strings.DesktopShortcuts}"
+                                  AutomationProperties.Name="{x:Bind s:Strings.ImportedShortcuts}" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -315,12 +315,12 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE71B;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
-                        <TextBlock Style="{StaticResource RowTitle}" Text="Desktop shortcuts" />
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.DesktopShortcuts}" />
                         <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.ShortcutsText, Mode=OneWay}" />
                     </StackPanel>
-                    <Button Grid.Column="2" Content="Import…" Command="{x:Bind ViewModel.ImportCommand}" VerticalAlignment="Center"
-                            AutomationProperties.Name="Import desktop shortcuts"
-                            ToolTipService.ToolTip="Move game shortcuts off your desktop into the shelf" />
+                    <Button Grid.Column="2" Content="{x:Bind s:Strings.ImportEllipsis}" Command="{x:Bind ViewModel.ImportCommand}" VerticalAlignment="Center"
+                            AutomationProperties.Name="{x:Bind s:Strings.ImportShortcuts}"
+                            ToolTipService.ToolTip="{x:Bind s:Strings.ImportToolTip}" />
                     <Button x:Name="ShortcutsChevron" Grid.Column="3" Style="{StaticResource DisclosureButton}" />
                 </Grid>
             </Border>
@@ -331,9 +331,9 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" TextTrimming="None" VerticalAlignment="Center"
-                               Text="Puts the imported shortcuts back on your desktop and takes them off the shelf." />
-                    <Button Grid.Column="1" Content="Restore" Command="{x:Bind ViewModel.RestoreCommand}" IsEnabled="{x:Bind ViewModel.CanRestoreShortcuts, Mode=OneWay}" VerticalAlignment="Center"
-                            AutomationProperties.Name="Restore shortcuts to desktop" />
+                               Text="{x:Bind s:Strings.RestoreShortcutsText}" />
+                    <Button Grid.Column="1" Content="{x:Bind s:Strings.Restore}" Command="{x:Bind ViewModel.RestoreCommand}" IsEnabled="{x:Bind ViewModel.CanRestoreShortcuts, Mode=OneWay}" VerticalAlignment="Center"
+                            AutomationProperties.Name="{x:Bind s:Strings.RestoreShortcuts}" />
                 </Grid>
             </Border>
 
@@ -345,9 +345,9 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE710;" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Add a game" />
-                    <Button Grid.Column="2" Content="Browse…" Command="{x:Bind ViewModel.AddGameCommand}" VerticalAlignment="Center"
-                            AutomationProperties.Name="Add a game" ToolTipService.ToolTip="A program (.exe) or a shortcut" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.AddGame}" />
+                    <Button Grid.Column="2" Content="{x:Bind s:Strings.Browse}" Command="{x:Bind ViewModel.AddGameCommand}" VerticalAlignment="Center"
+                            AutomationProperties.Name="{x:Bind s:Strings.AddGame}" ToolTipService.ToolTip="{x:Bind s:Strings.BrowseToolTip}" />
                 </Grid>
             </Border>
 
@@ -360,7 +360,7 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xED1A;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
-                        <TextBlock Style="{StaticResource RowTitle}" Text="Hidden games" />
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.HiddenGames}" />
                         <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.HiddenCountText, Mode=OneWay}" />
                     </StackPanel>
                     <Button x:Name="HiddenChevron" Grid.Column="2" Style="{StaticResource DisclosureButton}" />
@@ -368,15 +368,15 @@
             </Border>
             <Border x:Name="HiddenBody" Style="{StaticResource SettingCardBody}" Padding="52,0,16,0">
                 <StackPanel>
-                    <StackPanel x:Name="HiddenList" AutomationProperties.Name="Hidden games" />
+                    <StackPanel x:Name="HiddenList" AutomationProperties.Name="{x:Bind s:Strings.HiddenGames}" />
                     <TextBlock Visibility="{x:Bind ViewModel.NoHiddenGames, Mode=OneWay}" Margin="0,14" TextWrapping="Wrap" Style="{StaticResource RowDetail}" TextTrimming="None"
-                               Text="No hidden games. Hide one from its right-click menu or its details." />
+                               Text="{x:Bind s:Strings.NoHiddenGames}" />
                 </StackPanel>
             </Border>
 
             <!-- Storage (spec §12) -->
-            <Button Style="{StaticResource SettingLinkCard}" Command="{x:Bind ViewModel.FreeSpaceCommand}" AutomationProperties.Name="Free up space"
-                    ToolTipService.ToolTip="See which games to remove to make room for a new one">
+            <Button Style="{StaticResource SettingLinkCard}" Command="{x:Bind ViewModel.FreeSpaceCommand}" AutomationProperties.Name="{x:Bind s:Strings.FreeUpSpace}"
+                    ToolTipService.ToolTip="{x:Bind s:Strings.FreeUpSpaceToolTip}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -384,13 +384,13 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xEDA2;" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Free up space" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.FreeUpSpace}" />
                     <FontIcon Grid.Column="2" Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </Grid>
             </Button>
 
             <!-- Window -->
-            <TextBlock Style="{StaticResource GroupLabel}" Text="Window" />
+            <TextBlock Style="{StaticResource GroupLabel}" Text="{x:Bind s:Strings.GroupWindow}" />
             <Border Style="{StaticResource SettingCard}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
@@ -400,45 +400,45 @@
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE8A9;" />
                     <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
-                        <TextBlock Style="{StaticResource RowTitle}" Text="Position" />
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.Position}" />
                         <TextBlock Style="{StaticResource RowDetail}" Visibility="{x:Bind ViewModel.PositionIsFree, Mode=OneWay}"
-                                   Text="Drag it by an empty spot to move it" />
+                                   Text="{x:Bind s:Strings.PositionFreeHint}" />
                     </StackPanel>
                     <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}"
-                              AutomationProperties.Name="Position" SelectedIndex="{x:Bind ViewModel.PositionIndex, Mode=TwoWay}">
-                        <ComboBoxItem Content="Left edge" Tag="Left" />
-                        <ComboBoxItem Content="Right edge" Tag="Right" />
-                        <ComboBoxItem Content="Free" Tag="Free" />
+                              AutomationProperties.Name="{x:Bind s:Strings.Position}" SelectedIndex="{x:Bind ViewModel.PositionIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="{x:Bind s:Strings.LeftEdge}" Tag="Left" />
+                        <ComboBoxItem Content="{x:Bind s:Strings.RightEdge}" Tag="Right" />
+                        <ComboBoxItem Content="{x:Bind s:Strings.PositionFree}" Tag="Free" />
                     </ComboBox>
                 </Grid>
             </Border>
             <Border Style="{StaticResource SettingCard}" Visibility="{x:Bind ViewModel.ShowScreens, Mode=OneWay}">
-                <Grid ColumnSpacing="16" ToolTipService.ToolTip="Numbered from left to right">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.ScreenToolTip}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE7F4;" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Screen" />
-                    <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}" AutomationProperties.Name="Screen"
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.Screen}" />
+                    <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}" AutomationProperties.Name="{x:Bind s:Strings.Screen}"
                               ItemsSource="{x:Bind ViewModel.Screens, Mode=OneWay}" SelectedItem="{x:Bind ViewModel.SelectedScreen, Mode=TwoWay}" />
                 </Grid>
             </Border>
             <Border Style="{StaticResource SettingCard}">
-                <Grid ColumnSpacing="16" ToolTipService.ToolTip="Sits behind other windows, like desktop icons">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.DesktopLayerToolTip}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE81E;" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="Stay on the desktop layer" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.DesktopLayer}" />
                     <ToggleSwitch IsOn="{x:Bind ViewModel.StayOnDesktop, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
-                                  AutomationProperties.Name="Stay on the desktop layer" />
+                                  AutomationProperties.Name="{x:Bind s:Strings.DesktopLayer}" />
                 </Grid>
             </Border>
-            <HyperlinkButton Margin="8,24,20,0" Content="Run first-time setup again" Command="{x:Bind ViewModel.SetupCommand}" />
+            <HyperlinkButton Margin="8,24,20,0" Content="{x:Bind s:Strings.RunSetupAgain}" Command="{x:Bind ViewModel.SetupCommand}" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

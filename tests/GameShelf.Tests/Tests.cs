@@ -19,6 +19,12 @@ static partial class Tests
 
     static int Main()
     {
+        // The expected texts below are the English ones, whatever language this PC uses; LocalizationTests
+        // switches languages itself.
+        System.Globalization.CultureInfo.DefaultThreadCurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+        System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+        System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+        System.Globalization.CultureInfo.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
         // VDF depth limit: a deeply nested file throws FormatException instead of overflowing the stack.
         var deep = "\"a\"" + string.Concat(Enumerable.Repeat(" { \"k\"", 100000)) + string.Concat(Enumerable.Repeat("}", 100000));
         try { Vdf.Parse(deep); Check(false, "deep VDF rejected"); } catch (FormatException) { Check(true, "deep VDF rejected"); }
@@ -92,6 +98,7 @@ static partial class Tests
         SetupViewModelTests();
         ShelfViewModelTests();
         FormatTests();
+        LocalizationTests();
 
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");
@@ -727,24 +734,24 @@ static partial class Tests
         Check(GameShelf.Shared.RestoreResult.Parse("4/3") is null && GameShelf.Shared.RestoreResult.Parse("x/3") is null &&
               GameShelf.Shared.RestoreResult.Parse("") is null && GameShelf.Shared.RestoreResult.Parse("1") is null &&
               GameShelf.Shared.RestoreResult.Parse(new string('1', 3000)) is null, "malformed restore results rejected");
-        Check(ok.Summary() == "Restored successfully" && partial.Summary() == "Restored 2 of 3 · Spotify couldn't be put back" &&
-              new GameShelf.Shared.RestoreResult(1, 3, ["Power mode", "Spotify"]).Summary() == "Restored 1 of 3 · Power mode and 1 more couldn't be put back",
-            "toast texts");
+        Check(GameModeText.Names(partial) == "Spotify" && GameModeText.Names(new GameShelf.Shared.RestoreResult(1, 3, ["Power mode", "Spotify"])) == "Power mode and Spotify" &&
+              GameModeText.Names(new GameShelf.Shared.RestoreResult(1, 4, ["A", "B", "C"])) == "A and 2 more",
+            "names of what couldn't be put back");
         Check(GameShelf.Watcher.Program.ToastArgument(ok, toast: true) == "3/3" && GameShelf.Watcher.Program.ToastArgument(ok, toast: false) is null &&
               GameShelf.Watcher.Program.ToastArgument(partial, toast: false) == "2/3|Spotify" &&
               GameShelf.Watcher.Program.ToastArgument(new GameShelf.Shared.RestoreResult(0, 0, []), toast: true) is null &&
               GameShelf.Watcher.Program.ToastArgument(null, toast: true) is null,
             "toast only when something changed; problems shown even with the confirmation off");
-        Check(ok.ToastText(applied: false) == ("Windows is back to normal", "Game mode put back 3 changes") &&
-              partial.ToastText(applied: false) == ("Restored 2 of 3", "Spotify couldn't be put back") &&
-              new GameShelf.Shared.RestoreResult(1, 3, ["Power mode", "Spotify"]).ToastText(applied: false).Detail == "Power mode and Spotify couldn't be put back" &&
-              new GameShelf.Shared.RestoreResult(1, 4, ["A", "B", "C"]).ToastText(applied: false).Detail == "A and 2 more couldn't be put back",
+        Check(GameModeText.Toast(ok, applied: false) == ("Windows is back to normal", "Game mode put back 3 changes") &&
+              GameModeText.Toast(partial, applied: false) == ("Restored 2 of 3", "Spotify couldn't be put back") &&
+              GameModeText.Toast(new GameShelf.Shared.RestoreResult(1, 3, ["Power mode", "Spotify"]), applied: false).Detail == "Power mode and Spotify couldn't be put back" &&
+              GameModeText.Toast(new GameShelf.Shared.RestoreResult(1, 4, ["A", "B", "C"]), applied: false).Detail == "A and 2 more couldn't be put back",
             "restored toast's two lines");
-        Check(ok.ToastText(applied: true) == ("Game mode is on", "3 changes · put back when the game closes") &&
-              new GameShelf.Shared.RestoreResult(1, 1, []).ToastText(applied: true).Detail == "1 change · put back when the game closes" &&
-              new GameShelf.Shared.RestoreResult(0, 0, []).ToastText(applied: true) == ("Game mode is on", "Windows was already set up for gaming") &&
-              partial.ToastText(applied: true) == ("Game mode is on", "Spotify couldn't be changed") &&
-              new GameShelf.Shared.RestoreResult(0, 1, ["Services and network"]).ToastText(applied: true).Title == "Game mode couldn't change Windows",
+        Check(GameModeText.Toast(ok, applied: true) == ("Game mode is on", "3 changes · undone when the game closes") &&
+              GameModeText.Toast(new GameShelf.Shared.RestoreResult(1, 1, []), applied: true).Detail == "1 change · undone when the game closes" &&
+              GameModeText.Toast(new GameShelf.Shared.RestoreResult(0, 0, []), applied: true) == ("Game mode is on", "Windows was already set up for gaming") &&
+              GameModeText.Toast(partial, applied: true) == ("Game mode is on", "Spotify couldn't be changed") &&
+              GameModeText.Toast(new GameShelf.Shared.RestoreResult(0, 1, ["Services and network"]), applied: true).Title == "Game mode couldn't change Windows",
             "applied toast's two lines");
         Check(GameShelf.Watcher.Program.AppliedArgument(new GameShelf.Shared.RestoreResult(0, 0, []), toast: true) == "0/0" &&
               GameShelf.Watcher.Program.AppliedArgument(ok, toast: false) is null &&

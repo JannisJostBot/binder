@@ -65,6 +65,8 @@ src/GameShelf/            the WinUI widget
                           GameModeToast, BannerLogo, Sheen (shiny favorites); Format.cs the text formatting,
                           GameAction.cs (menu actions, chart bars)
   Themes/Theme.xaml        shared styles and brushes
+  Strings/                the app's text: Strings.resx (English), Strings.de.resx, Strings.fr.resx, one property per
+                          entry in Strings.Entries.cs; Strings.cs has Format, Plural, List, LowerFirst
   MainWindow.xaml.cs      the panel: start, first frame, page navigation, rescan; partial files by area:
                           MainWindow.<Page>.cs (that page's actions), .Flyout (slide, placement), .Games (import,
                           add, game actions), .Input (Esc, controller, type-to-search), .Launch (play, countdown,
@@ -180,6 +182,32 @@ Display modes: **Flyout** (default; tray icon and Win+Shift+G) or **On the deskt
 the z-order with `HWND_BOTTOM`, no WorkerW hack). **Stay ready** (default on): closing the flyout destroys the
 window, releases covers, trims memory and enters efficiency mode ("Open faster" only hides it); off exits the
 process. Autostart uses `--background`.
+
+## Text and languages
+
+English, German and French, picked by the Windows display language (English for any other). Numbers, dates and
+times follow the user's regional format.
+
+- **No user-visible text in code or XAML.** Every label, tooltip, UI Automation name, toast, menu item and file
+  picker filter is an entry in `Strings/Strings.resx` with its German and French in `Strings.de.resx` and
+  `Strings.fr.resx`, plus its line in `Strings.Entries.cs`. Code reads `Strings.Name`; XAML binds
+  `{x:Bind s:Strings.Name}` (`xmlns:s="using:GameShelf"`), except on a page's root element and on per-item
+  controls of the grid (GameTile, GameRow), which set theirs in code. The unit tests check that the three tables
+  have the same entries and `{0}` placeholders and that every `Strings.X` in `src/` exists.
+- Values go in through `{0}`, `{1}` (`Strings.Format`), never by joining pieces: word order differs. Counts use
+  `Strings.Plural(n, one, other)` (French counts 0 as one); lists `Strings.List` ("A, B and C"). Capitalize in the
+  entry itself; `Strings.LowerFirst` only for text that starts a sentence in one place and sits inside one in
+  another (never `ToLower`: German nouns stay capitalized).
+- Not translated: brand and product names (Steam, Epic Games, EA app, Game Shelf), log files, the data files'
+  contents, and the setup's disclaimer (English only, as in the README). The watcher and the helper record Game
+  mode items by English name (journal, result, log); the widget translates them (`Views/GameModeText.cs`).
+- `GameShelfSetup.exe` keeps its few strings in `Text.cs` (invariant globalization, no resource files).
+- The CI tests (`tests/smoke.ps1`, `setup-test.ps1`) find controls by their English names: renaming an English
+  label means updating them.
+- **Wording:** short and plain, in the words Windows uses. Say what something does or what happened, not why it's
+  good; no selling, no "seamless", no exclamation marks, no "we". A card's second line is state ("3 imported"),
+  a tooltip is one short line. German uses "Sie", like Windows; French "vous". Keep the three languages saying the
+  same thing.
 
 Errors: unexpected UI errors go to `%LOCALAPPDATA%\GameShelf\error.log` (1 MB rotation) and a toast; a burst
 (more than 5 in 10 s) isn't caught, so a broken state ends instead of spinning.

@@ -52,6 +52,13 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 # Metadata for compilers and debug symbols: not needed to run.
 Get-ChildItem $app -Recurse -File -Include *.winmd, *.pdb | Remove-Item
 
+# The app's translations (de\, fr\ GameShelf.resources.dll): Native AOT compiles them into GameShelf.exe.
+foreach ($satellite in Get-ChildItem $app -Recurse -File -Filter 'GameShelf.resources.dll') {
+    $folder = $satellite.Directory
+    Remove-Item $satellite.FullName
+    if (-not (Get-ChildItem $folder.FullName -Force)) { Remove-Item $folder.FullName }
+}
+
 $widget = Join-Path $app 'GameShelf.exe'
 $watcher = Join-Path $app 'GameShelf.Watcher.exe'
 $elevated = Join-Path $app 'GameShelf.Elevated.exe'

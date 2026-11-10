@@ -53,7 +53,7 @@ internal static partial class PcInfo
                         desc.Contains("Remote", StringComparison.OrdinalIgnoreCase) ||
                         desc.Contains("Indirect", StringComparison.OrdinalIgnoreCase)) continue;
                     var version = adapter.GetValue("DriverVersion") as string;
-                    var text = version is null ? desc : $"{desc} with driver {CrashAnalysis.DriverVersion(desc, version)}";
+                    var text = version is null ? desc : Strings.Format(Strings.WithDriver, desc, CrashAnalysis.DriverVersion(desc, version));
                     if (!list.Contains(text)) list.Add(text);
                 }
                 catch (Exception e) when (e is SecurityException or UnauthorizedAccessException or IOException) { }

@@ -84,7 +84,7 @@ public sealed partial class BarChart : Grid
         Children.Add(baseline);
 
         // Screen readers get the numbers as text; the shapes themselves are decoration.
-        AutomationProperties.SetName(this, description + ": " + string.Join(", ", bars.Select(b => b.ToolTip)));
+        AutomationProperties.SetName(this, Strings.Format(Strings.LabelValue, description, string.Join(Strings.ListSeparator, bars.Select(b => b.ToolTip))));
         foreach (var child in Children) AutomationProperties.SetAccessibilityView(child, AccessibilityView.Raw);
     }
 

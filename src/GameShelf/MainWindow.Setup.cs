@@ -56,7 +56,7 @@ public sealed partial class MainWindow
             modeChanged = settings.DisplayMode != choices.Mode;
             settings.DisplayMode = choices.Mode;
             if (choices.StartWithWindows != Autostart.IsEnabled() && !Autostart.TrySet(choices.StartWithWindows))
-                ShowToast("Couldn't change Start with Windows", "Windows didn't allow the change.", "OK");
+                ShowToast(Strings.AutostartFailed, Strings.AutostartFailedDetail, Strings.Ok);
             settings.StartWithWindows = Autostart.IsEnabled();
         }
         settings.SetupDone = true;

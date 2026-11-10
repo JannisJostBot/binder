@@ -26,17 +26,17 @@ public sealed partial class MainWindow
     {
         try
         {
-            var names = string.Join(" and ", conflicts.Select(c => c.Name));
-            var antiCheat = string.Join(", ", game.AntiCheats!.Select(AntiCheat.Name));
+            var names = Strings.List([.. conflicts.Select(c => c.Name)]);
+            var antiCheat = Strings.List([.. game.AntiCheats!.Select(AntiCheat.Name)]);
             var dialog = new ContentDialog
             {
                 XamlRoot = Root.XamlRoot,
                 Style = (Style)Application.Current.Resources["DefaultContentDialogStyle"],
-                Title = $"Close {names} first?",
-                Content = $"{game.Name} uses {antiCheat}, which may refuse to start while {names} {(conflicts.Count == 1 ? "is" : "are")} running.",
-                PrimaryButtonText = "Close it and play",
-                SecondaryButtonText = "Play anyway",
-                CloseButtonText = "Cancel",
+                Title = Strings.Format(Strings.ConflictTitle, names),
+                Content = Strings.Format(conflicts.Count == 1 ? Strings.ConflictTextOne : Strings.ConflictText, game.Name, antiCheat, names),
+                PrimaryButtonText = conflicts.Count == 1 ? Strings.ConflictCloseOne : Strings.ConflictClose,
+                SecondaryButtonText = Strings.PlayAnyway,
+                CloseButtonText = Strings.Cancel,
                 DefaultButton = ContentDialogButton.Primary,
             };
             App.ModalDepth++; // click-away must not close the flyout under the dialog
@@ -67,9 +67,9 @@ public sealed partial class MainWindow
         App.Current.CancelCountdown();
         HideCountdown();
         if (Launcher.StartGame(game) is { } launchError)
-            ShowToast($"Couldn't start {game.Name}", launchError, "OK");
+            ShowToast(Strings.Format(Strings.CouldntStart, game.Name), launchError, Strings.Ok);
         else
-            ShowToast($"Test launch: {game.Name}", "Starts as: " + Launcher.Describe(game) + ". Game Shelf stays open; this run isn't added to your playtime.", "OK");
+            ShowToast(Strings.Format(Strings.TestLaunchTitle, game.Name), Strings.Format(Strings.TestLaunchDetail, Launcher.Describe(game)), Strings.Ok);
     }
 
     private void Launch(Game game)
@@ -79,21 +79,19 @@ public sealed partial class MainWindow
 
         if (Launcher.StartGame(game) is { } launchError)
         {
-            ShowToast($"Couldn't start {game.Name}", launchError, "OK");
+            ShowToast(Strings.Format(Strings.CouldntStart, game.Name), launchError, Strings.Ok);
             return;
         }
         if (!Launcher.CanWatch(game))
         {
             // Nothing would tell us when it closes (e.g. a web link shortcut), so hiding would be for good.
-            ShowToast($"Started {game.Name}",
-                "Staying open: Game Shelf can't tell when this game closes. Choose its program in the game's details to hide automatically.",
-                "OK");
+            ShowToast(Strings.Format(Strings.StartedGame, game.Name), Strings.StayingOpenNoWatch, Strings.Ok);
             return;
         }
         if (Launcher.StartWatcher(game, App.Settings.ComeBackOnClose) is { } watcherError)
         {
             // Without a watcher nothing would bring the widget back, so stay open.
-            ShowToast($"Started {game.Name}", "Staying open: the watcher couldn't start. " + watcherError, "OK");
+            ShowToast(Strings.Format(Strings.StartedGame, game.Name), Strings.Format(Strings.StayingOpenNoWatcher, watcherError), Strings.Ok);
             return;
         }
 
@@ -105,7 +103,7 @@ public sealed partial class MainWindow
         }
 
         // The countdown runs in App, so it keeps going if the flyout closes (the game takes the foreground).
-        App.Current.StartCountdown(delay, $"Starting {game.Name}");
+        App.Current.StartCountdown(delay, Strings.Format(Strings.StartingGame, game.Name));
         ShowCountdown();
     }
 
@@ -145,7 +143,7 @@ public sealed partial class MainWindow
 
     private void UpdateCountdown(int remaining)
     {
-        CountdownText.Text = $"Hiding in {remaining} s";
+        CountdownText.Text = Strings.Format(Strings.HidingIn, remaining);
         if (_countdownBar is null) CountdownScale.ScaleX = (double)remaining / Math.Max(1, App.Current.CountdownTotal);
     }
 

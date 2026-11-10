@@ -85,9 +85,9 @@ static partial class Tests
             "settings: Shiny favorites off writes it and reports Shelf once");
 
         vm.Load(settings, games, false, refreshing: true, importedShortcuts: 3, monitors, null, hotkeyFree: false);
-        Check(vm.LibraryText == "Scanning your stores…" && !vm.CanRefresh && vm.ShortcutsText == "3 imported" && vm.CanRestoreShortcuts,
+        Check(vm.LibraryText == "Looking for games…" && !vm.CanRefresh && vm.ShortcutsText == "3 imported" && vm.CanRestoreShortcuts,
             "settings: scanning and imported shortcuts shown");
-        Check(vm.HotkeyTaken && vm.HotkeyToolTip == "Taken by another app: choose a different one" && vm.SelectedScreen is null,
+        Check(vm.HotkeyTaken && vm.HotkeyToolTip == "Used by another app. Choose a different one." && vm.SelectedScreen is null,
             "settings: a taken shortcut and an unknown screen shown");
 
         vm.BackCommand.Execute(null);
@@ -183,7 +183,7 @@ static partial class Tests
         vm.CommitExtraArgs();
         Check(spy.Edits == 4, "detail: leaving the field saves");
         vm.SetStartWith(@"C:\Elsewhere\x.exe");
-        Check(game.ExeOverride is null && vm.LaunchNote == "Choose a program inside the game's own folder.", "detail: Start with outside the folder refused");
+        Check(game.ExeOverride is null && vm.LaunchNote == "Choose a program inside the game's folder.", "detail: Start with outside the folder refused");
         vm.ResetLaunchCommand.Execute(null);
         Check(game.LaunchArgs is null && vm.ExtraArgs == "" && !vm.CanResetLaunch && vm.Suggestions.All(s => !s.IsOn),
             "detail: Reset clears the options");
@@ -349,13 +349,13 @@ static partial class Tests
         Check(notified is [""], "game mode: filling the page refreshes every binding once");
         Check(vm.BackName == "Back to the shelf" && vm.BackToolTip == "Back to the shelf (Esc)", "game mode: back says where it goes");
         Check(vm.PowerText == "Now: Balanced. Switched back after the game." && vm.GameBarText.EndsWith("Now: on.") &&
-              vm.SmoothText.EndsWith("Always included: the game, Discord."), "game mode: what Windows does now");
+              vm.SmoothText.EndsWith("Always included: the game and Discord."), "game mode: what Windows does now");
         Check(vm.WinGameModeState == "On" && !vm.WindowedVisible && vm.OneDriveText.EndsWith("Now: running."), "game mode: Windows' own settings and OneDrive");
         vm.OpenGameModeSettingsCommand.Execute(null);
         Check(spy.Calls is ["ms-settings:gaming-gamemode"], "game mode: opens Windows' Game Mode settings");
         spy.Calls.Clear();
         Check(vm.CloseApps.Length == 2 && vm.CloseApps[0].Detail == "Running · reopened after the game" &&
-              vm.CloseApps[1].Detail == "Not found: it may have been uninstalled", "game mode: closed apps with their state");
+              vm.CloseApps[1].Detail == "Not found. It may have been uninstalled.", "game mode: closed apps with their state");
         Check(vm.Services.Length == 4 && vm.Services[0].Detail.EndsWith("Now: running.") && vm.Services[1].Detail.EndsWith("Now: not on this PC."),
             "game mode: services with their state");
         Check(!vm.HelperAllowed && vm.AllowBarOpen && vm.ShowAllow && vm.AllowText == "Allow…" && !vm.AllowWarning,
@@ -390,7 +390,7 @@ static partial class Tests
         int saves = spy.Saves;
         var calmed = vm.SetCalm(@"C:\Apps\Chat\chat.exe", true);
         vm.SetCalm(@"C:\Apps\Chat\chat.exe", true);
-        Check(calmed.Calm && calmed.Detail == "Running · in efficiency mode while you play" && vm.CloseApps[0].Calm &&
+        Check(calmed.Calm && calmed.Detail == "Running · efficiency mode while you play" && vm.CloseApps[0].Calm &&
               settings.GameModeCalmApps is [@"C:\Apps\Chat\chat.exe"] && spy.Saves == saves + 1, "game mode: Calm an app (saved once)");
         Check(vm.SetCalm(@"C:\Apps\Chat\chat.exe", false).Detail == "Running · reopened after the game" && settings.GameModeCalmApps.Count == 0,
             "game mode: back to Close");
@@ -420,7 +420,7 @@ static partial class Tests
         Check(!vm.CanRestore && vm.RestoreText == "Restoring…", "game mode: restoring");
         spy.Restore = new((DateTimeOffset.Now, new Shared.RestoreResult(2, 3, ["Spooler"])), true, false, false);
         vm.UpdateLastRestore();
-        Check(vm.LastOk == false && vm.LastDetail == "2 of 3 put back · Spooler couldn't be", "game mode: a partial restore");
+        Check(vm.LastOk == false && vm.LastDetail == "2 of 3 put back · not Spooler", "game mode: a partial restore");
 
         vm.LogCommand.Execute(null);
         vm.BackCommand.Execute(null);
@@ -458,12 +458,12 @@ static partial class Tests
         Check(vm.Launchers.Select(l => l.Source).SequenceEqual([GameSource.Epic, GameSource.Steam, GameSource.Gog]) &&
               vm.Launchers[0].Count == "2 games" && vm.Launchers[1].Count == "None found" && !vm.Launchers[2].Enabled,
             "setup: launchers with games first, unticked as in the settings");
-        Check(vm.FoundTitle == "We found 2 games" && !vm.NothingFound, "setup: manual games aren't counted");
+        Check(vm.FoundTitle == "2 games found" && !vm.NothingFound, "setup: manual games aren't counted");
         Check(vm.Flyout == true && vm.Desktop == false && vm.StartWithWindows && vm.HotkeyText.Length > 0, "setup: step 3 from the settings");
 
         vm.Launchers[0].Enabled = false; // unticked before the counts come in
         vm.SetFoundCounts(new Dictionary<GameSource, int> { [GameSource.Gog] = 1, [GameSource.Epic] = 2 });
-        Check(vm.FoundTitle == "We found 3 games" && vm.Launchers[0].Source == GameSource.Epic && !vm.Launchers[0].Enabled &&
+        Check(vm.FoundTitle == "3 games found" && vm.Launchers[0].Source == GameSource.Epic && !vm.Launchers[0].Enabled &&
               vm.Launchers[1].Source == GameSource.Gog && vm.Launchers[1].Count == "1 game", "setup: counts come in, ticks kept");
 
         vm.NextCommand.Execute(null);
@@ -491,7 +491,7 @@ static partial class Tests
         Check(spy.Calls[^1] == "skip", "setup: Skip reaches the owner");
 
         vm.Start(new Settings(), [], startWithWindows: false);
-        Check(vm.IsStep1 && vm.FoundTitle == "Let's set up your shelf" && vm.NothingFound && vm.SelectionText == "Nothing selected",
+        Check(vm.IsStep1 && vm.FoundTitle == "Set up your shelf" && vm.NothingFound && vm.SelectionText == "Nothing selected",
             "setup: a new run starts over, nothing found");
     }
 

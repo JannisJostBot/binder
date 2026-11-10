@@ -46,7 +46,7 @@ public sealed partial class MainWindow
                 break;
             case SettingChange.Autostart:
                 if (!Autostart.TrySet(settings.StartWithWindows))
-                    ShowToast("Couldn't change Start with Windows", "Windows didn't allow the change.", "OK");
+                    ShowToast(Strings.AutostartFailed, Strings.AutostartFailedDetail, Strings.Ok);
                 settings.StartWithWindows = Autostart.IsEnabled();
                 break;
             case SettingChange.Sources:

@@ -29,6 +29,7 @@ public sealed partial class ImportView : UserControl
     public ImportView()
     {
         InitializeComponent();
+        AutomationProperties.SetName(this, Strings.ImportShortcuts);
     }
 
     /// <summary>Esc: back to settings (the window asks). In setup, Esc is the window's (closes the flyout).</summary>
@@ -88,17 +89,17 @@ public sealed partial class ImportView : UserControl
     private static string Describe(ShortcutFile s, IReadOnlyList<Game> library)
     {
         if (ShortcutImporter.ExistingFor(s, library) is { } existing)
-            return $"{existing.SourceLabel} · already on the shelf, the shortcut is just tidied away";
-        if (s.SteamAppId is not null) return "Steam link";
-        if (s.EpicAppName is not null) return "Epic Games link";
+            return Strings.Format(Strings.Dot, existing.SourceLabel, Strings.AlreadyOnShelf);
+        if (s.SteamAppId is not null) return Strings.Format(Strings.LinkFrom, "Steam");
+        if (s.EpicAppName is not null) return Strings.Format(Strings.LinkFrom, "Epic Games");
         if (s.TargetPath is { } target) return target;
-        return s.Url is { } url && Uri.TryCreate(url, UriKind.Absolute, out var uri) ? $"Link · {uri.Scheme}://{uri.Host}" : "Link";
+        return s.Url is { } url && Uri.TryCreate(url, UriKind.Absolute, out var uri) ? Strings.Format(Strings.Dot, Strings.Link, $"{uri.Scheme}://{uri.Host}") : Strings.Link;
     }
 
     private void UpdateButton()
     {
         int count = _rows.Count(r => r.Selected);
-        ImportButton.Content = count == 1 ? "Import 1 shortcut" : $"Import {count} shortcuts";
+        ImportButton.Content = Strings.Plural(count, Strings.ImportCountOne, Strings.ImportCount);
         ImportButton.IsEnabled = count > 0;
         SelectionChanged?.Invoke();
     }

@@ -1,8 +1,8 @@
 <UserControl x:Class="GameShelf.Views.SetupView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:v="using:GameShelf.Views"
-             AutomationProperties.Name="First-time setup">
+             xmlns:s="using:GameShelf"
+             xmlns:v="using:GameShelf.Views">
     <UserControl.Resources>
         <Style x:Key="StepLabel" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
             <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -26,23 +26,23 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <StackPanel>
-                <TextBlock Style="{StaticResource StepLabel}" Text="Step 1 of 3" />
+                <TextBlock Style="{StaticResource StepLabel}" Text="{x:Bind s:Strings.Step1}" />
                 <TextBlock Style="{StaticResource StepTitle}" Text="{x:Bind ViewModel.FoundTitle, Mode=OneWay}" />
                 <TextBlock Style="{StaticResource StepText}"
-                           Text="Untick any launcher you don't want on the shelf. You can change this later in Settings." />
+                           Text="{x:Bind s:Strings.SetupStep1Text}" />
             </StackPanel>
             <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0" VerticalAlignment="Top">
                 <StackPanel>
-                    <StackPanel x:Name="LauncherList" Margin="0,6" AutomationProperties.Name="Launchers" />
+                    <StackPanel x:Name="LauncherList" Margin="0,6" AutomationProperties.Name="{x:Bind s:Strings.Launchers}" />
                     <TextBlock Margin="0,14" TextWrapping="Wrap" Visibility="{x:Bind ViewModel.NothingFound, Mode=OneWay}"
                                Style="{StaticResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               Text="No store games found yet. You can import desktop shortcuts next, or add games later." />
+                               Text="{x:Bind s:Strings.SetupNothingFound}" />
                 </StackPanel>
             </Border>
             <Grid Grid.Row="2">
-                <Button HorizontalAlignment="Left" Content="Skip setup" Command="{x:Bind ViewModel.SkipCommand}" />
-                <Button Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Right" Padding="22,6" Content="Next"
-                        Command="{x:Bind ViewModel.NextCommand}" AutomationProperties.Name="Next" />
+                <Button HorizontalAlignment="Left" Content="{x:Bind s:Strings.SkipSetup}" Command="{x:Bind ViewModel.SkipCommand}" />
+                <Button Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Right" Padding="22,6" Content="{x:Bind s:Strings.Next}"
+                        Command="{x:Bind ViewModel.NextCommand}" AutomationProperties.Name="{x:Bind s:Strings.Next}" />
             </Grid>
         </Grid>
 
@@ -55,18 +55,18 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <StackPanel>
-                <TextBlock Style="{StaticResource StepLabel}" Text="Step 2 of 3" />
-                <TextBlock Style="{StaticResource StepTitle}" Text="Tidy up your desktop?" />
+                <TextBlock Style="{StaticResource StepLabel}" Text="{x:Bind s:Strings.Step2}" />
+                <TextBlock Style="{StaticResource StepTitle}" Text="{x:Bind s:Strings.SetupStep2Title}" />
                 <TextBlock Style="{StaticResource StepText}"
-                           Text="Tick the game shortcuts to move onto the shelf. They're kept in a safe folder, never deleted, and you can put them back anytime." />
+                           Text="{x:Bind s:Strings.SetupStep2Text}" />
             </StackPanel>
             <v:ImportView x:Name="Picker" Grid.Row="1" />
             <TextBlock Grid.Row="2" Style="{StaticResource CaptionTextBlockStyle}" Text="{x:Bind ViewModel.SelectionText, Mode=OneWay}"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             <Grid Grid.Row="3">
-                <Button HorizontalAlignment="Left" Content="Back" Command="{x:Bind ViewModel.BackToStep1Command}" />
+                <Button HorizontalAlignment="Left" Content="{x:Bind s:Strings.Back}" Command="{x:Bind ViewModel.BackToStep1Command}" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                    <Button Content="Not now" Command="{x:Bind ViewModel.NotNowCommand}" />
+                    <Button Content="{x:Bind s:Strings.NotNow}" Command="{x:Bind ViewModel.NotNowCommand}" />
                     <Button Style="{StaticResource AccentButtonStyle}" Padding="22,6" Command="{x:Bind ViewModel.MoveCommand}"
                             Content="{x:Bind ViewModel.MoveText, Mode=OneWay}" IsEnabled="{x:Bind ViewModel.CanMove, Mode=OneWay}" />
                 </StackPanel>
@@ -81,8 +81,8 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <StackPanel>
-                <TextBlock Style="{StaticResource StepLabel}" Text="Step 3 of 3" />
-                <TextBlock Style="{StaticResource StepTitle}" Text="How should it open?" />
+                <TextBlock Style="{StaticResource StepLabel}" Text="{x:Bind s:Strings.Step3}" />
+                <TextBlock Style="{StaticResource StepTitle}" Text="{x:Bind s:Strings.SetupStep3Title}" />
             </StackPanel>
             <ScrollViewer Grid.Row="1">
                 <StackPanel Spacing="14">
@@ -91,24 +91,24 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <RadioButton GroupName="SetupMode" AutomationProperties.Name="Flyout" IsChecked="{x:Bind ViewModel.Flyout, Mode=TwoWay}"
+                        <RadioButton GroupName="SetupMode" AutomationProperties.Name="{x:Bind s:Strings.ModeFlyout}" IsChecked="{x:Bind ViewModel.Flyout, Mode=TwoWay}"
                                      HorizontalAlignment="Stretch" VerticalAlignment="Top">
                             <StackPanel>
                                 <v:ModePreview Height="100" Margin="0,0,0,10" />
-                                <TextBlock Text="Flyout" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="{x:Bind s:Strings.ModeFlyout}" Style="{StaticResource BodyStrongTextBlockStyle}" />
                                 <TextBlock Margin="0,4,0,0" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                           Text="Slides in from the tray icon or shortcut, hides when you click away." />
+                                           Text="{x:Bind s:Strings.SetupFlyoutText}" />
                             </StackPanel>
                         </RadioButton>
-                        <RadioButton Grid.Column="1" GroupName="SetupMode" AutomationProperties.Name="On the desktop" IsChecked="{x:Bind ViewModel.Desktop, Mode=TwoWay}"
+                        <RadioButton Grid.Column="1" GroupName="SetupMode" AutomationProperties.Name="{x:Bind s:Strings.ModeDesktop}" IsChecked="{x:Bind ViewModel.Desktop, Mode=TwoWay}"
                                      HorizontalAlignment="Stretch" VerticalAlignment="Top">
                             <StackPanel>
                                 <v:ModePreview IsDesktop="True" Height="100" Margin="0,0,0,10" />
-                                <TextBlock Text="On the desktop" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="{x:Bind s:Strings.ModeDesktop}" Style="{StaticResource BodyStrongTextBlockStyle}" />
                                 <TextBlock Margin="0,4,0,0" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                           Text="Always visible on the desktop, behind your windows." />
+                                           Text="{x:Bind s:Strings.SetupDesktopText}" />
                             </StackPanel>
                         </RadioButton>
                     </Grid>
@@ -116,27 +116,27 @@
                     <Border Style="{StaticResource Card}" Margin="0">
                         <StackPanel>
                             <Grid Style="{StaticResource SettingRow}">
-                                <TextBlock Style="{StaticResource RowTitle}" Text="Start with Windows" />
+                                <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.StartWithWindows}" />
                                 <ToggleSwitch Style="{StaticResource RowSwitch}" IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}"
-                                              AutomationProperties.Name="Start with Windows" />
+                                              AutomationProperties.Name="{x:Bind s:Strings.StartWithWindows}" />
                             </Grid>
                             <Border Style="{StaticResource RowDivider}" />
                             <Grid Style="{StaticResource SettingRow}">
-                                <TextBlock Style="{StaticResource RowTitle}" Text="Open anytime with" />
+                                <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.KeyboardShortcut}" />
                                 <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Text="{x:Bind ViewModel.HotkeyText, Mode=OneWay}"
                                            Style="{StaticResource BodyStrongTextBlockStyle}" />
                             </Grid>
                         </StackPanel>
                     </Border>
 
-                    <InfoBar IsOpen="True" IsClosable="False" Severity="Informational" Title="Where to find it"
-                             Message="Game Shelf lives next to the clock. Windows may tuck new icons behind the ^ arrow, so drag it onto the taskbar to keep it one click away. Pinning it to the taskbar also works." />
+                    <InfoBar IsOpen="True" IsClosable="False" Severity="Informational" Title="{x:Bind s:Strings.SetupWhereTitle}"
+                             Message="{x:Bind s:Strings.SetupWhereText}" />
                 </StackPanel>
             </ScrollViewer>
             <Grid Grid.Row="2">
-                <Button HorizontalAlignment="Left" Content="Back" Command="{x:Bind ViewModel.BackToStep2Command}" />
-                <Button Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Right" Padding="22,6" Content="Done"
-                        Command="{x:Bind ViewModel.DoneCommand}" AutomationProperties.Name="Done" />
+                <Button HorizontalAlignment="Left" Content="{x:Bind s:Strings.Back}" Command="{x:Bind ViewModel.BackToStep2Command}" />
+                <Button Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Right" Padding="22,6" Content="{x:Bind s:Strings.Done}"
+                        Command="{x:Bind ViewModel.DoneCommand}" AutomationProperties.Name="{x:Bind s:Strings.Done}" />
             </Grid>
         </Grid>
     </Grid>

@@ -35,6 +35,7 @@ public sealed partial class FreeSpaceView : UserControl
     public FreeSpaceView()
     {
         InitializeComponent();
+        AutomationProperties.SetName(this, Strings.FreeUpSpace);
     }
 
     /// <summary>Connects the page to its owner once, before it's first shown.</summary>
@@ -167,7 +168,7 @@ public sealed partial class FreeSpaceView : UserControl
                 Background = Resource<Brush>("AccentFillColorDefaultBrush"),
                 Child = new TextBlock
                 {
-                    Text = "Best choice",
+                    Text = Strings.BestChoiceTag,
                     FontSize = 11,
                     FontWeight = FontWeights.SemiBold,
                     Foreground = Resource<Brush>("TextOnAccentFillColorPrimaryBrush"),
@@ -262,7 +263,7 @@ public sealed partial class FreeSpaceView : UserControl
     {
         double w = Math.Max(0, r.W - Gap), h = Math.Max(0, r.H - Gap);
         var grid = new Grid { Width = w, Height = h };
-        AutomationProperties.SetName(grid, $"Free now, {FreeSpaceViewModel.Gb(free)} GB");
+        AutomationProperties.SetName(grid, Strings.Format(Strings.FreeNowName, FreeSpaceViewModel.Gb(free)));
         grid.Children.Add(new Rectangle
         {
             RadiusX = 6,
@@ -274,8 +275,8 @@ public sealed partial class FreeSpaceView : UserControl
         if (w >= 70 && h >= 40)
         {
             var text = new StackPanel { Margin = new Thickness(8), VerticalAlignment = VerticalAlignment.Bottom };
-            text.Children.Add(new TextBlock { Text = "Free now", FontSize = 12, FontWeight = FontWeights.SemiBold });
-            text.Children.Add(new TextBlock { Text = $"{FreeSpaceViewModel.Gb(free)} GB", FontSize = 11, Foreground = Resource<Brush>("TextFillColorSecondaryBrush") });
+            text.Children.Add(new TextBlock { Text = Strings.FreeNow, FontSize = 12, FontWeight = FontWeights.SemiBold });
+            text.Children.Add(new TextBlock { Text = Strings.Format(Strings.SizeGb, FreeSpaceViewModel.Gb(free)), FontSize = 11, Foreground = Resource<Brush>("TextFillColorSecondaryBrush") });
             grid.Children.Add(text);
         }
         return grid;
@@ -329,7 +330,7 @@ public sealed partial class FreeSpaceView : UserControl
             {
                 text.Children.Add(new TextBlock
                 {
-                    Text = $"{FreeSpaceViewModel.Gb(g.Size)} GB · {FreeSpaceViewModel.Played(g)}",
+                    Text = Strings.Format(Strings.Dot, Strings.Format(Strings.SizeGb, FreeSpaceViewModel.Gb(g.Size)), FreeSpaceViewModel.Played(g)),
                     FontSize = 11,
                     Foreground = new SolidColorBrush(Color.FromArgb(0xD9, 255, 255, 255)),
                     TextTrimming = TextTrimming.CharacterEllipsis,
@@ -505,10 +506,10 @@ public sealed partial class FreeSpaceView : UserControl
         };
         Grid.SetColumn(why, 2);
         row.Children.Add(why);
-        var size = new TextBlock { Text = $"{FreeSpaceViewModel.Gb(g.Size)} GB", TextAlignment = TextAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
+        var size = new TextBlock { Text = Strings.Format(Strings.SizeGb, FreeSpaceViewModel.Gb(g.Size)), TextAlignment = TextAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
         Grid.SetColumn(size, 3);
         row.Children.Add(size);
-        AutomationProperties.SetName(row, $"{g.Game.Name}, {FreeSpaceViewModel.Gb(g.Size)} GB, {FreeSpaceViewModel.Why(g)}");
+        AutomationProperties.SetName(row, Strings.Format(Strings.SpaceTileName, g.Game.Name, FreeSpaceViewModel.Gb(g.Size), FreeSpaceViewModel.Why(g)));
         return row;
     }
 
