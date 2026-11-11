@@ -39,6 +39,14 @@ public sealed partial class ShelfView : UserControl
     {
         InitializeComponent();
         AutomationProperties.SetName(this, Strings.ShelfName);
+        // Ctrl+, opens Settings, now that it's in the "…" menu (VK_OEM_COMMA has no VirtualKey name, so set here).
+        var settingsKey = new KeyboardAccelerator { Modifiers = VirtualKeyModifiers.Control, Key = (VirtualKey)0xBC };
+        settingsKey.Invoked += (_, args) =>
+        {
+            args.Handled = true;
+            ViewModel?.SettingsCommand.Execute(null);
+        };
+        ActionsButton.KeyboardAccelerators.Add(settingsKey);
         ContinueLogo.LogoChanged += hasLogo => ContinueTitle.Visibility = hasLogo ? Visibility.Collapsed : Visibility.Visible;
         Tiles.Loaded += (_, _) => ApplyPanel();
         Tiles.SizeChanged += (_, e) =>
@@ -141,11 +149,13 @@ public sealed partial class ShelfView : UserControl
             toggle.Click += (_, _) => vm.SetGameMode(toggle.IsChecked);
             ActionsMenu.Items.Add(toggle);
         }
-        ActionsMenu.Items.Add(MenuItem(Strings.GameModeSettingsMenu, "\uE713", vm.OpenGameMode));
+        ActionsMenu.Items.Add(MenuItem(Strings.GameModeSettingsMenu, "\uE9E9", vm.OpenGameMode));
         ActionsMenu.Items.Add(new MenuFlyoutSeparator());
         ActionsMenu.Items.Add(MenuItem(Strings.FreeUpSpaceMenu, "\uEDA2", vm.OpenFreeSpace));
         ActionsMenu.Items.Add(MenuItem(Strings.AddGameMenu, "\uE710", vm.AddGame));
         ActionsMenu.Items.Add(MenuItem(Strings.RefreshLibrary, "\uE72C", vm.RefreshLibrary, "F5"));
+        ActionsMenu.Items.Add(new MenuFlyoutSeparator());
+        ActionsMenu.Items.Add(MenuItem(Strings.Settings, "\uE713", () => vm.SettingsCommand.Execute(null), "Ctrl+,"));
     }
 
     private static MenuFlyoutItem MenuItem(string text, string glyph, Action action, string? shortcut = null)

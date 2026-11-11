@@ -20,7 +20,6 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock Text="{x:Bind ViewModel.Greeting, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center"
                        TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" AutomationProperties.HeadingLevel="Level1" />
@@ -35,7 +34,7 @@
                           IsChecked="{x:Bind ViewModel.GameModeOn, Mode=OneWay}" Visibility="{x:Bind ViewModel.GameModeOn, Mode=OneWay}"
                           Click="OnGameModeButtonClick"
                           ToolTipService.ToolTip="{x:Bind s:Strings.GameModeOnToolTip}" AutomationProperties.Name="{x:Bind s:Strings.GameMode}" />
-            <!-- Quick actions (§16, board 18). The menu's items are made when it opens. -->
+            <!-- Quick actions (§16, board 18), with Settings last (Ctrl+,). The menu's items are made when it opens. -->
             <Button x:Name="ActionsButton" Grid.Column="3" Style="{StaticResource IconButton}" Content="&#xE712;"
                     ToolTipService.ToolTip="{x:Bind s:Strings.MoreActions}" AutomationProperties.Name="{x:Bind s:Strings.MoreActions}"
                     KeyboardAcceleratorPlacementMode="Hidden">
@@ -47,8 +46,6 @@
                     <KeyboardAccelerator Key="F5" Invoked="OnRefreshAccelerator" />
                 </Button.KeyboardAccelerators>
             </Button>
-            <Button Grid.Column="4" Style="{StaticResource IconButton}" Content="&#xE713;" Command="{x:Bind ViewModel.SettingsCommand}"
-                    ToolTipService.ToolTip="{x:Bind s:Strings.Settings}" AutomationProperties.Name="{x:Bind s:Strings.Settings}" />
         </Grid>
 
         <!-- The Game mode helper notice shares the search box's row, so the rows' spacing stays the same while

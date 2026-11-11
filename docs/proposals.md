@@ -97,6 +97,10 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   once it's stable. Ruled out: ReadyToRun (Native AOT already does more), server GC (more memory), Win2D and
   DirectStorage (extra dependencies for little gain), and newer CPU instruction sets (would crash on older PCs).
 
+**2026-11-11**
+- Shelf header (§16 a): Settings moved into the "…" menu as its last item (`Ctrl+,`), no separate gear. Game mode
+  shows as a checked toggle while it's on, instead of a dot on "…" that looked like a notification.
+
 **2026-11-07**
 - **Quick actions** approved (§16, board 18): a "…" menu in the shelf header with Game mode on/off, Game mode
   settings, Free up space, Add a game and Refresh, and Game mode and Free up space in the tray menu. Not chosen: a
@@ -852,8 +856,9 @@ shorter way in, without taking room from the grid.
 
 ### a. The "…" button in the shelf header
 
-- An icon button between Keep open (flyout only) and Settings: Segoe Fluent "More" (`E712`), tooltip and
-  screen-reader name "More actions". The gear stays, so Settings is still one click.
+- An icon button at the right end of the header: Segoe Fluent "More" (`E712`), tooltip and screen-reader name
+  "More actions". It also holds Settings (owner, 2026-11-11: no separate gear; Settings is occasional, and the
+  header stays calm).
 - It opens a `MenuFlyout` (the same native menu as the cover's right-click menu), built in its `Opening` handler,
   not when the shelf loads, so it costs nothing until it's used:
   1. **Game mode**, a `ToggleMenuFlyoutItem` (`Ctrl+G`): turns `Settings.GameModeEnabled` on or off and saves.
@@ -866,9 +871,12 @@ shorter way in, without taking room from the grid.
      "Best choice" once a size is typed; mid-uninstall it continues there). Back returns to the shelf.
   5. **Add a game…**: the standard file picker, as in Settings.
   6. **Refresh library** (`F5`): the same rescan as Settings' refresh button.
-- While Game mode is on, a small accent dot sits on the "…" button (top-right, 7 px). It isn't the only signal:
-  the button's screen-reader name becomes "More actions, Game mode on", and the menu item is checked.
-- `Ctrl+G` and `F5` work while the shelf has focus. Neither types a character, so type-to-search is unaffected.
+  7. Separator.
+  8. **Settings** (`Ctrl+,`, gear `E713`). Game mode settings uses the sliders glyph (`E9E9`) so the two differ.
+- While Game mode is on, a checked toggle button with the Game glyph (`E7FC`, accent fill like a Quick Settings
+  tile) sits left of "…"; selecting it turns Game mode off. It replaced a 7 px accent dot on "…", which read as an
+  unread notification (owner, 2026-11-11). The menu item stays checked too.
+- `Ctrl+G`, `F5` and `Ctrl+,` work while the shelf has focus. Neither types a character, so type-to-search is unaffected.
 
 ### b. The same items in the tray menu
 
@@ -881,8 +889,8 @@ shorter way in, without taking room from the grid.
 ### Not chosen
 
 - A row of action chips under the header: permanent space taken from the grid for occasional actions.
-- A Game mode switch directly in the header: fastest, but easy to hit by accident, and it doesn't fit the calm
-  header.
+- A Game mode switch always in the header: fastest, but easy to hit by accident, and it doesn't fit the calm
+  header. (The toggle shown only while Game mode is on, above, is a status that also turns it off.)
 
 ### Touches
 

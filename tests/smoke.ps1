@@ -183,6 +183,16 @@ function Invoke-Button($root, [string] $name) {
     Write-Host "clicked: $name"
 }
 
+# Settings is the last item of the shelf's "..." menu (More actions); the menu opens in a popup, so look from the root.
+function Open-Settings($root) {
+    Invoke-Button $root 'More actions'
+    $item = Wait-Until { $UIA::RootElement.FindFirst($Scope::Descendants, [System.Windows.Automation.AndCondition]::new([System.Windows.Automation.Condition[]] @(
+        (New-Object System.Windows.Automation.PropertyCondition($UIA::NameProperty, 'Settings')),
+        (New-Object System.Windows.Automation.PropertyCondition($UIA::ControlTypeProperty, [System.Windows.Automation.ControlType]::MenuItem))))) } 5 "menu item 'Settings'"
+    $item.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    Write-Host 'clicked: Settings (More actions menu)'
+}
+
 # Asks the running widget for its memory split (managed heap vs the rest) and adds it to the metrics.
 function Add-MemoryReport([string] $label) {
     $report = Join-Path $env:LOCALAPPDATA 'GameShelf\memory.txt'
@@ -338,7 +348,7 @@ try {
     Invoke-Button $window 'Add to favorites'
     Wait-Until { (Get-Content (Join-Path $dataDir 'library.json') -Raw) -match '"Favorite":\s*true' } 5 'favorite saved to library.json' | Out-Null
     Invoke-Button $window 'Back to all games'
-    Find-Button $window 'Settings' | Out-Null
+    Find-Button $window 'More actions' | Out-Null
     Assert-Running $widget 'going back to the shelf'
     Shot '3-shelf-favorite'
 
@@ -353,17 +363,17 @@ try {
     Wait-Until { Test-Path $iconCache } 10 'generated icon cover cached for the manual game' | Out-Null
     $metrics += 'Generated cover: icon of the manual game cached'
 
-    Invoke-Button $window 'Settings'
+    Open-Settings $window
     Select-CoverSize $window 'List'
     Invoke-Button $window 'Back to all games'
     Start-Sleep -Milliseconds 800
     Shot '13-list-view'
-    Invoke-Button $window 'Settings'
+    Open-Settings $window
     Select-CoverSize $window 'Small'
     Invoke-Button $window 'Back to all games'
     Start-Sleep -Milliseconds 800
     Shot '14-small-covers'
-    Invoke-Button $window 'Settings'
+    Open-Settings $window
     Select-CoverSize $window 'Medium'
     Wait-Until { (Get-Content (Join-Path $dataDir 'settings.json') -Raw) -match '"GridDensity":\s*"Medium"' } 5 'cover size saved' | Out-Null
     Invoke-Button $window 'Back to all games'
@@ -401,7 +411,7 @@ try {
     Invoke-Button $window 'Details for Team Fortress 2'
     Invoke-Button $window 'Hide from shelf'
     Wait-Until { (Get-Game 'steam:440').Hidden -eq $true } 5 'Team Fortress 2 hidden in library.json' | Out-Null
-    Invoke-Button $window 'Settings'
+    Open-Settings $window
     Find-Button $window 'Refresh library' | Out-Null
     Start-Sleep -Milliseconds 500
     Shot '6-settings'
@@ -423,7 +433,7 @@ try {
     $metrics += 'Start with Windows: quoted Run entry added and removed'
 
     Invoke-Button $window 'Back to all games'
-    Find-Button $window 'Settings' | Out-Null
+    Find-Button $window 'More actions' | Out-Null
 
     # --- 3c. Desktop layer: the widget stays behind other windows, even when clicked, and shows on Win+D. ---
     $hwnd = [IntPtr]$window.Current.NativeWindowHandle
@@ -461,7 +471,7 @@ try {
     Assert-Running $widget 'desktop layer checks'
 
     # --- 3d. Import desktop shortcuts through the picker, then put them back. ---
-    Invoke-Button $window 'Settings'
+    Open-Settings $window
     Invoke-Button $window 'Import desktop shortcuts'
     $importButton = Find-ById $window 'ImportButton'
     Start-Sleep -Milliseconds 500
@@ -477,7 +487,7 @@ try {
     Shot '11-imported'
     $metrics += 'Shortcut import: 2 moved off the desktop, Steam link merged, web link left alone'
 
-    Invoke-Button $window 'Settings'
+    Open-Settings $window
     Invoke-Button $window 'Show desktop shortcut options'
     Invoke-Button $window 'Restore shortcuts to desktop'
     Wait-Until { (Test-Path (Join-Path $desktop 'Loop Shortcut.lnk')) -and (Test-Path (Join-Path $desktop 'Dota 2.url')) } 5 'shortcuts restored to the desktop' | Out-Null
@@ -486,7 +496,7 @@ try {
     }
     $metrics += 'Shortcut restore: both back on the desktop, removed from the shelf'
     Invoke-Button $window 'Back to all games'
-    Find-Button $window 'Settings' | Out-Null
+    Find-Button $window 'More actions' | Out-Null
 
     # --- 3e. Auto-hide taskbar: it reserves no space but slides over everything when it pops up, so the
     # panel must leave room for it. ---
@@ -561,7 +571,7 @@ try {
     Invoke-Button $window 'Done'
     Wait-Until { (Get-Content (Join-Path $dataDir 'settings.json') -Raw) -match '"SetupDone":\s*true' } 5 'setup saved' | Out-Null
     if ((Get-Content (Join-Path $dataDir 'settings.json') -Raw) -notmatch '"DisplayMode":\s*"Flyout"') { Fail 'Setup did not keep the flyout as the default mode' }
-    Find-Button $window 'Settings' | Out-Null
+    Find-Button $window 'More actions' | Out-Null
     Start-Sleep -Milliseconds 800
     Shot '19-flyout-open'
     $metrics += 'First-run setup: three steps, saved, flyout kept as the default'
