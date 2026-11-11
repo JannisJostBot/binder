@@ -44,6 +44,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     public MainWindow()
     {
         InitializeComponent();
+        Closed += (_, _) => CloseTips();
         _dispatcher = DispatcherQueue.GetForCurrentThread();
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
@@ -239,11 +240,19 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
             Storage.LoadImportedShortcuts().Count, Monitors.All(), current.Device, App.HotkeyFree);
     }
 
+    /// <summary>Closes the pages' (i) tips: they are popups of their own and would stay on screen.</summary>
+    private void CloseTips()
+    {
+        SettingsPage.CloseTips();
+        FreeSpacePage.CloseTips();
+    }
+
     private Game? FindGame(string id) => _games.FirstOrDefault(g => g.Id == id);
 
     /// <summary>Shows one page of the panel (shelf, game details or settings) and collapses the others.</summary>
     private void ShowPage(UIElement page)
     {
+        CloseTips();
         Shelf.Visibility = page == Shelf ? Visibility.Visible : Visibility.Collapsed;
         Detail.Visibility = page == Detail ? Visibility.Visible : Visibility.Collapsed;
         SettingsPage.Visibility = page == SettingsPage ? Visibility.Visible : Visibility.Collapsed;

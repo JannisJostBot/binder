@@ -119,6 +119,7 @@ public sealed partial class MainWindow
         if (IsClosing) return;
         IsClosing = true;
         Closing?.Invoke();
+        CloseTips();
         _pad.Deactivate();
         AppWindow.Hide();
         _dispatcher.TryEnqueue(DispatcherQueuePriority.Low, Close);
@@ -134,6 +135,7 @@ public sealed partial class MainWindow
         IsClosing = true;
         Closing?.Invoke();
         _slideGeneration++;
+        CloseTips();
         _pad.Deactivate();
         LeavePadMode(); // it comes back like a new panel would
         AppWindow.Hide();

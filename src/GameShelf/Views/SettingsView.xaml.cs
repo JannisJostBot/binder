@@ -79,10 +79,23 @@ public sealed partial class SettingsView : UserControl
 
     private readonly List<EntryControls> _entries = [];
     private readonly List<GroupControls> _groups = [];
+    private readonly List<TeachingTip> _tips = [];
+
+    /// <summary>
+    /// Closes the (i) tips. An open tip is a popup of its own: left open when the page changes or the panel hides,
+    /// it stays on screen without its window (and is the likely cause of a crash seen after the window was gone).
+    /// </summary>
+    public void CloseTips()
+    {
+        SourcePathsHelpTip.IsOpen = false;
+        foreach (var tip in _tips) tip.IsOpen = false;
+    }
 
     /// <summary>One block per launcher: its name and Check, then a text box per entry with Reset and its error.</summary>
     private void FillSourcePaths()
     {
+        CloseTips();
+        _tips.Clear();
         SourcePathsList.Children.Clear();
         _entries.Clear();
         _groups.Clear();
@@ -176,7 +189,7 @@ public sealed partial class SettingsView : UserControl
     /// The entry's label with an (i) that opens what the entry is, its format and an example: the same title-and-tip
     /// as Free up space's map.
     /// </summary>
-    private static StackPanel EntryLabel(SourcePathRow row)
+    private StackPanel EntryLabel(SourcePathRow row)
     {
         var line = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
         line.Children.Add(new TextBlock { Text = row.Label, VerticalAlignment = VerticalAlignment.Center });
@@ -192,6 +205,7 @@ public sealed partial class SettingsView : UserControl
         info.Click += (_, _) => tip.IsOpen = !tip.IsOpen;
         line.Children.Add(info);
         line.Children.Add(tip);
+        _tips.Add(tip);
         return line;
     }
 

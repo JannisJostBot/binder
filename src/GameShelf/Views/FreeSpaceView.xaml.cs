@@ -513,6 +513,9 @@ public sealed partial class FreeSpaceView : UserControl
         return row;
     }
 
+    /// <summary>Closes the (i) tip, so it doesn't stay on screen when the page changes or the panel hides.</summary>
+    public void CloseTips() => RulesTip.IsOpen = false;
+
     private void OnRulesClick(object sender, RoutedEventArgs e) => RulesTip.IsOpen = !RulesTip.IsOpen;
 
     private static T Resource<T>(string key) => (T)Application.Current.Resources[key];
