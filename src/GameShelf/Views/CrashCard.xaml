@@ -22,6 +22,10 @@
                     <TextBlock x:Name="TitleText" Style="{StaticResource BodyStrongTextBlockStyle}" TextWrapping="Wrap" />
                     <TextBlock x:Name="ExplanationText" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="Wrap"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <!-- Restart if it crashes (spec §17) gave up after two restarts in a row. -->
+                    <TextBlock x:Name="RestartLimitText" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="Wrap"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind s:Strings.RestartLimit}"
+                               Visibility="Collapsed" />
                 </StackPanel>
                 <Button x:Name="DismissButton" Grid.Column="2" Style="{StaticResource SubtleButtonStyle}" Padding="8" VerticalAlignment="Top"
                         Click="OnDismissClick" AutomationProperties.Name="{x:Bind s:Strings.Dismiss}" ToolTipService.ToolTip="{x:Bind s:Strings.Dismiss}">

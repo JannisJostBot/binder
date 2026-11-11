@@ -93,6 +93,7 @@ static partial class Tests
         GameModeTests();
         SettingsViewModelTests();
         DetailViewModelTests();
+        RestartViewModelTests();
         GameModeViewModelTests();
         FreeSpaceViewModelTests();
         SetupViewModelTests();
@@ -691,6 +692,69 @@ static partial class Tests
             "event XML parsed: provider, id, time, named values, entities");
         Check(CrashAnalysis.ParseEventXml("<Event><System>") is null && CrashAnalysis.ParseEventXml("") is null
               && CrashAnalysis.ParseEventXml(new string('x', 70000)) is null, "malformed or oversized event XML rejected");
+
+        RestartTests();
+    }
+
+    /// <summary>Spec §17: when a crash is restarted, the in-a-row count, and the watcher's side.</summary>
+    static void RestartTests()
+    {
+        var t0 = new DateTimeOffset(2026, 11, 11, 20, 0, 0, TimeSpan.Zero);
+        var game = new Game { Id = "steam:7", Name = "Wobbly", RestartOnCrash = true };
+        var sessions = new List<Session>();
+        var records = new List<CrashRecord>();
+        // A session from minute `at` lasting `minutes`, checked as `ending`.
+        CrashRecord Add(double at, double minutes, GameEnding ending)
+        {
+            var s = new Session { GameId = game.Id, Start = t0.AddMinutes(at), End = t0.AddMinutes(at + minutes), ExitCode = 0xC0000005 };
+            sessions.Add(s);
+            var r = new CrashRecord { GameId = s.GameId, Start = s.Start, End = s.End, Ending = ending };
+            records.Add(r);
+            return r;
+        }
+
+        var first = Add(0, 20, GameEnding.Crashed);
+        Check(CrashAnalysis.CrashesInARow(sessions, records, first) == 1 && CrashAnalysis.ShouldRestart(game, first, sessions, records),
+            "restart: the first crash restarts");
+        var second = Add(21, 5, GameEnding.ClosedUnexpectedly);
+        Check(CrashAnalysis.CrashesInARow(sessions, records, second) == 2 && CrashAnalysis.ShouldRestart(game, second, sessions, records)
+              && !CrashAnalysis.RestartLimitReached(game, second, sessions, records), "restart: closed unexpectedly counts, second restart allowed");
+        var third = Add(27, 3, GameEnding.Crashed);
+        Check(CrashAnalysis.CrashesInARow(sessions, records, third) == 3 && !CrashAnalysis.ShouldRestart(game, third, sessions, records)
+              && CrashAnalysis.RestartLimitReached(game, third, sessions, records), "restart: never more than twice in a row; the card says so");
+
+        // An hour later the old crashes are out of the window.
+        var later = Add(90, 10, GameEnding.Crashed);
+        Check(CrashAnalysis.CrashesInARow(sessions, records, later) == 1 && CrashAnalysis.ShouldRestart(game, later, sessions, records),
+            "restart: crashes more than 30 minutes apart start a new count");
+        // A normal session in between breaks the run.
+        sessions.Add(new Session { GameId = game.Id, Start = t0.AddMinutes(101), End = t0.AddMinutes(105), ExitCode = 0 });
+        var afterNormal = Add(106, 2, GameEnding.Crashed);
+        Check(CrashAnalysis.CrashesInARow(sessions, records, afterNormal) == 1, "restart: a normal exit ends the run");
+
+        var startFailed = Add(200, 0.05, GameEnding.StartFailed);
+        Check(!CrashAnalysis.ShouldRestart(game, startFailed, sessions, records) && !CrashAnalysis.RestartLimitReached(game, startFailed, sessions, records),
+            "restart: never after closed right after starting");
+        var short30 = Add(300, 0.5, GameEnding.Crashed);
+        Check(!CrashAnalysis.ShouldRestart(game, short30, sessions, records), "restart: never after a session under a minute");
+        var normal = Add(400, 30, GameEnding.Normal);
+        Check(!CrashAnalysis.ShouldRestart(game, normal, sessions, records), "restart: never after a normal exit");
+        var off = new Game { Id = game.Id, Name = game.Name };
+        Check(!CrashAnalysis.ShouldRestart(off, first, sessions, records) && !CrashAnalysis.RestartLimitReached(off, third, sessions, records),
+            "restart: off by default");
+
+        // The watcher: the same failure codes as the crash check, after at least a minute.
+        foreach (uint code in new uint[] { 0, 1, 2, 0xC0000005, 0xC000013A, 0xDEAD, 0x887A0006, 0xFFFFFFFF })
+            Check(GameShelf.Watcher.Program.MayRestart(code, TimeSpan.FromMinutes(5)) == CrashAnalysis.IsFailureCode(code),
+                $"watcher: exit code 0x{code:X} judged like the crash check");
+        Check(!GameShelf.Watcher.Program.MayRestart(0xC0000005, TimeSpan.FromSeconds(59)), "watcher: not after a session under a minute");
+        Check(GameShelf.Watcher.Program.ReturnArguments("g", comeBack: true, crashed: true, null) is ["--returned", "g"],
+            "watcher: with Come back on, an ordinary return");
+        Check(GameShelf.Watcher.Program.ReturnArguments("g", comeBack: false, crashed: true, "3/3") is ["--returned", "g", "--crashed", "--restored", "3/3"],
+            "watcher: with Come back off, brought back for the restart");
+        Check(GameShelf.Watcher.Program.ReturnArguments("g", comeBack: false, crashed: false, "3/3") is ["--restored", "3/3"]
+              && GameShelf.Watcher.Program.ReturnArguments("g", comeBack: false, crashed: false, null) is null,
+            "watcher: with Come back off and no crash, only Game mode's toast or nothing");
     }
 
     /// <summary>Milestone 10: "This week" and the playtime chart, split at midnight, week and month boundaries.</summary>

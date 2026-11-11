@@ -135,6 +135,40 @@ static partial class Tests
             "settings: Check asks the owner and shows its answer");
     }
 
+    sealed class RestartActionsSpy : IRestartActions
+    {
+        public readonly List<string> Calls = [];
+        public void RestartNow() => Calls.Add("restart");
+        public void RestartCancelled() => Calls.Add("cancelled");
+    }
+
+    /// <summary>The restart pill after a crash (spec §17): counts 5 s down, ends once, by running out or Cancel.</summary>
+    static void RestartViewModelTests()
+    {
+        var spy = new RestartActionsSpy();
+        var vm = new RestartViewModel(spy, "Wobbly");
+        var notified = new List<string?>();
+        vm.PropertyChanged += (_, e) => notified.Add(e.PropertyName);
+        Check(vm.Title == "Wobbly crashed" && vm.Detail == "Restarting in 5 s" && vm.Progress == 1 && !vm.Ended && vm.CancelCommand.CanExecute(null),
+            "restart pill: starts at 5 s, full bar");
+        Check(vm.Name == "Wobbly crashed. Restarting in 5 s", "restart pill: one line for screen readers");
+        vm.Tick();
+        Check(vm.Detail == "Restarting in 4 s" && vm.Progress == 0.8 && notified.Contains(nameof(RestartViewModel.Detail))
+              && notified.Contains(nameof(RestartViewModel.Progress)) && spy.Calls.Count == 0, "restart pill: a second later");
+        for (int i = 0; i < 4; i++) vm.Tick();
+        Check(vm.Ended && vm.Progress == 0 && spy.Calls is ["restart"] && !vm.CancelCommand.CanExecute(null), "restart pill: restarts when it runs out");
+        vm.Tick();
+        vm.Cancel();
+        Check(spy.Calls is ["restart"], "restart pill: nothing more once it ended");
+
+        var cancelSpy = new RestartActionsSpy();
+        var cancelled = new RestartViewModel(cancelSpy, "Wobbly");
+        cancelled.Tick();
+        cancelled.CancelCommand.Execute(null);
+        for (int i = 0; i < 6; i++) cancelled.Tick();
+        Check(cancelSpy.Calls is ["cancelled"] && cancelled.Remaining == 4, "restart pill: Cancel stops it for good");
+    }
+
     /// <summary>Records what the detail page asked for; answers its questions about Windows with fixed facts.</summary>
     sealed class DetailActionsSpy : IDetailActions
     {
@@ -247,6 +281,17 @@ static partial class Tests
         vm.PlayCommand.Execute(null);
         vm.BackCommand.Execute(null);
         Check(spy.Calls is ["close Cheat Engine", "Play Alpha", "back"], "detail: buttons reach the owner");
+
+        // Restart if it crashes (spec §17).
+        int edits = spy.Edits;
+        Check(!vm.RestartOnCrash, "detail: Restart if it crashes is off by default");
+        vm.RestartOnCrash = false;
+        Check(spy.Edits == edits, "detail: the same value reports nothing");
+        vm.RestartOnCrash = true;
+        Check(game.RestartOnCrash && spy.Edits == edits + 1 && notified.Contains(nameof(DetailViewModel.RestartOnCrash)),
+            "detail: Restart if it crashes turned on and saved");
+        vm.RestartOnCrash = false;
+        Check(!game.RestartOnCrash && spy.Edits == edits + 2, "detail: and off again");
 
         var beta = new Game { Id = "manual:2", Name = "Beta", Source = GameSource.Manual };
         vm.Show(beta, sessions, settings, crashes);

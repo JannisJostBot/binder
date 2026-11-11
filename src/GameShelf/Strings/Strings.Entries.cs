@@ -753,4 +753,10 @@ public sealed partial class Strings
     public static string HelpGogKey => Get(nameof(HelpGogKey));
     public static string HelpUbisoftKey => Get(nameof(HelpUbisoftKey));
     public static string HelpRockstarKey => Get(nameof(HelpRockstarKey));
+    public static string RestartOnCrash => Get(nameof(RestartOnCrash));
+    public static string RestartOnCrashToolTip => Get(nameof(RestartOnCrashToolTip));
+    public static string RestartPillTitle => Get(nameof(RestartPillTitle));
+    public static string RestartPillDetail => Get(nameof(RestartPillDetail));
+    public static string RestartCancelName => Get(nameof(RestartCancelName));
+    public static string RestartLimit => Get(nameof(RestartLimit));
 }

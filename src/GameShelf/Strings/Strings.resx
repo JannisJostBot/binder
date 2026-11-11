@@ -3001,4 +3001,28 @@ Calm: efficiency mode while you play</value>
     <value>The Rockstar Games Launcher's registry key; its InstallFolder value says where Launcher.exe is. It must be under HKLM\SOFTWARE or HKCU\Software and is only read.</value>
     <comment>Help for the Rockstar "Launcher registry key" entry. Keep InstallFolder, Launcher.exe, HKLM\SOFTWARE and HKCU\Software as they are.</comment>
   </data>
+  <data name="RestartOnCrash" xml:space="preserve">
+    <value>Restart if it crashes</value>
+    <comment>Title of a per-game setting card with an on/off switch in Game detail, also the switch's screen-reader name. "it" = the game.</comment>
+  </data>
+  <data name="RestartOnCrashToolTip" xml:space="preserve">
+    <value>Starts the game again after a crash, at most twice in a row</value>
+    <comment>Tooltip of the "Restart if it crashes" card. One short line.</comment>
+  </data>
+  <data name="RestartPillTitle" xml:space="preserve">
+    <value>{0} crashed</value>
+    <comment>Bold start of a one-line pill near the taskbar after a game crashed. {0} = the game's name. Very short; "crashed" is a verb (past tense).</comment>
+  </data>
+  <data name="RestartPillDetail" xml:space="preserve">
+    <value>Restarting in {0} s</value>
+    <comment>After RestartPillTitle and a dot in the same pill, counting down. {0} = seconds left (5 to 1); "s" = seconds. Very short.</comment>
+  </data>
+  <data name="RestartCancelName" xml:space="preserve">
+    <value>Cancel the restart</value>
+    <comment>Screen-reader name and tooltip of the Cancel button in that pill: the game is not started again.</comment>
+  </data>
+  <data name="RestartLimit" xml:space="preserve">
+    <value>Restarted twice already, so Game Shelf stopped trying.</value>
+    <comment>Extra line on the crash card when the game crashed a third time in a row with "Restart if it crashes" on. Keep "Game Shelf" as is.</comment>
+  </data>
 </root>

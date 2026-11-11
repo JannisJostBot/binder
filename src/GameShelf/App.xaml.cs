@@ -132,7 +132,9 @@ public sealed partial class App : Application
             ShowRestored(restored, exitWhenClosed: firstStart);
             return;
         }
-        if (restored is not null) ShowRestored(restored, exitWhenClosed: false);
+        // "--crashed": the watcher brought us back only for a possible restart ("Come back" off, spec §17).
+        _crashedOnly = firstStart && notice is { NotDetected: false } && args.Contains("--crashed");
+        if (restored is not null) ShowRestored(restored, exitWhenClosed: _crashedOnly);
 
         if (notice is null && StartupNotice.Applied(args) is { } applied)
         {
@@ -146,8 +148,11 @@ public sealed partial class App : Application
         {
             // A game ended (the watcher brought us back): pick up the session it wrote.
             State.Sessions = Storage.LoadSessions();
-            if (Settings.DisplayMode == DisplayMode.Desktop) OpenPanel();
-            else _panel?.Returned();
+            if (!_crashedOnly) // else only the restart pill (or the crash card), after the check
+            {
+                if (Settings.DisplayMode == DisplayMode.Desktop) OpenPanel();
+                else _panel?.Returned();
+            }
             if (firstStart && _panel is null) Footprint.Shrink();
             _ = CheckCrashesAsync(returnedGame: notice.GameId);
             return;
@@ -214,11 +219,7 @@ public sealed partial class App : Application
         toast.Closed += (_, _) =>
         {
             if (ReferenceEquals(_gameModeToast, toast)) _gameModeToast = null;
-            if (exitWhenClosed && !_quitting && _panel is null && _kept is null)
-            {
-                if (_sound != 0) _quitAfterSound = true; // after the sound has played
-                else Quit();
-            }
+            if (exitWhenClosed) QuitIfIdle();
         };
         _gameModeToast = toast;
         toast.ShowQuietly();
@@ -226,14 +227,15 @@ public sealed partial class App : Application
 
     /// <summary>
     /// Checks sessions that ended with an error against the Windows logs (milestone 11), off the UI thread, once
-    /// each. A problem with the game that just ended opens the panel with its crash card; any other unseen one
-    /// shows the next time the panel is open.
+    /// each. A crash of the game that just ended restarts it when it has "Restart if it crashes" (spec §17), else
+    /// opens the panel with its crash card; any other unseen one shows the next time the panel is open.
     /// </summary>
     private async Task CheckCrashesAsync(string? returnedGame)
     {
         var known = State.Crashes;
         var sessions = State.Sessions;
         var games = State.Games;
+        _checkingCrashes = true;
         try
         {
             State.Crashes = await Task.Run(() => CrashStore.Update(known, sessions, games));
@@ -241,12 +243,18 @@ public sealed partial class App : Application
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or ExternalException)
         {
             ErrorLog.Write(e, "crash check");
+            _checkingCrashes = false;
+            if (_crashedOnly) QuitIfIdle();
             return;
         }
+        _checkingCrashes = false;
         if (_quitting) return;
+        var last = returnedGame is null ? null : State.Sessions.Where(s => s.GameId == returnedGame).MaxBy(s => s.Start);
+        if (last is not null && TryRestart(CrashStore.For(State.Crashes, last), returnedGame)) return;
         var unseen = CrashStore.Unseen(State.Crashes, State.Sessions);
         if (unseen is not null && unseen.GameId == returnedGame) OpenPanel();
         _panel?.CrashesChecked(unseen);
+        if (_crashedOnly) QuitIfIdle(); // nothing to restart or show: gone again, as with "Come back" off
     }
 
     /// <summary>
@@ -315,6 +323,7 @@ public sealed partial class App : Application
             _messages?.SetTrayActive(Settings.DisplayMode == DisplayMode.Flyout);
         }
         _panel.BringForward();
+        RestartGivesWayToPanel(); // opened while a restart counted down: the crash card instead
     }
 
     /// <summary>
@@ -499,6 +508,7 @@ public sealed partial class App : Application
         CancelCountdown();
         _panel?.Close();
         _gameModeToast?.Close();
+        _restartToast?.Close();
         DropKept();
         _messages?.Dispose(); // removes the tray icon right away instead of leaving a ghost until hovered
         _messages = null;

@@ -10,6 +10,8 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
+using GameShelf.ViewModels;
 
 namespace GameShelf.Views;
 
@@ -31,26 +33,88 @@ public sealed partial class GameModeToast : Window
     private readonly TimeSpan? _timeout;
     private DispatcherQueueTimer? _timer;
     private readonly FrameworkElement _announce;
+    private readonly FrameworkElement _dot;
+    private readonly RestartViewModel? _restart;
+    private Storyboard? _restartBar;
+
+    /// <summary>A message that waits for the user (something couldn't be put back): nothing should replace it.</summary>
+    public bool WaitsForUser => _timeout is null && _restart is null;
+
+    /// <summary>The restart pill after a crash (spec §17); it counts down once shown, and its owner closes it.</summary>
+    public GameModeToast(RestartViewModel restart)
+    {
+        InitializeComponent();
+        _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        SetUpWindow();
+        _restart = restart;
+        Pill.Visibility = Visibility.Collapsed;
+        RestartPill.Visibility = Visibility.Visible;
+        RestartTitle.Text = restart.Title;
+        RestartCancel.Command = restart.CancelCommand;
+        UpdateRestart();
+        restart.PropertyChanged += OnRestartChanged;
+        Root.KeyDown += (_, e) =>
+        {
+            if (e.Key != Windows.System.VirtualKey.Escape && e.Key != Windows.System.VirtualKey.GamepadB) return;
+            e.Handled = true;
+            restart.Cancel();
+        };
+        _announce = RestartText;
+        _dot = RestartDot;
+        Root.SizeChanged += OnFirstLayout;
+        Closed += (_, _) =>
+        {
+            restart.PropertyChanged -= OnRestartChanged;
+            _timer?.Stop();
+            _restartBar?.Stop();
+            ShowStoryboard.Stop();
+        };
+    }
+
+    private void OnRestartChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(RestartViewModel.Remaining)) UpdateRestart();
+    }
+
+    private void UpdateRestart()
+    {
+        RestartDetail.Text = " · " + _restart!.Detail;
+        AutomationProperties.SetName(RestartText, _restart.Name);
+        if (_restartBar is null) RestartScale.ScaleX = _restart.Progress; // animations off: a step a second
+    }
+
+    /// <summary>
+    /// Starts the restart countdown: a tick a second for the text, and the bar draining in one smooth, linear move
+    /// (compositor-run; with animations off it steps with the text instead).
+    /// </summary>
+    private void StartRestartCountdown(bool animate)
+    {
+        var restart = _restart!;
+        if (animate)
+        {
+            var drain = new DoubleAnimation { From = restart.Progress, To = 0, Duration = TimeSpan.FromSeconds(restart.Remaining) };
+            Storyboard.SetTarget(drain, RestartScale);
+            Storyboard.SetTargetProperty(drain, "ScaleX");
+            _restartBar = new Storyboard();
+            _restartBar.Children.Add(drain);
+            _restartBar.Begin();
+        }
+        _timer = DispatcherQueue.CreateTimer();
+        _timer.Interval = TimeSpan.FromSeconds(1);
+        _timer.Tick += (_, _) =>
+        {
+            restart.Tick();
+            if (restart.Ended) _timer?.Stop();
+        };
+        _timer.Start();
+    }
 
     public GameModeToast(Kind kind, RestoreResult result)
     {
         InitializeComponent();
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-
-        // The context-menu kind is a plain popup: no frame at all (the borderless overlapped one keeps a thin
-        // dialog frame that WinUI puts back whenever it's taken away).
-        var presenter = OverlappedPresenter.CreateForContextMenu();
-        presenter.IsAlwaysOnTop = true;
-        AppWindow.SetPresenter(presenter);
-        AppWindow.IsShownInSwitchers = false;
-        NativeWindow.MakeToolWindow(_hwnd);
-        // See-through and frameless: the XAML surface draws the whole pill, its round ends and its shadow.
-        NativeWindow.MakeFrameless(_hwnd);
-        SystemBackdrop = new TransparentBackdrop();
-        if (new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast)
-            Surface.BorderThickness = new Thickness(2); // system colors, a stronger edge and no shadow
-        else
-            Surface.SizeChanged += (_, _) => UpdateShadow();
+        SetUpWindow();
+        _dot = Dot;
 
         bool applied = kind == Kind.Applied;
         // A restore that missed something waits for the user; an apply that did is only a heads-up.
@@ -97,6 +161,24 @@ public sealed partial class GameModeToast : Window
         };
     }
 
+    private void SetUpWindow()
+    {
+        // The context-menu kind is a plain popup: no frame at all (the borderless overlapped one keeps a thin
+        // dialog frame that WinUI puts back whenever it's taken away).
+        var presenter = OverlappedPresenter.CreateForContextMenu();
+        presenter.IsAlwaysOnTop = true;
+        AppWindow.SetPresenter(presenter);
+        AppWindow.IsShownInSwitchers = false;
+        NativeWindow.MakeToolWindow(_hwnd);
+        // See-through and frameless: the XAML surface draws the whole pill, its round ends and its shadow.
+        NativeWindow.MakeFrameless(_hwnd);
+        SystemBackdrop = new TransparentBackdrop();
+        if (new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast)
+            Surface.BorderThickness = new Thickness(2); // system colors, a stronger edge and no shadow
+        else
+            Surface.SizeChanged += (_, _) => UpdateShadow();
+    }
+
     /// <summary>Shows it without activating it (the user may be in another app, or the game starting).</summary>
     public void ShowQuietly()
     {
@@ -140,6 +222,12 @@ public sealed partial class GameModeToast : Window
         // Screen readers announce it like Windows' own notifications.
         FrameworkElementAutomationPeer.CreatePeerForElement(_announce)?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
 
+        if (_restart is not null)
+        {
+            StartRestartCountdown(animate);
+            return;
+        }
+
         if (_timeout is not { } timeout) return;
         _timer = DispatcherQueue.CreateTimer();
         _timer.Interval = timeout;
@@ -155,9 +243,9 @@ public sealed partial class GameModeToast : Window
     /// </summary>
     private void PopDot()
     {
-        var visual = ElementCompositionPreview.GetElementVisual(Dot);
+        var visual = ElementCompositionPreview.GetElementVisual(_dot);
         var compositor = visual.Compositor;
-        visual.CenterPoint = new Vector3((float)Dot.Width / 2, (float)Dot.Height / 2, 0);
+        visual.CenterPoint = new Vector3((float)_dot.Width / 2, (float)_dot.Height / 2, 0);
         var pop = compositor.CreateVector3KeyFrameAnimation();
         pop.InsertKeyFrame(0, new Vector3(0.2f, 0.2f, 1));
         pop.InsertKeyFrame(1, Vector3.One, compositor.CreateCubicBezierEasingFunction(new Vector2(0.34f, 1.5f), new Vector2(0.64f, 1)));

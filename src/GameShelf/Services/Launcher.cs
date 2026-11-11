@@ -125,6 +125,12 @@ public static class Launcher
         psi.ArgumentList.Add(DetectionTimeoutSeconds.ToString());
         psi.ArgumentList.Add("--return");
         psi.ArgumentList.Add(comeBack ? "1" : "0");
+        if (game.RestartOnCrash)
+        {
+            // Brought back after a crash even with "Come back" off, to restart it (spec §17).
+            psi.ArgumentList.Add("--restart");
+            psi.ArgumentList.Add("1");
+        }
         GameModeService.AddWatcherArguments(psi.ArgumentList, game, App.Settings);
 
         try

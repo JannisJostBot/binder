@@ -22,6 +22,9 @@ public sealed partial class MainWindow
             Launch(game);
     }
 
+    /// <summary>The restart pill ran out (spec §17): an ordinary Play, with the launch toast and countdown.</summary>
+    public void PlayAfterCrash(Game game) => Play(game);
+
     private async Task ConfirmConflictsAsync(Game game, List<PcChecks.Conflict> conflicts)
     {
         try

@@ -2252,4 +2252,22 @@ Ralentir : mode efficacité pendant le jeu</value>
   <data name="HelpRockstarKey" xml:space="preserve">
     <value>La clé de registre du Rockstar Games Launcher ; sa valeur InstallFolder indique où se trouve Launcher.exe. Elle doit se trouver sous HKLM\SOFTWARE ou HKCU\Software et n'est que lue.</value>
   </data>
+  <data name="RestartOnCrash" xml:space="preserve">
+    <value>Redémarrer en cas de plantage</value>
+  </data>
+  <data name="RestartOnCrashToolTip" xml:space="preserve">
+    <value>Relance le jeu après un plantage, au plus deux fois de suite</value>
+  </data>
+  <data name="RestartPillTitle" xml:space="preserve">
+    <value>{0} a planté</value>
+  </data>
+  <data name="RestartPillDetail" xml:space="preserve">
+    <value>Redémarrage dans {0} s</value>
+  </data>
+  <data name="RestartCancelName" xml:space="preserve">
+    <value>Annuler le redémarrage</value>
+  </data>
+  <data name="RestartLimit" xml:space="preserve">
+    <value>Déjà redémarré deux fois, Game Shelf n’essaie donc plus.</value>
+  </data>
 </root>

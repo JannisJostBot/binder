@@ -41,6 +41,8 @@ public sealed partial class CrashCard : UserControl
 
         TitleText.Text = CrashAnalysis.Title(game.Name, record);
         ExplanationText.Text = CrashAnalysis.Explanation(record);
+        bool gaveUp = CrashAnalysis.RestartLimitReached(game, record, sessions, records);
+        RestartLimitText.Visibility = gaveUp ? Visibility.Visible : Visibility.Collapsed;
         AutomationProperties.SetName(this, TitleText.Text);
 
         DetailsGrid.Children.Clear();

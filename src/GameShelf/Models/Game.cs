@@ -52,6 +52,9 @@ public sealed class Game
     /// <summary>Game mode for this game: null = the default from Settings, else always on or off.</summary>
     public bool? GameMode { get; set; }
 
+    /// <summary>Start the game again after a crash, at most twice in a row (spec §17).</summary>
+    public bool RestartOnCrash { get; set; }
+
     // Install-folder scan (engine and anti-cheat), cached until the game's files change (see GameScan).
     public string? ScanStamp { get; set; }
     public GameEngine? Engine { get; set; }
@@ -90,6 +93,7 @@ public sealed class Game
         ExeOverride = from.ExeOverride;
         AntiCheatReminder = from.AntiCheatReminder;
         GameMode = from.GameMode;
+        RestartOnCrash = from.RestartOnCrash;
         MilestoneShownHours = from.MilestoneShownHours;
         if (ScanStamp is null)
         {

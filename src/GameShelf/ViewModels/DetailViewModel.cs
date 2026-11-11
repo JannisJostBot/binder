@@ -327,6 +327,19 @@ public sealed partial class DetailViewModel : ObservableObject
         }
     }
 
+    /// <summary>"Restart if it crashes" (spec §17).</summary>
+    public bool RestartOnCrash
+    {
+        get => Game?.RestartOnCrash == true;
+        set
+        {
+            if (Game is not { } game || game.RestartOnCrash == value) return;
+            game.RestartOnCrash = value;
+            OnPropertyChanged();
+            _actions.GameEdited(game);
+        }
+    }
+
     public string ProcessText => Game is null ? "" : Game.ProcessName ?? (Game.InstallDir is not null
         ? Strings.ProcessAutoFolder
         : Strings.ProcessAuto);

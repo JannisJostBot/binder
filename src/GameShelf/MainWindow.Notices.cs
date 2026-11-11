@@ -42,6 +42,9 @@ public sealed partial class MainWindow
         Toast.Visibility = Visibility.Visible;
     }
 
+    /// <summary>A message with OK, from outside the panel (e.g. a restart after a crash that couldn't start).</summary>
+    public void ShowNotice(string title, string detail) => ShowToast(title, detail, Strings.Ok);
+
     /// <summary>After an unexpected error was caught and logged.</summary>
     public void ShowError() =>
         ShowToast(Strings.SomethingWentWrong, Strings.Format(Strings.ErrorDetail, ErrorLog.FilePath), Strings.Ok);

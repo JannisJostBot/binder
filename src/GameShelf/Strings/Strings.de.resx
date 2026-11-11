@@ -2252,4 +2252,22 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   <data name="HelpRockstarKey" xml:space="preserve">
     <value>Der Registrierungsschlüssel des Rockstar Games Launchers; sein Wert InstallFolder gibt an, wo Launcher.exe liegt. Er muss unter HKLM\SOFTWARE oder HKCU\Software liegen und wird nur gelesen.</value>
   </data>
+  <data name="RestartOnCrash" xml:space="preserve">
+    <value>Nach einem Absturz neu starten</value>
+  </data>
+  <data name="RestartOnCrashToolTip" xml:space="preserve">
+    <value>Startet das Spiel nach einem Absturz erneut, höchstens zweimal hintereinander</value>
+  </data>
+  <data name="RestartPillTitle" xml:space="preserve">
+    <value>{0} ist abgestürzt</value>
+  </data>
+  <data name="RestartPillDetail" xml:space="preserve">
+    <value>Neustart in {0} s</value>
+  </data>
+  <data name="RestartCancelName" xml:space="preserve">
+    <value>Neustart abbrechen</value>
+  </data>
+  <data name="RestartLimit" xml:space="preserve">
+    <value>Schon zweimal neu gestartet, daher versucht Game Shelf es nicht mehr.</value>
+  </data>
 </root>

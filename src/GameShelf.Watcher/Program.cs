@@ -14,7 +14,7 @@ namespace GameShelf.Watcher;
 /// Started by the widget right after a game launch. Finds the game's process(es), blocks until they exit,
 /// records the session and brings the widget back. Uses only kernel waits once the game is found.
 ///
-/// Args: --game &lt;id&gt; --dir &lt;install folder&gt; [--process &lt;name&gt;] [--timeout &lt;s&gt;] [--return 0|1]
+/// Args: --game &lt;id&gt; --dir &lt;install folder&gt; [--process &lt;name&gt;] [--timeout &lt;s&gt;] [--return 0|1] [--restart 0|1]
 ///       [--mode &lt;game mode items, comma-separated&gt; [--close &lt;app exe&gt;]… [--calm &lt;app exe&gt;]… [--toast 0|1]
 ///        [--smooth &lt;exe name&gt;]… [--throttle &lt;exe name&gt;]… [--limit &lt;Mbit/s&gt;]]
 /// Or:   --restore (put back Game mode changes left by a session that didn't end normally)
@@ -39,7 +39,7 @@ internal static class Program
 
         string? gameId = null, dir = null, processName = null, modeItems = null;
         int timeoutSeconds = 180;
-        bool comeBack = true, toast = true;
+        bool comeBack = true, toast = true, restartOnCrash = false;
         var closeApps = new List<string>();
         var calmApps = new List<string>();
         var network = new GameMode.NetworkOptions();
@@ -52,6 +52,7 @@ internal static class Program
                 case "--process": processName = args[i + 1]; break;
                 case "--timeout": int.TryParse(args[i + 1], out timeoutSeconds); break;
                 case "--return": comeBack = args[i + 1] != "0"; break;
+                case "--restart": restartOnCrash = args[i + 1] == "1"; break;
                 case "--mode": modeItems = args[i + 1]; break;
                 case "--close": if (closeApps.Count < 32) closeApps.Add(args[i + 1]); break;
                 case "--calm": if (calmApps.Count < 32) calmApps.Add(args[i + 1]); break;
@@ -121,10 +122,34 @@ internal static class Program
 
         // Put back before the widget returns, so it shows the result.
         var result = ToastArgument(gameMode?.End(), toast);
-        if (comeBack && result is not null) StartWidget("--returned", gameId, "--restored", result);
-        else if (comeBack) StartWidget("--returned", gameId);
-        else if (result is not null) StartWidget("--restored", result); // just the toast, then it exits
+        bool crashed = restartOnCrash && MayRestart(exit.Code, end - start);
+        if (ReturnArguments(gameId, comeBack, crashed, result) is { } widgetArgs) StartWidget(widgetArgs);
         return 0;
+    }
+
+    /// <summary>A session at least this long may be restarted after a crash (spec §17).</summary>
+    internal static readonly TimeSpan RestartMinSession = TimeSpan.FromSeconds(60);
+
+    /// <summary>
+    /// Whether a game with "Restart if it crashes" ended in a way the widget may restart it from (spec §17): a
+    /// failure exit code after at least a minute. The widget decides for sure, from the Windows logs and the count.
+    /// The rule for the code is <c>CrashAnalysis.IsFailureCode</c>'s (the tests check they agree).
+    /// </summary>
+    internal static bool MayRestart(uint code, TimeSpan played) =>
+        played >= RestartMinSession && (((code & 0x80000000) != 0 && code != 0xC000013A) || code == 0xDEAD);
+
+    /// <summary>
+    /// How the widget is brought back after the game: "--returned" with "Come back" on; with it off, still after a
+    /// crash that may be restarted ("--crashed": the widget shows only the restart pill), else just Game mode's
+    /// toast ("--restored", then it exits). Null: the widget isn't started.
+    /// </summary>
+    internal static string[]? ReturnArguments(string gameId, bool comeBack, bool crashed, string? restored)
+    {
+        var args = new List<string>();
+        if (comeBack || crashed) args.AddRange(["--returned", gameId]);
+        if (!comeBack && crashed) args.Add("--crashed");
+        if (restored is not null) args.AddRange(["--restored", restored]);
+        return args.Count == 0 ? null : [.. args];
     }
 
     /// <summary>

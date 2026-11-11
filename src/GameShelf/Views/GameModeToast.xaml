@@ -5,7 +5,8 @@
         Title="Game Shelf">
     <!-- Game mode's toast (board 23): a compact one-line pill, "Game mode on · 5 changes" after it applied and
          "Back to normal · 5 changes put back" after the restore; something that couldn't be changed or put back
-         gets a larger card with room for the names and a way to the log. Centered above the taskbar like the
+         gets a larger card with room for the names and a way to the log. The same pill counts down a restart after
+         a crash (spec §17). Centered above the taskbar like the
          volume flyout; the window is sized to this content once it has been laid out. The storyboard runs once
          when it shows (not at all when animations are off). -->
     <!-- The window itself is transparent (TransparentBackdrop); Root's padding leaves room for the shadow. -->
@@ -58,6 +59,36 @@
                            Style="{StaticResource BodyTextBlockStyle}" TextWrapping="NoWrap" AutomationProperties.LiveSetting="Assertive">
                     <Run x:Name="LineTitle" FontWeight="SemiBold" /><Run x:Name="LineDetail" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </TextBlock>
+            </Grid>
+
+            <!-- Restart after a crash (spec §17): the same pill with a caution dot, "[Game] crashed · Restarting in
+                 5 s", Cancel, and a thin bar along the bottom edge that drains until the game starts again. -->
+            <Grid x:Name="RestartPill" Height="46" Padding="9,0,7,0" ColumnSpacing="12" Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid x:Name="RestartDot" Width="28" Height="28" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw">
+                    <Ellipse Fill="{ThemeResource SystemFillColorCautionBrush}" />
+                    <FontIcon Glyph="&#xE72C;" FontSize="13" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                </Grid>
+                <TextBlock x:Name="RestartText" Grid.Column="1" VerticalAlignment="Center" MaxWidth="360" TextTrimming="CharacterEllipsis"
+                           Style="{StaticResource BodyTextBlockStyle}" TextWrapping="NoWrap" AutomationProperties.LiveSetting="Assertive">
+                    <Run x:Name="RestartTitle" FontWeight="SemiBold" /><Run x:Name="RestartDetail" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </TextBlock>
+                <Button x:Name="RestartCancel" Grid.Column="2" VerticalAlignment="Center" CornerRadius="16" Padding="12,4"
+                        Content="{x:Bind s:Strings.Cancel}" AutomationProperties.Name="{x:Bind s:Strings.RestartCancelName}"
+                        ToolTipService.ToolTip="{x:Bind s:Strings.RestartCancelName}" />
+                <!-- Time left, inside the round ends. -->
+                <Grid Grid.ColumnSpan="3" Height="3" Margin="22,0,22,4" VerticalAlignment="Bottom" CornerRadius="1.5"
+                      Background="{ThemeResource ControlStrokeColorSecondaryBrush}" AutomationProperties.AccessibilityView="Raw">
+                    <Rectangle Fill="{ThemeResource SystemFillColorCautionBrush}" RenderTransformOrigin="0,0.5">
+                        <Rectangle.RenderTransform>
+                            <ScaleTransform x:Name="RestartScale" ScaleX="1" />
+                        </Rectangle.RenderTransform>
+                    </Rectangle>
+                </Grid>
             </Grid>
 
             <!-- Something couldn't be changed or put back: a card with the whole message and the way to the log. -->

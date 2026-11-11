@@ -25,7 +25,7 @@ break the user's system.
 | 13 Controller | §4 | Built (`Services/Gamepad`, XInput; the hint bar, LB/RB pills and bold focus ring of board 3, without its "Controller" header pill). B closes menus and dialogs too; A on other controls goes through their UI Automation pattern; Menu toggles Settings. To try with a real pad. `Windows.Gaming.Input` (PlayStation, Switch) not yet |
 | 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Game mode toast ("Game mode is on" after applying, while the widget is still up, and "Windows is back to normal" after the restore; animated badge) and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\GameShelf\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `GameShelf.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `GameShelf Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\GameShelf\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing). Tested live on the owner's PC on 2026-11-07: the tasks register and run, the Print Spooler is paused and restarted, the QoS policies and the Windows Update limit are applied and restored. Windows keeps ActiveStore policy names lowercased, so ours are matched ignoring case. The shelf shows "Game mode needs an update" with Update… when Game mode uses the helper and it's from another version. Still to check: Delivery Optimization picks up the policy without a restart. Also built: §20 (board 24), the "Windows' own settings" card, Pause OneDrive syncing and Close / Calm per app (efficiency mode) |
 | 19 Quick actions | §16 | Done (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); tried on the real PC |
-| 20 Restart after a crash | §17 | To do |
+| 20 Restart after a crash | §17 | Built: the Detail toggle, `CrashAnalysis.ShouldRestart` (in a row from `crashes.json`, at most 2), the watcher's `--restart` / `--crashed`, the restart pill (Game mode's pill with a 5 s countdown, bar and Cancel, owner's change) and the crash card's "Restarted twice already" line; unit-tested. To try on the real PC with a game that crashes (or a test exe that exits with 0xC0000005 after a minute) |
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | **In progress.** Done: a, the logo on banners (`ArtKind.Logo`, `BannerLogo`; Steam keeps `librarycache\{appid}\logo.png`, 188 of 400 games on the owner's PC, the rest downloaded once; shadow from the logo's alpha via `Image.GetAlphaMask`; in Detail it sits right of the cover, which overlaps the banner's bottom left). Built: b–e, to try on the real PC.<br>b (the cover growing into details) was built and then removed on 2026-11-09, owner's choice: it looked bad.<br>c and e are `Library/Moments`, picked each time the panel opens; tested live with a session written into `sessions.json`. With a crash, the crash card still takes the slot.<br>d is `Views/Sheen`, plain alpha layers tuned below the prototype's "Medium", since blend modes would need Win2D. The rest look was checked on screen; following the pointer couldn't be tested here, because injected mouse input didn't reach the panel |
 | Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
@@ -912,16 +912,22 @@ that crashes on every start would loop.
   trying".
 - It needs the widget to come back. With "Come back when the game closes" off, the watcher still relaunches the
   widget after a crash exit code when the game has `RestartOnCrash` (it passes `--crashed`; the widget shows only
-  the restart toast, not the panel, and exits again with the restarted game).
+  the restart pill, not the panel, and exits again with the restarted game, or when there's nothing to restart).
 
 ### What the user sees
 
-- The launch toast, reused: "[Game] crashed · restarting in 10 s", a determinate countdown (the game's own hide
-  delay, at least 5 s so there's time to react) and **Cancel** instead of Keep open.
-- Cancel, Esc, B on a controller, or opening the panel another way stops it and shows the crash card, so a crash
-  is never hidden. Restarted sessions' crashes stay in `crashes.json`, so the pattern line still counts them.
+- A pill like Game mode's (§18, `Views/GameModeToast`, owner's change of 2026-11-11, instead of the launch toast):
+  centered above the taskbar, a caution dot with the restart glyph, "[Game] crashed · Restarting in 5 s", a fixed
+  **5-second** countdown with a thin bar along the bottom edge that drains (one smooth compositor move; a step a
+  second with animations off), and **Cancel**. It replaces a "Back to normal" pill; a Game mode message that waits
+  for the user (something couldn't be put back) is never covered: then there's no restart, the crash card shows.
+- Cancel, Esc or B (when the pill has focus), or opening the panel another way stops it and shows the crash card,
+  so a crash is never hidden. Restarted sessions' crashes stay in `crashes.json`, so the pattern line still counts
+  them.
 - When the countdown ends it's an ordinary Play: the same launch path, watcher, hide and Game mode (Game mode was
-  restored when the game exited and is applied again).
+  restored when the game exited and is applied again). With the panel up that's Play with its launch toast; without
+  it the game starts and the widget exits at once (the anti-cheat reminder's question opens the panel; a start that
+  fails opens it with the error).
 
 ### Not chosen
 
@@ -931,9 +937,10 @@ that crashes on every start would loop.
 
 ### Touches
 
-`Game` (`RestartOnCrash`), `DetailView` (the toggle), the watcher (relaunch after a crash exit code when the game
-has it, even with "Come back" off), `MainWindow` (the countdown toast with Cancel, then `Launcher`),
-`CrashAnalysis` (the in-a-row count).
+`Game` (`RestartOnCrash`), `DetailView` (the toggle), the watcher (`--restart 1`; relaunch after a crash exit code
+when the game has it, even with "Come back" off), `RestartViewModel` and `GameModeToast` (the pill), `App.Restart`
+(the decision after the crash check, then Play or `Launcher`), `CrashAnalysis` (the in-a-row count), `CrashCard`
+(the "Restarted twice already" line).
 ## 18. Calmer Settings and Game detail, the Game mode pill and its sound (boards 19, 21 and 23)
 
 Settings and Game detail had grown crowded: long cards of rows with an explanation under every setting. Both now

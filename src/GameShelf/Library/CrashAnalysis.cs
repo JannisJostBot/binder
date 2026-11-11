@@ -140,6 +140,48 @@ public static class CrashAnalysis
         return false;
     }
 
+    // ---- Restart after a crash (spec §17) -----------------------------------------------------------------
+
+    /// <summary>A crash is restarted only after a session at least this long (the watcher's rule too).</summary>
+    public static readonly TimeSpan RestartMinSession = TimeSpan.FromSeconds(60);
+
+    /// <summary>Crashed sessions this close together count as "in a row".</summary>
+    public static readonly TimeSpan RestartWindow = TimeSpan.FromMinutes(30);
+
+    public const int MaxRestarts = 2;
+
+    /// <summary>
+    /// Crashed or closed unexpectedly after at least a minute. Never a failed start (a missing runtime or a broken
+    /// install; restarting won't help) or a normal exit.
+    /// </summary>
+    public static bool IsRestartable(CrashRecord r) =>
+        r.Ending is GameEnding.Crashed or GameEnding.ClosedUnexpectedly && r.End - r.Start >= RestartMinSession;
+
+    /// <summary>
+    /// The game's restartable crashes in a row up to and including <paramref name="latest"/>: its sessions newest
+    /// first, back to the first that ended otherwise or more than 30 minutes before. From the stored records only,
+    /// so nothing has to be kept while the game runs.
+    /// </summary>
+    public static int CrashesInARow(IReadOnlyList<Session> sessions, IReadOnlyList<CrashRecord> records, CrashRecord latest)
+    {
+        int count = 0;
+        foreach (var s in sessions.Where(s => s.GameId == latest.GameId && s.Start <= latest.Start).OrderByDescending(s => s.Start))
+        {
+            if (latest.End - s.End > RestartWindow) break;
+            if (For(records, s) is not { } r || !IsRestartable(r)) break;
+            count++;
+        }
+        return Math.Max(1, count); // latest itself, even if its session isn't loaded
+    }
+
+    /// <summary>Whether to restart the game after <paramref name="latest"/>: its toggle is on and it's not the third crash in a row.</summary>
+    public static bool ShouldRestart(Game game, CrashRecord latest, IReadOnlyList<Session> sessions, IReadOnlyList<CrashRecord> records) =>
+        game.RestartOnCrash && IsRestartable(latest) && CrashesInARow(sessions, records, latest) <= MaxRestarts;
+
+    /// <summary>The crash card's "Restarted twice already" line: it would have restarted, but not again.</summary>
+    public static bool RestartLimitReached(Game game, CrashRecord latest, IReadOnlyList<Session> sessions, IReadOnlyList<CrashRecord> records) =>
+        game.RestartOnCrash && IsRestartable(latest) && CrashesInARow(sessions, records, latest) > MaxRestarts;
+
     // ---- Plain words -----------------------------------------------------------------------------------
 
     /// <summary>"[Game] crashed after 1 h 12 min", "… closed right after starting", …</summary>

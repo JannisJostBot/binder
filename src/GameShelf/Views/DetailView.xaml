@@ -210,6 +210,19 @@
                 </Grid>
             </Border>
             <Border Style="{StaticResource SettingCard}">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.RestartOnCrashToolTip}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE72C;" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.RestartOnCrash}" />
+                    <ToggleSwitch x:Name="RestartSwitch" Grid.Column="2" Style="{StaticResource RowSwitch}"
+                                  IsOn="{x:Bind ViewModel.RestartOnCrash, Mode=TwoWay}" AutomationProperties.Name="{x:Bind s:Strings.RestartOnCrash}" />
+                </Grid>
+            </Border>
+            <Border Style="{StaticResource SettingCard}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />

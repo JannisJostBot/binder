@@ -103,7 +103,9 @@ The version lives in `Directory.Build.props`.
      ~2 s is allowed here only, for up to ~3 min. Never found: relaunch the widget with "Couldn't detect the game".
    - Found: **block** on the process handle; no polling while the game runs. After an exit, re-check the folder
      for ~5 s (games that restart themselves).
-   - On exit: append the session to `sessions.json`, relaunch the widget if "Come back when the game closes" is on.
+   - On exit: append the session to `sessions.json`, relaunch the widget if "Come back when the game closes" is on,
+     or with `--crashed` after a crash exit code of a game with "Restart if it crashes" (spec §17: the widget's
+     restart pill counts 5 s down, then plays it again; at most twice in a row).
    - Game mode (when on for the game): apply right after start (and tell a widget that is still up, never starting
      it for that), Above normal priority once found, restore everything before relaunching the widget, which shows
      the result. Admin items go through the helper's scheduled tasks (`GameShelf Apply/Restore <SID>`, waiting on
