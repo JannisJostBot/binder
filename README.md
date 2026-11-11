@@ -112,6 +112,12 @@ Working:
 Planned (see `docs/proposals.md`):
 - More launchers (Battle.net, Riot, Amazon, itch.io, Humble, Meta).
 - Controller support.
+
+## Contributing
+
+Code contributions aren't accepted. Translation fixes, security fixes, bug reports and feature requests that fit
+the launcher are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Disclaimer
 
 **Game Shelf is vibe-coded.** Its code was written by an AI (Anthropic's Claude), directed and tested by
