@@ -458,17 +458,16 @@
             </Border>
             <Border x:Name="SourcePathsBody" Style="{StaticResource SettingCardBody}" Padding="52,12,16,16">
                 <StackPanel Spacing="12">
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" TextTrimming="None" VerticalAlignment="Center"
+                    <!-- Laid out like Free up space's map title: a heading with its (i), the line under it. -->
+                    <StackPanel Spacing="6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{x:Bind s:Strings.InfoHowItWorks}" Style="{StaticResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                            <Button x:Name="SourcePathsHelpButton" Style="{StaticResource IconButton}" Content="&#xE946;" Click="OnSourcePathsHelpClick"
+                                    ToolTipService.ToolTip="{x:Bind s:Strings.InfoHowItWorks}" AutomationProperties.Name="{x:Bind s:Strings.InfoHowItWorks}" />
+                        </StackPanel>
+                        <TextBlock TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    Text="{x:Bind s:Strings.SourcePathsIntro}" />
-                        <Button x:Name="SourcePathsHelpButton" Grid.Column="1" Style="{StaticResource IconButton}" Content="&#xE946;"
-                                VerticalAlignment="Top" Click="OnSourcePathsHelpClick"
-                                ToolTipService.ToolTip="{x:Bind s:Strings.InfoHowItWorks}" AutomationProperties.Name="{x:Bind s:Strings.InfoHowItWorks}" />
-                    </Grid>
+                    </StackPanel>
                     <TeachingTip x:Name="SourcePathsHelpTip" Target="{x:Bind SourcePathsHelpButton}" Title="{x:Bind s:Strings.InfoHowItWorks}"
                                  IsLightDismissEnabled="True" PreferredPlacement="Bottom">
                         <StackPanel Spacing="8">

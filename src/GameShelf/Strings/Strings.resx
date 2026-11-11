@@ -2939,7 +2939,7 @@ Calm: efficiency mode while you play</value>
   </data>
   <data name="InfoHowItWorks" xml:space="preserve">
     <value>How this works</value>
-    <comment>Title and screen reader name of the (i) button at the top of Settings › Advanced, and of the tip it opens.</comment>
+    <comment>Heading at the top of Settings › Advanced, next to an (i) button; also that button's screen reader name and the title of the tip it opens.</comment>
   </data>
   <data name="InfoAbout" xml:space="preserve">
     <value>About {0}</value>

@@ -93,7 +93,7 @@ public sealed partial class SettingsView : UserControl
             var head = new Grid { ColumnSpacing = 12 };
             head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            var name = new TextBlock { Text = group.Name, Style = Res<Style>("RowTitle"), VerticalAlignment = VerticalAlignment.Center };
+            var name = new TextBlock { Text = group.Name, Style = Res<Style>("BodyStrongTextBlockStyle"), VerticalAlignment = VerticalAlignment.Center };
             AutomationProperties.SetHeadingLevel(name, Microsoft.UI.Xaml.Automation.Peers.AutomationHeadingLevel.Level3);
             head.Children.Add(name);
             var check = new Button { Content = Strings.CheckSource, VerticalAlignment = VerticalAlignment.Center };
@@ -172,22 +172,26 @@ public sealed partial class SettingsView : UserControl
         }
     }
 
-    /// <summary>The entry's label with an (i) that opens what the entry is, its format and an example.</summary>
+    /// <summary>
+    /// The entry's label with an (i) that opens what the entry is, its format and an example: the same title-and-tip
+    /// as Free up space's map.
+    /// </summary>
     private static StackPanel EntryLabel(SourcePathRow row)
     {
-        var line = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2 };
-        line.Children.Add(new TextBlock
-        {
-            Text = row.Label, Style = Res<Style>("RowDetail"), TextWrapping = TextWrapping.Wrap, TextTrimming = TextTrimming.None,
-            VerticalAlignment = VerticalAlignment.Center,
-        });
+        var line = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
+        line.Children.Add(new TextBlock { Text = row.Label, VerticalAlignment = VerticalAlignment.Center });
         var about = Strings.Format(Strings.InfoAbout, row.Label);
-        var info = new Button { Style = Res<Style>("IconButton"), Content = "", Width = 28, Height = 28, FontSize = 13 };
+        var info = new Button { Style = Res<Style>("IconButton"), Content = "" };
         AutomationProperties.SetName(info, about);
         ToolTipService.SetToolTip(info, about);
-        var text = new TextBlock { Text = SettingsViewModel.EntryHelp(row.Entry), TextWrapping = TextWrapping.Wrap, MaxWidth = 320 };
-        info.Flyout = new Flyout { Content = text };
+        var tip = new TeachingTip
+        {
+            Target = info, Title = row.Label, IsLightDismissEnabled = true, PreferredPlacement = TeachingTipPlacementMode.Bottom,
+            Content = new TextBlock { Text = SettingsViewModel.EntryHelp(row.Entry), TextWrapping = TextWrapping.Wrap },
+        };
+        info.Click += (_, _) => tip.IsOpen = !tip.IsOpen;
         line.Children.Add(info);
+        line.Children.Add(tip);
         return line;
     }
 
