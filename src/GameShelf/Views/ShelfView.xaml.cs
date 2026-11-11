@@ -20,9 +20,11 @@ public sealed partial class ShelfView : UserControl
     // Each item's 6 px padding on both sides.
     private const double ItemPadding = 12;
 
-    // The grid's width: 560 - 2 × 20 plus the items' padding, until it's measured (the window border takes a
-    // pixel or so, and a column that doesn't fit exactly wraps).
+    // The grid's width: 560 - 2 × 20 plus the items' padding, until it's measured. Only a starting value: the
+    // window's border takes a few pixels (about 15 at 150 %), so the grid gets no items before it's measured, or
+    // its first layout wraps a column and then slides the covers into place.
     private double _gridWidth = 532;
+    private bool _measured;
 
     private bool _listMode;
     private int _columns;
@@ -39,13 +41,17 @@ public sealed partial class ShelfView : UserControl
         ContinueLogo.LogoChanged += hasLogo => ContinueTitle.Visibility = hasLogo ? Visibility.Collapsed : Visibility.Visible;
         Tiles.Loaded += (_, _) => ApplyPanel();
         Tiles.SizeChanged += (_, e) =>
-        {
-            // Collapsed (another page is open) it measures 0 wide: keep the last real width.
-            if (e.NewSize.Width < 200 || Math.Abs(e.NewSize.Width - _gridWidth) < 0.5) return;
+        {            // Collapsed (another page is open) it measures 0 wide: keep the last real width.
+            if (e.NewSize.Width < 200) return;
+            bool first = !_measured;
+            _measured = true;
+            if (!first && Math.Abs(e.NewSize.Width - _gridWidth) < 0.5) return;
             _gridWidth = e.NewSize.Width;
             if (_listMode) return;
             SizeTiles();
-            ShowItems(); // shown tiles take the new size
+            // Shown tiles take the new size: setting the same list again would keep them as they are.
+            Tiles.ItemsSource = null;
+            ShowItems();
         };
     }
 
@@ -91,10 +97,13 @@ public sealed partial class ShelfView : UserControl
         }
     }
 
-    /// <summary>Hands the visible games to the grid or the list (only the one showing has items).</summary>
+    /// <summary>
+    /// Hands the visible games to the grid or the list (only the one showing has items). The grid waits for its
+    /// first measured width (its SizeChanged calls this again).
+    /// </summary>
     private void ShowItems()
     {
-        Tiles.ItemsSource = _listMode ? null : Visible;
+        Tiles.ItemsSource = _listMode || !_measured ? null : Visible;
         Rows.ItemsSource = _listMode ? Visible : null;
     }
 
