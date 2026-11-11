@@ -28,6 +28,6 @@
         <!-- Always in the tree for screen readers and UI Automation; seen and clickable on hover. -->
         <Button x:Name="DetailsButton" Grid.Column="4" Style="{StaticResource IconButton}" Width="32" Height="32"
                 FontSize="14" Content="&#xE946;" IsTabStop="False" Opacity="0" IsHitTestVisible="False"
-                ToolTipService.ToolTip="Details" Click="OnDetailsClick" />
+                Click="OnDetailsClick" />
     </Grid>
 </UserControl>

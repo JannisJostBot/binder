@@ -30,7 +30,7 @@ internal static class Installer
         {
             Locations.Log("no payload: built without publish.ps1");
             if (!options.Silent)
-                Dialogs.Error("This setup is incomplete", "It was built without the app inside. Build it with publish.ps1.");
+                Dialogs.Error(Text.Incomplete, Text.IncompleteDetail);
             return ExitCode.Error;
         }
 
@@ -40,25 +40,25 @@ internal static class Installer
         {
             var (instruction, button) = installed switch
             {
-                null => ("Install Game Shelf", "Install"),
-                _ when installed < version => ($"Update Game Shelf to {Program.VersionText}", "Update"),
-                _ when installed == version => ($"Game Shelf {Program.VersionText} is already installed", "Reinstall"),
-                _ => ($"A newer Game Shelf ({installed!.ToString(3)}) is installed", $"Replace it with {Program.VersionText}"),
+                null => (Text.InstallTitle, Text.Install),
+                _ when installed < version => (Text.UpdateTitle(Program.VersionText), Text.Update),
+                _ when installed == version => (Text.AlreadyInstalled(Program.VersionText), Text.Reinstall),
+                _ => (Text.NewerInstalled(installed!.ToString(3)), Text.ReplaceWith(Program.VersionText)),
             };
             var summary = update
-                ? "Your games, play history and settings are kept. If Game Shelf is open, it closes and comes back afterwards."
-                : "Installs for your account only. No administrator rights needed.";
+                ? Text.UpdateSummary
+                : Text.InstallSummary;
             var note = update
-                ? $"Installed now: {installed!.ToString(3)}. This setup: {Program.VersionText}."
-                : "Installs to " + Locations.InstallDir;
+                ? Text.Versions(installed!.ToString(3), Program.VersionText)
+                : Text.InstallsTo(Locations.InstallDir);
             // The README's disclaimer in full, with the button disabled until it's confirmed (/S implies it:
             // whoever scripts setup has read it). A classic setup window; Windows' task dialog if it can't open.
             bool? accepted = ConfirmWindow.Show(new ConfirmWindow.Content(instruction, summary, Disclaimer, note, button));
             if (accepted is null)
             {
                 var confirm = Dialogs.Show(instruction, summary + "\n\n" + note, [(InstallButton, button)], Dialogs.CommonCancel,
-                    InstallButton, verification: "I've read and understood the disclaimer", warning: installed > version,
-                    required: true, details: (Disclaimer, "Show the disclaimer", "Hide the disclaimer"));
+                    InstallButton, verification: Text.AcceptDisclaimer, warning: installed > version,
+                    required: true, details: (Disclaimer, Text.ShowDisclaimer, Text.HideDisclaimer));
                 accepted = confirm.Button == InstallButton;
             }
             if (accepted != true) return ExitCode.Cancelled;
@@ -98,7 +98,7 @@ internal static class Installer
             InstalledFiles.Remove(previous.Where(p => !kept.Contains(p)), TryDeleteFile);
             RemoveOldFiles(current); // the ones that weren't in use any more
 
-            ShellLink.Create(Locations.StartMenuLink, Locations.Widget, Locations.InstallDir, "Your games, one click away");
+            ShellLink.Create(Locations.StartMenuLink, Locations.Widget, Locations.InstallDir, Text.StartMenuDescription);
             WriteUninstallEntry(payload);
             Native.SHChangeNotify(Native.SHCNE_ASSOCCHANGED, 0, IntPtr.Zero, IntPtr.Zero);
             Locations.Log("done");
@@ -107,10 +107,10 @@ internal static class Installer
             if (widgetWasRunning) StartWidget("--background");
             if (!options.Silent)
             {
-                var done = Dialogs.Show(update ? "Game Shelf is up to date" : "Game Shelf is installed",
-                    update ? $"Version {Program.VersionText}." : "You'll find it in the Start menu. It sets itself up the first time it opens.",
+                var done = Dialogs.Show(update ? Text.UpToDate : Text.Installed,
+                    update ? Text.VersionLine(Program.VersionText) : Text.InStartMenu,
                     [], Dialogs.CommonClose, Dialogs.IdClose,
-                    verification: widgetWasRunning ? null : "Open Game Shelf now", verified: !update && !widgetWasRunning);
+                    verification: widgetWasRunning ? null : Text.OpenNow, verified: !update && !widgetWasRunning);
                 if (done.Verified && !widgetWasRunning) StartWidget(); // a second start would just toggle it
             }
             else if (options.Launch && !widgetWasRunning)
@@ -123,8 +123,8 @@ internal static class Installer
         {
             Locations.Log("failed: " + ex);
             if (!options.Silent)
-                Dialogs.Error(update ? "Couldn't update Game Shelf" : "Couldn't install Game Shelf",
-                    ex.Message + "\n\nNothing you had is lost. Running setup again usually fixes it.");
+                Dialogs.Error(update ? Text.UpdateFailed : Text.InstallFailed,
+                    ex.Message + "\n\n" + Text.NothingLost);
             return ExitCode.Error;
         }
     }
@@ -134,7 +134,7 @@ internal static class Installer
     {
         foreach (var dir in new[] { Locations.ProgramsRoot, Locations.InstallDir })
             if (Locations.IsReparsePoint(dir))
-                throw new SetupException($"{dir} is a link to another folder, so setup won't write into it.");
+                throw new SetupException(Text.LinkedFolder(dir));
     }
 
     /// <summary>
@@ -143,9 +143,9 @@ internal static class Installer
     /// </summary>
     private static void Place(string name, Action<Stream> write, string? sha256)
     {
-        var target = InstalledFiles.FullPath(name) ?? throw new SetupException($"Setup won't write {name}: a folder on its way is a link.");
+        var target = InstalledFiles.FullPath(name) ?? throw new SetupException(Text.LinkOnTheWay(name));
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-        if (InstalledFiles.FullPath(name) is null) throw new SetupException($"Setup won't write {name}: a folder on its way is a link.");
+        if (InstalledFiles.FullPath(name) is null) throw new SetupException(Text.LinkOnTheWay(name));
         var temp = target + ".new";
         File.Delete(temp);
         using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, FileOptions.WriteThrough))
@@ -158,7 +158,7 @@ internal static class Installer
             if (!actual.Equals(sha256, StringComparison.OrdinalIgnoreCase))
             {
                 File.Delete(temp);
-                throw new SetupException($"{name} didn't check out after writing it to disk.");
+                throw new SetupException(Text.CheckFailed(name));
             }
         }
 
@@ -190,7 +190,7 @@ internal static class Installer
 
     private static void CopySelf(Stream destination)
     {
-        var self = Environment.ProcessPath ?? throw new SetupException("Setup couldn't find its own file.");
+        var self = Environment.ProcessPath ?? throw new SetupException(Text.OwnFileNotFound);
         using var source = File.OpenRead(self);
         source.CopyTo(destination);
     }
@@ -198,7 +198,7 @@ internal static class Installer
     private static void WriteUninstallEntry(Payload payload)
     {
         using var key = Registry.CurrentUser.CreateSubKey(Locations.UninstallKey)
-            ?? throw new SetupException("Couldn't write the entry in Settings → Apps.");
+            ?? throw new SetupException(Text.AppsEntryFailed);
         var uninstaller = Path.Combine(Locations.InstallDir, Locations.UninstallerExe);
         key.SetValue("DisplayName", "Game Shelf");
         key.SetValue("DisplayVersion", Program.VersionText);

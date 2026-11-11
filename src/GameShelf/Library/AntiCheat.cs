@@ -56,9 +56,9 @@ public static class AntiCheat
     {
         PcRequirement.SecureBoot => "Secure Boot",
         PcRequirement.Tpm20 => "TPM 2.0",
-        PcRequirement.NoTestSigning => "Test signing off",
-        PcRequirement.NoKernelDebugging => "Kernel debugging off",
-        PcRequirement.VanguardLoaded => "Vanguard running (needs a restart after install)",
+        PcRequirement.NoTestSigning => Strings.TestSigningOff,
+        PcRequirement.NoKernelDebugging => Strings.KernelDebuggingOff,
+        PcRequirement.VanguardLoaded => Strings.VanguardRunning,
         _ => r.ToString(),
     };
 
@@ -99,8 +99,8 @@ public static class AntiCheat
     /// </summary>
     public static readonly IReadOnlyList<(string Prefix, string Tool)> BlockedDrivers =
     [
-        ("winring0", "an older hardware monitor (WinRing0 driver)"),
-        ("rtcore64", "MSI Afterburner (older version)"),
-        ("gdrv", "Gigabyte's tuning tools (older version)"),
+        ("winring0", Strings.DriverWinRing0),
+        ("rtcore64", Strings.Format(Strings.DriverOlderVersion, "MSI Afterburner")),
+        ("gdrv", Strings.DriverGigabyte),
     ];
 }

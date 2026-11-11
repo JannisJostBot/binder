@@ -20,11 +20,10 @@ internal static class Uninstaller
         {
             if (!options.Silent)
             {
-                var confirm = Dialogs.Show("Uninstall Game Shelf?",
-                    "Removes the app, its Start menu entry and Start with Windows. Shortcuts you moved onto the shelf go back on your desktop." +
-                    (GameModeHelper.IsAllowed ? "\n\nWindows will ask you to allow removing Game mode's helper too." : ""),
-                    [(UninstallButton, "Uninstall")], Dialogs.CommonCancel, Dialogs.IdCancel,
-                    verification: "Also delete my game list, play history and settings");
+                var confirm = Dialogs.Show(Text.UninstallTitle,
+                    Text.UninstallSummary + (GameModeHelper.IsAllowed ? "\n\n" + Text.UninstallHelper : ""),
+                    [(UninstallButton, Text.Uninstall)], Dialogs.CommonCancel, Dialogs.IdCancel,
+                    verification: Text.AlsoDeleteData);
                 if (confirm.Button != UninstallButton) return ExitCode.Cancelled;
                 options = options with { RemoveData = confirm.Verified };
             }
@@ -55,9 +54,8 @@ internal static class Uninstaller
             Locations.Log("a game is still being tracked");
             if (!options.Silent)
             {
-                var answer = Dialogs.Show("A game is still running",
-                    "Game Shelf is keeping track of it. If you uninstall now, this session's playtime isn't saved.",
-                    [(StopTrackingButton, "Uninstall anyway")], Dialogs.CommonCancel, Dialogs.IdCancel, warning: true);
+                var answer = Dialogs.Show(Text.GameRunning, Text.GameRunningDetail,
+                    [(StopTrackingButton, Text.UninstallAnyway)], Dialogs.CommonCancel, Dialogs.IdCancel, warning: true);
                 Locations.Log($"answer: {answer.Button}");
                 if (answer.Button != StopTrackingButton) return Finish(ExitCode.Cancelled);
             }
@@ -107,13 +105,12 @@ internal static class Uninstaller
         if (!options.Silent)
         {
             var content = shortcutsLeft
-                ? $"Some shortcuts couldn't go back on the desktop. They're still in {Locations.ImportedShortcutsDir}."
-                : options.RemoveData ? "Your game list, play history and settings were deleted too."
-                : "Your game list, play history and settings are kept, in case you install it again.";
+                ? Text.ShortcutsLeft(Locations.ImportedShortcutsDir)
+                : options.RemoveData ? Text.DataDeleted
+                : Text.DataKept;
             if (helperLeft)
-                content += $"\n\nGame mode's helper is still in {ElevatedPart.InstallDir} (it does nothing without Game Shelf). " +
-                           "To remove it, install Game Shelf again and use Settings › Game mode › Remove it.";
-            Dialogs.Show("Game Shelf was removed", content, [], Dialogs.CommonClose, Dialogs.IdClose);
+                content += "\n\n" + Text.HelperLeft(ElevatedPart.InstallDir);
+            Dialogs.Show(Text.Removed, content, [], Dialogs.CommonClose, Dialogs.IdClose);
         }
         return Finish(ExitCode.Ok);
     }

@@ -173,15 +173,15 @@ internal static unsafe partial class ConfirmWindow
             () => t.Item(SS_ICON, Margin, Margin, 21, 20, IdIcon, Static, ""),
             () => t.Item(SS_LEFT | SS_NOPREFIX, textLeft, Margin, Width - textLeft - Margin, 14, IdTitle, Static, ""),
             () => t.Item(SS_LEFT | SS_NOPREFIX, textLeft, Margin + 17, Width - textLeft - Margin, 18, IdSummary, Static, ""),
-            () => t.Item(SS_LEFT, Margin, 50, contentWidth, 9, IdRead, Static, "Please read the &disclaimer:"),
+            () => t.Item(SS_LEFT, Margin, 50, contentWidth, 9, IdRead, Static, Text.ReadDisclaimer),
             () => t.Item(ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL | WS_VSCROLL | WS_TABSTOP, Margin, 61, contentWidth, 98,
                 IdDisclaimer, Edit, "", WS_EX_CLIENTEDGE),
             () => t.Item(BS_AUTOCHECKBOX | WS_TABSTOP, Margin, 164, contentWidth, 12, IdAccept, Button,
-                "I've &read and understood the disclaimer"),
+                Text.AcceptDisclaimerMnemonic),
             () => t.Item(SS_LEFT | SS_NOPREFIX, Margin, 181, contentWidth, 18, IdNote, Static, ""),
             () => t.Item(BS_DEFPUSHBUTTON | WS_TABSTOP | WS_DISABLED, (short)(Width - Margin - cancelWidth - 6 - installWidth), buttonTop,
                 installWidth, ButtonHeight, IdInstall, Button, "&" + button),
-            () => t.Item(BS_PUSHBUTTON | WS_TABSTOP, Width - Margin - cancelWidth, buttonTop, cancelWidth, ButtonHeight, IdCancel, Button, "Cancel"),
+            () => t.Item(BS_PUSHBUTTON | WS_TABSTOP, Width - Margin - cancelWidth, buttonTop, cancelWidth, ButtonHeight, IdCancel, Button, Text.Cancel),
         };
 
         // Header: dlgVer, signature, helpID, exStyle, style, item count, x, y, cx, cy, no menu, default class.

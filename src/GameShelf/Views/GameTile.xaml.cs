@@ -41,6 +41,8 @@ public sealed partial class GameTile : UserControl
     public GameTile()
     {
         InitializeComponent();
+        ToolTipService.SetToolTip(FavoriteBadge, Strings.Favorite);
+        ToolTipService.SetToolTip(DetailsButton, Strings.Details);
         Cover.ImageChanged += hasImage => PlaceholderTitle.Visibility = hasImage ? Visibility.Collapsed : Visibility.Visible;
         PlayMark.Translation = new Vector3(0, PlayRise, 0);
         // The grid item handles the press itself, so listen to handled events too.
@@ -83,7 +85,7 @@ public sealed partial class GameTile : UserControl
         Badge.Source = game.Source;
         FavoriteBadge.Visibility = game.Favorite ? Visibility.Visible : Visibility.Collapsed;
         Shine.SetOn(game.Favorite && App.Settings.ShinyFavorites && !Accessibility.HighContrast);
-        AutomationProperties.SetName(DetailsButton, "Details for " + game.Name);
+        AutomationProperties.SetName(DetailsButton, Strings.Format(Strings.DetailsFor, game.Name));
     }
 
     /// <summary>The sheen follows the pointer over a favourite (§13 d); still with "Animation effects" off.</summary>

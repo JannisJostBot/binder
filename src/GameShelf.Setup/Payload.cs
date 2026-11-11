@@ -24,7 +24,7 @@ internal sealed class Payload : IDisposable
     public long TotalBytes => Files.Sum(f => f.Length);
 
     public Stream Open(PayloadList.Entry file) =>
-        _entries.TryGetValue(file.Path, out var entry) ? entry.Open() : throw new SetupException($"{file.Path} is missing from this setup.");
+        _entries.TryGetValue(file.Path, out var entry) ? entry.Open() : throw new SetupException(Text.MissingFromSetup(file.Path));
 
     public void Dispose() => _zip.Dispose();
 

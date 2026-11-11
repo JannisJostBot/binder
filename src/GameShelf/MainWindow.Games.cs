@@ -66,10 +66,10 @@ public sealed partial class MainWindow
     {
         var (imported, copied, failed) = result;
         var detail = copied > 0
-            ? $"{copied} stayed on the shared desktop too: changing it needs administrator rights."
-            : "You can put them back from Settings.";
-        if (failed > 0) detail += $" {failed} couldn't be imported.";
-        ShowToast(imported == 1 ? "Imported 1 shortcut" : $"Imported {imported} shortcuts", detail, "OK");
+            ? Strings.Plural(copied, Strings.ImportCopiedOne, Strings.ImportCopied)
+            : Strings.ImportRestoreHint;
+        if (failed > 0) detail += " " + Strings.Plural(failed, Strings.ImportFailedOne, Strings.ImportFailed);
+        ShowToast(Strings.Plural(imported, Strings.ImportDoneOne, Strings.ImportDone), detail, Strings.Ok);
     }
 
     /// <summary>Puts every imported shortcut back on the desktop and removes the games made from them.</summary>
@@ -78,14 +78,14 @@ public sealed partial class MainWindow
         var (restored, failed) = ShortcutImporter.RestoreAll(_games);
         SaveLibrary();
         RefreshViews();
-        ShowToast(failed == 0 ? "Shortcuts are back on your desktop" : "Some shortcuts couldn't be restored",
-            failed == 0 ? $"{restored} restored." : $"{failed} are still in Game Shelf's folder.", "OK");
+        ShowToast(failed == 0 ? Strings.RestoredShortcuts : Strings.RestoreShortcutsFailed,
+            failed == 0 ? Strings.Plural(restored, Strings.RestoredCountOne, Strings.RestoredCount) : Strings.Plural(failed, Strings.StillInFolderOne, Strings.StillInFolder), Strings.Ok);
     }
 
     /// <summary>"Add a game": pick an .exe or a shortcut with the standard Windows file picker.</summary>
     private void AddGame()
     {
-        var path = FilePicker.Open(Root, "Add a game", "Games and shortcuts (*.exe;*.lnk;*.url)|*.exe;*.lnk;*.url",
+        var path = FilePicker.Open(Root, Strings.AddGame, Strings.Format(Strings.FilterGames, "*.exe;*.lnk;*.url") + "|*.exe;*.lnk;*.url",
             keepShortcuts: true); // keep the shortcut itself, with its arguments
         if (path is not null) AddGameFromPath(path, showDetails: true);
     }
@@ -138,7 +138,7 @@ public sealed partial class MainWindow
             if (ShortcutImporter.ExistingFor(shortcut, _games) is { } existing)
             {
                 ShowDetail(existing);
-                ShowToast($"{existing.Name} is already on the shelf", "It comes from your " + existing.SourceLabel + " library.", "OK");
+                ShowToast(Strings.Format(Strings.AlreadyOnShelfTitle, existing.Name), Strings.Format(Strings.FromLibrary, existing.SourceLabel), Strings.Ok);
                 return;
             }
             // Keep the user's file where it is; we launch our own copy.
@@ -151,7 +151,7 @@ public sealed partial class MainWindow
         }
         if (game is null)
         {
-            ShowToast("Couldn't add that file", "It isn't a program or a shortcut Game Shelf can read.", "OK");
+            ShowToast(Strings.CouldntAddFile, Strings.CouldntAddFileDetail, Strings.Ok);
             return;
         }
 
@@ -167,7 +167,7 @@ public sealed partial class MainWindow
         SaveLibrary();
         RefreshViews();
         if (showDetails) ShowDetail(game);
-        else ShowToast($"Added {game.Name}", "It's on the shelf now.", "OK");
+        else ShowToast(Strings.Format(Strings.AddedGame, game.Name), Strings.AddedGameDetail, Strings.Ok);
     }
 
     private static void TrySave(Action save)
@@ -231,7 +231,7 @@ public sealed partial class MainWindow
         RefreshViews();
 
         var id = game.Id;
-        ShowToast($"Hid {game.Name}", "It won't show on the shelf anymore.", "Undo", () =>
+        ShowToast(Strings.Format(Strings.HidGame, game.Name), Strings.HidGameDetail, Strings.Undo, () =>
         {
             if (FindGame(id) is not { } restored) return;
             restored.Hidden = false;

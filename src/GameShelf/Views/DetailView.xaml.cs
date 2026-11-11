@@ -23,9 +23,10 @@ public sealed partial class DetailView : UserControl
     public DetailView()
     {
         InitializeComponent();
+        AutomationProperties.SetName(this, Strings.DetailName);
         Logo.LogoChanged += hasLogo => TitleText.Visibility = hasLogo ? Visibility.Collapsed : Visibility.Visible;
-        _launch = new Disclosure(LaunchChevron, LaunchCard, LaunchBody, "launch options");
-        _antiCheat = new Disclosure(AntiCheatChevron, AntiCheatCard, AntiCheatBody, "anti-cheat details");
+        _launch = new Disclosure(LaunchChevron, LaunchCard, LaunchBody, Strings.DisclosureLaunch);
+        _antiCheat = new Disclosure(AntiCheatChevron, AntiCheatCard, AntiCheatBody, Strings.DisclosureAntiCheat);
         _antiCheat.Toggled += _ =>
         {
             if (ViewModel is not null) ViewModel.AntiCheatTouched = true;
@@ -167,7 +168,7 @@ public sealed partial class DetailView : UserControl
 
         if (info.Problem)
         {
-            var details = new HyperlinkButton { Content = "Details", Padding = new Thickness(6, 2, 6, 2), VerticalAlignment = VerticalAlignment.Center };
+            var details = new HyperlinkButton { Content = Strings.Details, Padding = new Thickness(6, 2, 6, 2), VerticalAlignment = VerticalAlignment.Center };
             AutomationProperties.SetName(details, info.DetailsName);
             details.Click += (_, _) =>
             {
@@ -197,15 +198,15 @@ public sealed partial class DetailView : UserControl
     private void OnPickProcess(object sender, RoutedEventArgs e)
     {
         if (ViewModel is not { Game: { } game } vm) return;
-        var path = FilePicker.Open(this, $"Choose the program {game.Name} runs as", "Programs (*.exe)|*.exe", vm.InstallFolder);
+        var path = FilePicker.Open(this, Strings.Format(Strings.PickProcessTitle, game.Name), Strings.Format(Strings.FilterPrograms, "*.exe") + "|*.exe", vm.InstallFolder);
         if (path is not null) vm.SetProcess(path);
     }
 
     private void OnPickCover(object sender, RoutedEventArgs e)
     {
         if (ViewModel is not { Game: { } game } vm) return;
-        var path = FilePicker.Open(this, $"Choose a cover for {game.Name}",
-            "Images (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*.jpeg;*.png;*.bmp");
+        var path = FilePicker.Open(this, Strings.Format(Strings.PickCoverTitle, game.Name),
+            Strings.Format(Strings.FilterImages, "*.jpg;*.jpeg;*.png;*.bmp") + "|*.jpg;*.jpeg;*.png;*.bmp");
         if (path is not null) vm.SetCover(path);
     }
 }

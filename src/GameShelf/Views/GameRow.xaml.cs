@@ -14,6 +14,7 @@ public sealed partial class GameRow : UserControl
     public GameRow()
     {
         InitializeComponent();
+        ToolTipService.SetToolTip(DetailsButton, Strings.Details);
     }
 
     /// <summary>Called when the Details (i) button is pressed. Clicking the row itself plays.</summary>
@@ -23,7 +24,7 @@ public sealed partial class GameRow : UserControl
     {
         _game = game;
         SetHover(false);
-        AutomationProperties.SetName(DetailsButton, "Details for " + game.Name);
+        AutomationProperties.SetName(DetailsButton, Strings.Format(Strings.DetailsFor, game.Name));
         Cover.Order = order; // covers load from the top of the list down
         if (ReferenceEquals(Cover.Game, game)) Cover.Refresh();
         else Cover.Game = game;

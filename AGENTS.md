@@ -34,6 +34,11 @@ to be wrong. Say what you found; don't change the expected value to make a test 
   exists), no reflection in app code. (The unit tests may use reflection.)
 - Never remove, weaken or skip an existing test. Only add new checks.
 - Never delete or overwrite the user's files from code.
+- No user-visible text in code or XAML: add it to `src/GameShelf/Strings/Strings.resx`, `Strings.de.resx` and
+  `Strings.fr.resx` (same name, same `{0}` placeholders) and a line in `Strings.Entries.cs`, then use
+  `Strings.Name` (XAML: `{x:Bind s:Strings.Name}`). Keep it short and plain: say what happens, don't sell.
+  Give the English entry a `<comment>`: where it appears and what each `{0}` holds (the tests check this).
+  `CLAUDE.md`, "Text and languages", has the rules.
 - Follow the style of the code around you: the same naming, spelling, comment style and indentation (4 spaces).
 
 ## Don't touch

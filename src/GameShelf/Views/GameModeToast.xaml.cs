@@ -57,15 +57,14 @@ public sealed partial class GameModeToast : Window
         _timeout = result.Success ? SuccessTimeout : applied ? PartialTimeout : null;
         if (result.Success)
         {
-            string changes = result.Restored == 1 ? "1 change" : $"{result.Restored} changes";
+            string changes = Strings.Plural(result.Restored, Strings.GmChangeCountOne, Strings.GmChangeCount);
             var (title, detail) = applied
-                ? ("Game mode on", result.Restored == 0 ? "already set up" : changes)
-                : ("Back to normal", changes + " put back");
+                ? (Strings.GmPillOn, result.Restored == 0 ? Strings.GmPillAlreadySet : changes)
+                : (Strings.GmPillBack, Strings.Format(Strings.GmPillPutBack, changes));
             LineTitle.Text = title;
             LineDetail.Text = " · " + detail;
-            AutomationProperties.SetName(LineText, applied
-                ? (result.Restored == 0 ? "Game mode is on. Windows was already set up for gaming" : $"Game mode is on. {changes}, put back when the game closes")
-                : $"Windows is back to normal. Game mode put back {changes}");
+            var (longTitle, longDetail) = GameModeText.Toast(result, applied);
+            AutomationProperties.SetName(LineText, Strings.Format(Strings.Sentences, longTitle, longDetail));
             if (!applied)
             {
                 // Done: a quiet neutral dot with a green check, not the accent.
@@ -80,11 +79,11 @@ public sealed partial class GameModeToast : Window
         }
         else
         {
-            var (title, detail) = result.ToastText(applied);
+            var (title, detail) = GameModeText.Toast(result, applied);
             bool hasLog = GameModeService.HasLog;
             TitleText.Text = title;
-            DetailText.Text = detail + (hasLog ? ". The log says what happened." : ".");
-            AutomationProperties.SetName(TitleText, title + ". " + DetailText.Text);
+            DetailText.Text = Strings.Format(hasLog ? Strings.GmDetailWithLog : Strings.Sentence, detail);
+            AutomationProperties.SetName(TitleText, Strings.Format(Strings.Sentences, title, DetailText.Text));
             DetailsButton.Visibility = hasLog ? Visibility.Visible : Visibility.Collapsed;
             Pill.Visibility = Visibility.Collapsed;
             Card.Visibility = Visibility.Visible;

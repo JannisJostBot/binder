@@ -32,7 +32,8 @@
     <Product>Game Shelf</Product>
     <AssemblyTitle>Game Shelf</AssemblyTitle>
 
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- The app's languages (Strings\Strings.*.resx); also keeps other languages' package resources out. -->
+    <SatelliteResourceLanguages>en;de;fr</SatelliteResourceLanguages>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 

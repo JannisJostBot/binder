@@ -27,13 +27,13 @@ public static class Launcher
         else if (game.Source == GameSource.Rockstar && RockstarSource.IsTitleId(game.StoreId ?? ""))
         {
             // Through the Rockstar Games Launcher, which handles sign-in and updates, like the store links.
-            if (RockstarSource.LauncherExe() is not { } rockstar) return "The Rockstar Games Launcher wasn't found.";
+            if (RockstarSource.LauncherExe() is not { } rockstar) return Strings.Format(Strings.LauncherNotFound, "Rockstar Games Launcher");
             psi = DirectStart(rockstar, ["-launchTitle=" + game.StoreId]);
         }
         else if (game.Source == GameSource.Hytale)
         {
             // Through the Hytale Launcher: the client needs its sign-in. Play there starts the game.
-            if (HytaleSource.LauncherExe() is not { } hytale) return "The Hytale Launcher wasn't found.";
+            if (HytaleSource.LauncherExe() is not { } hytale) return Strings.Format(Strings.LauncherNotFound, "Hytale Launcher");
             psi = DirectStart(hytale, []);
         }
         else if (!string.IsNullOrEmpty(game.LaunchUri))
@@ -41,7 +41,7 @@ public static class Launcher
         else if (!string.IsNullOrEmpty(game.ExePath) && File.Exists(game.ExePath))
             psi = new ProcessStartInfo(game.ExePath) { UseShellExecute = true, WorkingDirectory = Path.GetDirectoryName(game.ExePath)! };
         else
-            return "The game's executable wasn't found.";
+            return Strings.ExeNotFound;
 
         try
         {
@@ -87,9 +87,9 @@ public static class Launcher
         if (LaunchOptions.ValidOverride(game) is { } overrideExe) return (Path.GetFileName(overrideExe) + " " + joined).Trim();
         return LaunchOptions.RouteFor(game) switch
         {
-            LaunchOptions.Route.Steam => args.Count > 0 ? "Steam, with " + joined : "Steam",
+            LaunchOptions.Route.Steam => args.Count > 0 ? Strings.Format(Strings.SteamWith, joined) : "Steam",
             LaunchOptions.Route.Exe => (Path.GetFileName(LaunchOptions.DirectExe(game)) + " " + joined).Trim(),
-            _ => game.Source == GameSource.Shortcut ? "its shortcut" : $"the {game.SourceLabel} launcher",
+            _ => game.Source == GameSource.Shortcut ? Strings.ItsShortcut : Strings.Format(Strings.TheSourceLauncher, game.SourceLabel),
         };
     }
 

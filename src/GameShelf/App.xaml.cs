@@ -426,10 +426,10 @@ public sealed partial class App : Application
         // Read when the menu opens (one small file), not kept up to date while it's closed.
         bool needsUpdate = GameModeService.HelperNeedsUpdate(Settings, State.Games);
         int chosen = _messages.ShowTrayMenu([
-            (open, "Open Game Shelf", false), (0, "", false),
-            (gameMode, needsUpdate ? "Game mode (needs update)" : "Game mode", Settings.GameModeEnabled),
-            (freeSpace, "Free up space…", false), (0, "", false),
-            (settings, "Settings", false), (quit, "Quit", false)]);
+            (open, Strings.OpenGameShelf, false), (0, "", false),
+            (gameMode, needsUpdate ? Strings.GameModeNeedsUpdateMenu : Strings.GameMode, Settings.GameModeEnabled),
+            (freeSpace, Strings.FreeUpSpaceMenu, false), (0, "", false),
+            (settings, Strings.Settings, false), (quit, Strings.Quit, false)]);
         switch (chosen)
         {
             case open:

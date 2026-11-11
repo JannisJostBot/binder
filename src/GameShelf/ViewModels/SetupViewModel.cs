@@ -140,11 +140,11 @@ public sealed partial class SetupViewModel : ObservableObject
             .OrderByDescending(entry => entry.Count)
             .ToList();
         Launchers = [.. counts.Select(entry => new SetupLauncherRow(entry.Source, Format.LauncherName(entry.Source),
-            entry.Count switch { 0 => "None found", 1 => "1 game", var n => $"{n} games" },
+            entry.Count == 0 ? Strings.NoneFound : Strings.Plural(entry.Count, Strings.GameCountOne, Strings.GameCount),
             previous.TryGetValue(entry.Source, out bool ticked) ? ticked : _settings.IsSourceEnabled(entry.Source)))];
         int total = counts.Sum(entry => entry.Count);
         NothingFound = total == 0;
-        FoundTitle = total == 0 ? "Let's set up your shelf" : total == 1 ? "We found 1 game" : $"We found {total} games";
+        FoundTitle = total == 0 ? Strings.SetupTitleEmpty : Strings.Plural(total, Strings.SetupFoundOne, Strings.SetupFound);
         foreach (var name in LauncherNames) OnPropertyChanged(name);
     }
 
@@ -161,7 +161,7 @@ public sealed partial class SetupViewModel : ObservableObject
     /// <summary>The desktop's shortcuts for the picker, and the library they're matched against.</summary>
     public ShortcutFile[] Shortcuts { get; private set; } = [];
     public IReadOnlyList<Game> Library { get; private set; } = [];
-    public string MoveText { get; private set; } = "Move";
+    public string MoveText { get; private set; } = Strings.Move;
     public bool CanMove { get; private set; }
     public string SelectionText { get; private set; } = "";
 
@@ -184,9 +184,9 @@ public sealed partial class SetupViewModel : ObservableObject
     private void FillSelection()
     {
         int selected = _selected.Count;
-        MoveText = selected == 0 ? "Move" : $"Move {selected}";
+        MoveText = selected == 0 ? Strings.Move : Strings.Format(Strings.MoveCount, selected);
         CanMove = selected > 0;
-        SelectionText = selected == 0 ? "Nothing selected" : selected == 1 ? "1 selected" : $"{selected} selected";
+        SelectionText = selected == 0 ? Strings.NothingSelected : Strings.Plural(selected, Strings.SelectedCountOne, Strings.SelectedCount);
     }
 
     private void Move()
