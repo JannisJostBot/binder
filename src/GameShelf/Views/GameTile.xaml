@@ -27,11 +27,12 @@
             <Border x:Name="HighContrastOutline" CornerRadius="8" BorderThickness="2" BorderBrush="{ThemeResource CoverHighContrastOutlineBrush}"
                     IsHitTestVisible="False" Opacity="0" />
             <v:LauncherBadge x:Name="Badge" />
-            <!-- Star on favorite covers, top-right (board 7). -->
-            <Border x:Name="FavoriteBadge" Width="26" Height="26" Margin="6" CornerRadius="13"
+            <!-- Favorite covers, top-right (board 27, B "Gold chip"): a solid gold circle with a dark star, centered
+                 on the same line as the launcher badge opposite (7 + 13 = 6 + 14). -->
+            <Border x:Name="FavoriteBadge" Width="26" Height="26" Margin="7" CornerRadius="13"
                     HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="Collapsed"
-                    Background="{StaticResource BadgeBrush}" BorderBrush="{StaticResource BadgeStrokeBrush}" BorderThickness="1">
-                <FontIcon Glyph="&#xE735;" FontSize="13" Foreground="{ThemeResource FavoriteBrush}" />
+                    Background="{ThemeResource FavoriteChipBrush}" BorderBrush="{ThemeResource FavoriteChipStrokeBrush}" BorderThickness="1">
+                <FontIcon Glyph="&#xE735;" FontSize="14" Foreground="{ThemeResource FavoriteChipGlyphBrush}" />
             </Border>
             <!-- What a click does: Play, bottom left. Not hit-testable, the click goes to the cover (the grid plays). -->
             <Border x:Name="PlayMark" Width="36" Height="36" Margin="6" CornerRadius="18" HorizontalAlignment="Left"

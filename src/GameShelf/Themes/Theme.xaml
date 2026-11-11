@@ -10,6 +10,10 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <SolidColorBrush x:Key="FavoriteBrush" Color="#F3C64C" />
+            <!-- The gold chip on favorite covers (board 27, B): on the art, so the same gold in light and dark. -->
+            <SolidColorBrush x:Key="FavoriteChipBrush" Color="#F7C948" />
+            <SolidColorBrush x:Key="FavoriteChipGlyphBrush" Color="#1C1C20" />
+            <SolidColorBrush x:Key="FavoriteChipStrokeBrush" Color="#47000000" />
             <!-- The Game mode toast (board 23): a solid surface, not Acrylic, so its round ends and shadow stay crisp. -->
             <SolidColorBrush x:Key="ToastSurfaceBrush" Color="#2C2C30" />
             <SolidColorBrush x:Key="ToastStrokeBrush" Color="#3E3E45" />
@@ -23,6 +27,9 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="FavoriteBrush" Color="#C98A00" />
+            <SolidColorBrush x:Key="FavoriteChipBrush" Color="#F7C948" />
+            <SolidColorBrush x:Key="FavoriteChipGlyphBrush" Color="#1C1C20" />
+            <SolidColorBrush x:Key="FavoriteChipStrokeBrush" Color="#47000000" />
             <LinearGradientBrush x:Key="CoverScrimBrush" StartPoint="0,0" EndPoint="0,1">
                 <GradientStop Offset="0.5" Color="#00000000" />
                 <GradientStop Offset="1" Color="#A6000000" />
@@ -34,6 +41,9 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="FavoriteBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="FavoriteChipBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="FavoriteChipGlyphBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="FavoriteChipStrokeBrush" Color="Transparent" />
             <!-- High contrast: no fade or light edge, a 2 px highlight outline instead. -->
             <SolidColorBrush x:Key="CoverScrimBrush" Color="Transparent" />
             <SolidColorBrush x:Key="CoverHoverEdgeBrush" Color="Transparent" />
@@ -44,7 +54,7 @@
     </ResourceDictionary.ThemeDictionaries>
 
     <!-- Drawn over cover art, so the same in light and dark mode. -->
-    <!-- Chips on cover art (launcher badge, favorite star, Details): near-solid dark with a thin light edge, so
+    <!-- Chips on cover art (launcher badge, Details): near-solid dark with a thin light edge, so
          they stand out on dark and light art alike, the way Fluent separates layered surfaces. Same in both themes:
          they sit on the art, not on the panel. -->
     <SolidColorBrush x:Key="BadgeBrush" Color="#E01C1C20" />
