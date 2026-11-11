@@ -152,6 +152,10 @@
     <value>More actions</value>
     <comment>Tooltip and screen-reader name of the "…" button with more actions.</comment>
   </data>
+  <data name="GameModeOnToolTip" xml:space="preserve">
+    <value>Game mode is on. Select to turn it off.</value>
+    <comment>Tooltip of the shelf header's Game mode button, which is shown only while Game mode is on; selecting it turns Game mode off. "Game mode" is the feature's name.</comment>
+  </data>
   <data name="Back" xml:space="preserve">
     <value>Back</value>
     <comment>Button that goes to the previous setup step. A verb or "Back" as Windows uses it.</comment>
@@ -339,10 +343,6 @@
   <data name="TopCard" xml:space="preserve">
     <value>Top card</value>
     <comment>Screen-reader name of the switch between "Continue" and "This week".</comment>
-  </data>
-  <data name="MoreActionsGameModeOn" xml:space="preserve">
-    <value>More actions, Game mode on</value>
-    <comment>Screen-reader name of the "…" button while Game mode is on.</comment>
   </data>
   <data name="PinOpen" xml:space="preserve">
     <value>Pin open</value>

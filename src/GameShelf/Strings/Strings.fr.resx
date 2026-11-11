@@ -115,6 +115,9 @@
   <data name="MoreActions" xml:space="preserve">
     <value>Plus d’actions</value>
   </data>
+  <data name="GameModeOnToolTip" xml:space="preserve">
+    <value>Le mode jeu est activé. Sélectionnez pour le désactiver.</value>
+  </data>
   <data name="Back" xml:space="preserve">
     <value>Retour</value>
   </data>
@@ -255,9 +258,6 @@
   </data>
   <data name="TopCard" xml:space="preserve">
     <value>Carte du haut</value>
-  </data>
-  <data name="MoreActionsGameModeOn" xml:space="preserve">
-    <value>Plus d’actions, mode jeu activé</value>
   </data>
   <data name="PinOpen" xml:space="preserve">
     <value>Garder ouvert</value>

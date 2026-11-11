@@ -505,7 +505,6 @@ public sealed partial class ShelfViewModel : ObservableObject
     public bool HelperUpdating { get; private set; }
     public bool HelperUpdateEnabled => !HelperUpdating;
     public bool GameModeOn => _settings.GameModeEnabled;
-    public string ActionsName => GameModeOn ? Strings.MoreActionsGameModeOn : Strings.MoreActions;
 
     private void UpdateHelper(IReadOnlyList<Game> games)
     {

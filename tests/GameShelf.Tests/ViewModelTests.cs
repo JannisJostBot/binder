@@ -607,7 +607,7 @@ static partial class Tests
             "shelf: both top cards, Continue first");
         Check(vm.FooterVisible && vm.FooterText.Contains("comes back when it closes") && vm.Columns == 4 && !vm.ListMode,
             "shelf: footer hint and medium covers");
-        Check(!vm.HelperBarOpen && vm.ActionsName == "More actions" && !vm.GameModeOn, "shelf: no helper notice");
+        Check(!vm.HelperBarOpen && !vm.GameModeOn, "shelf: no helper notice");
 
         notified.Clear();
         vm.Query = "arl";
@@ -670,7 +670,7 @@ static partial class Tests
         settings.GameModeEnabled = true;
         settings.GridDensity = GridDensity.List;
         vm.SetData(games, sessions, settings);
-        Check(vm.HelperBarOpen && vm.ActionsName == "More actions, Game mode on" && vm.ListMode && vm.Columns == 1, "shelf: helper notice, Game mode dot, list");
+        Check(vm.HelperBarOpen && vm.GameModeOn && vm.ListMode && vm.Columns == 1, "shelf: helper notice, Game mode on, list");
         vm.ToggleGameMode();
         vm.CloseHelperBar();
         vm.UpdateHelperAsync().Wait();

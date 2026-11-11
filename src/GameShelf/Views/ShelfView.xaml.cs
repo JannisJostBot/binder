@@ -156,6 +156,9 @@ public sealed partial class ShelfView : UserControl
         return item;
     }
 
+    /// <summary>The header's Game mode toggle, shown only while it's on: clicking turns it off.</summary>
+    private void OnGameModeButtonClick(object sender, RoutedEventArgs e) => ViewModel?.SetGameMode(false);
+
     private void OnGameModeAccelerator(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
         args.Handled = true; // not the button's own click, which would open the menu

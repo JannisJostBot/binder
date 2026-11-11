@@ -41,6 +41,7 @@ public sealed partial class Strings
     public static string Done => Get(nameof(Done));
     public static string More => Get(nameof(More));
     public static string MoreActions => Get(nameof(MoreActions));
+    public static string GameModeOnToolTip => Get(nameof(GameModeOnToolTip));
     public static string Back => Get(nameof(Back));
     public static string WithEsc => Get(nameof(WithEsc));
     public static string BackToGames => Get(nameof(BackToGames));
@@ -88,7 +89,6 @@ public sealed partial class Strings
     public static string WeekMostPlayed => Get(nameof(WeekMostPlayed));
     public static string PlaytimeThisWeek => Get(nameof(PlaytimeThisWeek));
     public static string TopCard => Get(nameof(TopCard));
-    public static string MoreActionsGameModeOn => Get(nameof(MoreActionsGameModeOn));
     public static string PinOpen => Get(nameof(PinOpen));
     public static string Unpin => Get(nameof(Unpin));
     public static string GameMode => Get(nameof(GameMode));

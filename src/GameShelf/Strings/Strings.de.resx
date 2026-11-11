@@ -115,6 +115,9 @@
   <data name="MoreActions" xml:space="preserve">
     <value>Weitere Aktionen</value>
   </data>
+  <data name="GameModeOnToolTip" xml:space="preserve">
+    <value>Der Spielmodus ist an. Zum Ausschalten auswählen.</value>
+  </data>
   <data name="Back" xml:space="preserve">
     <value>Zurück</value>
   </data>
@@ -255,9 +258,6 @@
   </data>
   <data name="TopCard" xml:space="preserve">
     <value>Obere Karte</value>
-  </data>
-  <data name="MoreActionsGameModeOn" xml:space="preserve">
-    <value>Weitere Aktionen, Spielmodus an</value>
   </data>
   <data name="PinOpen" xml:space="preserve">
     <value>Angeheftet lassen</value>
