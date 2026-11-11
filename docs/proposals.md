@@ -32,7 +32,7 @@ break the user's system.
 | 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
 | 17 Advanced: sources and artwork | §14 | To do |
 | 18 Performance | §15 | To do |
-| 22 Open a launcher | §21 | Built: `GameActions.OpenLauncher` / `LauncherTarget` (Free up space's launcher step uses it too), names in `Format.LauncherAppName`, the tray group (`ShelfViewModel.LaunchersByGames`, chip order) and the launcher chips' right-click menu with the launcher's icon; unit-tested. On the owner's PC every launcher with games resolves (Steam, Epic, GOG Galaxy, EA app, Ubisoft Connect, Xbox app, Hytale); Steam, already running, comes to the front without a second copy. Still to check by hand: the others while running, the tray group and the chip menu on screen |
+| 22 Open a launcher | §21 | Done; the owner tried it on the real PC on 2026-11-11 and it works. `GameActions.OpenLauncher` / `LauncherTarget` (Free up space's launcher step uses it too), names in `Format.LauncherAppName`, the tray group (`ShelfViewModel.LaunchersByGames`, chip order) and the launcher chips' right-click menu with the launcher's icon; unit-tested. On the owner's PC every launcher with games resolves (Steam, Epic, GOG Galaxy, EA app, Ubisoft Connect, Xbox app, Hytale); Steam, already running, comes to the front without a second copy |
 | 23 Faster than Start | §22 | To do |
 | 24 Lean speed-ups | §23 | To do |
 
