@@ -22,6 +22,8 @@ public sealed partial class MainWindow
     void IShelfActions.ViewSettingsChanged() => SaveSettings();
     bool IShelfActions.HelperNeedsUpdate(IReadOnlyList<Game> games) => GameModeService.HelperNeedsUpdate(App.Settings, games);
     Task IShelfActions.UpdateHelperAsync() => UpdateGameModeHelperAsync();
+    bool IShelfActions.CanOpenLauncher(GameSource source) => GameActions.CanOpenLauncher(source);
+    void IShelfActions.OpenLauncher(GameSource source) => GameActions.OpenLauncher(source);
 
     void IShelfActions.TogglePin()
     {

@@ -32,7 +32,7 @@ break the user's system.
 | 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
 | 17 Advanced: sources and artwork | §14 | To do |
 | 18 Performance | §15 | To do |
-| 22 Open a launcher | §21 | To do |
+| 22 Open a launcher | §21 | Built: `GameActions.OpenLauncher` / `LauncherTarget` (Free up space's launcher step uses it too), names in `Format.LauncherAppName`, the tray group (`ShelfViewModel.LaunchersByGames`, chip order) and the launcher chips' right-click menu with the launcher's icon; unit-tested. On the owner's PC every launcher with games resolves (Steam, Epic, GOG Galaxy, EA app, Ubisoft Connect, Xbox app, Hytale); Steam, already running, comes to the front without a second copy. Still to check by hand: the others while running, the tray group and the chip menu on screen |
 | 23 Faster than Start | §22 | To do |
 | 24 Lean speed-ups | §23 | To do |
 
@@ -1392,6 +1392,7 @@ can open them, so the desktop can be cleared completely. Two entry points, both 
   game launch.
 - When the launcher is already running, starting its exe again should bring its window to the front. **Verify on the
   real PC** for each installed launcher; if one starts a second copy or does nothing, note it here.
+  - Steam (2026-11-11): comes to the front, the second start hands over and exits.
 - The panel behaves as after any other outside action (in Flyout mode it closes on click-away as usual). No toast.
 - Display names: one table shared with `GameActions.LauncherName` (Steam, Epic Games Launcher, GOG Galaxy, EA app,
   Ubisoft Connect, Xbox app, Rockstar Games Launcher, Hytale Launcher).

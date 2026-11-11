@@ -79,6 +79,20 @@ public static class Format
         _ => source.ToString(),
     };
 
+    /// <summary>The launcher app's own name, for "Open …" and the uninstall hints: "Epic Games Launcher", "GOG Galaxy".</summary>
+    public static string LauncherAppName(Models.GameSource source) => source switch
+    {
+        Models.GameSource.Steam => "Steam",
+        Models.GameSource.Epic => "Epic Games Launcher",
+        Models.GameSource.Gog => "GOG Galaxy",
+        Models.GameSource.Ea => "EA app",
+        Models.GameSource.Ubisoft => "Ubisoft Connect",
+        Models.GameSource.Xbox => "Xbox app",
+        Models.GameSource.Rockstar => "Rockstar Games Launcher",
+        Models.GameSource.Hytale => "Hytale Launcher",
+        _ => "launcher",
+    };
+
     /// <summary>The global shortcut as Windows writes it: "Win+Shift+G".</summary>
     public static string HotkeyLabel(Models.Hotkey hotkey) => hotkey switch
     {

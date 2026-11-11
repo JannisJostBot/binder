@@ -1,6 +1,8 @@
 using System.Runtime.InteropServices;
 using GameShelf.Models;
 using GameShelf.Services;
+using GameShelf.ViewModels;
+using GameShelf.Views;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
@@ -425,11 +427,31 @@ public sealed partial class App : Application
         const int open = 1, settings = 2, quit = 3, gameMode = 4, freeSpace = 5;
         // Read when the menu opens (one small file), not kept up to date while it's closed.
         bool needsUpdate = GameModeService.HelperNeedsUpdate(Settings, State.Games);
-        int chosen = _messages.ShowTrayMenu([
+        // The launchers that have games on the shelf and are installed, in chip order (spec §21 b). The game list
+        // is in memory; only their paths are read, now.
+        var launchers = ShelfViewModel.LaunchersByGames(State.Games.Where(g => !g.Hidden && Settings.IsSourceEnabled(g.Source)))
+            .Where(GameActions.CanOpenLauncher)
+            .ToArray();
+        const int firstLauncher = 100;
+        List<(int Id, string Text, bool Checked)> items =
+        [
             (open, "Open Game Shelf", false), (0, "", false),
             (gameMode, needsUpdate ? "Game mode (needs update)" : "Game mode", Settings.GameModeEnabled),
             (freeSpace, "Free up space…", false), (0, "", false),
-            (settings, "Settings", false), (quit, "Quit", false)]);
+        ];
+        if (launchers.Length > 0)
+        {
+            for (int i = 0; i < launchers.Length; i++) items.Add((firstLauncher + i, "Open " + Format.LauncherAppName(launchers[i]), false));
+            items.Add((0, "", false));
+        }
+        items.Add((settings, "Settings", false));
+        items.Add((quit, "Quit", false));
+        int chosen = _messages.ShowTrayMenu(items);
+        if (chosen >= firstLauncher && chosen - firstLauncher < launchers.Length)
+        {
+            GameActions.OpenLauncher(launchers[chosen - firstLauncher]);
+            return;
+        }
         switch (chosen)
         {
             case open:

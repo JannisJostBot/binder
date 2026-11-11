@@ -94,6 +94,17 @@ public sealed partial class LauncherBadge : Grid
         };
     }
 
+    /// <summary>
+    /// The launcher's icon as a UI bitmap if it's loaded already (the badges on the shelf load it), else null and
+    /// nothing is started. Shared with the badges.
+    /// </summary>
+    public static ImageSource? LoadedImage(GameSource source)
+    {
+        if (Images.TryGetValue(source, out var image)) return image;
+        if (LauncherIcons.TryGetLoaded(source) is not { } icon) return null;
+        return Images[source] = Bitmaps.FromPixels(icon);
+    }
+
     /// <summary>The accessible launcher name.</summary>
     public static string Label(GameSource source) => Format.LauncherName(source);
 

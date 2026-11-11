@@ -27,8 +27,11 @@ public static class GameActions
             ? $"steam://{command}/{appId}"
             : null;
 
-    /// <summary>Where a game is uninstalled (Free up space): what to open, and a line telling the user what to do there.</summary>
-    public sealed record UninstallStep(string Target, string Hint);
+    /// <summary>
+    /// Where a game is uninstalled (Free up space): what to open (a link or Settings page, or the launcher itself
+    /// when <paramref name="Launcher"/> is set), and a line telling the user what to do there.
+    /// </summary>
+    public sealed record UninstallStep(string Target, string Hint, GameSource? Launcher = null);
 
     private const string AppsSettings = "ms-settings:appsfeatures";
 
@@ -44,21 +47,46 @@ public static class GameActions
         if (game.Source == GameSource.Gog && game.StoreId is { Length: > 0 and <= 20 } gogId && gogId.All(char.IsAsciiDigit) &&
             LauncherIcons.ProtocolHandler("goggalaxy") is not null)
             return new($"goggalaxy://openGameView/{gogId}", $"In GOG Galaxy, open the menu next to Play and choose Uninstall.");
-        if (game.Source != GameSource.Xbox && LauncherIcons.LauncherExe(game.Source) is { } launcher)
-            return new(launcher, $"Find {game.Name} in your {LauncherName(game.Source)} library and choose Uninstall.");
+        if (game.Source != GameSource.Xbox && LauncherTarget(game.Source) is { } launcher)
+            return new(launcher, $"Find {game.Name} in your {Views.Format.LauncherAppName(game.Source)} library and choose Uninstall.", game.Source);
         return new(AppsSettings, $"Find {game.Name} in Settings › Apps and choose Uninstall.");
     }
 
-    private static string LauncherName(GameSource source) => source switch
+    /// <summary>Opens the step's link, Settings page or launcher.</summary>
+    public static void OpenUninstall(Game game)
     {
-        GameSource.Epic => "Epic Games Launcher",
-        GameSource.Ea => "EA app",
-        GameSource.Ubisoft => "Ubisoft Connect",
-        GameSource.Rockstar => "Rockstar Games Launcher",
-        GameSource.Hytale => "Hytale Launcher",
-        GameSource.Gog => "GOG Galaxy",
-        _ => "launcher",
-    };
+        var step = Uninstall(game);
+        if (step.Launcher is { } source) OpenLauncher(source);
+        else ShellOpen(step.Target);
+    }
+
+    // ---- Open a launcher (spec §21) ----------------------------------------------------------------------------
+
+    /// <summary>
+    /// What opening the launcher starts: the installed launcher's exe (an existing file ending in .exe, from
+    /// <see cref="LauncherIcons.LauncherExe"/>), or the Xbox app's Start item. Null when it isn't installed.
+    /// Registry reads, so only when a menu opens or an item is picked.
+    /// </summary>
+    public static string? LauncherTarget(GameSource source)
+    {
+        if (!Views.Format.HasBadge(source) || LauncherIcons.LauncherExe(source) is not { } target) return null;
+        if (source == GameSource.Xbox) return target; // the shell:AppsFolder item, fixed in LauncherIcons
+        return Path.IsPathFullyQualified(target) && target.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && File.Exists(target)
+            ? target
+            : null;
+    }
+
+    /// <summary>Whether the launcher is installed, so "Open …" is offered.</summary>
+    public static bool CanOpenLauncher(GameSource source) => LauncherTarget(source) is not null;
+
+    /// <summary>
+    /// Opens the launcher itself with no arguments; Steam with its window (no -silent: the user asked for it).
+    /// A running launcher brings its window to the front.
+    /// </summary>
+    public static void OpenLauncher(GameSource source)
+    {
+        if (LauncherTarget(source) is { } target) ShellOpen(target);
+    }
 
     /// <summary>Opens a folder in Explorer or a URL in the default browser.</summary>
     public static void ShellOpen(string target)

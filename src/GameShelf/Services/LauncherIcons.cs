@@ -20,6 +20,12 @@ public static class LauncherIcons
     /// <summary>Manually added games and imported shortcuts get no badge.</summary>
     public static bool HasBadge(GameSource source) => Views.Format.HasBadge(source);
 
+    /// <summary>The icon if it's loaded already; null otherwise, without loading it.</summary>
+    public static IconPixels? TryGetLoaded(GameSource source)
+    {
+        lock (Sync) return Loaded.TryGetValue(source, out var icon) ? icon : null;
+    }
+
     /// <summary>
     /// The icon if it's loaded. Otherwise starts loading it and calls <paramref name="whenReady"/> on the UI
     /// thread once done (with null if the launcher's icon can't be read; show the glyph then).

@@ -30,7 +30,7 @@ public sealed partial class MainWindow
 
     IReadOnlySet<string> IFreeSpaceActions.RunningGameIds(IReadOnlyList<Game> games) => RunningGames.Ids(games);
     string IFreeSpaceActions.UninstallHint(Game game) => GameActions.Uninstall(game).Hint;
-    void IFreeSpaceActions.OpenUninstall(Game game) => GameActions.ShellOpen(GameActions.Uninstall(game).Target);
+    void IFreeSpaceActions.OpenUninstall(Game game) => GameActions.OpenUninstall(game);
 
     /// <summary>
     /// Free up space (spec §12), from Settings or a game's "…" menu (that game's drive selected). Mid-uninstall

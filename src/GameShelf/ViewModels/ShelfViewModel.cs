@@ -26,6 +26,10 @@ public interface IShelfActions
     bool HelperNeedsUpdate(IReadOnlyList<Game> games);
     /// <summary>Updates the helper (UAC); the owner gives the shelf its data again afterwards.</summary>
     Task UpdateHelperAsync();
+    /// <summary>Whether the launcher is installed, so its chip offers "Open …" (a few registry reads).</summary>
+    bool CanOpenLauncher(GameSource source);
+    /// <summary>Opens the launcher itself (spec §21).</summary>
+    void OpenLauncher(GameSource source);
 }
 
 /// <summary>
@@ -212,11 +216,7 @@ public sealed partial class ShelfViewModel : ObservableObject
     /// </summary>
     private bool BuildChips()
     {
-        var launchers = _games.Where(g => Format.HasBadge(g.Source))
-            .GroupBy(g => g.Source)
-            .OrderByDescending(group => group.Count())
-            .Select(group => group.Key.ToString())
-            .ToList();
+        var launchers = LaunchersByGames(_games).Select(source => source.ToString()).ToList();
         if (_games.Any(g => !Format.HasBadge(g.Source))) launchers.Add("Other");
 
         // The current filter stays visible even if it would be under More.
@@ -235,6 +235,34 @@ public sealed partial class ShelfViewModel : ObservableObject
         MoreChips = [.. more];
         return true;
     }
+
+    /// <summary>
+    /// The launchers that have games on the shelf, in chip order (most games first). Also the tray menu's order.
+    /// </summary>
+    public static GameSource[] LaunchersByGames(IEnumerable<Game> shelf) =>
+        [.. shelf.Where(g => Format.HasBadge(g.Source))
+            .GroupBy(g => g.Source)
+            .OrderByDescending(group => group.Count())
+            .Select(group => group.Key)];
+
+    /// <summary>
+    /// The chip menu's item (spec §21 a): "Open Steam" for a launcher chip whose launcher is installed, else null
+    /// (All, Favorites, Recent, Other: no menu). Asked when the menu opens.
+    /// </summary>
+    public string? OpenLauncherLabel(string filter) =>
+        LauncherOf(filter) is { } source && _actions.CanOpenLauncher(source) ? "Open " + Format.LauncherAppName(source) : null;
+
+    /// <summary>The chip menu's "Open …" was picked.</summary>
+    public void OpenLauncher(string filter)
+    {
+        if (LauncherOf(filter) is { } source) _actions.OpenLauncher(source);
+    }
+
+    /// <summary>The launcher a chip filters by; null for All, Favorites, Recent and Other.</summary>
+    public static GameSource? LauncherOf(string filter) =>
+        filter.Length > 0 && char.IsAsciiLetter(filter[0]) && Enum.TryParse<GameSource>(filter, out var source) && Format.HasBadge(source)
+            ? source
+            : null;
 
     /// <summary>A chip or a launcher under More was picked.</summary>
     public void SelectFilter(string filter)

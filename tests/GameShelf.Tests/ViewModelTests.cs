@@ -514,6 +514,9 @@ static partial class Tests
         public void ViewSettingsChanged() => Saves++;
         public bool HelperNeedsUpdate(IReadOnlyList<Game> games) => NeedsUpdate;
         public Task UpdateHelperAsync() { Calls.Add("update helper"); return Task.CompletedTask; }
+        public HashSet<GameSource> Installed = [];
+        public bool CanOpenLauncher(GameSource source) => Installed.Contains(source);
+        public void OpenLauncher(GameSource source) => Calls.Add("open " + source);
     }
 
     static void ShelfViewModelTests()
@@ -548,6 +551,17 @@ static partial class Tests
         Check(vm.ShownChips.SequenceEqual(["Steam", "Epic", "Gog"]) && vm.MoreChips.SequenceEqual(["Xbox", "Other"]) && vm.MoreVisible,
             "shelf: three launchers (most games first), the rest under More");
         Check(ShelfViewModel.ChipLabel("Gog") == "GOG" && ShelfViewModel.ChipLabel("Ea") == "EA", "shelf: chip labels");
+        Check(ShelfViewModel.LaunchersByGames(vm.Visible).SequenceEqual([GameSource.Steam, GameSource.Epic, GameSource.Gog, GameSource.Xbox]),
+            "shelf: launchers with games in chip order, without Other (also the tray menu's order)");
+        spy.Installed = [GameSource.Steam, GameSource.Gog];
+        Check(vm.OpenLauncherLabel("Steam") == "Open Steam" && vm.OpenLauncherLabel("Gog") == "Open GOG Galaxy" &&
+              vm.OpenLauncherLabel("Epic") is null && vm.OpenLauncherLabel("All") is null && vm.OpenLauncherLabel("Other") is null &&
+              vm.OpenLauncherLabel("Manual") is null && vm.OpenLauncherLabel("0") is null,
+            "shelf: launcher chips offer Open … only when installed; other chips have no menu");
+        vm.OpenLauncher("Gog");
+        vm.OpenLauncher("Favorites");
+        Check(spy.Calls is ["open Gog"], "shelf: Open … reaches the owner, other chips do nothing");
+        spy.Calls.Clear();
         Check(games[0].LastPlayedText == Views.Format.RelativeDay(sessions[1].End) && games[3].LastPlayedText == "Never", "shelf: last played on each game");
         Check(vm.ContinueGame?.Id == "s1" && vm.ContinueTitle == "Alpha" && vm.ContinuePlayName == "Play Alpha", "shelf: continue playing the last game");
         Check(vm.HasWeek && vm.WeekBars.Count == 7 && vm.SpotlightVisible && vm.SwitchVisible && !vm.ShowWeek && vm.ContinueVisible,

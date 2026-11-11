@@ -362,8 +362,29 @@ public sealed partial class ShelfView : UserControl
     private void AddChip(string filter, string label)
     {
         var item = new SelectorBarItem { Text = label, Tag = filter };
+        // A launcher chip opens its launcher from a menu (spec §21 a); a normal click still only filters.
+        if (ViewModel!.OpenLauncherLabel(filter) is { } open)
+        {
+            AutomationProperties.SetHelpText(item, "Right-click to " + char.ToLowerInvariant(open[0]) + open[1..]);
+            item.ContextRequested += OnChipContextRequested;
+        }
         Filters.Items.Add(item);
         if (ViewModel!.CurrentFilter == filter) Filters.SelectedItem = item;
+    }
+
+    /// <summary>Right-click, Shift+F10 or the Menu key on a launcher chip: "Open Steam", built when it opens.</summary>
+    private void OnChipContextRequested(UIElement sender, ContextRequestedEventArgs args)
+    {
+        args.Handled = true;
+        if (sender is not SelectorBarItem { Tag: string filter } chip || ViewModel is not { } vm ||
+            vm.OpenLauncherLabel(filter) is not { } label || ShelfViewModel.LauncherOf(filter) is not { } source) return;
+        var item = new MenuFlyoutItem { Text = label };
+        if (LauncherBadge.LoadedImage(source) is { } image) item.Icon = new ImageIcon { Source = image };
+        item.Click += (_, _) => vm.OpenLauncher(filter);
+        var menu = new MenuFlyout();
+        menu.Items.Add(item);
+        if (args.TryGetPosition(chip, out var point)) menu.ShowAt(chip, point);
+        else menu.ShowAt(chip);
     }
 
     private void OnFilterChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
