@@ -179,6 +179,7 @@ public sealed partial class Strings
     public static string AutomaticNoFolder => Get(nameof(AutomaticNoFolder));
     public static string EngineUnknown => Get(nameof(EngineUnknown));
     public static string EngineName => Get(nameof(EngineName));
+    public static string EngineWithVersion => Get(nameof(EngineWithVersion));
     public static string StartsAs => Get(nameof(StartsAs));
     public static string StartsExe => Get(nameof(StartsExe));
     public static string NoteSteamArgs => Get(nameof(NoteSteamArgs));

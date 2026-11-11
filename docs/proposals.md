@@ -75,7 +75,8 @@ The build order is at the end of this file. The ideas under "Not decided" at the
 - Clicking a cover plays; details open from an (i) button on hover, Space or right-click.
 - Shelf header is a time-of-day greeting; "Continue playing" (hero banner) and "This week" share one switchable slot.
 - Steam starts with `-silent` when it isn't running.
-- Scope rule: a launcher, not a game toolbox. Engine versions and shader-cache tools were dropped under it.
+- Scope rule: a launcher, not a game toolbox. Engine versions and shader-cache tools were dropped under it
+  (engine versions came back on 2026-11-11, see there).
 
 **2026-11-04**
 - **Free up space** approved (§12):
@@ -98,6 +99,9 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   DirectStorage (extra dependencies for little gain), and newer CPU instruction sets (would crash on older PCs).
 
 **2026-11-11**
+- Engine versions (owner, reverses the 11-03 drop): the engine tag in Detail shows Unity's and Unreal's version
+  ("Unreal Engine 5.4", "Unity 6") when it can be read, and every engine tag gets an icon that suits the engine's
+  name (not its logo). See "Engine detection" in §9.
 - Shelf header (§16 a): Settings moved into the "…" menu as its last item (`Ctrl+,`), no separate gear. Game mode
   shows as a checked toggle while it's on, instead of a dot on "…" that looked like a notification.
 
@@ -350,6 +354,15 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
     - Unreal: a `*-Win64-Shipping.exe` or an `Engine\` folder.
     - Source: `gameinfo.txt`. Source 2: `gameinfo.gi`.
     - Godot: a `.pck` next to the exe.
+  - **Version** (2026-11-11), cached with the rest:
+    - Unity: `UnityPlayer.dll`'s file version, "2019.4"; Unity 6 numbers itself 6000.x, shown as "6", "6.1".
+    - Unreal: the build string `++UE5+Release-5.4` inside the shipping exe (one read-only pass, up to 512 MB),
+      else "UE5"/"UE4" in its file version ("5"). Many games build from a branch of their own and show only
+      "Unreal Engine" (on the owner's PC: 6 of 11 found).
+    - Other engines carry no version that can be read.
+  - **Icon** in the engine tag: a Segoe Fluent glyph that suits the name, not the logo (`Format.EngineGlyph`):
+    Unity a cube, Unreal a lightning bolt, CryEngine an eye, id Tech a flame, Frostbite a thermometer, and so on;
+    the controller for the rest.
 - **Suggestions** (checkboxes with plain labels, the real argument shown beside each):
 
   | Engine | Suggestions |

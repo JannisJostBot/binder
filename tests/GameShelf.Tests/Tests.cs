@@ -522,6 +522,21 @@ static partial class Tests
             Console.WriteLine("SKIP link test (no symlink rights)");
         }
 
+        // Engine versions: Unity's file version, Unreal's build string (real values from installed games).
+        Check(GameScan.UnityVersion("2019.4.40.16762411") == "2019.4" && GameScan.UnityVersion("6000.0.52.10371206") == "6" &&
+              GameScan.UnityVersion("6000.1.3.1") == "6.1" && GameScan.UnityVersion("1.0") == null && GameScan.UnityVersion("x.y") == null &&
+              GameScan.UnityVersion(null) == null, "engine: Unity versions, with 6000.x as Unity 6");
+        static string? Unreal(byte[] bytes, long max = GameScan.MaxExeBytes) => GameScan.FindUnrealVersion(new MemoryStream(bytes), max);
+        byte[] Padded(byte[] text, int before) => [.. new byte[before], .. text, .. new byte[64]];
+        Check(Unreal(Padded("++UE5+Release-5.4-CL-0"u8.ToArray(), 10)) == "5.4" &&
+              Unreal(Padded(System.Text.Encoding.Unicode.GetBytes("++UE4+Release-4.27"), 10)) == "4.27",
+            "engine: Unreal's build string, ASCII and UTF-16");
+        Check(Unreal(Padded("++UE5+Release-5.1"u8.ToArray(), (1 << 20) - 7)) == "5.1",
+            "engine: a build string across two read blocks is found");
+        Check(Unreal(Padded("++UE5+Release-4.27"u8.ToArray(), 0)) == null && Unreal(Padded("++UE5+Main"u8.ToArray(), 0)) == null &&
+              Unreal(Padded("++UE5+Release-5.4"u8.ToArray(), 2000), max: 1000) == null,
+            "engine: mismatched or branch builds and text past the cap give no version");
+
         // Requirements: Vanguard needs TPM and Secure Boot on Windows 11; Battlefield 6 adds Secure Boot.
         var vanguard = AntiCheat.Requirements([AntiCheatKind.Vanguard], "VALORANT", windows11: true);
         Check(vanguard.Contains(PcRequirement.Tpm20) && vanguard.Contains(PcRequirement.SecureBoot), "Vanguard needs TPM 2.0 and Secure Boot on Windows 11");

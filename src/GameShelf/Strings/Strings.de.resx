@@ -529,6 +529,9 @@
   <data name="EngineName" xml:space="preserve">
     <value>Engine: {0}</value>
   </data>
+  <data name="EngineWithVersion" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
   <data name="StartsAs" xml:space="preserve">
     <value>Startet als: {0}</value>
   </data>

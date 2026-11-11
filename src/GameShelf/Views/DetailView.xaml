@@ -281,7 +281,7 @@
                                 VerticalAlignment="Center" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 Background="{ThemeResource SystemFillColorNeutralBackgroundBrush}">
                             <StackPanel Orientation="Horizontal" Spacing="5">
-                                <FontIcon x:Name="EngineGlyph" Glyph="&#xE7FC;" FontSize="11" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.EngineKnown, Mode=OneWay}"
+                                <FontIcon x:Name="EngineGlyph" Glyph="{x:Bind ViewModel.EngineGlyph, Mode=OneWay}" FontSize="11" VerticalAlignment="Center" Visibility="{x:Bind ViewModel.EngineKnown, Mode=OneWay}"
                                           Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
                                 <TextBlock x:Name="EngineTagText" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" Text="{x:Bind ViewModel.EngineTag, Mode=OneWay}" />
                             </StackPanel>

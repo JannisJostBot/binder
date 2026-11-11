@@ -58,6 +58,8 @@ public sealed class Game
     // Install-folder scan (engine and anti-cheat), cached until the game's files change (see GameScan).
     public string? ScanStamp { get; set; }
     public GameEngine? Engine { get; set; }
+    /// <summary>The engine's version when it could be read ("5.4", "2019.4", "6"), else null.</summary>
+    public string? EngineVersion { get; set; }
     public List<AntiCheatKind>? AntiCheats { get; set; }
 
     /// <summary>The highest playtime milestone (hours) already shown in "Welcome back" (proposals §13 e).</summary>
@@ -99,6 +101,7 @@ public sealed class Game
         {
             ScanStamp = from.ScanStamp;
             Engine = from.Engine;
+            EngineVersion = from.EngineVersion;
             AntiCheats = from.AntiCheats;
         }
         AddedAt = from.AddedAt;

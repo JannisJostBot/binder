@@ -79,6 +79,37 @@ public static class Format
         _ => source.ToString(),
     };
 
+    /// <summary>"Unreal Engine 5.4", "Unity 6", or the engine's name alone when its version isn't known.</summary>
+    public static string EngineLabel(Library.GameEngine engine, string? version) => version is null
+        ? Library.LaunchOptions.EngineName(engine)
+        : Strings.Format(Strings.EngineWithVersion, Library.LaunchOptions.EngineName(engine), version);
+
+    /// <summary>
+    /// The engine tag's icon: a Segoe Fluent glyph that suits the engine's name, not its logo (all of them also in
+    /// Segoe MDL2 Assets, for Windows 10). The controller for engines without one of their own.
+    /// </summary>
+    public static string EngineGlyph(Library.GameEngine engine) => engine switch
+    {
+        Library.GameEngine.Unity => "",                                  // a cube
+        Library.GameEngine.Unreal => "",                                 // a lightning bolt
+        Library.GameEngine.Source or Library.GameEngine.Source2 => "",   // braces, as in source code
+        Library.GameEngine.Godot => "",                                  // a robot
+        Library.GameEngine.Frostbite or Library.GameEngine.Snowdrop => "", // a thermometer: cold
+        Library.GameEngine.ReEngine => "",                               // a heartbeat
+        Library.GameEngine.Anvil => "",                                  // a wrench: tools at the anvil
+        Library.GameEngine.Dunia => "",                                  // a globe: open worlds
+        Library.GameEngine.CryEngine => "",                              // an eye
+        Library.GameEngine.IdTech => "",                                 // a flame
+        Library.GameEngine.Glacier => "",                                // peaks
+        Library.GameEngine.Insomniac => "",                              // a moon: up at night
+        Library.GameEngine.Illusion => "",                               // sparkles
+        Library.GameEngine.GameMaker => "",                              // a brush
+        Library.GameEngine.Love => "",                                   // a heart
+        Library.GameEngine.RenPy => "",                                  // a speech bubble: visual novels
+        Library.GameEngine.RpgMaker => "",                               // a shield
+        _ => "",                                                         // a controller
+    };
+
     /// <summary>The launcher app's own name, for "Open …" and the uninstall hints: "Epic Games Launcher", "GOG Galaxy".</summary>
     public static string LauncherAppName(Models.GameSource source) => source switch
     {

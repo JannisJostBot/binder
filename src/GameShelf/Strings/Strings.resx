@@ -704,6 +704,10 @@
     <value>Engine: {0}</value>
     <comment>Screen-reader name of the engine tag. {0} = engine name ("Unity").</comment>
   </data>
+  <data name="EngineWithVersion" xml:space="preserve">
+    <value>{0} {1}</value>
+    <comment>The engine tag in game details and the launch summary, when the version is known. {0} = engine name, not translated ("Unreal Engine", "Unity"); {1} = its version number ("5.4", "6"). Change only the order or spacing if your language needs it.</comment>
+  </data>
   <data name="StartsAs" xml:space="preserve">
     <value>Starts as: {0}</value>
     <comment>Preview of the command the game starts with. {0} = program and arguments, or "Steam, with -windowed". Keep {0} unchanged.</comment>

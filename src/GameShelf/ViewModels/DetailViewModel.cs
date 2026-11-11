@@ -396,7 +396,7 @@ public sealed partial class DetailViewModel : ObservableObject
     private static readonly string[] LaunchNames =
     [
         nameof(CanPickStartWith), nameof(StartWithText), nameof(StartWithToolTip), nameof(HasStartWith),
-        nameof(EngineKnown), nameof(EngineTag), nameof(EngineTagName), nameof(EngineText),
+        nameof(EngineKnown), nameof(EngineGlyph), nameof(EngineTag), nameof(EngineTagName), nameof(EngineText),
         nameof(Suggestions), nameof(HasSuggestions), nameof(LaunchSupported), nameof(ExtraArgs),
     ];
 
@@ -417,8 +417,11 @@ public sealed partial class DetailViewModel : ObservableObject
     public bool HasStartWith => Game?.ExeOverride is not null;
 
     private GameEngine Engine => _scan?.Result?.Engine ?? Game?.Engine ?? GameEngine.Unknown;
+    private string? EngineVersion => _scan?.Result is { } result ? result.EngineVersion : Game?.EngineVersion;
     public bool EngineKnown => Engine != GameEngine.Unknown;
-    public string EngineTag => EngineKnown ? LaunchOptions.EngineName(Engine)
+    /// <summary>The tag's icon: one that suits the engine's name (<see cref="Format.EngineGlyph"/>).</summary>
+    public string EngineGlyph => Format.EngineGlyph(Engine);
+    public string EngineTag => EngineKnown ? Format.EngineLabel(Engine, EngineVersion)
         : _scan is null && Game is { Engine: null, InstallDir: not null } ? Strings.Checking : Strings.EngineUnknown;
     public string EngineTagName => Strings.Format(Strings.EngineName, EngineTag);
     public string EngineText => LaunchOptions.Suggestions(Engine).Count > 0 ? Strings.SuggestedOptions : Strings.NoSuggestions;
@@ -515,7 +518,7 @@ public sealed partial class DetailViewModel : ObservableObject
         };
 
         var parts = new List<string>(3);
-        if (Engine != GameEngine.Unknown) parts.Add(LaunchOptions.EngineName(Engine));
+        if (Engine != GameEngine.Unknown) parts.Add(Format.EngineLabel(Engine, EngineVersion));
         bool changed = false;
         if (!string.IsNullOrWhiteSpace(game.LaunchArgs)) { parts.Add(game.LaunchArgs.Trim()); changed = true; }
         if (LaunchOptions.ValidOverride(game) is { } exe) { parts.Add(Strings.Format(Strings.StartsExe, Path.GetFileName(exe))); changed = true; }
