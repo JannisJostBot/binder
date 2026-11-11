@@ -127,7 +127,7 @@ public sealed partial class ShelfView : UserControl
         ActionsMenu.Items.Clear();
         if (vm.HelperNeedsUpdate)
         {
-            ActionsMenu.Items.Add(MenuItem(Strings.GameModeNeedsUpdateMenu, "", vm.OpenGameMode, "Ctrl+G"));
+            ActionsMenu.Items.Add(MenuItem(Strings.GameModeNeedsUpdateMenu, "\uE7BA", vm.OpenGameMode, "Ctrl+G"));
         }
         else
         {
@@ -135,17 +135,17 @@ public sealed partial class ShelfView : UserControl
             {
                 Text = Strings.GameMode,
                 IsChecked = vm.GameModeOn,
-                Icon = new FontIcon { Glyph = "" },
+                Icon = new FontIcon { Glyph = "\uE7FC" },
                 KeyboardAcceleratorTextOverride = "Ctrl+G",
             };
             toggle.Click += (_, _) => vm.SetGameMode(toggle.IsChecked);
             ActionsMenu.Items.Add(toggle);
         }
-        ActionsMenu.Items.Add(MenuItem(Strings.GameModeSettingsMenu, "", vm.OpenGameMode));
+        ActionsMenu.Items.Add(MenuItem(Strings.GameModeSettingsMenu, "\uE713", vm.OpenGameMode));
         ActionsMenu.Items.Add(new MenuFlyoutSeparator());
-        ActionsMenu.Items.Add(MenuItem(Strings.FreeUpSpaceMenu, "", vm.OpenFreeSpace));
-        ActionsMenu.Items.Add(MenuItem(Strings.AddGameMenu, "", vm.AddGame));
-        ActionsMenu.Items.Add(MenuItem(Strings.RefreshLibrary, "", vm.RefreshLibrary, "F5"));
+        ActionsMenu.Items.Add(MenuItem(Strings.FreeUpSpaceMenu, "\uEDA2", vm.OpenFreeSpace));
+        ActionsMenu.Items.Add(MenuItem(Strings.AddGameMenu, "\uE710", vm.AddGame));
+        ActionsMenu.Items.Add(MenuItem(Strings.RefreshLibrary, "\uE72C", vm.RefreshLibrary, "F5"));
     }
 
     private static MenuFlyoutItem MenuItem(string text, string glyph, Action action, string? shortcut = null)
