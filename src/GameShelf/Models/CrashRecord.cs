@@ -8,7 +8,7 @@ public enum CrashCulprit { None, NvidiaDriver, AmdDriver, IntelDriver, GraphicsD
 
 /// <summary>
 /// The crash check of one session, kept in crashes.json (written by the widget only; the watcher writes
-/// sessions.json), so the Windows logs are read once per session, and before they roll over.
+/// the sessions files), so the Windows logs are read once per session, and before they roll over.
 /// </summary>
 public sealed class CrashRecord
 {

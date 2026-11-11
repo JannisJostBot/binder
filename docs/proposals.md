@@ -147,6 +147,14 @@ The build order is at the end of this file. The ideas under "Not decided" at the
 - Bug report and AI prompt are in the display language too, since they are pasted into the user's own forum or
   assistant. The setup's disclaimer stays English.
 
+**2026-11-11**
+- Sessions are stored as one JSON Lines file per year (`sessions-2026.jsonl`), by the year each session ended.
+  The watcher appends one line instead of reading and rewriting the whole history, so its cost and memory stay
+  the same after years of play; past years never change. JSON stays (readable, no package); a binary format or
+  SQLite would add a dependency for little gain at a few hundred KB a year. A session over New Year stays one
+  record; a future "year in review" clips it at Jan 1. Not yet: a cache of finished years' totals, only once
+  loading all years measures slow.
+
 ---
 
 ## 1. App icon (board 1)
@@ -312,7 +320,7 @@ Three steps, shown once (Settings has "Run first-time setup again"):
   - Total time, number of games, most played game, and 7 bars Mon–Sun.
   - Single series in the accent color: thin bars with 4 px rounded tops, a recessive baseline, a tooltip per bar,
     and an automation name with all values.
-  - Computed from `sessions.json` when the panel opens. Never on a timer.
+  - Computed from the sessions files when the panel opens. Never on a timer.
 - **Cover size:** Small (5 columns), Medium (4), Large (3), List (`Settings.GridDensity`).
   - The list rows show a small cover, the name, the launcher and when it was last played.
   - Decode widths follow the tile size.

@@ -53,6 +53,7 @@
     <Compile Include="..\..\src\GameShelf.Watcher\Program.cs" Link="Linked\Watcher\Program.cs" />
     <Compile Include="..\..\src\GameShelf.Watcher\GameMode.cs" Link="Linked\Watcher\GameMode.cs" />
     <Compile Include="..\..\src\GameShelf.Watcher\GameModeShared.cs" Link="Linked\Watcher\GameModeShared.cs" />
+    <Compile Include="..\..\src\GameShelf.Watcher\SessionLog.cs" Link="Linked\Watcher\SessionLog.cs" />
     <Compile Include="..\..\src\GameShelf.Watcher\ElevatedClient.cs" Link="Linked\Watcher\ElevatedClient.cs" />
     <Compile Include="..\..\src\GameShelf.Elevated\Helper.cs" Link="Linked\Elevated\Helper.cs" />
     <Compile Include="..\..\src\GameShelf.Elevated\Qos.cs" Link="Linked\Elevated\Qos.cs" />

@@ -46,6 +46,7 @@
   <ItemGroup>
     <!-- Game mode's ids, files and restore result, shared with the watcher that applies and restores it. -->
     <Compile Include="..\GameShelf.Watcher\GameModeShared.cs" Link="Shared\GameModeShared.cs" />
+    <Compile Include="..\GameShelf.Watcher\SessionLog.cs" Link="Shared\SessionLog.cs" />
   </ItemGroup>
 
   <ItemGroup>

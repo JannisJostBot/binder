@@ -86,11 +86,17 @@ docs/proposals.md         approved feature specs, progress table (§0), decision
 docs/tasks/, AGENTS.md    task cards and rules for cheaper coding agents
 ```
 
-Data: `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions.json`, `imported-shortcuts.json`,
+Data: `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions-<year>.jsonl`, `imported-shortcuts.json`,
 `crashes.json`, `Shortcuts\`). `%LOCALAPPDATA%\GameShelf\`: `covers\`, `error.log`, and Game mode's
 `gamemode-journal.json` (only while applied), `gamemode.log`, `gamemode-last.txt`, `gamemode-request.txt`. The
 helper: `%ProgramData%\GameShelf\` (`journal.json`, `elevated.log`, `allowed-<SID>.txt`, `result-<SID>.txt`).
 The version lives in `Directory.Build.props`.
+
+Sessions (`GameShelf.Watcher/SessionLog.cs`, shared with the widget): JSON Lines, one compact object per line, one
+file per year by the session's end. A session over New Year stays one record in the year it ended; per-year
+totals clip it at Jan 1. Readers load every year file and go by the timestamps, skip lines that don't parse, and
+ignore unknown fields: new fields are optional, never renamed; a breaking change gets a new file name. The widget
+moves an old `sessions.json` into the year files at start (kept as `sessions.json.bak`).
 
 ## Core flow: launch → hide → return
 
@@ -103,8 +109,8 @@ The version lives in `Directory.Build.props`.
      ~2 s is allowed here only, for up to ~3 min. Never found: relaunch the widget with "Couldn't detect the game".
    - Found: **block** on the process handle; no polling while the game runs. After an exit, re-check the folder
      for ~5 s (games that restart themselves).
-   - On exit: append the session to `sessions.json`, relaunch the widget if "Come back when the game closes" is on,
-     or with `--crashed` after a crash exit code of a game with "Restart if it crashes" (spec §17: the widget's
+   - On exit: append the session as one line to `sessions-<year>.jsonl` (the year it ended, `SessionLog`; never
+     reads the file), relaunch the widget if "Come back when the game closes" is on, or with `--crashed` after a crash exit code of a game with "Restart if it crashes" (spec §17: the widget's
      restart pill counts 5 s down, then plays it again; at most twice in a row).
    - Game mode (when on for the game): apply right after start (and tell a widget that is still up, never starting
      it for that), Above normal priority once found, restore everything before relaunching the widget, which shows

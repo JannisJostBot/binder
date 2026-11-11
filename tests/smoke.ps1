@@ -297,6 +297,7 @@ $sessions = @(
     @{ GameId = 'steam:570'; Start = $now.AddMinutes(-2).ToString('o'); End = $now.AddMinutes(-1).ToString('o') }
 )
 ConvertTo-Json -InputObject $games -Depth 3 | Set-Content -Encoding UTF8 (Join-Path $dataDir 'library.json')
+# Written in the old single-file format, so the widget's move into sessions-<year>.jsonl runs too.
 ConvertTo-Json -InputObject $sessions -Depth 3 | Set-Content -Encoding UTF8 (Join-Path $dataDir 'sessions.json')
 # The first part tests the desktop-docked mode, with first-run setup already done; section 5 tests the flyout.
 ConvertTo-Json -InputObject @{ HideDelaySeconds = 10; DisplayMode = 'Desktop'; SetupDone = $true } | Set-Content -Encoding UTF8 (Join-Path $dataDir 'settings.json')
@@ -543,7 +544,7 @@ try {
     $returned = Wait-Until { Get-Process GameShelf -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $widget.Id } } 60 'widget to come back after the game closed'
     $returned = $returned | Select-Object -First 1
     $script:returnedProcess = $returned
-    Wait-Until { (Get-Content (Join-Path $dataDir 'sessions.json') -Raw) -match 'manual:loop' } 5 'session written by the watcher' | Out-Null
+    Wait-Until { (Get-ChildItem $dataDir -Filter 'sessions-*.jsonl' | Get-Content -Raw) -match 'manual:loop' } 5 'session written by the watcher' | Out-Null
     $metrics += 'Widget came back and the session was recorded: yes'
     Get-WidgetWindow $returned.Id | Out-Null
     Start-Sleep -Seconds 3

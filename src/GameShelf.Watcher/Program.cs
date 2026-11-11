@@ -297,7 +297,7 @@ internal static class Program
 
     /// <summary>
     /// Saves the session, the crash check's only input. Another program (a virus scanner reading the new file,
-    /// an editor) can hold sessions.json for a moment, so it tries again for a few seconds; a session that still
+    /// an editor) can hold the sessions file for a moment, so it tries again for a few seconds; a session that still
     /// can't be saved is written to error.log instead of being lost without a trace.
     /// </summary>
     private static void SaveSession(string gameId, DateTimeOffset start, DateTimeOffset end, GameExit exit, bool crashReporter)
@@ -337,15 +337,15 @@ internal static class Program
         }
     }
 
-    /// <summary>Appends one entry to the sessions.json array without loading a serializer.</summary>
+    /// <summary>
+    /// Appends the session as one line to this year's sessions file (<see cref="Shared.SessionLog"/>), without
+    /// reading the file or loading a serializer.
+    /// </summary>
     private static void AppendSession(string gameId, DateTimeOffset start, DateTimeOffset end, GameExit exit, bool crashReporter)
     {
         var dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GameShelf");
-        var path = Path.Combine(dataDir, "sessions.json");
-        Directory.CreateDirectory(dataDir);
-
         var buffer = new System.Buffers.ArrayBufferWriter<byte>(256);
-        using (var w = new Utf8JsonWriter(buffer, new JsonWriterOptions { Indented = true }))
+        using (var w = new Utf8JsonWriter(buffer))
         {
             w.WriteStartObject();
             w.WriteString("GameId", gameId);
@@ -357,23 +357,7 @@ internal static class Program
             if (crashReporter) w.WriteBoolean("CrashReporter", true);
             w.WriteEndObject();
         }
-        var entry = Encoding.UTF8.GetString(buffer.WrittenSpan).Replace("\n", "\n  ");
-
-        string existing = File.Exists(path) ? File.ReadAllText(path) : "";
-        int close = existing.LastIndexOf(']');
-        int open = existing.IndexOf('[');
-        string json;
-        if (open < 0 || close < open)
-            json = "[\n  " + entry + "\n]";
-        else
-        {
-            bool empty = existing.AsSpan(open + 1, close - open - 1).Trim().IsEmpty;
-            json = existing[..close].TrimEnd() + (empty ? "\n  " : ",\n  ") + entry + "\n]";
-        }
-
-        var tmp = path + ".tmp";
-        File.WriteAllText(tmp, json);
-        File.Move(tmp, path, overwrite: true);
+        Shared.SessionLog.AppendLine(Shared.SessionLog.PathFor(dataDir, end), buffer.WrittenSpan);
     }
 
     /// <summary>
