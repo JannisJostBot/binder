@@ -189,9 +189,12 @@ public sealed partial class DetailViewModel : ObservableObject
 
     private List<Session> _mine = [];
 
-    public string PlaytimeText { get; private set; } = "—";
+    /// <summary>Shown for playtime and size on disk while there is none.</summary>
+    private const string NoValue = "--";
+
+    public string PlaytimeText { get; private set; } = NoValue;
     public string LastPlayedText { get; private set; } = Strings.Never;
-    public string SizeText => Game is { SizeOnDisk: > 0 } game ? game.SizeText : "—";
+    public string SizeText => Game is { SizeOnDisk: > 0 } game ? game.SizeText : NoValue;
     public SessionRowInfo[] Sessions { get; private set; } = [];
     public bool HasSessions => _mine.Count > 0;
     public bool NoSessions => _mine.Count == 0;
@@ -206,7 +209,7 @@ public sealed partial class DetailViewModel : ObservableObject
             .OrderByDescending(s => s.End)
             .ToList();
         var total = TimeSpan.FromTicks(_mine.Sum(s => (s.End - s.Start).Ticks));
-        PlaytimeText = _mine.Count == 0 ? "—" : Format.Playtime(total);
+        PlaytimeText = _mine.Count == 0 ? NoValue : Format.Playtime(total);
         LastPlayedText = _mine.Count == 0 ? Strings.Never : Format.RelativeDay(_mine[0].End);
         Sessions = [.. _mine.Take(RecentSessionCount).Select(s => SessionRow(s, CrashFor(s)))];
         CrashPattern = CrashAnalysis.Pattern(_mine.Take(10).Select(CrashFor).ToList()) ?? "";

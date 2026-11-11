@@ -296,7 +296,7 @@ static partial class Tests
         var beta = new Game { Id = "manual:2", Name = "Beta", Source = GameSource.Manual };
         vm.Show(beta, sessions, settings, crashes);
         Check(newGame == 2 && vm.Subtitle == beta.SourceLabel, "detail: another game shown, no launcher name for a manual game");
-        Check(!vm.HasSessions && vm.NoSessions && vm.PlaytimeText == "—" && !vm.HasFolder && !vm.HasAntiCheat && !vm.AntiCheatTouched,
+        Check(!vm.HasSessions && vm.NoSessions && vm.PlaytimeText == "--" && !vm.HasFolder && !vm.HasAntiCheat && !vm.AntiCheatTouched,
             "detail: a game without sessions, folder or anti-cheat");
     }
 
