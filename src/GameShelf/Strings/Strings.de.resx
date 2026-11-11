@@ -2204,4 +2204,52 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   <data name="EntryNotFound" xml:space="preserve">
     <value>{0} nicht gefunden</value>
   </data>
+  <data name="InfoHowItWorks" xml:space="preserve">
+    <value>So funktioniert es</value>
+  </data>
+  <data name="InfoAbout" xml:space="preserve">
+    <value>Info zu {0}</value>
+  </data>
+  <data name="HelpSourcePaths1" xml:space="preserve">
+    <value>Jedes Feld zeigt seinen Standardwert in Grau. Lassen Sie es leer, um den Standard weiter zu verwenden.</value>
+  </data>
+  <data name="HelpSourcePaths2" xml:space="preserve">
+    <value>Geben Sie einen neuen Wert ein und drücken Sie die Eingabetaste oder verlassen Sie das Feld, um ihn zu speichern. Ein Wert, der nicht verwendet werden kann, zeigt den Grund an und wird nicht gespeichert.</value>
+  </data>
+  <data name="HelpSourcePaths3" xml:space="preserve">
+    <value>Neue Werte gelten ab der nächsten Aktualisierung (F5) oder dem nächsten Start. „Prüfen“ testet sie sofort und lädt nichts herunter.</value>
+  </data>
+  <data name="HelpSourcePaths4" xml:space="preserve">
+    <value>„Zurücksetzen“ stellt den Standard wieder her. Bilder, die schon auf diesem PC sind, bleiben.</value>
+  </data>
+  <data name="HelpSteamFolder" xml:space="preserve">
+    <value>Der Ordner, in dem Steam installiert ist (mit steam.exe). Standardmäßig wird er aus dem Registrierungseintrag von Steam gelesen. Beispiel: D:\Steam</value>
+  </data>
+  <data name="HelpSteamArtFolder" xml:space="preserve">
+    <value>Wo Steam die Spielbilder auf diesem PC ablegt. Standardmäßig der Ordner appcache\librarycache im Steam-Ordner. Beispiel: D:\Steam\appcache\librarycache</value>
+  </data>
+  <data name="HelpSteamCoverFiles" xml:space="preserve">
+    <value>Die Dateinamen des Hochformat-Covers, durch Kommas getrennt und der Reihe nach versucht. Der erste wird auch heruntergeladen, wenn kein Cover auf diesem PC ist. Bis zu 5 Namen mit .jpg, .jpeg oder .png.</value>
+  </data>
+  <data name="HelpSteamBannerFile" xml:space="preserve">
+    <value>Der Dateiname des breiten Banners hinter „Weiterspielen“ und in den Spieldetails. Ein Name mit .jpg, .jpeg oder .png, ohne Ordner.</value>
+  </data>
+  <data name="HelpSteamLogoFile" xml:space="preserve">
+    <value>Der Dateiname des transparenten Spiellogos, das auf Bannern statt des Namens erscheint. Ein Name mit .jpg, .jpeg oder .png, ohne Ordner.</value>
+  </data>
+  <data name="HelpSteamDownload" xml:space="preserve">
+    <value>Von wo Bilder, die nicht auf diesem PC sind, einmalig heruntergeladen werden. Die Adresse muss mit https:// beginnen und {appid} enthalten, das durch die Steam-Nummer des Spiels ersetzt wird; {file} wird durch den Dateinamen ersetzt. Beispiel: https://cdn.example.com/apps/{appid}/{file}</value>
+  </data>
+  <data name="HelpEpicManifests" xml:space="preserve">
+    <value>Der Ordner, in dem der Epic Games Launcher die installierten Spiele auflistet, eine .item-Datei pro Spiel.</value>
+  </data>
+  <data name="HelpGogKey" xml:space="preserve">
+    <value>Der Registrierungsschlüssel, unter dem GOG die installierten Spiele auflistet, ein Unterschlüssel pro Spiel. Er muss unter HKLM\SOFTWARE oder HKCU\Software liegen und wird nur gelesen.</value>
+  </data>
+  <data name="HelpUbisoftKey" xml:space="preserve">
+    <value>Der Registrierungsschlüssel, unter dem Ubisoft Connect die installierten Spiele auflistet, ein Unterschlüssel pro Spiel. Er muss unter HKLM\SOFTWARE oder HKCU\Software liegen und wird nur gelesen.</value>
+  </data>
+  <data name="HelpRockstarKey" xml:space="preserve">
+    <value>Der Registrierungsschlüssel des Rockstar Games Launchers; sein Wert InstallFolder gibt an, wo Launcher.exe liegt. Er muss unter HKLM\SOFTWARE oder HKCU\Software liegen und wird nur gelesen.</value>
+  </data>
 </root>

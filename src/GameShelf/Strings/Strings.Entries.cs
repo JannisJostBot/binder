@@ -737,4 +737,20 @@ public sealed partial class Strings
     public static string CheckFound => Get(nameof(CheckFound));
     public static string CheckSteamArt => Get(nameof(CheckSteamArt));
     public static string EntryNotFound => Get(nameof(EntryNotFound));
+    public static string InfoHowItWorks => Get(nameof(InfoHowItWorks));
+    public static string InfoAbout => Get(nameof(InfoAbout));
+    public static string HelpSourcePaths1 => Get(nameof(HelpSourcePaths1));
+    public static string HelpSourcePaths2 => Get(nameof(HelpSourcePaths2));
+    public static string HelpSourcePaths3 => Get(nameof(HelpSourcePaths3));
+    public static string HelpSourcePaths4 => Get(nameof(HelpSourcePaths4));
+    public static string HelpSteamFolder => Get(nameof(HelpSteamFolder));
+    public static string HelpSteamArtFolder => Get(nameof(HelpSteamArtFolder));
+    public static string HelpSteamCoverFiles => Get(nameof(HelpSteamCoverFiles));
+    public static string HelpSteamBannerFile => Get(nameof(HelpSteamBannerFile));
+    public static string HelpSteamLogoFile => Get(nameof(HelpSteamLogoFile));
+    public static string HelpSteamDownload => Get(nameof(HelpSteamDownload));
+    public static string HelpEpicManifests => Get(nameof(HelpEpicManifests));
+    public static string HelpGogKey => Get(nameof(HelpGogKey));
+    public static string HelpUbisoftKey => Get(nameof(HelpUbisoftKey));
+    public static string HelpRockstarKey => Get(nameof(HelpRockstarKey));
 }

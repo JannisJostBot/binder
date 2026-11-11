@@ -110,7 +110,7 @@ public sealed partial class SettingsView : UserControl
             foreach (var row in group.Rows)
             {
                 var entry = new StackPanel { Spacing = 4 };
-                entry.Children.Add(new TextBlock { Text = row.Label, Style = Res<Style>("RowDetail"), TextWrapping = TextWrapping.Wrap, TextTrimming = TextTrimming.None });
+                entry.Children.Add(EntryLabel(row));
                 var line = new Grid { ColumnSpacing = 8 };
                 line.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 line.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -171,6 +171,27 @@ public sealed partial class SettingsView : UserControl
             result.Visibility = group.CheckResult is null ? Visibility.Collapsed : Visibility.Visible;
         }
     }
+
+    /// <summary>The entry's label with an (i) that opens what the entry is, its format and an example.</summary>
+    private static StackPanel EntryLabel(SourcePathRow row)
+    {
+        var line = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2 };
+        line.Children.Add(new TextBlock
+        {
+            Text = row.Label, Style = Res<Style>("RowDetail"), TextWrapping = TextWrapping.Wrap, TextTrimming = TextTrimming.None,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        var about = Strings.Format(Strings.InfoAbout, row.Label);
+        var info = new Button { Style = Res<Style>("IconButton"), Content = "", Width = 28, Height = 28, FontSize = 13 };
+        AutomationProperties.SetName(info, about);
+        ToolTipService.SetToolTip(info, about);
+        var text = new TextBlock { Text = SettingsViewModel.EntryHelp(row.Entry), TextWrapping = TextWrapping.Wrap, MaxWidth = 320 };
+        info.Flyout = new Flyout { Content = text };
+        line.Children.Add(info);
+        return line;
+    }
+
+    private void OnSourcePathsHelpClick(object sender, RoutedEventArgs e) => SourcePathsHelpTip.IsOpen = !SourcePathsHelpTip.IsOpen;
 
     private void OnResetAllPathsClick(object sender, RoutedEventArgs e) => ViewModel?.ResetAllSourcePaths();
 

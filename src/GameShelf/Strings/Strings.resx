@@ -2937,4 +2937,68 @@ Calm: efficiency mode while you play</value>
     <value>{0} not found</value>
     <comment>Check result when an entry points nowhere. {0} is the entry's label, e.g. "Artwork folder".</comment>
   </data>
+  <data name="InfoHowItWorks" xml:space="preserve">
+    <value>How this works</value>
+    <comment>Title and screen reader name of the (i) button at the top of Settings › Advanced, and of the tip it opens.</comment>
+  </data>
+  <data name="InfoAbout" xml:space="preserve">
+    <value>About {0}</value>
+    <comment>Screen reader name and tooltip of the (i) button next to an entry. {0} is the entry's label, e.g. "Steam folder".</comment>
+  </data>
+  <data name="HelpSourcePaths1" xml:space="preserve">
+    <value>Each box shows its default in grey. Leave it empty to keep using the default.</value>
+    <comment>First paragraph of the "How this works" tip in Settings › Advanced.</comment>
+  </data>
+  <data name="HelpSourcePaths2" xml:space="preserve">
+    <value>Type a new value, then press Enter or leave the box to save it. A value that can't be used says why and isn't saved.</value>
+    <comment>Second paragraph of the "How this works" tip.</comment>
+  </data>
+  <data name="HelpSourcePaths3" xml:space="preserve">
+    <value>New values are used from the next refresh (F5) or start. Check tries them right away and downloads nothing.</value>
+    <comment>Third paragraph of the "How this works" tip. F5 is the refresh key; Check is the CheckSource button.</comment>
+  </data>
+  <data name="HelpSourcePaths4" xml:space="preserve">
+    <value>Reset goes back to the default. Pictures already on this PC stay.</value>
+    <comment>Fourth paragraph of the "How this works" tip. Reset is the ResetEntry button.</comment>
+  </data>
+  <data name="HelpSteamFolder" xml:space="preserve">
+    <value>The folder Steam is installed in, the one with steam.exe. By default it's read from Steam's own registry entry. Example: D:\Steam</value>
+    <comment>Help for the "Steam folder" entry. Keep steam.exe and the example path as they are.</comment>
+  </data>
+  <data name="HelpSteamArtFolder" xml:space="preserve">
+    <value>Where Steam keeps game pictures on this PC. By default the appcache\librarycache folder in the Steam folder. Example: D:\Steam\appcache\librarycache</value>
+    <comment>Help for the "Artwork folder" entry. Keep the folder names and the example path as they are.</comment>
+  </data>
+  <data name="HelpSteamCoverFiles" xml:space="preserve">
+    <value>The portrait cover's file names, separated by commas and tried in order. The first is also the one downloaded when no cover is on this PC. Up to 5 names ending in .jpg, .jpeg or .png.</value>
+    <comment>Help for the "Cover file names" entry.</comment>
+  </data>
+  <data name="HelpSteamBannerFile" xml:space="preserve">
+    <value>The file name of the wide banner behind Continue playing and in game details. One name ending in .jpg, .jpeg or .png, without a folder.</value>
+    <comment>Help for the "Banner file name" entry. "Continue playing" is the shelf's top card.</comment>
+  </data>
+  <data name="HelpSteamLogoFile" xml:space="preserve">
+    <value>The file name of the game's transparent logo, shown on banners instead of its name. One name ending in .jpg, .jpeg or .png, without a folder.</value>
+    <comment>Help for the "Logo file name" entry.</comment>
+  </data>
+  <data name="HelpSteamDownload" xml:space="preserve">
+    <value>Where pictures that aren't on this PC are downloaded from, once each. It must start with https:// and contain {appid}, which becomes the game's Steam number; {file} becomes the file name. Example: https://cdn.example.com/apps/{appid}/{file}</value>
+    <comment>Help for the "Download address" entry. Keep https://, {appid}, {file} and the example address exactly as they are (they are not placeholders filled in by the app here).</comment>
+  </data>
+  <data name="HelpEpicManifests" xml:space="preserve">
+    <value>The folder where the Epic Games Launcher lists installed games, one .item file per game.</value>
+    <comment>Help for the Epic "Manifests folder" entry. Keep .item as it is.</comment>
+  </data>
+  <data name="HelpGogKey" xml:space="preserve">
+    <value>The registry key where GOG lists installed games, one subkey per game. It must be under HKLM\SOFTWARE or HKCU\Software and is only read.</value>
+    <comment>Help for the GOG "Games registry key" entry. Keep HKLM\SOFTWARE and HKCU\Software as they are.</comment>
+  </data>
+  <data name="HelpUbisoftKey" xml:space="preserve">
+    <value>The registry key where Ubisoft Connect lists installed games, one subkey per game. It must be under HKLM\SOFTWARE or HKCU\Software and is only read.</value>
+    <comment>Help for the Ubisoft "Installs registry key" entry. Keep HKLM\SOFTWARE and HKCU\Software as they are.</comment>
+  </data>
+  <data name="HelpRockstarKey" xml:space="preserve">
+    <value>The Rockstar Games Launcher's registry key; its InstallFolder value says where Launcher.exe is. It must be under HKLM\SOFTWARE or HKCU\Software and is only read.</value>
+    <comment>Help for the Rockstar "Launcher registry key" entry. Keep InstallFolder, Launcher.exe, HKLM\SOFTWARE and HKCU\Software as they are.</comment>
+  </data>
 </root>

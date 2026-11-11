@@ -50,6 +50,21 @@ public sealed partial class SettingsViewModel
             })]))];
     }
 
+    /// <summary>What the entry is, its format and an example: the (i) next to its label.</summary>
+    public static string EntryHelp(SourceEntry entry) => entry switch
+    {
+        SourceEntry.SteamFolder => Strings.HelpSteamFolder,
+        SourceEntry.SteamArtFolder => Strings.HelpSteamArtFolder,
+        SourceEntry.SteamCoverFiles => Strings.HelpSteamCoverFiles,
+        SourceEntry.SteamBannerFile => Strings.HelpSteamBannerFile,
+        SourceEntry.SteamLogoFile => Strings.HelpSteamLogoFile,
+        SourceEntry.SteamDownload => Strings.HelpSteamDownload,
+        SourceEntry.EpicManifests => Strings.HelpEpicManifests,
+        SourceEntry.GogKey => Strings.HelpGogKey,
+        SourceEntry.UbisoftKey => Strings.HelpUbisoftKey,
+        _ => Strings.HelpRockstarKey,
+    };
+
     public static string EntryLabel(SourceEntry entry) => entry switch
     {
         SourceEntry.SteamFolder => Strings.EntrySteamFolder,

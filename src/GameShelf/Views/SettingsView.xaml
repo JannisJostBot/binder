@@ -458,7 +458,26 @@
             </Border>
             <Border x:Name="SourcePathsBody" Style="{StaticResource SettingCardBody}" Padding="52,12,16,16">
                 <StackPanel Spacing="12">
-                    <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" TextTrimming="None" Text="{x:Bind s:Strings.SourcePathsIntro}" />
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" TextTrimming="None" VerticalAlignment="Center"
+                                   Text="{x:Bind s:Strings.SourcePathsIntro}" />
+                        <Button x:Name="SourcePathsHelpButton" Grid.Column="1" Style="{StaticResource IconButton}" Content="&#xE946;"
+                                VerticalAlignment="Top" Click="OnSourcePathsHelpClick"
+                                ToolTipService.ToolTip="{x:Bind s:Strings.InfoHowItWorks}" AutomationProperties.Name="{x:Bind s:Strings.InfoHowItWorks}" />
+                    </Grid>
+                    <TeachingTip x:Name="SourcePathsHelpTip" Target="{x:Bind SourcePathsHelpButton}" Title="{x:Bind s:Strings.InfoHowItWorks}"
+                                 IsLightDismissEnabled="True" PreferredPlacement="Bottom">
+                        <StackPanel Spacing="8">
+                            <TextBlock TextWrapping="Wrap" Text="{x:Bind s:Strings.HelpSourcePaths1}" />
+                            <TextBlock TextWrapping="Wrap" Text="{x:Bind s:Strings.HelpSourcePaths2}" />
+                            <TextBlock TextWrapping="Wrap" Text="{x:Bind s:Strings.HelpSourcePaths3}" />
+                            <TextBlock TextWrapping="Wrap" Text="{x:Bind s:Strings.HelpSourcePaths4}" />
+                        </StackPanel>
+                    </TeachingTip>
                     <StackPanel x:Name="SourcePathsList" Spacing="20" AutomationProperties.Name="{x:Bind s:Strings.SourcePaths}" />
                     <Button HorizontalAlignment="Left" Content="{x:Bind s:Strings.ResetAll}" IsEnabled="{x:Bind ViewModel.CanResetAllPaths, Mode=OneWay}"
                             Click="OnResetAllPathsClick" />
