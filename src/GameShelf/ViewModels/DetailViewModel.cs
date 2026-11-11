@@ -49,7 +49,7 @@ public sealed class SuggestionChoice(LaunchSuggestion suggestion, bool isOn)
 {
     public LaunchSuggestion Suggestion { get; } = suggestion;
     public bool IsOn { get; set; } = isOn;
-    public string Name => $"{Suggestion.Label} ({Suggestion.Args})";
+    public string Name => Strings.Format(Strings.OptionWithArgs, Suggestion.Label, Suggestion.Args);
 }
 
 /// <summary>One anti-cheat requirement: the setting's name, its state, whether that's what the anti-cheat needs.</summary>
@@ -176,11 +176,11 @@ public sealed partial class DetailViewModel : ObservableObject
 
     public string Title => Game?.Name ?? "";
     public string Subtitle => Game is null ? "" : Format.HasBadge(Game.Source) ? Format.LauncherName(Game.Source) : Game.SourceLabel;
-    public string PlayName => "Play " + Title;
+    public string PlayName => Strings.Format(Strings.PlayGame, Title);
     public bool IsFavorite => Game?.Favorite == true;
-    public string FavoriteLabel => IsFavorite ? "Remove from favorites" : "Add to favorites";
+    public string FavoriteLabel => IsFavorite ? Strings.RemoveFavorite : Strings.AddFavorite;
     public bool HasFolder => _installFolder is not null;
-    public string FolderToolTip => HasFolder ? "Open install folder" : "Install folder not found";
+    public string FolderToolTip => HasFolder ? Strings.OpenInstallFolder : Strings.InstallFolderNotFound;
     public bool HasStorePage { get; private set; }
     /// <summary>Where a file picker starts.</summary>
     public string? InstallFolder => _installFolder;
@@ -190,7 +190,7 @@ public sealed partial class DetailViewModel : ObservableObject
     private List<Session> _mine = [];
 
     public string PlaytimeText { get; private set; } = "—";
-    public string LastPlayedText { get; private set; } = "Never";
+    public string LastPlayedText { get; private set; } = Strings.Never;
     public string SizeText => Game is { SizeOnDisk: > 0 } game ? game.SizeText : "—";
     public SessionRowInfo[] Sessions { get; private set; } = [];
     public bool HasSessions => _mine.Count > 0;
@@ -207,7 +207,7 @@ public sealed partial class DetailViewModel : ObservableObject
             .ToList();
         var total = TimeSpan.FromTicks(_mine.Sum(s => (s.End - s.Start).Ticks));
         PlaytimeText = _mine.Count == 0 ? "—" : Format.Playtime(total);
-        LastPlayedText = _mine.Count == 0 ? "Never" : Format.RelativeDay(_mine[0].End);
+        LastPlayedText = _mine.Count == 0 ? Strings.Never : Format.RelativeDay(_mine[0].End);
         Sessions = [.. _mine.Take(RecentSessionCount).Select(s => SessionRow(s, CrashFor(s)))];
         CrashPattern = CrashAnalysis.Pattern(_mine.Take(10).Select(CrashFor).ToList()) ?? "";
         FillChart();
@@ -223,15 +223,15 @@ public sealed partial class DetailViewModel : ObservableObject
     {
         bool problem = crash is { IsProblem: true };
         bool knownNormal = !problem && session.ExitCode is not null;
-        var label = !problem ? (knownNormal ? "Closed normally" : "") : crash!.Ending switch
+        var label = !problem ? (knownNormal ? Strings.SessionClosedNormally : "") : crash!.Ending switch
         {
-            GameEnding.StartFailed => "Closed right after starting",
-            GameEnding.ClosedUnexpectedly => "Closed unexpectedly",
-            _ => "Crashed",
+            GameEnding.StartFailed => Strings.SessionStartFailed,
+            GameEnding.ClosedUnexpectedly => Strings.SessionClosedUnexpectedly,
+            _ => Strings.SessionCrashed,
         };
         var start = Format.SessionStart(session.Start);
         return new(session, crash, problem, knownNormal, label, start, Format.Duration(session.End - session.Start),
-            $"Details of the session on {start}");
+            Strings.Format(Strings.SessionDetailsName, start));
     }
 
     /// <summary>Months (12) instead of weeks (8) in the playtime chart.</summary>
@@ -252,7 +252,7 @@ public sealed partial class DetailViewModel : ObservableObject
     public string PeriodDetail { get; private set; } = "";
     /// <summary>Hours per week for 8 weeks, or per month for 12; the view draws them.</summary>
     public Bar[] ChartBars { get; private set; } = [];
-    public string ChartName => _showMonths ? "Playtime per month, last 12 months" : "Playtime per week, last 8 weeks";
+    public string ChartName => _showMonths ? Strings.ChartMonthsName : Strings.ChartWeeksName;
 
     private void FillChart()
     {
@@ -265,13 +265,13 @@ public sealed partial class DetailViewModel : ObservableObject
         var buckets = months ? PlaytimeStats.Months(_mine, DateTime.Now) : PlaytimeStats.Weeks(_mine, DateTime.Now);
         var period = TimeSpan.FromTicks(buckets.Sum(b => b.Time.Ticks));
         var current = buckets[^1].Time;
-        PeriodTotal = period > TimeSpan.Zero ? Format.Duration(period) : "Not played";
-        PeriodDetail = (months ? "in the last 12 months" : "in the last 8 weeks") +
-            $" · {(months ? "this month" : "this week")} {(current > TimeSpan.Zero ? Format.Duration(current) : "none yet")}";
+        PeriodTotal = period > TimeSpan.Zero ? Format.Duration(period) : Strings.NotPlayed;
+        var now = current > TimeSpan.Zero ? Format.Duration(current) : Strings.NoneYet;
+        PeriodDetail = Strings.Format(months ? Strings.PeriodMonths : Strings.PeriodWeeks, now);
         ChartBars = [.. buckets.Select(b => new Bar(
             months ? PlaytimeStats.MonthLabel(b.Start) : PlaytimeStats.WeekLabel(b.Start),
-            (months ? PlaytimeStats.MonthName(b.Start) : "Week of " + PlaytimeStats.WeekLabel(b.Start)) + ": " +
-                (b.Time > TimeSpan.Zero ? Format.Duration(b.Time) : "not played"),
+            Strings.Format(Strings.LabelValue, months ? PlaytimeStats.MonthName(b.Start) : Strings.Format(Strings.WeekOf, PlaytimeStats.WeekLabel(b.Start)),
+                b.Time > TimeSpan.Zero ? Format.Duration(b.Time) : Strings.NotPlayedLower),
             b.Time.TotalMinutes))];
     }
 
@@ -289,9 +289,9 @@ public sealed partial class DetailViewModel : ObservableObject
 
     private void FillChoices()
     {
-        string[] delays = [$"Default ({Format.Delay(_settings.HideDelaySeconds)})", .. DelayChoices.Select(Format.Delay)];
+        string[] delays = [Strings.Format(Strings.DefaultChoice, Format.Delay(_settings.HideDelaySeconds)), .. DelayChoices.Select(Format.Delay)];
         if (!delays.SequenceEqual(HideDelayChoices)) HideDelayChoices = delays;
-        string[] modes = [$"Default ({(_settings.GameModeEnabled ? "on" : "off")})", "On", "Off"];
+        string[] modes = [Strings.Format(Strings.DefaultChoice, Strings.LowerFirst(_settings.GameModeEnabled ? Strings.On : Strings.Off)), Strings.On, Strings.Off];
         if (!modes.SequenceEqual(GameModeChoices)) GameModeChoices = modes;
     }
 
@@ -328,8 +328,8 @@ public sealed partial class DetailViewModel : ObservableObject
     }
 
     public string ProcessText => Game is null ? "" : Game.ProcessName ?? (Game.InstallDir is not null
-        ? "Auto-detected: any program in the install folder"
-        : "Auto-detected");
+        ? Strings.ProcessAutoFolder
+        : Strings.ProcessAuto);
     public string? ProcessToolTip => Game?.ProcessName is null ? Game?.InstallDir : null;
     public bool HasCustomProcess => Game?.ProcessName is not null;
 
@@ -348,9 +348,9 @@ public sealed partial class DetailViewModel : ObservableObject
         Edited(game);
     }
 
-    public string CoverText => Game is null ? "" : Game.CustomCover is not null ? "Custom image"
-        : Game.Source == GameSource.Steam ? "From Steam"
-        : "Generated";
+    public string CoverText => Game is null ? "" : Game.CustomCover is not null ? Strings.CoverCustom
+        : Game.Source == GameSource.Steam ? Strings.CoverSteam
+        : Strings.CoverGenerated;
     public bool HasCustomCover => Game?.CustomCover is not null;
 
     public void SetCover(string path)
@@ -396,16 +396,16 @@ public sealed partial class DetailViewModel : ObservableObject
     public bool CanPickStartWith => _canPick;
     public string StartWithText => Game is null ? ""
         : LaunchOptions.ValidOverride(Game) is { } exe ? Path.GetFileName(exe)
-        : _canPick ? "Automatic" : "Automatic (there's no install folder to choose from)";
+        : _canPick ? Strings.Automatic : Strings.AutomaticNoFolder;
     public string? StartWithToolTip => Game is null ? null : LaunchOptions.ValidOverride(Game);
     public bool HasStartWith => Game?.ExeOverride is not null;
 
     private GameEngine Engine => _scan?.Result?.Engine ?? Game?.Engine ?? GameEngine.Unknown;
     public bool EngineKnown => Engine != GameEngine.Unknown;
     public string EngineTag => EngineKnown ? LaunchOptions.EngineName(Engine)
-        : _scan is null && Game is { Engine: null, InstallDir: not null } ? "Checking…" : "Not recognized";
-    public string EngineTagName => "Engine: " + EngineTag;
-    public string EngineText => LaunchOptions.Suggestions(Engine).Count > 0 ? "Suggested options" : "Add the arguments this game understands below.";
+        : _scan is null && Game is { Engine: null, InstallDir: not null } ? Strings.Checking : Strings.EngineUnknown;
+    public string EngineTagName => Strings.Format(Strings.EngineName, EngineTag);
+    public string EngineText => LaunchOptions.Suggestions(Engine).Count > 0 ? Strings.SuggestedOptions : Strings.NoSuggestions;
 
     public SuggestionChoice[] Suggestions { get; private set; } = [];
     public bool HasSuggestions => Suggestions.Length > 0;
@@ -484,17 +484,17 @@ public sealed partial class DetailViewModel : ObservableObject
     private void UpdateStartsAs()
     {
         if (Game is not { } game) return;
-        StartsAs = "Starts as: " + _actions.DescribeStart(game);
+        StartsAs = Strings.Format(Strings.StartsAs, _actions.DescribeStart(game));
         _note = LaunchOptions.RouteFor(game) switch
         {
             LaunchOptions.Route.Steam when !string.IsNullOrWhiteSpace(game.LaunchArgs) =>
-                "Steam may ask you to confirm these arguments the first time.",
+                Strings.NoteSteamArgs,
             LaunchOptions.Route.NotSupported when game.Source == GameSource.Epic =>
-                "Epic games take arguments only from the Epic Games Launcher: Library, the game's … menu, Manage, Launch options.",
+                Strings.NoteEpicArgs,
             LaunchOptions.Route.NotSupported when game.Source == GameSource.Shortcut =>
-                "This shortcut can't pass arguments. Choose the game's program under Start with to use them.",
+                Strings.NoteShortcutArgs,
             LaunchOptions.Route.NotSupported =>
-                $"{game.SourceLabel} games start through their launcher, which doesn't take arguments from other apps. Choose the game's program under Start with to use them.",
+                Strings.Format(Strings.NoteLauncherArgs, game.SourceLabel),
             _ => null,
         };
 
@@ -502,8 +502,8 @@ public sealed partial class DetailViewModel : ObservableObject
         if (Engine != GameEngine.Unknown) parts.Add(LaunchOptions.EngineName(Engine));
         bool changed = false;
         if (!string.IsNullOrWhiteSpace(game.LaunchArgs)) { parts.Add(game.LaunchArgs.Trim()); changed = true; }
-        if (LaunchOptions.ValidOverride(game) is { } exe) { parts.Add("starts " + Path.GetFileName(exe)); changed = true; }
-        if (!changed) parts.Add("Default");
+        if (LaunchOptions.ValidOverride(game) is { } exe) { parts.Add(Strings.Format(Strings.StartsExe, Path.GetFileName(exe))); changed = true; }
+        if (!changed) parts.Add(Strings.Default);
         LaunchSummary = string.Join(" · ", parts);
         OnPropertiesChanged(StartsAsNames);
     }
@@ -514,7 +514,7 @@ public sealed partial class DetailViewModel : ObservableObject
         if (Game is not { } game || game.InstallDir is null) return;
         if (!LaunchOptions.IsInside(path, game.InstallDir) || !path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         {
-            _note = "Choose a program inside the game's own folder.";
+            _note = Strings.NoteInsideFolder;
             OnPropertyChanged(nameof(LaunchNote));
             OnPropertyChanged(nameof(HasLaunchNote));
             return;
@@ -566,7 +566,7 @@ public sealed partial class DetailViewModel : ObservableObject
     private IReadOnlyList<AntiCheatKind> Kinds => _scan?.Result?.AntiCheats ?? Game?.AntiCheats ?? [];
 
     public bool HasAntiCheat => Kinds.Count > 0;
-    public string AntiCheatNames => string.Join(", ", Kinds.Select(AntiCheat.Name));
+    public string AntiCheatNames => Strings.List([.. Kinds.Select(AntiCheat.Name)]);
     /// <summary>The PC checks haven't finished for this game yet.</summary>
     public bool Checking => _scan is null;
     public bool Checked => _scan is not null;
@@ -575,10 +575,10 @@ public sealed partial class DetailViewModel : ObservableObject
     public string[] DriverToolNotes { get; private set; } = [];
     public int AntiCheatIssues { get; private set; }
     public bool AntiCheatOk => AntiCheatIssues == 0;
-    public string AntiCheatLabel => AntiCheatIssues == 0 ? AntiCheatNames : $"{AntiCheatNames} · {Issues(AntiCheatIssues)}";
-    public string AntiCheatLabelName => AntiCheatLabel + ". Show details";
-    public string AntiCheatState => _scan is null ? "Checking…" : AntiCheatIssues == 0 ? "All set" : Issues(AntiCheatIssues);
-    public string AntiCheatCardName => "Anti-cheat: " + AntiCheatNames + ", " + AntiCheatState;
+    public string AntiCheatLabel => AntiCheatIssues == 0 ? AntiCheatNames : Strings.Format(Strings.Dot, AntiCheatNames, Issues(AntiCheatIssues));
+    public string AntiCheatLabelName => Strings.Format(Strings.AntiCheatShowDetails, AntiCheatLabel);
+    public string AntiCheatState => _scan is null ? Strings.Checking : AntiCheatIssues == 0 ? Strings.AntiCheatOk : Issues(AntiCheatIssues);
+    public string AntiCheatCardName => Strings.Format(Strings.AntiCheatCardName, AntiCheatNames, AntiCheatState);
 
     /// <summary>
     /// The user opened or closed the anti-cheat card for this game, so it no longer opens by itself (board 21:
@@ -586,7 +586,7 @@ public sealed partial class DetailViewModel : ObservableObject
     /// </summary>
     public bool AntiCheatTouched { get; set; }
 
-    private static string Issues(int count) => $"{count} {(count == 1 ? "issue" : "issues")}";
+    private static string Issues(int count) => Strings.Plural(count, Strings.IssueCountOne, Strings.IssueCount);
 
     public bool AntiCheatReminder
     {
@@ -610,9 +610,9 @@ public sealed partial class DetailViewModel : ObservableObject
 
         var names = AntiCheatNames;
         Requirements = [.. _scan.Requirements.Select(r => Requirement(r.Requirement, r.Met))];
-        Conflicts = [.. _scan.Conflicts.Select(c => (c, $"{c.Name} is running. {names} may refuse to start next to it."))];
+        Conflicts = [.. _scan.Conflicts.Select(c => (c, Strings.Format(Strings.ConflictRunning, c.Name, names)))];
         DriverToolNotes = [.. _scan.DriverTools.Select(tool =>
-            $"A driver from {tool} is loaded. Some anti-cheats block it; updating the tool usually helps.")];
+            Strings.Format(Strings.DriverToolLoaded, tool))];
         AntiCheatIssues = Requirements.Count(r => r.Met == false) + Conflicts.Length;
     }
 
@@ -621,22 +621,22 @@ public sealed partial class DetailViewModel : ObservableObject
         // The tag states the setting's state; its color says whether that's what the anti-cheat needs.
         string status = (requirement, met) switch
         {
-            (_, null) => "Couldn't check",
-            (PcRequirement.NoTestSigning or PcRequirement.NoKernelDebugging, true) => "Off",
-            (PcRequirement.NoTestSigning or PcRequirement.NoKernelDebugging, false) => "On",
-            (PcRequirement.Tpm20, true) => "Found",
-            (PcRequirement.Tpm20, false) => "Not found",
-            (PcRequirement.VanguardLoaded, true) => "Running",
-            (PcRequirement.VanguardLoaded, false) => "Restart needed",
-            (_, true) => "On",
-            (_, false) => "Off",
+            (_, null) => Strings.CouldntCheck,
+            (PcRequirement.NoTestSigning or PcRequirement.NoKernelDebugging, true) => Strings.Off,
+            (PcRequirement.NoTestSigning or PcRequirement.NoKernelDebugging, false) => Strings.On,
+            (PcRequirement.Tpm20, true) => Strings.Found,
+            (PcRequirement.Tpm20, false) => Strings.NotFound,
+            (PcRequirement.VanguardLoaded, true) => Strings.Running,
+            (PcRequirement.VanguardLoaded, false) => Strings.RestartNeeded,
+            (_, true) => Strings.On,
+            (_, false) => Strings.Off,
         };
         string name = requirement switch
         {
             // The tag says whether it's on, so the row names the setting itself.
-            PcRequirement.NoTestSigning => "Test signing",
-            PcRequirement.NoKernelDebugging => "Kernel debugging",
-            PcRequirement.VanguardLoaded => "Vanguard driver",
+            PcRequirement.NoTestSigning => Strings.TestSigning,
+            PcRequirement.NoKernelDebugging => Strings.KernelDebugging,
+            PcRequirement.VanguardLoaded => Strings.VanguardDriver,
             _ => AntiCheat.RequirementName(requirement),
         };
         return new(name, status, met, met == false ? AntiCheat.HelpUrl(requirement) : null);

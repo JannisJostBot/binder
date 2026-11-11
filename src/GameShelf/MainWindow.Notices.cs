@@ -44,14 +44,12 @@ public sealed partial class MainWindow
 
     /// <summary>After an unexpected error was caught and logged.</summary>
     public void ShowError() =>
-        ShowToast("Something went wrong", $"Game Shelf kept running. Details are in {ErrorLog.FilePath}", "OK");
+        ShowToast(Strings.SomethingWentWrong, Strings.Format(Strings.ErrorDetail, ErrorLog.FilePath), Strings.Ok);
 
     public void ShowNotDetected(string gameId)
     {
-        var name = _games.FirstOrDefault(g => g.Id == gameId)?.Name ?? "The game";
-        ShowToast("Couldn't detect the game",
-            $"{name} didn't appear to start, or runs from outside its install folder. Set its process in the game's settings.",
-            "OK");
+        var name = _games.FirstOrDefault(g => g.Id == gameId)?.Name ?? Strings.TheGame;
+        ShowToast(Strings.NotDetectedTitle, Strings.Format(Strings.NotDetectedDetail, name), Strings.Ok);
     }
 
     /// <summary>The crash check finished: refresh the session icons, and show the card of an unseen problem.</summary>

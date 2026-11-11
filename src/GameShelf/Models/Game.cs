@@ -75,7 +75,7 @@ public sealed class Game
         GameSource.Xbox => "Xbox",
         GameSource.Rockstar => "Rockstar",
         GameSource.Hytale => "Hytale",
-        _ => "Other",
+        _ => Strings.SourceOther,
     };
 
     /// <summary>Copies the user-owned fields from a previously stored entry.</summary>
@@ -121,6 +121,7 @@ public sealed class Game
     {
         if (bytes <= 0) return "";
         const double GB = 1024d * 1024 * 1024, MB = 1024d * 1024;
-        return bytes >= GB ? $"{bytes / GB:0.#} GB" : $"{bytes / MB:0} MB";
+        return bytes >= GB ? Strings.Format(Strings.SizeGb, (bytes / GB).ToString("0.#", System.Globalization.CultureInfo.CurrentCulture))
+            : Strings.Format(Strings.SizeMb, (bytes / MB).ToString("0", System.Globalization.CultureInfo.CurrentCulture));
     }
 }

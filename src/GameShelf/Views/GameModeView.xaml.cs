@@ -19,6 +19,7 @@ public sealed partial class GameModeView : UserControl
     public GameModeView()
     {
         InitializeComponent();
+        AutomationProperties.SetName(this, Strings.GameMode);
     }
 
     /// <summary>Connects the page to its owner once, before it's first shown.</summary>
@@ -76,17 +77,17 @@ public sealed partial class GameModeView : UserControl
 
             // Close it (reopened after), or Calm it: efficiency mode, so it keeps running but uses less.
             var choice = new ComboBox { VerticalAlignment = VerticalAlignment.Center, MinWidth = 96 };
-            choice.Items.Add("Close");
-            choice.Items.Add("Calm");
+            choice.Items.Add(Strings.GmClose);
+            choice.Items.Add(Strings.GmCalm);
             choice.SelectedIndex = app.Calm ? 1 : 0;
-            AutomationProperties.SetName(choice, $"While playing, {app.Name}");
-            ToolTipService.SetToolTip(choice, "Close: closed, and reopened after the game.\nCalm: keeps running in efficiency mode (Task Manager's green leaf).");
+            AutomationProperties.SetName(choice, Strings.Format(Strings.GmWhilePlaying, app.Name));
+            ToolTipService.SetToolTip(choice, Strings.GmCloseCalmToolTip);
             choice.SelectionChanged += (_, _) => detail.Text = ViewModel!.SetCalm(app.Path, choice.SelectedIndex == 1).Detail;
             Grid.SetColumn(choice, 1);
             row.Children.Add(choice);
             var remove = new Button { Content = "", Style = Resource<Style>("IconButton"), VerticalAlignment = VerticalAlignment.Center };
-            AutomationProperties.SetName(remove, "Remove " + app.Name);
-            ToolTipService.SetToolTip(remove, "Remove");
+            AutomationProperties.SetName(remove, Strings.Format(Strings.RemoveName, app.Name));
+            ToolTipService.SetToolTip(remove, Strings.Remove);
             remove.Click += (_, _) =>
             {
                 ViewModel!.RemoveCloseApp(app.Path);
@@ -114,7 +115,7 @@ public sealed partial class GameModeView : UserControl
             text.Children.Add(new TextBlock { Text = service.Detail, Style = Resource<Style>("RowDetail"), TextWrapping = TextWrapping.Wrap });
             row.Children.Add(text);
             var toggle = new ToggleSwitch { Style = Resource<Style>("RowSwitch"), IsOn = service.IsOn, IsEnabled = vm.HelperAllowed };
-            AutomationProperties.SetName(toggle, "Pause " + service.Name);
+            AutomationProperties.SetName(toggle, Strings.Format(Strings.GmPauseName, service.Name));
             toggle.Toggled += (_, _) => ViewModel!.SetItem(service.Id, toggle.IsOn);
             Grid.SetColumn(toggle, 1);
             row.Children.Add(toggle);
@@ -146,8 +147,8 @@ public sealed partial class GameModeView : UserControl
                 VerticalAlignment = VerticalAlignment.Center,
                 IsEnabled = vm.HelperAllowed,
             };
-            AutomationProperties.SetName(remove, "Remove " + Path.GetFileNameWithoutExtension(exe));
-            ToolTipService.SetToolTip(remove, "Remove");
+            AutomationProperties.SetName(remove, Strings.Format(Strings.RemoveName, Path.GetFileNameWithoutExtension(exe)));
+            ToolTipService.SetToolTip(remove, Strings.Remove);
             remove.Click += (_, _) =>
             {
                 ViewModel!.RemoveName(smooth, exe);
@@ -179,7 +180,7 @@ public sealed partial class GameModeView : UserControl
             item.Click += (_, _) => pick(app);
             menu.Items.Add(item);
         }
-        if (apps.Count == 0) menu.Items.Add(new MenuFlyoutItem { Text = "No other apps with a window are open", IsEnabled = false });
+        if (apps.Count == 0) menu.Items.Add(new MenuFlyoutItem { Text = Strings.GmNoOtherApps, IsEnabled = false });
         App.ModalDepth++; // click-away must not close the flyout under the menu
         menu.Closed += (_, _) => App.ModalDepth--;
         menu.ShowAt(button);

@@ -43,13 +43,13 @@ public static class GameActions
     public static UninstallStep Uninstall(Game game)
     {
         if (SteamCommand(game, "uninstall") is { } steam)
-            return new(steam, $"Steam asks before it removes {game.Name}.");
+            return new(steam, Strings.Format(Strings.UninstallHintSteam, game.Name));
         if (game.Source == GameSource.Gog && game.StoreId is { Length: > 0 and <= 20 } gogId && gogId.All(char.IsAsciiDigit) &&
             LauncherIcons.ProtocolHandler("goggalaxy") is not null)
-            return new($"goggalaxy://openGameView/{gogId}", $"In GOG Galaxy, open the menu next to Play and choose Uninstall.");
+            return new($"goggalaxy://openGameView/{gogId}", Strings.UninstallHintGog);
         if (game.Source != GameSource.Xbox && LauncherTarget(game.Source) is { } launcher)
-            return new(launcher, $"Find {game.Name} in your {Views.Format.LauncherAppName(game.Source)} library and choose Uninstall.", game.Source);
-        return new(AppsSettings, $"Find {game.Name} in Settings › Apps and choose Uninstall.");
+            return new(launcher, Strings.Format(Strings.UninstallHintLauncher, game.Name, Views.Format.LauncherAppName(game.Source)), game.Source);
+        return new(AppsSettings, Strings.Format(Strings.UninstallHintApps, game.Name));
     }
 
     /// <summary>Opens the step's link, Settings page or launcher.</summary>

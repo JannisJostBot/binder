@@ -105,6 +105,9 @@ jobs:
           name: smoke-test
           path: artifacts/
           if-no-files-found: ignore
+          # The same files go to the ci-results branch below, so the artifact is only a convenience. GitHub keeps
+          # artifacts 90 days by default; with a ~40 MB setup exe in every run that filled the storage quota.
+          retention-days: 3
 
       # Readable without the Actions API: one commit with this run's screenshots, metrics and logs,
       # force-pushed so the branch never grows.

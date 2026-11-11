@@ -30,8 +30,7 @@
             <!-- Star on favorite covers, top-right (board 7). -->
             <Border x:Name="FavoriteBadge" Width="26" Height="26" Margin="6" CornerRadius="13"
                     HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="Collapsed"
-                    Background="{StaticResource BadgeBrush}" BorderBrush="{StaticResource BadgeStrokeBrush}" BorderThickness="1"
-                    ToolTipService.ToolTip="Favorite">
+                    Background="{StaticResource BadgeBrush}" BorderBrush="{StaticResource BadgeStrokeBrush}" BorderThickness="1">
                 <FontIcon Glyph="&#xE735;" FontSize="13" Foreground="{ThemeResource FavoriteBrush}" />
             </Border>
             <!-- What a click does: Play, bottom left. Not hit-testable, the click goes to the cover (the grid plays). -->
@@ -46,7 +45,7 @@
             <!-- Always in the tree so screen readers and UI Automation can reach it; seen and clickable on hover. -->
             <Button x:Name="DetailsButton" Style="{StaticResource CoverDetailsButton}" Margin="6"
                     HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0" IsHitTestVisible="False"
-                    ToolTipService.ToolTip="Details" Click="OnDetailsClick">
+                    Click="OnDetailsClick">
                 <!-- Its own hover and press look: WinUI's default button fills would turn it grey on the art. -->
                 <Button.Resources>
                     <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="BadgeHoverBrush" />

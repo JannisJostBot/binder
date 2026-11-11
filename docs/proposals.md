@@ -35,6 +35,7 @@ break the user's system.
 | 22 Open a launcher | §21 | Done; the owner tried it on the real PC on 2026-11-11 and it works. `GameActions.OpenLauncher` / `LauncherTarget` (Free up space's launcher step uses it too), names in `Format.LauncherAppName`, the tray group (`ShelfViewModel.LaunchersByGames`, chip order) and the launcher chips' right-click menu with the launcher's icon; unit-tested. On the owner's PC every launcher with games resolves (Steam, Epic, GOG Galaxy, EA app, Ubisoft Connect, Xbox app, Hytale); Steam, already running, comes to the front without a second copy |
 | 23 Faster than Start | §22 | To do |
 | 24 Lean speed-ups | §23 | To do |
+| Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
 
 ### Still to carry into `CLAUDE.md`
 
@@ -136,6 +137,12 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   the 5 / 10 / 30 s choices go), the last three games in the tray menu (replaces the jump list idea under "Not
   decided"), open on the screen with the mouse, "Needs an update" on Steam covers, "New" on recently installed games,
   and removing the footer hint. Rule: a feature that explains itself removes the help text it replaces.
+
+**2026-11-10**
+- The app speaks English, German and French, following the Windows display language. All text moved to resource
+  files; the wording was made shorter and plainer (no selling the app inside the app).
+- Bug report and AI prompt are in the display language too, since they are pasted into the user's own forum or
+  assistant. The setup's disclaimer stays English.
 
 ---
 

@@ -20,7 +20,7 @@ internal static unsafe class Dialogs
     private static readonly IntPtr ErrorIcon = new(0xFFFE);   // TD_ERROR_ICON
     private static readonly IntPtr WarningIcon = new(0xFFFF); // TD_WARNING_ICON
 
-    public const string Title = "Game Shelf Setup";
+    public static string Title => Text.WindowTitle;
 
     public sealed record Result(int Button, bool Verified);
 

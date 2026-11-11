@@ -1,6 +1,7 @@
 using GameShelf.Services;
 using GameShelf.Shared;
 using GameShelf.ViewModels;
+using GameShelf.Views;
 using Microsoft.UI.Xaml;
 
 namespace GameShelf;
@@ -18,7 +19,7 @@ public sealed partial class MainWindow
             Allowed: GameModeService.Allowed,
             Outdated: GameModeService.AllowedButOutdated,
             CanAllow: GameModeService.CanAllow,
-            PowerNow: PowerMode.Describe(),
+            PowerNow: GameModeText.Power(PowerMode.Describe()),
             PowerFastest: PowerMode.IsFastest(plan, plan == PowerMode.BalancedPlan ? PowerMode.ActiveMode() : null),
             GameBarRecording: GameModeService.GameBarRecording(),
             VoiceApps: [.. ElevatedPart.InstalledVoiceApps().Select(a => a.Name)],
@@ -63,7 +64,7 @@ public sealed partial class MainWindow
         if (IsClosing) return;
         RefreshViews(); // closes the notice once the helper is current
         if (code is 0 or 1223) return; // done, or the prompt was declined
-        ShowToast("Couldn't update Game mode's helper", $"Code {code}. Its log is in ProgramData\\GameShelf\\elevated.log.", "OK");
+        ShowToast(Strings.GmHelperUpdateFailed, Strings.Format(Strings.GmAllowFailed, code, @"ProgramData\GameShelf\elevated.log"), Strings.Ok);
     }
 
     // ---- Quick actions (§16): the shelf's "…" menu and the tray menu ---------------------------------------
@@ -79,8 +80,8 @@ public sealed partial class MainWindow
         SaveSettings();
         RefreshViews(); // the "…" button's dot, and the notice if the helper needs an update
         if (toast)
-            ShowToast(on ? "Game mode is on" : "Game mode is off",
-                on ? "It applies to the next game you start." : "Games start without it.", "Undo",
+            ShowToast(on ? Strings.GmIsOn : Strings.GmIsOff,
+                on ? Strings.GmOnNextGame : Strings.GmOffNextGame, Strings.Undo,
                 () => SetGameMode(!on, toast: false));
     }
 

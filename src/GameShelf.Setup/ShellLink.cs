@@ -15,7 +15,7 @@ internal static class ShellLink
     {
         Native.CoInitializeEx(IntPtr.Zero, COINIT_APARTMENTTHREADED); // S_FALSE if already done: fine
         int hr = Native.CoCreateInstance(ClsidShellLink, IntPtr.Zero, CLSCTX_INPROC_SERVER, IidShellLinkW, out var pointer);
-        if (hr < 0) throw new SetupException($"Couldn't create the Start menu shortcut (0x{hr:X8}).");
+        if (hr < 0) throw new SetupException(Text.ShortcutFailed($"0x{hr:X8}"));
         try
         {
             var link = (IShellLinkW)new StrategyBasedComWrappers().GetOrCreateObjectForComInstance(pointer, CreateObjectFlags.UniqueInstance);
@@ -28,7 +28,7 @@ internal static class ShellLink
         }
         catch (COMException ex)
         {
-            throw new SetupException($"Couldn't create the Start menu shortcut ({ex.Message}).");
+            throw new SetupException(Text.ShortcutFailed(ex.Message));
         }
         finally
         {

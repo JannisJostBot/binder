@@ -435,17 +435,18 @@ public sealed partial class App : Application
         const int firstLauncher = 100;
         List<(int Id, string Text, bool Checked)> items =
         [
-            (open, "Open Game Shelf", false), (0, "", false),
-            (gameMode, needsUpdate ? "Game mode (needs update)" : "Game mode", Settings.GameModeEnabled),
-            (freeSpace, "Free up space…", false), (0, "", false),
+            (open, Strings.OpenGameShelf, false), (0, "", false),
+            (gameMode, needsUpdate ? Strings.GameModeNeedsUpdateMenu : Strings.GameMode, Settings.GameModeEnabled),
+            (freeSpace, Strings.FreeUpSpaceMenu, false), (0, "", false),
         ];
         if (launchers.Length > 0)
         {
-            for (int i = 0; i < launchers.Length; i++) items.Add((firstLauncher + i, "Open " + Format.LauncherAppName(launchers[i]), false));
+            for (int i = 0; i < launchers.Length; i++)
+                items.Add((firstLauncher + i, Strings.Format(Strings.OpenLauncher, Format.LauncherAppName(launchers[i])), false));
             items.Add((0, "", false));
         }
-        items.Add((settings, "Settings", false));
-        items.Add((quit, "Quit", false));
+        items.Add((settings, Strings.Settings, false));
+        items.Add((quit, Strings.Quit, false));
         int chosen = _messages.ShowTrayMenu(items);
         if (chosen >= firstLauncher && chosen - firstLauncher < launchers.Length)
         {

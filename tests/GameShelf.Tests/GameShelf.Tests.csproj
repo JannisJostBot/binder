@@ -13,9 +13,12 @@
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <!-- Keep test output out of the shared app folder (Directory.Build.props). -->
     <OutputPath>$(MSBuildProjectDirectory)\out\</OutputPath>
+    <SatelliteResourceLanguages>en;de;fr</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\src\GameShelf\Strings\*.cs" Link="Strings\%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\src\GameShelf\Strings\*.resx" Link="Strings\%(Filename)%(Extension)" />
     <Compile Include="..\..\src\GameShelf\Models\*.cs" Link="Linked\Models\%(Filename)%(Extension)" />
     <Compile Include="..\..\src\GameShelf\Library\Vdf.cs" Link="Linked\Library\Vdf.cs" />
     <Compile Include="..\..\src\GameShelf\Library\SteamSource.cs" Link="Linked\Library\SteamSource.cs" />
@@ -42,6 +45,7 @@
     <Compile Include="..\..\src\GameShelf\Library\SpacePlanner.cs" Link="Linked\Library\SpacePlanner.cs" />
     <Compile Include="..\..\src\GameShelf\Library\Moments.cs" Link="Linked\Library\Moments.cs" />
     <Compile Include="..\..\src\GameShelf\Views\Format.cs" Link="Linked\Views\Format.cs" />
+    <Compile Include="..\..\src\GameShelf\Views\GameModeText.cs" Link="Linked\Views\GameModeText.cs" />
     <Compile Include="..\..\src\GameShelf\Views\GameAction.cs" Link="Linked\Views\GameAction.cs" />
     <Compile Include="..\..\src\GameShelf\ViewModels\*.cs" Link="Linked\ViewModels\%(Filename)%(Extension)" />
     <Compile Include="..\..\src\GameShelf\Services\Chime.cs" Link="Linked\Services\Chime.cs" />

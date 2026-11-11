@@ -81,12 +81,14 @@ public static class PlaytimeStats
         return b > a ? b - a : TimeSpan.Zero;
     }
 
-    // Labels: the app's text is English, so dates use English month and day names whatever the system locale.
-    private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en-US");
+    // Labels: month and day names in the user's format, like the rest of Windows.
+    private static CultureInfo Culture => CultureInfo.CurrentCulture;
 
-    public static string DayLetter(DateTime day) => day.ToString("ddd", English)[..1];
-    public static string DayName(DateTime day) => day.ToString("dddd", English);
-    public static string WeekLabel(DateTime monday) => monday.ToString("MMM d", English);
-    public static string MonthLabel(DateTime month) => month.ToString("MMM", English);
-    public static string MonthName(DateTime month) => month.ToString("MMMM yyyy", English);
+    public static string DayLetter(DateTime day) => day.ToString("ddd", Culture)[..1].ToUpper(Culture);
+    public static string DayName(DateTime day) => day.ToString("dddd", Culture);
+    /// <summary>"Sep 14", "14. Sept.", "14 sept.": the culture's month-day pattern with the short month name.</summary>
+    public static string WeekLabel(DateTime monday) =>
+        monday.ToString(Culture.DateTimeFormat.MonthDayPattern.Replace("MMMM", "MMM"), Culture);
+    public static string MonthLabel(DateTime month) => month.ToString("MMM", Culture);
+    public static string MonthName(DateTime month) => month.ToString(Culture.DateTimeFormat.YearMonthPattern, Culture);
 }

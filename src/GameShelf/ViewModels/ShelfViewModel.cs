@@ -84,7 +84,7 @@ public sealed partial class ShelfViewModel : ObservableObject
             _statsCount = sessions.Count;
         }
         foreach (var game in _games)
-            game.LastPlayedText = _lastPlayed.TryGetValue(game.Id, out var when) ? Format.RelativeDay(when) : "Never";
+            game.LastPlayedText = _lastPlayed.TryGetValue(game.Id, out var when) ? Format.RelativeDay(when) : Strings.Never;
 
         Density = settings.GridDensity;
         BuildChips();
@@ -92,8 +92,8 @@ public sealed partial class ShelfViewModel : ObservableObject
         Greeting = Format.Greeting(DateTime.Now);
         // The footer teaches hide and return; after a few games from the shelf it has done its job.
         _footerHint = sessions.Count < FooterHintSessions;
-        var hides = settings.HideDelaySeconds <= 0 ? "Hides when a game starts" : $"Hides {settings.HideDelaySeconds} s after a game starts";
-        FooterText = settings.ComeBackOnClose ? hides + " · comes back when it closes" : hides;
+        var hides = settings.HideDelaySeconds <= 0 ? Strings.FooterHides : Strings.Format(Strings.FooterHidesAfter, settings.HideDelaySeconds);
+        FooterText = settings.ComeBackOnClose ? Strings.Format(Strings.FooterComesBack, hides) : hides;
         UpdateContinue();
         UpdateWeek(sessions);
         UpdateHelper(games);
@@ -134,7 +134,7 @@ public sealed partial class ShelfViewModel : ObservableObject
     }
 
     public bool Searching => _query.Trim().Length > 0;
-    public string Placeholder { get; private set; } = "Search games";
+    public string Placeholder { get; private set; } = Strings.SearchGames;
     public bool SortVisible { get; private set; } = true;
     public bool EmptyVisible { get; private set; }
     public string EmptyGlyph { get; private set; } = "";
@@ -173,7 +173,7 @@ public sealed partial class ShelfViewModel : ObservableObject
 
         bool same = !force && visible.Count == Visible.Count && visible.SequenceEqual(Visible, ReferenceEqualityComparer.Instance);
         if (!same) Visible = visible;
-        Placeholder = _sorted.Count == 1 ? "Search 1 game" : $"Search {_sorted.Count} games";
+        Placeholder = Strings.Plural(_sorted.Count, Strings.SearchCountOne, Strings.SearchCount);
         SortVisible = CurrentFilter != "Recent";
 
         EmptyVisible = Visible.Count == 0;
@@ -183,11 +183,11 @@ public sealed partial class ShelfViewModel : ObservableObject
         EmptyClearVisible = noMatch;
         EmptyImportVisible = !noMatch;
         EmptyText =
-            _games.Count == 0 ? "No games found yet. Games from Steam, Epic, GOG, EA, Ubisoft, Xbox, Rockstar and Hytale show up here automatically, or bring in your own." :
-            query.Length > 0 ? $"No games match “{query}”. Check the spelling, or add the game if it isn't installed through a launcher." :
-            CurrentFilter == "Recent" ? "Games you play from the shelf show up here." :
-            CurrentFilter == "Favorites" ? "No favorites yet. Star a game in its details or its right-click menu." :
-            "No games from this store.";
+            _games.Count == 0 ? Strings.EmptyNoGames :
+            query.Length > 0 ? Strings.Format(Strings.EmptyNoMatch, query) :
+            CurrentFilter == "Recent" ? Strings.EmptyRecent :
+            CurrentFilter == "Favorites" ? Strings.EmptyFavorites :
+            Strings.EmptyStore;
 
         UpdateSpotlight();
         if (!notify) return;
@@ -250,7 +250,7 @@ public sealed partial class ShelfViewModel : ObservableObject
     /// (All, Favorites, Recent, Other: no menu). Asked when the menu opens.
     /// </summary>
     public string? OpenLauncherLabel(string filter) =>
-        LauncherOf(filter) is { } source && _actions.CanOpenLauncher(source) ? "Open " + Format.LauncherAppName(source) : null;
+        LauncherOf(filter) is { } source && _actions.CanOpenLauncher(source) ? Strings.Format(Strings.OpenLauncher, Format.LauncherAppName(source)) : null;
 
     /// <summary>The chip menu's "Open …" was picked.</summary>
     public void OpenLauncher(string filter)
@@ -294,6 +294,10 @@ public sealed partial class ShelfViewModel : ObservableObject
 
     public static string ChipLabel(string filter) => filter switch
     {
+        "All" => Strings.FilterAll,
+        "Favorites" => Strings.FilterFavorites,
+        "Recent" => Strings.FilterRecent,
+        "Other" => Strings.SourceOther,
         nameof(GameSource.Gog) => "GOG",
         nameof(GameSource.Ea) => "EA",
         _ => filter,
@@ -305,15 +309,15 @@ public sealed partial class ShelfViewModel : ObservableObject
 
     public static string SortLabel(SortBy sort) => sort switch
     {
-        SortBy.MostPlayed => "Most played",
-        SortBy.Name => "Name (A–Z)",
-        SortBy.RecentlyAdded => "Recently added",
-        SortBy.Size => "Size on disk",
-        _ => "Recently played",
+        SortBy.MostPlayed => Strings.SortMostPlayed,
+        SortBy.Name => Strings.SortName,
+        SortBy.RecentlyAdded => Strings.SortRecentlyAdded,
+        SortBy.Size => Strings.SortSize,
+        _ => Strings.SortRecentlyPlayed,
     };
 
     /// <summary>The sort button is an icon; its tooltip and screen-reader name say the current order.</summary>
-    public string SortName => "Sort: " + SortLabel(_settings.SortBy);
+    public string SortName => Strings.Format(Strings.SortCurrent, SortLabel(_settings.SortBy));
     public SortBy SortBy => _settings.SortBy;
     public bool FavoritesFirst => _settings.FavoritesFirst;
 
@@ -357,13 +361,13 @@ public sealed partial class ShelfViewModel : ObservableObject
     /// <summary>The last played game (or the one "Welcome back" is for), worked out when the data changes.</summary>
     public Game? ContinueGame { get; private set; }
     /// <summary>"Continue playing", or "Welcome back" once after a session (§13 c).</summary>
-    public string ContinueEyebrow { get; private set; } = "Continue playing";
+    public string ContinueEyebrow { get; private set; } = Strings.ContinuePlaying;
     public string ContinueTitle { get; private set; } = "";
     public string ContinueDetail { get; private set; } = "";
     /// <summary>A quiet playtime milestone ("100 hours in …", §13 e), only in "Welcome back".</summary>
     public string ContinueMilestone { get; private set; } = "";
     public bool MilestoneVisible { get; private set; }
-    public string ContinuePlayName { get; private set; } = "Play";
+    public string ContinuePlayName { get; private set; } = Strings.Play;
 
     private WelcomeMoment? _welcome;
 
@@ -454,18 +458,18 @@ public sealed partial class ShelfViewModel : ObservableObject
         ContinueTitle = ContinueGame.Name;
         if (ShowsWelcome)
         {
-            ContinueEyebrow = "Welcome back";
-            ContinueDetail = $"{Format.Duration(_welcome!.Length)} played · {Format.Playtime(_welcome.Week)} this week";
-            ContinueMilestone = $"{_welcome.Milestone:N0} hours in {ContinueGame.Name}";
+            ContinueEyebrow = Strings.WelcomeBack;
+            ContinueDetail = Strings.Format(Strings.WelcomeDetail, Format.Duration(_welcome!.Length), Format.Playtime(_welcome.Week));
+            ContinueMilestone = Strings.Format(Strings.WelcomeMilestone, _welcome.Milestone, ContinueGame.Name);
             MilestoneVisible = _welcome.Milestone > 0;
         }
         else
         {
-            ContinueEyebrow = "Continue playing";
-            ContinueDetail = $"{Format.RelativeDay(_lastPlayed[ContinueGame.Id])} · {ContinueGame.SourceLabel}";
+            ContinueEyebrow = Strings.ContinuePlaying;
+            ContinueDetail = Strings.Format(Strings.Dot, Format.RelativeDay(_lastPlayed[ContinueGame.Id]), ContinueGame.SourceLabel);
             MilestoneVisible = false;
         }
-        ContinuePlayName = "Play " + ContinueGame.Name;
+        ContinuePlayName = Strings.Format(Strings.PlayGame, ContinueGame.Name);
     }
 
     /// <summary>
@@ -481,14 +485,14 @@ public sealed partial class ShelfViewModel : ObservableObject
         HasWeek = true;
 
         WeekTotal = Format.Duration(week.Total);
-        var games = week.GameCount == 1 ? "1 game" : $"{week.GameCount} games";
+        var games = Strings.Plural(week.GameCount, Strings.GameCountOne, Strings.GameCount);
         var top = week.TopGameId is { } id ? _games.FirstOrDefault(g => g.Id == id)?.Name : null;
-        var detail = top is null || week.GameCount == 1 ? (top is null ? games : top) : $"{games} · most: {top}";
-        WeekDetail = "This week · " + detail;
-        WeekToolTip = top is null ? null : $"Most played: {top}, {Format.Duration(week.TopGameTime)}";
+        var detail = top is null || week.GameCount == 1 ? (top is null ? games : top) : Strings.Format(Strings.WeekGamesMost, games, top);
+        WeekDetail = Strings.Format(Strings.Dot, Strings.ThisWeek, detail);
+        WeekToolTip = top is null ? null : Strings.Format(Strings.WeekMostPlayed, top, Format.Duration(week.TopGameTime));
         WeekBars = week.Days.Select(d => new Bar(
             PlaytimeStats.DayLetter(d.Start),
-            $"{PlaytimeStats.DayName(d.Start)}: {(d.Time > TimeSpan.Zero ? Format.Duration(d.Time) : "not played")}",
+            Strings.Format(Strings.LabelValue, PlaytimeStats.DayName(d.Start), d.Time > TimeSpan.Zero ? Format.Duration(d.Time) : Strings.NotPlayedLower),
             d.Time.TotalMinutes)).ToList();
     }
 
@@ -501,7 +505,7 @@ public sealed partial class ShelfViewModel : ObservableObject
     public bool HelperUpdating { get; private set; }
     public bool HelperUpdateEnabled => !HelperUpdating;
     public bool GameModeOn => _settings.GameModeEnabled;
-    public string ActionsName => GameModeOn ? "More actions, Game mode on" : "More actions";
+    public string ActionsName => GameModeOn ? Strings.MoreActionsGameModeOn : Strings.MoreActions;
 
     private void UpdateHelper(IReadOnlyList<Game> games)
     {
@@ -548,14 +552,14 @@ public sealed partial class ShelfViewModel : ObservableObject
 
     public bool PinVisible { get; private set; }
     public bool? PinChecked { get; private set; } = false;
-    public string PinLabel { get; private set; } = "Pin open";
+    public string PinLabel { get; private set; } = Strings.PinOpen;
 
     /// <summary>Shows the pin button in Flyout mode, pressed while pinned open.</summary>
     public void SetFlyout(bool flyout, bool pinned)
     {
         PinVisible = flyout;
         PinChecked = pinned;
-        PinLabel = pinned ? "Unpin (closes when you click elsewhere)" : "Pin open";
+        PinLabel = pinned ? Strings.Unpin : Strings.PinOpen;
         OnPropertyChanged(nameof(PinVisible));
         OnPropertyChanged(nameof(PinChecked));
         OnPropertyChanged(nameof(PinLabel));
