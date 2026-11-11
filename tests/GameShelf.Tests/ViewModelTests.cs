@@ -711,6 +711,15 @@ static partial class Tests
         vm.SetBackHint(false);
         Check(!vm.BackHintVisible, "shelf: no B hint on the desktop");
 
+        // Switching Game mode reports only its own state, so the grid isn't laid out again.
+        notified.Clear();
+        settings.GameModeEnabled = true;
+        vm.GameModeChanged(games);
+        Check(vm.GameModeOn && notified.Contains(nameof(ShelfViewModel.GameModeOn)) && !notified.Contains(nameof(ShelfViewModel.Visible)) &&
+              !notified.Contains(""), "shelf: switching Game mode updates only the Game mode button");
+        settings.GameModeEnabled = false;
+        vm.GameModeChanged(games);
+
         spy.NeedsUpdate = true;
         settings.GameModeEnabled = true;
         settings.GridDensity = GridDensity.List;

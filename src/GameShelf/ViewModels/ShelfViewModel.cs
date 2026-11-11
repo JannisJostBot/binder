@@ -512,6 +512,19 @@ public sealed partial class ShelfViewModel : ObservableObject
         HelperUpdating = false;
     }
 
+    /// <summary>
+    /// Game mode was switched on or off: only the header's Game mode button and the helper notice change, so only
+    /// those are reported (a full <see cref="SetData"/> would lay the whole shelf out again).
+    /// </summary>
+    public void GameModeChanged(IReadOnlyList<Game> games)
+    {
+        UpdateHelper(games);
+        OnPropertyChanged(nameof(GameModeOn));
+        OnPropertyChanged(nameof(HelperNeedsUpdate));
+        OnPropertyChanged(nameof(HelperBarOpen));
+        OnPropertyChanged(nameof(HelperUpdateEnabled));
+    }
+
     public void CloseHelperBar()
     {
         if (_helperBarClosed) return;

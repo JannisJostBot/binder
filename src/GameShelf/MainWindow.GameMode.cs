@@ -78,7 +78,12 @@ public sealed partial class MainWindow
         if (App.Settings.GameModeEnabled == on) return;
         App.Settings.GameModeEnabled = on;
         SaveSettings();
-        RefreshViews(); // the "…" button's dot, and the notice if the helper needs an update
+        // Only the header's Game mode button and the helper notice change on the shelf; a full refresh would lay
+        // the whole grid out again. The other pages refresh only while shown.
+        Shelf.ViewModel!.GameModeChanged(_games);
+        RefreshSettingsPage();
+        if (Detail.Visibility == Visibility.Visible && Detail.Game is { } shown && FindGame(shown.Id) is { } game)
+            Detail.ViewModel!.Show(game, _sessions, App.Settings, App.State.Crashes);
         if (toast)
             ShowToast(on ? Strings.GmIsOn : Strings.GmIsOff,
                 on ? Strings.GmOnNextGame : Strings.GmOffNextGame, Strings.Undo,
