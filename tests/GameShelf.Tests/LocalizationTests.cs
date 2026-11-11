@@ -10,8 +10,9 @@ static partial class Tests
 {
     /// <summary>
     /// The app's text tables (src/GameShelf/Strings): the same entries in every language, the same {0} placeholders,
-    /// one property per entry, and every Strings.X the app's code and XAML use exists. Reads the source files, so
-    /// the views and XAML (not compiled here) are covered too.
+    /// a translator's comment on every English entry that names its placeholders, one property per entry, and every
+    /// Strings.X the app's code and XAML use exists. Reads the source files, so the views and XAML (not compiled
+    /// here) are covered too.
     /// </summary>
     static void LocalizationTests()
     {
@@ -24,6 +25,14 @@ static partial class Tests
         Dictionary<string, string> Read(string file) => XDocument.Load(Path.Combine(dir, file)).Root!.Elements("data")
             .ToDictionary(d => (string)d.Attribute("name")!, d => (string?)d.Element("value") ?? "");
         var en = Read("Strings.resx");
+        // Context for translators: every English entry says where it appears and what each {0} holds.
+        var comments = XDocument.Load(Path.Combine(dir, "Strings.resx")).Root!.Elements("data")
+            .ToDictionary(d => (string)d.Attribute("name")!, d => ((string?)d.Element("comment") ?? "").Trim());
+        var uncommented = comments.Where(c => c.Value.Length == 0).Select(c => c.Key).ToList();
+        Check(uncommented.Count == 0, $"localization: every English entry has a comment for translators ({string.Join(", ", uncommented)})");
+        var unexplained = en.Where(e => Placeholders(e.Value).Any(n => !comments[e.Key].Contains("{" + n + "}")))
+            .Select(e => e.Key).ToList();
+        Check(unexplained.Count == 0, $"localization: every comment says what its {{0}} placeholders hold ({string.Join(", ", unexplained)})");
         var de = Read("Strings.de.resx");
         var fr = Read("Strings.fr.resx");
         Check(en.Count > 100, "localization: English table read");

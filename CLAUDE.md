@@ -194,6 +194,10 @@ times follow the user's regional format.
   `{x:Bind s:Strings.Name}` (`xmlns:s="using:GameShelf"`), except on a page's root element and on per-item
   controls of the grid (GameTile, GameRow), which set theirs in code. The unit tests check that the three tables
   have the same entries and `{0}` placeholders and that every `Strings.X` in `src/` exists.
+- **Every English entry has a `<comment>` for translators** (only in `Strings.resx`): where the text appears
+  (button, card title, tooltip, toast, screen-reader name), what each `{0}` holds, and, where a word could be read
+  two ways, its part of speech or a length limit. Name terms to copy exactly (Windows' own setting names, brand
+  names). The unit tests fail on an entry without a comment or with a placeholder its comment doesn't name.
 - Values go in through `{0}`, `{1}` (`Strings.Format`), never by joining pieces: word order differs. Counts use
   `Strings.Plural(n, one, other)` (French counts 0 as one); lists `Strings.List` ("A, B and C"). Capitalize in the
   entry itself; `Strings.LowerFirst` only for text that starts a sentence in one place and sits inside one in
