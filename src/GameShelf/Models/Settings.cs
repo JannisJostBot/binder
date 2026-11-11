@@ -90,6 +90,12 @@ public sealed class Settings
     /// <summary>Their upload limit in Mbit/s: 1, 5 or 20.</summary>
     public int UploadLimitMbps { get; set; } = Shared.ElevatedPart.DefaultUploadLimit;
 
+    /// <summary>
+    /// Settings › Advanced (spec §14): where launchers' games and Steam's pictures are found, entry name
+    /// (<c>Library.SourceEntry</c>) → value. Only the changed ones; checked again on every use.
+    /// </summary>
+    public Dictionary<string, string> SourceOverrides { get; set; } = [];
+
     /// <summary>Whether games from this source show on the shelf. Manually added games always do.</summary>
     public bool IsSourceEnabled(GameSource source) => source switch
     {

@@ -99,6 +99,7 @@ static partial class Tests
         ShelfViewModelTests();
         FormatTests();
         LocalizationTests();
+        SourceDefaultsTests(dir);
 
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");

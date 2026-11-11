@@ -30,8 +30,8 @@ public static class CoverCache
 
     private static readonly string CoversDir = Path.Combine(Storage.CacheDir, "covers");
     private static readonly SemaphoreSlim DownloadGate = new(2);
-    private static readonly Lazy<string?> SteamLibraryCache = new(() =>
-        SteamSource.FindSteamPath() is { } steam ? Path.Combine(steam, "appcache", "librarycache") : null);
+    // Steam's artwork folder (SourceDefaults), looked up once; forgotten when an artwork entry changes.
+    private static Lazy<string?> SteamLibraryCache = new(SourceDefaults.SteamArtFolder);
     // Created on the first download only (most starts download nothing), and only once even when two run at once.
     private static readonly Lazy<HttpClient> Http = new(() => new HttpClient { Timeout = TimeSpan.FromSeconds(20) });
 
@@ -272,6 +272,39 @@ public static class CoverCache
         }
     }
 
+    /// <summary>
+    /// A Steam artwork entry changed in Settings › Advanced (spec §14): forget where Steam pictures were found and
+    /// the markers for pictures the CDN didn't have, so they're looked for again. Pictures already copied into our
+    /// cache and decoded images stay. Deletes only our own ".none" markers in our covers folder.
+    /// </summary>
+    public static void ForgetSteamLookups()
+    {
+        lock (Sync)
+        {
+            SteamLibraryCache = new(SourceDefaults.SteamArtFolder);
+            foreach (var key in Resolved.Keys.Where(k => k.StartsWith("steam:", StringComparison.Ordinal)).ToList())
+                Resolved.Remove(key);
+        }
+        try
+        {
+            if (!Directory.Exists(CoversDir)) return;
+            foreach (var marker in Directory.EnumerateFiles(CoversDir, "steam_*.none"))
+            {
+                var info = new FileInfo(marker);
+                if (info.LinkTarget is null && info.Length == 0 &&
+                    string.Equals(info.DirectoryName, Path.GetFullPath(CoversDir), StringComparison.OrdinalIgnoreCase))
+                    info.Delete();
+            }
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+    }
+
+    /// <summary>
+    /// Whether a picture of this kind is on this PC already (the user's custom cover, our cache or Steam's
+    /// artwork folder), without downloading. For the "Check" button in Settings › Advanced.
+    /// </summary>
+    public static bool HasLocal(Game game, ArtKind kind) => FindLocal(game, kind) is not null;
+
     private static string Key(Game game, int pixelWidth, ArtKind kind) => game.Id + "|" + kind + "|" + pixelWidth;
     private static string ResolvedKey(Game game, ArtKind kind) => game.Id + "|" + kind;
 
@@ -298,11 +331,12 @@ public static class CoverCache
     /// <summary>Our cached copy's extension: logos keep their transparency.</summary>
     private static string ImageExt(ArtKind kind) => kind == ArtKind.Logo ? ".png" : ".jpg";
 
-    private static string SteamFileName(ArtKind kind) => kind switch
+    /// <summary>Steam's file names for the kind, tried in order (SourceDefaults); the first is the one downloaded.</summary>
+    private static string[] SteamFileNames(ArtKind kind) => kind switch
     {
-        ArtKind.Hero => "library_hero.jpg",
-        ArtKind.Logo => "logo.png",
-        _ => "library_600x900.jpg",
+        ArtKind.Hero => [SourceDefaults.SteamBannerFile()],
+        ArtKind.Logo => [SourceDefaults.SteamLogoFile()],
+        _ => SourceDefaults.SteamCoverFiles(),
     };
 
     private static string? FindLocal(Game game, ArtKind kind)
@@ -322,26 +356,25 @@ public static class CoverCache
     {
         try
         {
-            var name = SteamFileName(kind);
+            // Each name is looked for everywhere before the next one: librarycache\{appid}\{name}, the older
+            // librarycache\{appid}_{name}, then the hashed subfolders newer clients use (where the portrait art may
+            // be library_capsule.jpg, the second cover name).
             var dir = Path.Combine(libraryCache, appId);
-            var direct = Path.Combine(dir, name);
-            if (File.Exists(direct)) return direct;
-
-            var legacy = Path.Combine(libraryCache, appId + "_" + name);
-            if (File.Exists(legacy)) return legacy;
-
-            // Newer clients keep assets in hashed subfolders, and may name the portrait art library_capsule.jpg.
-            if (!Directory.Exists(dir)) return null;
-            string? capsule = null;
-            foreach (var sub in Directory.EnumerateDirectories(dir))
+            List<string>? subs = null;
+            foreach (var name in SteamFileNames(kind))
             {
-                var file = Path.Combine(sub, name);
-                if (File.Exists(file)) return file;
-                if (kind != ArtKind.Cover) continue;
-                var cap = Path.Combine(sub, "library_capsule.jpg");
-                if (capsule is null && File.Exists(cap)) capsule = cap;
+                var direct = Path.Combine(dir, name);
+                if (File.Exists(direct)) return direct;
+                var legacy = Path.Combine(libraryCache, appId + "_" + name);
+                if (File.Exists(legacy)) return legacy;
+                subs ??= Directory.Exists(dir) ? [.. Directory.EnumerateDirectories(dir)] : [];
+                foreach (var sub in subs)
+                {
+                    var file = Path.Combine(sub, name);
+                    if (File.Exists(file)) return file;
+                }
             }
-            return capsule;
+            return null;
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
@@ -360,7 +393,10 @@ public static class CoverCache
         await DownloadGate.WaitAsync().ConfigureAwait(false);
         try
         {
-            var url = $"https://shared.steamstatic.com/store_item_assets/steam/apps/{appId}/{SteamFileName(kind)}";
+            // The appid is digits only (checked when the game was read) and the file name a checked image name.
+            if (!appId.All(char.IsAsciiDigit)) return null;
+            var url = SourceDefaults.SteamDownloadUrl(appId, SteamFileNames(kind)[0]);
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps) return null;
             using var response = await Http.Value.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
             Directory.CreateDirectory(CoversDir);
             if (response.StatusCode == HttpStatusCode.NotFound)

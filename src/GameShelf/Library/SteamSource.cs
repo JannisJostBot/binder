@@ -21,13 +21,8 @@ public static class SteamSource
         "Proton", "Steam Linux Runtime", "Steamworks", "Redistributable", " SDK", "Dedicated Server",
     ];
 
-    public static string? FindSteamPath()
-    {
-        using var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
-        if (key?.GetValue("SteamPath") is not string path || path.Length == 0) return null;
-        path = Path.GetFullPath(path.Replace('/', '\\'));
-        return Directory.Exists(path) ? path : null;
-    }
+    /// <summary>Steam's folder: the one set in Settings › Advanced, else the one Steam records (SourceDefaults).</summary>
+    public static string? FindSteamPath() => SourceDefaults.SteamFolder();
 
     /// <summary>Steam's own steam.exe in the Steam folder, or null when it isn't there.</summary>
     public static string? SteamExe()
@@ -112,7 +107,7 @@ public static class SteamSource
         try
         {
             // librarycache\{appid}\{sha1}.jpg (current Steam), or librarycache\{appid}_icon.jpg (older).
-            var cache = Path.Combine(steamPath, "appcache", "librarycache");
+            var cache = SourceDefaults.Override(SourceEntry.SteamArtFolder) ?? Path.Combine(steamPath, SourceDefaults.DefaultArtSubfolder);
             var folder = Path.Combine(cache, appId);
             if (Directory.Exists(folder))
                 foreach (var file in Directory.EnumerateFiles(folder, "*.jpg"))

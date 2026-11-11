@@ -2108,4 +2108,100 @@ Ralentir : mode efficacité pendant le jeu</value>
   <data name="DisclosureAntiCheat" xml:space="preserve">
     <value>les détails de l’anti-triche</value>
   </data>
+  <data name="GroupAdvanced" xml:space="preserve">
+    <value>Avancé</value>
+  </data>
+  <data name="SourcePaths" xml:space="preserve">
+    <value>Où Game Shelf trouve les jeux et les images</value>
+  </data>
+  <data name="SourcePathsDefault" xml:space="preserve">
+    <value>Tout par défaut</value>
+  </data>
+  <data name="SourcePathsChangedOne" xml:space="preserve">
+    <value>1 emplacement modifié</value>
+  </data>
+  <data name="SourcePathsChanged" xml:space="preserve">
+    <value>{0} emplacements modifiés</value>
+  </data>
+  <data name="SourcePathsIntro" xml:space="preserve">
+    <value>Ne les modifiez que si des jeux ou des images ont disparu après une mise à jour d'un lanceur.</value>
+  </data>
+  <data name="DisclosureSourcePaths" xml:space="preserve">
+    <value>emplacements des jeux et des images</value>
+  </data>
+  <data name="EntrySteamFolder" xml:space="preserve">
+    <value>Dossier de Steam</value>
+  </data>
+  <data name="EntrySteamArtFolder" xml:space="preserve">
+    <value>Dossier des illustrations</value>
+  </data>
+  <data name="EntrySteamCoverFiles" xml:space="preserve">
+    <value>Noms des fichiers de jaquette (essayés dans l'ordre)</value>
+  </data>
+  <data name="EntrySteamBannerFile" xml:space="preserve">
+    <value>Nom du fichier de bannière</value>
+  </data>
+  <data name="EntrySteamLogoFile" xml:space="preserve">
+    <value>Nom du fichier de logo</value>
+  </data>
+  <data name="EntrySteamDownload" xml:space="preserve">
+    <value>Adresse de téléchargement</value>
+  </data>
+  <data name="EntryEpicManifests" xml:space="preserve">
+    <value>Dossier des manifestes</value>
+  </data>
+  <data name="EntryGamesKey" xml:space="preserve">
+    <value>Clé de registre des jeux</value>
+  </data>
+  <data name="EntryInstallsKey" xml:space="preserve">
+    <value>Clé de registre des installations</value>
+  </data>
+  <data name="EntryLauncherKey" xml:space="preserve">
+    <value>Clé de registre du lanceur</value>
+  </data>
+  <data name="InvalidFolder" xml:space="preserve">
+    <value>Saisissez le chemin complet d'un dossier sur ce PC.</value>
+  </data>
+  <data name="InvalidRegistryKey" xml:space="preserve">
+    <value>Saisissez une clé sous HKLM\SOFTWARE ou HKCU\Software.</value>
+  </data>
+  <data name="InvalidFileName" xml:space="preserve">
+    <value>Saisissez un nom de fichier se terminant par .jpg, .jpeg ou .png, sans dossier.</value>
+  </data>
+  <data name="InvalidFileNames" xml:space="preserve">
+    <value>Saisissez jusqu'à 5 noms de fichier se terminant par .jpg, .jpeg ou .png, séparés par des virgules.</value>
+  </data>
+  <data name="InvalidAddress" xml:space="preserve">
+    <value>Saisissez une adresse https:// contenant {appid}.</value>
+  </data>
+  <data name="DownloadHostNotice" xml:space="preserve">
+    <value>Game Shelf téléchargera les images depuis {0}</value>
+  </data>
+  <data name="ResetEntry" xml:space="preserve">
+    <value>Réinitialiser</value>
+  </data>
+  <data name="ResetEntryName" xml:space="preserve">
+    <value>Réinitialiser {0}</value>
+  </data>
+  <data name="ResetAll" xml:space="preserve">
+    <value>Tout réinitialiser</value>
+  </data>
+  <data name="CheckSource" xml:space="preserve">
+    <value>Vérifier</value>
+  </data>
+  <data name="CheckSourceName" xml:space="preserve">
+    <value>Vérifier {0}</value>
+  </data>
+  <data name="CheckFoundOne" xml:space="preserve">
+    <value>1 jeu trouvé</value>
+  </data>
+  <data name="CheckFound" xml:space="preserve">
+    <value>{0} jeux trouvés</value>
+  </data>
+  <data name="CheckSteamArt" xml:space="preserve">
+    <value>jaquettes pour {0} · bannières pour {1} · logos pour {2}</value>
+  </data>
+  <data name="EntryNotFound" xml:space="preserve">
+    <value>{0} introuvable</value>
+  </data>
 </root>

@@ -100,7 +100,7 @@ if ($Strict) {
         '^src/GameShelf\.Watcher/', '^src/GameShelf\.Setup/', '^src/GameShelf\.Elevated/',
         '^src/GameShelf/(Program|MessageWindow)\.cs$', '^src/GameShelf/app\.manifest$',
         '^src/GameShelf/Services/(Launcher|Native\w*|DesktopLayer|Monitors|Footprint|ShellImage[\w.]*|ShellNotify|PcChecks|PcInfo|CrashLog|Autostart|CoverCache|Storage|RunningGames|GameLogs|GameModeService)\.cs$',
-        '^src/GameShelf/Library/(\w+Source|InstallFolder|ShortcutFile|ShortcutImporter|Vdf|LibraryScanner)\.cs$',
+        '^src/GameShelf/Library/(\w+Source|SourceDefaults|InstallFolder|ShortcutFile|ShortcutImporter|Vdf|LibraryScanner)\.cs$',
         '^src/GameShelf/Views/PanelBackdrop\.cs$',
         '\.(csproj|sln|props|targets)$', '^scripts/', '^\.github/',
         '^tests/(smoke|setup-test)\.ps1$', '^tests/FakeGame/',

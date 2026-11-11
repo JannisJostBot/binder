@@ -17,6 +17,7 @@ public sealed partial class MainWindow
     void ISettingsActions.RunSetup() => ShowSetup();
     void ISettingsActions.OpenFreeSpace() => ShowFreeSpace(new FreeSpaceState());
     void ISettingsActions.OpenGameMode() => ShowGameMode();
+    Task<string> ISettingsActions.CheckSourceAsync(GameSource launcher) => Task.Run(() => SourceCheck.Run(launcher));
 
     private void OnSettingChanged(SettingChange change)
     {
@@ -49,6 +50,12 @@ public sealed partial class MainWindow
                     ShowToast(Strings.AutostartFailed, Strings.AutostartFailedDetail, Strings.Ok);
                 settings.StartWithWindows = Autostart.IsEnabled();
                 break;
+            case SettingChange.SourcePaths or SettingChange.SourceArtwork:
+                // Used from the next scan (Refresh or the next start); "Check" tries them at once.
+                Library.SourceDefaults.Use(settings.SourceOverrides);
+                if (change == SettingChange.SourceArtwork) CoverCache.ForgetSteamLookups();
+                SaveSettings();
+                return; // nothing on the page or the shelf changes until then
             case SettingChange.Sources:
                 SaveSettings();
                 RefreshViews();

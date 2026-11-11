@@ -19,9 +19,7 @@ public static class EpicSource
         CommentHandling = JsonCommentHandling.Skip,
     };
 
-    public static string ManifestFolder => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-        "Epic", "EpicGamesLauncher", "Data", "Manifests");
+    public static string ManifestFolder => SourceDefaults.EpicManifests();
 
     public static List<Game> Scan() => Scan(ManifestFolder);
 

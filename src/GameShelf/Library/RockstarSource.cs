@@ -18,7 +18,6 @@ public static class RockstarSource
         @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
     ];
 
-    private const string LauncherKey = @"SOFTWARE\WOW6432Node\Rockstar Games\Launcher";
 
     public static List<Game> Scan()
     {
@@ -109,7 +108,7 @@ public static class RockstarSource
     {
         try
         {
-            using var key = Registry.LocalMachine.OpenSubKey(LauncherKey);
+            using var key = SourceDefaults.OpenKey(SourceEntry.RockstarKey);
             if (key?.GetValue("InstallFolder") is not string folder || !Path.IsPathFullyQualified(folder)) return null;
             var exe = Path.Combine(folder, "Launcher.exe");
             return File.Exists(exe) ? exe : null;

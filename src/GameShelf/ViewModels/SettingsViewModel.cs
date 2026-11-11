@@ -7,7 +7,14 @@ using DockPosition = GameShelf.Models.DockPosition;
 namespace GameShelf.ViewModels;
 
 /// <summary>What a settings change affects, so the window applies only that part.</summary>
-public enum SettingChange { Behavior, DisplayMode, Hotkey, TrayIcon, Shelf, Sources, Position, Screen, DesktopLayer, Autostart }
+public enum SettingChange
+{
+    Behavior, DisplayMode, Hotkey, TrayIcon, Shelf, Sources, Position, Screen, DesktopLayer, Autostart,
+    /// <summary>Where a launcher's games are read from (Settings › Advanced).</summary>
+    SourcePaths,
+    /// <summary>Where Steam's pictures are found or downloaded from: they're looked for again.</summary>
+    SourceArtwork,
+}
 
 /// <summary>What the Settings page asks its owner (the panel window) to do. An interface, so none can be left unwired.</summary>
 public interface ISettingsActions
@@ -23,6 +30,8 @@ public interface ISettingsActions
     void RunSetup();
     void OpenFreeSpace();
     void OpenGameMode();
+    /// <summary>Settings › Advanced's "Check": scans that launcher once, off the UI thread, and says what it found.</summary>
+    Task<string> CheckSourceAsync(GameSource launcher);
 }
 
 /// <summary>
@@ -86,6 +95,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         _hotkeyFree = hotkeyFree;
         LoadScreens(monitors, currentMonitor);
         HiddenGames = [.. games.Where(g => g.Hidden).OrderBy(g => g.Name, StringComparer.CurrentCultureIgnoreCase)];
+        settings.SourceOverrides ??= []; // "null" in a hand-edited settings.json
+        LoadSourcePaths();
         OnAllPropertiesChanged();
     }
 

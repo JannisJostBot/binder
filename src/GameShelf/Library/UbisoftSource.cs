@@ -10,7 +10,6 @@ namespace GameShelf.Library;
 /// </summary>
 public static class UbisoftSource
 {
-    private const string InstallsKey = @"SOFTWARE\WOW6432Node\Ubisoft\Launcher\Installs";
     private const string UninstallKey = @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall";
 
     public static List<Game> Scan()
@@ -18,7 +17,7 @@ public static class UbisoftSource
         var games = new List<Game>();
         try
         {
-            using var root = Registry.LocalMachine.OpenSubKey(InstallsKey);
+            using var root = SourceDefaults.OpenKey(SourceEntry.UbisoftKey);
             if (root is null) return games;
             using var uninstall = Registry.LocalMachine.OpenSubKey(UninstallKey);
             var seen = new HashSet<string>();

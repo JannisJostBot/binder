@@ -25,6 +25,7 @@ public sealed partial class SettingsView : UserControl
         _ = new Disclosure(SourcesChevron, SourcesCard, SourcesBody, Strings.DisclosureSources);
         _ = new Disclosure(ShortcutsChevron, ShortcutsCard, ShortcutsBody, Strings.DisclosureShortcuts);
         _ = new Disclosure(HiddenChevron, HiddenCard, HiddenBody, Strings.DisclosureHidden);
+        _ = new Disclosure(SourcePathsChevron, SourcePathsCard, SourcePathsBody, Strings.DisclosureSourcePaths);
     }
 
     /// <summary>Connects the page to its owner once, before it's first shown.</summary>
@@ -39,6 +40,9 @@ public sealed partial class SettingsView : UserControl
     private void OnViewModelChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == nameof(SettingsViewModel.HiddenGames)) FillHidden();
+        // New data draws the launchers' entries again; a change to one updates them in place, so focus stays put.
+        if (string.IsNullOrEmpty(e.PropertyName)) FillSourcePaths();
+        else if (e.PropertyName == nameof(SettingsViewModel.SourceGroups)) UpdateSourcePaths();
     }
 
     public void FocusFirst() => BackButton.Focus(FocusState.Programmatic);
@@ -67,4 +71,108 @@ public sealed partial class SettingsView : UserControl
             HiddenList.Children.Add(row);
         }
     }
+
+    // ---- Advanced: where games and pictures are found (spec §14) ----------------------------------------------
+
+    private sealed record EntryControls(SourcePathRow Row, TextBox Box, Button Reset, TextBlock Error, TextBlock Notice);
+    private sealed record GroupControls(SourcePathGroup Group, Button Check, TextBlock Result);
+
+    private readonly List<EntryControls> _entries = [];
+    private readonly List<GroupControls> _groups = [];
+
+    /// <summary>One block per launcher: its name and Check, then a text box per entry with Reset and its error.</summary>
+    private void FillSourcePaths()
+    {
+        SourcePathsList.Children.Clear();
+        _entries.Clear();
+        _groups.Clear();
+        if (ViewModel is not { } vm) return;
+        foreach (var group in vm.SourceGroups)
+        {
+            var block = new StackPanel { Spacing = 8 };
+            var head = new Grid { ColumnSpacing = 12 };
+            head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            var name = new TextBlock { Text = group.Name, Style = Res<Style>("RowTitle"), VerticalAlignment = VerticalAlignment.Center };
+            AutomationProperties.SetHeadingLevel(name, Microsoft.UI.Xaml.Automation.Peers.AutomationHeadingLevel.Level3);
+            head.Children.Add(name);
+            var check = new Button { Content = Strings.CheckSource, VerticalAlignment = VerticalAlignment.Center };
+            AutomationProperties.SetName(check, Strings.Format(Strings.CheckSourceName, group.Name));
+            check.Click += async (_, _) => await vm.CheckSourceAsync(group.Launcher);
+            Grid.SetColumn(check, 1);
+            head.Children.Add(check);
+            block.Children.Add(head);
+            var result = new TextBlock { Style = Res<Style>("RowDetail"), TextWrapping = TextWrapping.Wrap, TextTrimming = TextTrimming.None };
+            AutomationProperties.SetLiveSetting(result, Microsoft.UI.Xaml.Automation.Peers.AutomationLiveSetting.Polite);
+            block.Children.Add(result);
+            _groups.Add(new(group, check, result));
+
+            foreach (var row in group.Rows)
+            {
+                var entry = new StackPanel { Spacing = 4 };
+                entry.Children.Add(new TextBlock { Text = row.Label, Style = Res<Style>("RowDetail"), TextWrapping = TextWrapping.Wrap, TextTrimming = TextTrimming.None });
+                var line = new Grid { ColumnSpacing = 8 };
+                line.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                line.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                var box = new TextBox { PlaceholderText = row.Placeholder, IsSpellCheckEnabled = false };
+                AutomationProperties.SetName(box, row.Label);
+                ToolTipService.SetToolTip(box, row.Placeholder);
+                box.KeyDown += (_, e) =>
+                {
+                    if (e.Key != Windows.System.VirtualKey.Enter) return;
+                    e.Handled = true;
+                    vm.SetSourcePath(row.Entry, box.Text);
+                };
+                box.LostFocus += (_, _) => { if (box.Text != row.Value || row.Error is not null) vm.SetSourcePath(row.Entry, box.Text); };
+                line.Children.Add(box);
+                var reset = new Button { Content = Strings.ResetEntry, VerticalAlignment = VerticalAlignment.Top };
+                AutomationProperties.SetName(reset, Strings.Format(Strings.ResetEntryName, row.Label));
+                reset.Click += (_, _) => vm.ResetSourcePath(row.Entry);
+                Grid.SetColumn(reset, 1);
+                line.Children.Add(reset);
+                entry.Children.Add(line);
+                var error = new TextBlock
+                {
+                    Style = Res<Style>("RowDetail"), TextWrapping = TextWrapping.Wrap, TextTrimming = TextTrimming.None,
+                    Foreground = Res<Microsoft.UI.Xaml.Media.Brush>("SystemFillColorCriticalBrush"),
+                };
+                AutomationProperties.SetLiveSetting(error, Microsoft.UI.Xaml.Automation.Peers.AutomationLiveSetting.Assertive);
+                entry.Children.Add(error);
+                var notice = new TextBlock { Style = Res<Style>("RowDetail"), TextWrapping = TextWrapping.Wrap, TextTrimming = TextTrimming.None };
+                entry.Children.Add(notice);
+                block.Children.Add(entry);
+                _entries.Add(new(row, box, reset, error, notice));
+            }
+            SourcePathsList.Children.Add(block);
+        }
+        UpdateSourcePaths();
+    }
+
+    /// <summary>Shows the view model's values, errors and Check results in the drawn controls.</summary>
+    private void UpdateSourcePaths()
+    {
+        foreach (var (row, box, reset, error, notice) in _entries)
+        {
+            if (box.Text != row.Value)
+            {
+                box.Text = row.Value;
+                box.SelectionStart = box.Text.Length;
+            }
+            reset.Visibility = row.IsChanged || row.Error is not null ? Visibility.Visible : Visibility.Collapsed;
+            error.Text = row.Error ?? "";
+            error.Visibility = row.Error is null ? Visibility.Collapsed : Visibility.Visible;
+            notice.Text = row.Notice ?? "";
+            notice.Visibility = row.Notice is null ? Visibility.Collapsed : Visibility.Visible;
+        }
+        foreach (var (group, check, result) in _groups)
+        {
+            check.IsEnabled = !group.Checking;
+            result.Text = group.CheckResult ?? "";
+            result.Visibility = group.CheckResult is null ? Visibility.Collapsed : Visibility.Visible;
+        }
+    }
+
+    private void OnResetAllPathsClick(object sender, RoutedEventArgs e) => ViewModel?.ResetAllSourcePaths();
+
+    private static T Res<T>(string key) => (T)Application.Current.Resources[key];
 }

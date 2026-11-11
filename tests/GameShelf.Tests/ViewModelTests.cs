@@ -23,6 +23,7 @@ static partial class Tests
         public void RunSetup() => Calls.Add("setup");
         public void OpenFreeSpace() => Calls.Add("free space");
         public void OpenGameMode() => Calls.Add("game mode");
+        public Task<string> CheckSourceAsync(GameSource launcher) { Calls.Add("check " + launcher); return Task.FromResult("Found 3 games"); }
     }
 
     static void SettingsViewModelTests()
@@ -94,6 +95,44 @@ static partial class Tests
         vm.Unhide(games[1]);
         vm.FreeSpaceCommand.Execute(null);
         Check(spy.Calls is ["back", "unhide Beta", "free space"], "settings: buttons reach the owner");
+
+        // Advanced (spec §14): where games and pictures are found.
+        spy.Changes.Clear();
+        spy.Calls.Clear();
+        settings.SourceOverrides = new() { ["SteamLogoFile"] = "logo2.png", ["Junk"] = "x" };
+        vm.Load(settings, games, false, refreshing: false, importedShortcuts: 0, monitors, null, hotkeyFree: true);
+        var rows = vm.SourceGroups.SelectMany(g => g.Rows).ToDictionary(r => r.Entry);
+        Check(vm.SourceGroups.Select(g => g.Launcher).SequenceEqual([GameSource.Steam, GameSource.Epic, GameSource.Gog, GameSource.Ubisoft, GameSource.Rockstar]) &&
+              rows.Count == SourceDefaults.All.Length && rows[SourceEntry.SteamLogoFile].Value == "logo2.png" &&
+              rows[SourceEntry.SteamBannerFile].Placeholder == "library_hero.jpg" && rows[SourceEntry.SteamBannerFile].Value == "" &&
+              vm.SourcePathsText == Strings.Format(Strings.SourcePathsChangedOne, 1) && spy.Changes.Count == 0,
+            "settings: advanced entries filled from settings, defaults as placeholders, unknown names not counted");
+
+        vm.SetSourcePath(SourceEntry.SteamBannerFile, "../hero.jpg");
+        Check(rows[SourceEntry.SteamBannerFile].Error == Strings.InvalidFileName && !settings.SourceOverrides.ContainsKey("SteamBannerFile") &&
+              spy.Changes.Count == 0, "settings: an invalid value shows its error and changes nothing");
+        vm.SetSourcePath(SourceEntry.SteamBannerFile, " hero.jpg ");
+        Check(rows[SourceEntry.SteamBannerFile].Error is null && settings.SourceOverrides["SteamBannerFile"] == "hero.jpg" &&
+              spy.Changes is [SettingChange.SourceArtwork] && vm.SourcePathsText == Strings.Format(Strings.SourcePathsChanged, 2),
+            "settings: a valid artwork value is stored tidied and reported as an artwork change");
+        vm.SetSourcePath(SourceEntry.SteamBannerFile, "hero.jpg");
+        Check(spy.Changes.Count == 1, "settings: the same value again reports nothing");
+        vm.SetSourcePath(SourceEntry.GogKey, @"HKEY_CURRENT_USER\Software\GOG");
+        Check(settings.SourceOverrides["GogKey"] == @"HKCU\Software\GOG" && spy.Changes[^1] == SettingChange.SourcePaths,
+            "settings: a registry key is stored with the short hive name, as a non-artwork change");
+        vm.SetSourcePath(SourceEntry.SteamDownload, "https://cdn.example.com/{appid}/{file}");
+        Check(rows[SourceEntry.SteamDownload].Notice == Strings.Format(Strings.DownloadHostNotice, "cdn.example.com"),
+            "settings: another download host is named next to the address");
+        vm.ResetSourcePath(SourceEntry.GogKey);
+        Check(!settings.SourceOverrides.ContainsKey("GogKey") && rows[SourceEntry.GogKey].Value == "", "settings: Reset goes back to the default");
+        vm.ResetAllSourcePaths();
+        Check(settings.SourceOverrides.Count == 0 && rows.Values.All(r => r.Value == "" && r.Error is null && r.Notice is null) &&
+              spy.Changes[^1] == SettingChange.SourceArtwork && vm.SourcePathsText == Strings.SourcePathsDefault && !vm.CanResetAllPaths,
+            "settings: Reset all clears every entry");
+
+        vm.CheckSourceAsync(GameSource.Epic).GetAwaiter().GetResult();
+        Check(spy.Calls is ["check Epic"] && vm.SourceGroups[1].CheckResult == "Found 3 games" && !vm.SourceGroups[1].Checking,
+            "settings: Check asks the owner and shows its answer");
     }
 
     /// <summary>Records what the detail page asked for; answers its questions about Windows with fixed facts.</summary>

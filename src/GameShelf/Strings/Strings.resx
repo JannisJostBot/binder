@@ -2809,4 +2809,132 @@ Calm: efficiency mode while you play</value>
     <value>anti-cheat details</value>
     <comment>{0} in DisclosureShow/DisclosureHide.</comment>
   </data>
+  <data name="GroupAdvanced" xml:space="preserve">
+    <value>Advanced</value>
+    <comment>Heading of the last settings group, for rarely needed options.</comment>
+  </data>
+  <data name="SourcePaths" xml:space="preserve">
+    <value>Where Game Shelf finds games and pictures</value>
+    <comment>Settings card that opens the list of folders, registry keys and addresses the app reads launchers' games and pictures from.</comment>
+  </data>
+  <data name="SourcePathsDefault" xml:space="preserve">
+    <value>All defaults</value>
+    <comment>Second line of the SourcePaths card when nothing was changed.</comment>
+  </data>
+  <data name="SourcePathsChangedOne" xml:space="preserve">
+    <value>1 place changed</value>
+    <comment>Second line of the SourcePaths card: one entry was changed by the user. {0} is the count (1).</comment>
+  </data>
+  <data name="SourcePathsChanged" xml:space="preserve">
+    <value>{0} places changed</value>
+    <comment>Second line of the SourcePaths card: {0} entries were changed by the user.</comment>
+  </data>
+  <data name="SourcePathsIntro" xml:space="preserve">
+    <value>Only change these if games or pictures went missing after a launcher update.</value>
+    <comment>Line at the top of the SourcePaths section and its tooltip.</comment>
+  </data>
+  <data name="DisclosureSourcePaths" xml:space="preserve">
+    <value>game and picture locations</value>
+    <comment>{0} in DisclosureShow/DisclosureHide.</comment>
+  </data>
+  <data name="EntrySteamFolder" xml:space="preserve">
+    <value>Steam folder</value>
+    <comment>Label of a text box: the folder Steam is installed in.</comment>
+  </data>
+  <data name="EntrySteamArtFolder" xml:space="preserve">
+    <value>Artwork folder</value>
+    <comment>Label of a text box: the folder where Steam keeps game pictures.</comment>
+  </data>
+  <data name="EntrySteamCoverFiles" xml:space="preserve">
+    <value>Cover file names (tried in order)</value>
+    <comment>Label of a text box: picture file names, separated by commas, tried one after another.</comment>
+  </data>
+  <data name="EntrySteamBannerFile" xml:space="preserve">
+    <value>Banner file name</value>
+    <comment>Label of a text box: the file name of a game's wide banner picture.</comment>
+  </data>
+  <data name="EntrySteamLogoFile" xml:space="preserve">
+    <value>Logo file name</value>
+    <comment>Label of a text box: the file name of a game's logo picture.</comment>
+  </data>
+  <data name="EntrySteamDownload" xml:space="preserve">
+    <value>Download address</value>
+    <comment>Label of a text box: the web address game pictures are downloaded from.</comment>
+  </data>
+  <data name="EntryEpicManifests" xml:space="preserve">
+    <value>Manifests folder</value>
+    <comment>Label of a text box: the folder where the Epic Games Launcher keeps its list of installed games.</comment>
+  </data>
+  <data name="EntryGamesKey" xml:space="preserve">
+    <value>Games registry key</value>
+    <comment>Label of a text box: the Windows registry key that lists the launcher's games.</comment>
+  </data>
+  <data name="EntryInstallsKey" xml:space="preserve">
+    <value>Installs registry key</value>
+    <comment>Label of a text box: the Windows registry key that lists installed games (Ubisoft Connect).</comment>
+  </data>
+  <data name="EntryLauncherKey" xml:space="preserve">
+    <value>Launcher registry key</value>
+    <comment>Label of a text box: the Windows registry key of the launcher itself.</comment>
+  </data>
+  <data name="InvalidFolder" xml:space="preserve">
+    <value>Enter the full path of a folder on this PC.</value>
+    <comment>Error under a folder text box: the value isn't a full path to an existing local folder.</comment>
+  </data>
+  <data name="InvalidRegistryKey" xml:space="preserve">
+    <value>Enter a key under HKLM\SOFTWARE or HKCU\Software.</value>
+    <comment>Error under a registry key text box. Keep HKLM\SOFTWARE and HKCU\Software as they are.</comment>
+  </data>
+  <data name="InvalidFileName" xml:space="preserve">
+    <value>Enter one file name ending in .jpg, .jpeg or .png, without a folder.</value>
+    <comment>Error under a file name text box.</comment>
+  </data>
+  <data name="InvalidFileNames" xml:space="preserve">
+    <value>Enter up to 5 file names ending in .jpg, .jpeg or .png, separated by commas.</value>
+    <comment>Error under the cover file names text box.</comment>
+  </data>
+  <data name="InvalidAddress" xml:space="preserve">
+    <value>Enter an https:// address with {appid} in it.</value>
+    <comment>Error under the download address text box. Keep https:// and {appid} exactly as they are (not placeholders to fill in).</comment>
+  </data>
+  <data name="DownloadHostNotice" xml:space="preserve">
+    <value>Game Shelf will download pictures from {0}</value>
+    <comment>Note under the download address when it points to another site. {0} is the site's host name, e.g. cdn.example.com.</comment>
+  </data>
+  <data name="ResetEntry" xml:space="preserve">
+    <value>Reset</value>
+    <comment>Button next to one text box that goes back to the default value. A verb.</comment>
+  </data>
+  <data name="ResetEntryName" xml:space="preserve">
+    <value>Reset {0}</value>
+    <comment>Screen reader name of the ResetEntry button. {0} is the text box's label, e.g. "Steam folder".</comment>
+  </data>
+  <data name="ResetAll" xml:space="preserve">
+    <value>Reset all</value>
+    <comment>Button that sets every entry back to its default. A verb.</comment>
+  </data>
+  <data name="CheckSource" xml:space="preserve">
+    <value>Check</value>
+    <comment>Button that reads one launcher's games once with the current values and shows what it found. A verb.</comment>
+  </data>
+  <data name="CheckSourceName" xml:space="preserve">
+    <value>Check {0}</value>
+    <comment>Screen reader name of the CheckSource button. {0} is a launcher's name, e.g. "Steam".</comment>
+  </data>
+  <data name="CheckFoundOne" xml:space="preserve">
+    <value>Found 1 game</value>
+    <comment>Check result. {0} is the count (1).</comment>
+  </data>
+  <data name="CheckFound" xml:space="preserve">
+    <value>Found {0} games</value>
+    <comment>Check result. {0} is the number of games found.</comment>
+  </data>
+  <data name="CheckSteamArt" xml:space="preserve">
+    <value>covers for {0} · banners for {1} · logos for {2}</value>
+    <comment>Check result for Steam, after "Found N games": how many games have each kind of picture on this PC: {0} covers, {1} banners, {2} logos (numbers). Lower case; keep the middle dots.</comment>
+  </data>
+  <data name="EntryNotFound" xml:space="preserve">
+    <value>{0} not found</value>
+    <comment>Check result when an entry points nowhere. {0} is the entry's label, e.g. "Artwork folder".</comment>
+  </data>
 </root>

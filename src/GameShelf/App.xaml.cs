@@ -89,6 +89,7 @@ public sealed partial class App : Application
     {
         _dispatcher = DispatcherQueue.GetForCurrentThread();
         Settings = Storage.LoadSettings();
+        Library.SourceDefaults.Use(Settings.SourceOverrides); // before any scan or cover lookup
         Autostart.UpdatePathIfEnabled(); // the app may have been moved, or the entry predates --background
         State.Games = Storage.LoadLibrary();
         State.Sessions = Storage.LoadSessions();

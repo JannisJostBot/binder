@@ -438,6 +438,33 @@
                                   AutomationProperties.Name="{x:Bind s:Strings.DesktopLayer}" />
                 </Grid>
             </Border>
+            <!-- Advanced (spec §14): where launchers' games and Steam's pictures are found. Starts closed; the
+                 launchers' entries are drawn in code (SettingsView.xaml.cs). -->
+            <TextBlock Style="{StaticResource GroupLabel}" Text="{x:Bind s:Strings.GroupAdvanced}" />
+            <Border x:Name="SourcePathsCard" Style="{StaticResource SettingCard}">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.SourcePathsIntro}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE8B7;" />
+                    <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.SourcePaths}" TextWrapping="Wrap" />
+                        <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.SourcePathsText, Mode=OneWay}" />
+                    </StackPanel>
+                    <Button x:Name="SourcePathsChevron" Grid.Column="2" Style="{StaticResource DisclosureButton}" />
+                </Grid>
+            </Border>
+            <Border x:Name="SourcePathsBody" Style="{StaticResource SettingCardBody}" Padding="52,12,16,16">
+                <StackPanel Spacing="12">
+                    <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap" TextTrimming="None" Text="{x:Bind s:Strings.SourcePathsIntro}" />
+                    <StackPanel x:Name="SourcePathsList" Spacing="20" AutomationProperties.Name="{x:Bind s:Strings.SourcePaths}" />
+                    <Button HorizontalAlignment="Left" Content="{x:Bind s:Strings.ResetAll}" IsEnabled="{x:Bind ViewModel.CanResetAllPaths, Mode=OneWay}"
+                            Click="OnResetAllPathsClick" />
+                </StackPanel>
+            </Border>
+
             <HyperlinkButton Margin="8,24,20,0" Content="{x:Bind s:Strings.RunSetupAgain}" Command="{x:Bind ViewModel.SetupCommand}" />
         </StackPanel>
     </ScrollViewer>

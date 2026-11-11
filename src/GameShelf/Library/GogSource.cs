@@ -7,14 +7,13 @@ namespace GameShelf.Library;
 /// <summary>Finds installed GOG games from the registry entries GOG's installers write.</summary>
 public static class GogSource
 {
-    private const string GamesKey = @"SOFTWARE\WOW6432Node\GOG.com\Games";
 
     public static List<Game> Scan()
     {
         var games = new List<Game>();
         try
         {
-            using var root = Registry.LocalMachine.OpenSubKey(GamesKey);
+            using var root = SourceDefaults.OpenKey(SourceEntry.GogKey);
             if (root is null) return games;
             var seen = new HashSet<string>();
             foreach (var keyName in root.GetSubKeyNames())

@@ -51,7 +51,8 @@ their games, and it must feel like part of Windows. When an idea doesn't clearly
 
 ```
 src/GameShelf/            the WinUI widget
-  Library/                sources (*Source.cs), InstallFolder (folder safety), Vdf, ShortcutFile/ShortcutImporter,
+  Library/                sources (*Source.cs), SourceDefaults (where each source reads, user overrides),
+                          InstallFolder (folder safety), Vdf, ShortcutFile/ShortcutImporter,
                           LaunchOptions, GameScan, AntiCheat, PlaytimeStats, CrashAnalysis, SpacePlanner,
                           Moments ("Welcome back") (pure logic)
   Models/                 Game, Session, Settings, ImportedShortcut, CrashRecord
@@ -221,12 +222,18 @@ Errors: unexpected UI errors go to `%LOCALAPPDATA%\GameShelf\error.log` (1 MB ro
 The widget and watcher run as the normal user and never ask for admin rights. The one exception (owner, spec §11):
 Game mode's "Allow…" starts `GameShelf.Elevated.exe` once with a UAC prompt. Untrusted input: every launcher's
 manifests, config files and registry entries (library folders can be on drives others can write to), desktop
-shortcuts, downloaded images.
+shortcuts, downloaded images, and the places typed in Settings › Advanced.
 
 - **Validate before use.** Store ids match their shape (Steam appid, GOG id: digits; Epic ids: letters, digits,
   `-`, `_`, `.`). Steam install folders: one folder name under `steamapps\common`. Every other install folder goes
   through `InstallFolder.Validate` (full, existing, not a drive root, not inside Windows, not a shared folder like
   Program Files, the profile or Desktop). A GOG exe must be inside its install folder. Reject otherwise.
+- **Source locations (Settings › Advanced, spec §14).** Every source and `CoverCache` read their folders, registry
+  keys, Steam art file names and download address through `SourceDefaults`, which checks the user's values again on
+  every load (`SourceDefaults.Validate`): folders full, local and existing; registry keys only under
+  `HKLM\SOFTWARE\` or `HKCU\Software\`, read-only; file names one `.jpg`/`.jpeg`/`.png` name; the address
+  `https://` with `{appid}`. Invalid or unknown values fall back to the defaults; what's read from the new place
+  goes through the same checks as from the default one.
 - **Bounded parsing.** Parsers cap file size and nesting depth and fail with `FormatException`, never a crash.
   Downloads have a size cap.
 - **Launching.** Only what came from a validated library entry or that the user picked. Store URIs from validated
@@ -239,7 +246,9 @@ shortcuts, downloaded images.
 - **Files.** Only delete inside our own AppData folders; never follow paths from data files to delete or overwrite
   anything. Never delete the user's files or shortcuts; moves stay reversible. Never delete game files: Free up
   space hands each uninstall to the game's own launcher (or Settings › Apps).
-- **Network.** HTTPS to the store CDNs only, for artwork. No telemetry, no other calls.
+- **Network.** HTTPS to the store CDNs only, for artwork, or to an HTTPS address the user typed themselves in
+  Settings › Advanced (the page names its host). Downloads are size-capped and only ever decoded as images. No
+  telemetry, no other calls.
 - **Installer.** `asInvoker`, fixed paths from known folders (never read back from the registry), deletes only
   files it wrote and never through links, hashes each file after writing, ends only processes from its own
   install folder. Details: `docs/installer.md`.
