@@ -21,7 +21,7 @@ Make exactly these four replacements. Each old text appears once in the file.
 | `© [YEAR] Jannis Jost` | `© 2026 Jannis Jost` |
 | `Version [VERSION] ·` | `Version 0.1.0 ·` |
 | `· [SIZE] MB ·` | `· 31 MB ·` |
-| `href="[SOURCE LINK]"` | `href="https://github.com/JannisJostBot/game_shelf"` |
+| `href="[SOURCE LINK]"` | `href="https://github.com/JannisJostBot/binder"` |
 
 (0.1.0 is the version in `Directory.Build.props`; 31 MB is the size of `GameShelfSetup.exe` from CI on
 2026-11-05, 32,558,080 bytes.)

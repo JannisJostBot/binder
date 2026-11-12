@@ -1777,7 +1777,7 @@ Every release carries three files: `GameShelfSetup-<version>.exe`, `release.json
   language, plain text (shown in a TextBlock, never as markup or links). Anything else is rejected; unknown fields
   are ignored.
 - **The download address isn't in the manifest:** the app builds it from the version alone,
-  `https://github.com/JannisJostBot/game_shelf/releases/download/v<version>/GameShelfSetup-<version>.exe`.
+  `https://github.com/JannisJostBot/binder/releases/download/v<version>/GameShelfSetup-<version>.exe`.
 
 ### Urgent security updates (owner's request, 2026-11-12)
 
@@ -1858,7 +1858,7 @@ private key never exists anywhere else and can't be copied off it.
 - **When it checks:** when the panel opens, after the first frame (like the rescan), if the last check was over
   24 hours ago; and from Settings' **Check for updates**. Never on a timer, never in `--background` start-up before
   the panel has been opened, never while a watcher is tracking a game.
-- **What it fetches:** `https://github.com/JannisJostBot/game_shelf/releases/latest/download/release.json` and
+- **What it fetches:** `https://github.com/JannisJostBot/binder/releases/latest/download/release.json` and
   `.sig` (about 2 KB). Redirects are followed only over HTTPS and only to `github.com`,
   `objects.githubusercontent.com` and `release-assets.githubusercontent.com`. 15 s timeout. No GitHub API, no
   account, no cookies, a plain `User-Agent: GameShelf/<version>`.
