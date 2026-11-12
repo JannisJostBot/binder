@@ -391,19 +391,36 @@ static partial class Tests
             "shortcut duplicating a store game's exe taken out, its favorite kept");
         Check(!ShortcutImporter.RemoveDuplicates(lib), "nothing more to take out");
 
-        // Restoring a shortcut puts it back, next to a same-named file if needed.
+        // Restoring a shortcut puts it back, next to a same-named file if needed. Scratch folders stand in for our
+        // shortcuts folder and the desktops (restore only moves out of the one and onto the others).
         var desktop = Directory.CreateDirectory(Path.Combine(dir, "Desktop")).FullName;
         var stored = Directory.CreateDirectory(Path.Combine(dir, "Stored")).FullName;
-        File.WriteAllText(Path.Combine(stored, "A.lnk"), "a");
-        File.WriteAllText(Path.Combine(stored, "B.lnk"), "b");
-        File.WriteAllText(Path.Combine(desktop, "B.lnk"), "someone else's");
-        var failed = ShortcutImporter.Restore([
-            new ImportedShortcut { StoredPath = Path.Combine(stored, "A.lnk"), OriginalPath = Path.Combine(desktop, "A.lnk") },
-            new ImportedShortcut { StoredPath = Path.Combine(stored, "B.lnk"), OriginalPath = Path.Combine(desktop, "B.lnk") },
-        ]);
-        Check(failed.Count == 0 && File.ReadAllText(Path.Combine(desktop, "A.lnk")) == "a", "shortcut restored to the desktop");
-        Check(File.ReadAllText(Path.Combine(desktop, "B.lnk")) == "someone else's" && File.ReadAllText(Path.Combine(desktop, "B (2).lnk")) == "b",
-            "restore doesn't overwrite an existing file");
+        var elsewhere = Directory.CreateDirectory(Path.Combine(dir, "Elsewhere")).FullName;
+        ShortcutImporter.FolderForTests = stored;
+        ShortcutImporter.DesktopsForTests = [desktop];
+        try
+        {
+            File.WriteAllText(Path.Combine(stored, "A.lnk"), "a");
+            File.WriteAllText(Path.Combine(stored, "B.lnk"), "b");
+            File.WriteAllText(Path.Combine(desktop, "B.lnk"), "someone else's");
+            File.WriteAllText(Path.Combine(elsewhere, "C.lnk"), "c");
+            var failed = ShortcutImporter.Restore([
+                new ImportedShortcut { StoredPath = Path.Combine(stored, "A.lnk"), OriginalPath = Path.Combine(desktop, "A.lnk") },
+                new ImportedShortcut { StoredPath = Path.Combine(stored, "B.lnk"), OriginalPath = Path.Combine(desktop, "B.lnk") },
+                new ImportedShortcut { StoredPath = Path.Combine(elsewhere, "C.lnk"), OriginalPath = Path.Combine(desktop, "C.lnk") },
+            ]);
+            Check(failed.Count == 0 && File.Exists(Path.Combine(desktop, "A.lnk")) && File.ReadAllText(Path.Combine(desktop, "A.lnk")) == "a",
+                "shortcut restored to the desktop");
+            Check(File.ReadAllText(Path.Combine(desktop, "B.lnk")) == "someone else's" && File.Exists(Path.Combine(desktop, "B (2).lnk")) &&
+                  File.ReadAllText(Path.Combine(desktop, "B (2).lnk")) == "b", "restore doesn't overwrite an existing file");
+            Check(File.Exists(Path.Combine(elsewhere, "C.lnk")) && !File.Exists(Path.Combine(desktop, "C.lnk")),
+                "restore moves nothing that isn't in our shortcuts folder");
+        }
+        finally
+        {
+            ShortcutImporter.FolderForTests = null;
+            ShortcutImporter.DesktopsForTests = null;
+        }
     }
 
     // Reference parser for the documented CommandLineToArgvW / MSVC argv rules (arguments after argv[0]).

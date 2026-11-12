@@ -17,6 +17,9 @@ public static class ShortcutImporter
     /// <summary>Unit tests only: a scratch folder instead of the user's.</summary>
     internal static string? FolderForTests { get; set; }
 
+    /// <summary>Unit tests only: scratch folders instead of the user's and the Public desktop (the first is "the user's").</summary>
+    internal static string[]? DesktopsForTests { get; set; }
+
     /// <summary>
     /// The library entry a shortcut duplicates, or null: a store link (steam://rungameid/570 → steam:570), or a
     /// shortcut to a store game's own exe (the EA app's "Battlefield 6.lnk" → bf6.exe). Other programs in a game's
@@ -261,11 +264,11 @@ public static class ShortcutImporter
     /// </summary>
     internal static string? RestoreTarget(string? original, string storedName)
     {
-        var desktops = new[]
+        var desktops = (DesktopsForTests ?? new[]
         {
             Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
             Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
-        }.Where(d => !string.IsNullOrEmpty(d)).Select(d => Path.TrimEndingDirectorySeparator(Path.GetFullPath(d))).ToArray();
+        }).Where(d => !string.IsNullOrEmpty(d)).Select(d => Path.TrimEndingDirectorySeparator(Path.GetFullPath(d))).ToArray();
         if (!string.IsNullOrEmpty(original) && Path.IsPathFullyQualified(original))
         {
             var full = Path.GetFullPath(original);
