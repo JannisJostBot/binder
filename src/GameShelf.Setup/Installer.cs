@@ -20,7 +20,11 @@ internal static class Installer
         "in connection with the software or its use. You use it at your own risk.\n\n" +
         "Game Shelf isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Electronic Arts, Ubisoft, Rockstar Games, " +
         "Hypixel Studios, Microsoft or any other " +
-        "company whose launchers it works with. Their names and icons belong to their owners.";
+        "company whose launchers it works with. Their names and icons belong to their owners.\n\n" +
+        "Game Shelf is licensed under the GNU GPL, version 3, with an additional permission for the libraries it bundles. It " +
+        "includes parts of Microsoft's .NET and Windows App SDK, which stay under their own licenses; by installing Game " +
+        "Shelf you also agree to the Windows App SDK's license terms. The licenses are in the \"licenses\" folder of the " +
+        "install folder.";
 
     public static int Run(Options options)
     {

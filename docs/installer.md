@@ -134,6 +134,10 @@ Setup only accepts a list of well-formed hashes and plain relative paths (no roo
 dotted names, or stream syntax; at most 8 levels and 2000 files) that includes the widget and the watcher, and
 it extracts only the files that list names.
 
+The app folder includes `licenses\`: Game Shelf's license (GPL 3.0 and its additional permission),
+`THIRD-PARTY-NOTICES.txt`, and the license and notice files of the .NET runtime, the Windows App SDK and WebView2,
+copied from the exact package versions the build used. `publish.ps1` stops if one is missing.
+
 ### Install and update steps (`Installer.cs`)
 
 1. Read the payload.

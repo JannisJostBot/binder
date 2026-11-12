@@ -45,8 +45,14 @@ their games, and it must feel like part of Windows. When an idea doesn't clearly
 - Prefer the base library and Windows APIs; writing a little code (e.g. the VDF parser) beats adding a package.
 - **Ask the owner before adding any third-party package**: what for, why built-ins don't do, size/impact. Only
   well-known, actively maintained, permissively licensed packages; pin exact versions and list them here.
-- Approved: `Microsoft.WindowsAppSDK.WinUI` 2.6.4 (MIT), only this component, not the `Microsoft.WindowsAppSDK`
+- Approved: `Microsoft.WindowsAppSDK.WinUI` 2.6.4 (its binaries are under the Microsoft Software License Terms for
+  the Windows App SDK, not MIT; redistributable with the app), only this component, not the `Microsoft.WindowsAppSDK`
   umbrella (it bundles AI runtimes we don't use).
+- **License:** Game Shelf is GPL 3.0 with a section 7 permission to combine it with the Windows App SDK, .NET and
+  WebView2 (`LICENSE`, `LICENSE-EXCEPTION.txt`). Every bundled component and its license is listed in
+  `THIRD-PARTY-NOTICES.txt`; `publish.ps1` copies the upstream license and notice files into `app\licenses` and
+  stops if one is missing. A new dependency must have a GPL-compatible license or be added to that permission,
+  and gets its line in `THIRD-PARTY-NOTICES.txt`.
 - The watcher stays dependency-free and tiny.
 
 ## Layout

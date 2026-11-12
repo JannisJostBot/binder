@@ -40,6 +40,14 @@ Fixes for security problems are welcome. Please **don't report a vulnerability i
 "Report a vulnerability" on the repository's Security tab, so it can be fixed before it's public. A fix can go in
 the same report, or in a pull request once that's agreed.
 
+## Licensing of contributions
+
+Game Shelf is licensed under the GNU GPL, version 3, with an additional permission for the libraries it bundles
+(`LICENSE`, `LICENSE-EXCEPTION.txt`). By sending a contribution (a translation, wording or a security fix), you
+agree that it's licensed under the same terms, and that the maintainer may also license it under other terms in
+later versions, so Game Shelf can change its license without asking every contributor. Versions already released
+keep their license.
+
 ## Feature requests
 
 You can suggest features in an issue. Game Shelf is a launcher, not a game toolbox, and stays small on purpose.
