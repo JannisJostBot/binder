@@ -1720,7 +1720,7 @@ not approved yet:** build only after the owner's go. Today the app never contact
 | Intercepts the connection (proxy, DNS, public Wi-Fi) | HTTPS, plus the signature: any changed byte fails |
 | Serves an older, genuinely signed release (downgrade) | Never installs a version at or below the installed one, or a manifest older than the last one accepted |
 | Swaps the downloaded file between the check and the start | The file is held open without write or delete sharing from the hash check until the setup has started |
-| Steals the owner's signing key | A second, offline backup key; a release signed with it drops the stolen key from the app |
+| Steals the owner's signing key | It can't be copied off the YubiKey; a stolen YubiKey needs its PIN (locks after 3 tries) and a touch. The second YubiKey signs a release that drops the lost key |
 | Malware already running as the user | Out of scope: it could change the installed files directly (true for every per-user app). The updater never elevates, so it adds no way up |
 
 ### The signed manifest
@@ -1783,18 +1783,33 @@ Every release carries three files: `GameShelfSetup-<version>.exe`, `release.json
 5. **Published:** with "immutable releases" on, the release's files and tag can't change any more. A bad release is
    fixed by the next version, never by replacing files (the app never downgrades).
 
-### The keys (owner)
+### The keys (owner: two YubiKeys, 2026-11-12)
 
-- **Main key:** created on the owner's PC by `scripts/sign-release.ps1 -NewKey` as a non-exportable key in Windows'
-  key storage with a password asked on every use (CNG strong key protection), or on a hardware security key
-  (YubiKey PIV through Windows' smart card provider) if the owner has one. Never in GitHub secrets, never in the
-  repository.
-- **Backup key:** made once on an offline PC; the private key on an encrypted USB stick and a paper copy, stored
-  apart from the PC. Used only if the main key is lost or stolen.
+The owner has two YubiKeys. Each holds one signing key in its PIV smart card part, made on the key itself, so the
+private key never exists anywhere else and can't be copied off it.
+
+- **Needs:** YubiKey 5 series (PIV with ECC P-384). The blue "Security Key" series has only FIDO, no PIV: check
+  with `ykman info` ("PIV: Enabled"). Firmware before 5.7 has the EUCLEAK side channel on ECDSA, which needs the
+  YubiKey in the attacker's hands plus lab equipment; acceptable if the keys stay with the owner, worth knowing.
+- **Setup, once per YubiKey (owner's PC, Yubico's `ykman`, a tool for the owner only, never part of the app):**
+  - change the PIV PIN, PUK and management key from the defaults;
+  - generate an ECC P-384 key in slot 9c (Digital Signature) with PIN policy "always" and touch policy "always", and
+    a self-signed certificate for it (Windows finds the key through the certificate);
+  - `scripts/sign-release.ps1 -ExportPublicKey` writes its public key for `Services/UpdateKeys.cs`.
+- **Main key (YubiKey 1):** kept by the owner, used for every release. Signing goes through Windows' own smart card
+  support (the certificate in CurrentUser\My, `ECDsa` from it, no Yubico software needed at signing time): the
+  script asks for the PIN and the YubiKey blinks for a touch, for each release.
+- **Backup key (YubiKey 2):** set up the same way, then stored apart from the PC and YubiKey 1 (another room or
+  place). Used only if YubiKey 1 is lost, broken or stolen. Its PIN and PUK written down and kept apart from it.
+- **Lost or stolen YubiKey:** without its PIN it locks after 3 wrong tries; still, the next release is signed with
+  the other YubiKey and drops the lost key from `UpdateKeys.cs`, then a new key is set up on a replacement. Both lost
+  at once: users would have to install a new setup by hand once (the app can't be told to trust a new key).
 - **Rotation:** a release signed with the old key ships the new public key; the release after that drops the old
   one.
-- **GitHub account:** passkey or hardware-key two-factor sign-in, branch protection on `main` (no force push, pull
-  requests with CI), the tag ruleset, immutable releases, Dependabot for the workflow's actions.
+- **GitHub account:** both YubiKeys registered as passkeys / security keys for the owner's sign-in (their FIDO part,
+  separate from PIV), branch protection on `main` (no force push, pull requests with CI), the tag ruleset, immutable
+  releases, Dependabot for the workflow's actions.
+- Never in GitHub secrets, never in the repository, never in a file on the PC.
 
 ### In the app
 
@@ -1889,14 +1904,15 @@ New `Library/UpdateManifest` (parse and rules, tested), `Services/UpdateKeys`, `
 download, start), `ViewModels/SettingsViewModel` (About group, states; tested with the spy), `SettingsView` (About
 cards), `ShelfView` / `App.ShowTrayMenu` (menu item, dot), `MainWindow` (check after first frame, install on close,
 pill after `--updated`), `Models/Settings` (three fields), the setup's `Program`/`Installer` (`/update`), new
-`.github/workflows/release.yml`, `scripts/sign-release.ps1` (`-NewKey`, signing), `docs/releases/`. Unit tests:
+`.github/workflows/release.yml`, `scripts/sign-release.ps1` (`-ExportPublicKey`, signing through the YubiKey), `docs/releases/`. Unit tests:
 signature (good, changed byte, wrong key, backup key), manifest rules, downgrade and `issued` checks, the
 download's size and hash checks against a local file.
 
 ### To decide (owner)
 
 1. Default for "Updates": **Ask before installing** (proposed) or Install automatically.
-2. Main key: Windows key storage with a password (proposed, nothing to buy) or a hardware key.
+2. ~~Main key~~: decided 2026-11-12, the owner's two YubiKeys (main and backup, see "The keys"). To check: both
+   are YubiKey 5 series (`ykman info`), and their firmware version.
 3. While here, the setup could write and verify every file before swapping any (today it swaps file by file), so
    a failure halfway never leaves a mix of versions. Proposed as part of this milestone.
 
