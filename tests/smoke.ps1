@@ -540,7 +540,7 @@ try {
     }
     Shot '4-during-game'
 
-    # The game exits after 15 s; the watcher waits a 5 s restart grace, logs the session and relaunches the widget.
+    # The game exits after 15 s; the watcher waits a 3 s restart grace, logs the session and relaunches the widget.
     $returned = Wait-Until { Get-Process GameShelf -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $widget.Id } } 60 'widget to come back after the game closed'
     $returned = $returned | Select-Object -First 1
     $script:returnedProcess = $returned

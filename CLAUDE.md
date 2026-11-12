@@ -110,13 +110,14 @@ moves an old `sessions.json` into the year files at start (kept as `sessions.jso
    - Detection: any process whose exe is inside the install folder, or the explicit process name. Polling every
      ~2 s is allowed here only, for up to ~3 min. Never found: relaunch the widget with "Couldn't detect the game".
    - Found: **block** on the process handle; no polling while the game runs. After an exit, re-check the folder
-     for ~5 s (games that restart themselves).
+     for ~3 s (games that restart themselves).
    - On exit: append the session as one line to `sessions-<year>.jsonl` (the year it ended, `SessionLog`; never
      reads the file), relaunch the widget if "Come back when the game closes" is on, or with `--crashed` after a crash exit code of a game with "Restart if it crashes" (spec §17: the widget's
      restart pill counts 5 s down, then plays it again; at most twice in a row).
    - Game mode (when on for the game): apply right after start (and tell a widget that is still up, never starting
-     it for that), Above normal priority once found, restore everything before relaunching the widget, which shows
-     the result. Admin items go through the helper's scheduled tasks (`GameShelf Apply/Restore <SID>`, waiting on
+     it for that), Above normal priority once found, restore after the game: with "Come back" on, the widget is
+     started first and the result follows as a forwarded `--restored` once it's up (`WaitForInputIdle`); with it off,
+     the restore comes first. A new Game mode session waits up to 30 s for a previous watcher still restoring. Admin items go through the helper's scheduled tasks (`GameShelf Apply/Restore <SID>`, waiting on
      `Local\GameShelf.Elevated.<id>`). Not detected: restore at once.
 6. A game the watcher can't follow (no folder, no process name) starts without hiding the widget, with a toast
    pointing to "Process to watch".

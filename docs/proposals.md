@@ -172,6 +172,9 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   protected process, a program running as another account, or an antivirus Windows Security lists
   (`ProtectedApps`, checked at each apply; logged, not shown as a failure). Third-party antivirus and EDR agents
   are covered without a list of their names. Helper version 3, so "Update…" is offered.
+- **Faster return after a game** (owner): the watcher's check for games that restart themselves is 3 s (was 5 s),
+  and with "Come back" on the widget starts before Game mode is put back; the "back to normal" toast follows when
+  the restore is done. With "Come back" off the old order stays (that widget only starts for a toast or a restart).
 
 ---
 
@@ -599,7 +602,7 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
 ### Timing
 
 - **Apply:** when Play is pressed, in parallel with the game starting.
-- **Restore:** after the watcher confirms the game closed (after the 5 s restart grace), before the widget returns.
+- **Restore:** after the watcher confirms the game closed (after the 3 s restart grace); with "Come back" on, while the widget starts (its toast follows), else before it starts.
 - **If the game is never detected:** restore immediately.
 
 ### Game mode toast (board 4)

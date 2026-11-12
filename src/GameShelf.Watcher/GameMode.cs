@@ -61,7 +61,9 @@ internal sealed class GameMode
     public static GameMode? Begin(string gameId, string items, List<string> closeApps, NetworkOptions? network = null,
         List<string>? calmApps = null)
     {
-        var mutex = TryTakeMutex();
+        // The previous game's watcher may still be putting things back (the widget now returns before it's done,
+        // so a quick Play or a crash restart can get here first): wait for it, a kernel wait, at most 30 s.
+        var mutex = TryTakeMutex(OtherWatcherWaitMs);
         if (mutex is null)
         {
             Log($"{gameId}: skipped, another game's changes are still applied");
@@ -212,12 +214,14 @@ internal sealed class GameMode
         }
     }
 
-    private static Mutex? TryTakeMutex()
+    private const int OtherWatcherWaitMs = 30_000;
+
+    private static Mutex? TryTakeMutex(int waitMs = 0)
     {
         var mutex = new Mutex(false, GameModeInfo.MutexName);
         try
         {
-            if (mutex.WaitOne(0)) return mutex;
+            if (mutex.WaitOne(waitMs)) return mutex;
         }
         catch (AbandonedMutexException)
         {

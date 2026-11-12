@@ -23,7 +23,7 @@ namespace GameShelf.Watcher;
 internal static class Program
 {
     private const int PollIntervalMs = 2000;
-    private const int RestartGraceMs = 5000;
+    private const int RestartGraceMs = 3000; // games that restart themselves start the new process within ~1-2 s
     private const int RestartPollMs = 1000;
     private const int MaxWaitHandles = 64; // WaitForMultipleObjects limit
     private const int SaveAttempts = 10, SaveRetryMs = 300;
@@ -125,10 +125,27 @@ internal static class Program
         }
 
         SaveSession(gameId, start, end, exit, matcher.ReporterSeen);
-
-        // Put back before the widget returns, so it shows the result.
-        var result = ToastArgument(gameMode?.End(), toast);
         bool crashed = restartOnCrash && MayRestart(exit.Code, end - start);
+
+        if (comeBack)
+        {
+            // The widget comes back first; Game mode is put back while it starts (the admin part restarts services
+            // and can take seconds), and its result follows as a forwarded "--restored" once the widget is up.
+            StartProcess(WidgetPath, ReturnArguments(gameId, comeBack, crashed, null)!, 0, out var widget);
+            var restored = ToastArgument(gameMode?.End(), toast);
+            if (restored is not null)
+            {
+                // Its window exists once it's idle: the next start is then forwarded to it, never a second widget.
+                if (widget != IntPtr.Zero) Native.WaitForInputIdle(widget, WidgetReadyMs);
+                StartWidget("--restored", restored);
+            }
+            if (widget != IntPtr.Zero) Native.CloseHandle(widget);
+            return 0;
+        }
+
+        // "Come back" off: the widget starts only for a crash restart or the result, then exits again, so it waits
+        // for the result instead of being asked twice.
+        var result = ToastArgument(gameMode?.End(), toast);
         if (ReturnArguments(gameId, comeBack, crashed, result) is { } widgetArgs) StartWidget(widgetArgs);
         return 0;
     }
@@ -390,8 +407,12 @@ internal static class Program
         sb.Append('"');
     }
 
-    private static void StartWidget(params string[] args) =>
-        StartProcess(Path.Combine(AppContext.BaseDirectory, "GameShelf.exe"), args);
+    private static string WidgetPath => Path.Combine(AppContext.BaseDirectory, "GameShelf.exe");
+
+    /// <summary>How long the result waits for a widget that is still starting (a cold start is about a second).</summary>
+    private const uint WidgetReadyMs = 10_000;
+
+    private static void StartWidget(params string[] args) => StartProcess(WidgetPath, args);
 
     /// <summary>Starts an exe from its own folder; each argument is quoted on its own. False if it couldn't start.</summary>
     internal static bool StartProcess(string exe, string[] args)
@@ -438,6 +459,10 @@ internal static partial class Native
     [LibraryImport("kernel32.dll", EntryPoint = "QueryFullProcessImageNameW", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool QueryFullProcessImageNameW(IntPtr process, uint flags, [Out] char[] name, ref uint size);
+
+    /// <summary>Waits until a started GUI process has made its windows and waits for input (or the timeout).</summary>
+    [LibraryImport("user32.dll")]
+    public static partial uint WaitForInputIdle(IntPtr process, uint ms);
 
     [LibraryImport("kernel32.dll")]
     public static partial uint WaitForMultipleObjects(uint count, IntPtr[] handles, [MarshalAs(UnmanagedType.Bool)] bool waitAll, uint ms);
