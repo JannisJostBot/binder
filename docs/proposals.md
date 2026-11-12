@@ -1720,6 +1720,7 @@ not approved yet:** build only after the owner's go. Today the app never contact
 | Intercepts the connection (proxy, DNS, public Wi-Fi) | HTTPS, plus the signature: any changed byte fails |
 | Serves an older, genuinely signed release (downgrade) | Never installs a version at or below the installed one, or a manifest older than the last one accepted |
 | Swaps the downloaded file between the check and the start | The file is held open without write or delete sharing from the hash check until the setup has started |
+| Steals one YubiKey and its PIN, marks a release urgent | Urgent needs both YubiKeys; with one signature it's a normal update the user is asked about |
 | Steals the owner's signing key | It can't be copied off the YubiKey; a stolen YubiKey needs its PIN (locks after 3 tries) and a touch. The second YubiKey signs a release that drops the lost key |
 | Malware already running as the user | Out of scope: it could change the installed files directly (true for every per-user app). The updater never elevates, so it adds no way up |
 
@@ -1736,6 +1737,7 @@ Every release carries three files: `GameShelfSetup-<version>.exe`, `release.json
   "issued": "2026-11-20T18:04:00Z",
   "commit": "<40 hex digits, the tagged commit>",
   "setup": { "size": 31457280, "sha256": "<64 hex digits>" },
+  "urgent": false,
   "notes": { "en": ["…", "…"], "de": ["…"], "fr": ["…"] }
 }
 ```
@@ -1743,7 +1745,7 @@ Every release carries three files: `GameShelfSetup-<version>.exe`, `release.json
 - **Signature:** ECDSA P-384 with SHA-384 (built into .NET and Windows CNG, works on Windows 10, no package),
   over the exact bytes of `release.json` prefixed with the fixed text `GameShelf release manifest v1` and a zero byte
   (so the key can't be tricked into signing anything else that verifies). `release.json.sig` holds the 96-byte
-  signature (IEEE P1363) in base64. Ed25519 isn't in .NET 10 or CNG, and writing our own crypto is out.
+  signature (IEEE P1363) in base64, one per line: one line normally, two (one per YubiKey) for an urgent update. Ed25519 isn't in .NET 10 or CNG, and writing our own crypto is out.
 - **Keys in the app:** two public keys compiled in (`Services/UpdateKeys.cs`): the owner's main key and the
   offline backup key. Either one verifies. The file is on `AGENTS.md`'s "Don't touch" list and `check.ps1`'s protected
   list.
@@ -1756,6 +1758,26 @@ Every release carries three files: `GameShelfSetup-<version>.exe`, `release.json
   are ignored.
 - **The download address isn't in the manifest:** the app builds it from the version alone,
   `https://github.com/JannisJostBot/game_shelf/releases/download/v<version>/GameShelfSetup-<version>.exe`.
+
+### Urgent security updates (owner's request, 2026-11-12)
+
+A release can be marked `"urgent": true` for a security fix that shouldn't wait for the user's click.
+
+- **What changes for the user:** with "Ask before installing", an urgent update downloads as soon as the check finds
+  it and installs the next time the panel closes, as with "Install automatically". Never while the panel is open,
+  never while a watcher tracks a game. Afterwards the pill says "Security update installed · 0.2.1" with **What's
+  new**. "Don't check" still means no network at all, so nothing is ever forced on those users.
+- **Two keys:** `urgent` counts only if `release.json.sig` has valid signatures from **both** YubiKeys. With one
+  signature the release is still a normal update (the user is asked). So a single stolen or misused YubiKey can never
+  install anything on its own; it would need both YubiKeys and both PINs. For an urgent release the owner fetches
+  YubiKey 2 from where it's kept; `sign-release.ps1 -Urgent` asks for both in turn.
+- **Notes must say why:** the script refuses an urgent release whose notes don't start with a line for it (EN, DE,
+  FR), e.g. "Fixes a security problem in shortcut import." That line shows in the pill's What's new.
+- **Not a lever for anything else:** urgent doesn't skip any check (signature, version, `issued`, size, hash), doesn't
+  bring back a skipped version faster than the next check, and doesn't change the check's schedule (once a day, when
+  the panel opens).
+- **Settings:** the "Ask before installing" choice gets the tooltip "Security fixes still install when you close
+  Game Shelf".
 
 ### Making a release
 
