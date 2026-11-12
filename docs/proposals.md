@@ -36,6 +36,7 @@ break the user's system.
 | 23 Faster than Start | §22 | To do |
 | 24 Lean speed-ups | §23 | To do |
 | 25 Weekly chart details | §24 | Proposed (2026-11-12), waiting for the owner's go; two choices open (§24 "To decide") |
+| 26 Updates from GitHub | §25 | Proposed (2026-11-12), waiting for the owner's go; boards 28 and 29; three choices open (§25 "To decide") |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
 
 The build order is at the end of this file. The ideas under "Not decided" at the bottom must **not** be built.
@@ -1694,6 +1695,211 @@ Detail's per-game charts (weeks, months): the tooltip adds the number of session
    totals look wrong). Today the "most played" line skips them.
 2. Games no longer in the library: the name from `removed-games.json` where kept, else "A removed game".
 
+## 25. Updates from GitHub (milestone 26, proposed, boards 28 and 29)
+
+Game Shelf finds, downloads and installs its own updates from the public GitHub repository's releases. **Proposed,
+not approved yet:** build only after the owner's go. Today the app never contacts anything to update (README,
+`docs/installer.md`, the website's FAQ); approving this changes that rule (see "Rules that change").
+
+### Goals
+
+- **Tamper-proof:** an update runs only if it carries a signature from the owner's own key, which never lives on
+  GitHub. Taking over the GitHub account, a token, the release workflow or the connection is not enough.
+- **Zero cost while idle or gaming:** no timer, no background service, no scheduled task. The check is one small
+  request when the panel opens, at most once a day. During a game the widget doesn't exist, so nothing updates.
+- **Nothing new to trust on the PC:** no elevation, no new process that stays running, no package. The installer
+  that's already there (`GameShelfSetup.exe /S`) does the install.
+
+### What an attacker would need (threat model)
+
+| Attack | What stops it |
+|---|---|
+| Takes over the owner's GitHub account or a token, publishes a release | The release has no valid signature: the signing key isn't on GitHub. The app ignores it |
+| Changes the release workflow, or an action it uses | The sign script checks the build's attestation (which workflow, which commit) and refuses; actions are pinned to commit hashes |
+| Replaces a file in a published release | Immutable releases (repo setting) block it; the setup's hash is in the signed manifest anyway |
+| Intercepts the connection (proxy, DNS, public Wi-Fi) | HTTPS, plus the signature: any changed byte fails |
+| Serves an older, genuinely signed release (downgrade) | Never installs a version at or below the installed one, or a manifest older than the last one accepted |
+| Swaps the downloaded file between the check and the start | The file is held open without write or delete sharing from the hash check until the setup has started |
+| Steals the owner's signing key | A second, offline backup key; a release signed with it drops the stolen key from the app |
+| Malware already running as the user | Out of scope: it could change the installed files directly (true for every per-user app). The updater never elevates, so it adds no way up |
+
+### The signed manifest
+
+Every release carries three files: `GameShelfSetup-<version>.exe`, `release.json` and `release.json.sig`.
+
+```json
+{
+  "format": 1,
+  "product": "GameShelf",
+  "channel": "stable",
+  "version": "0.2.0",
+  "issued": "2026-11-20T18:04:00Z",
+  "commit": "<40 hex digits, the tagged commit>",
+  "setup": { "size": 31457280, "sha256": "<64 hex digits>" },
+  "notes": { "en": ["…", "…"], "de": ["…"], "fr": ["…"] }
+}
+```
+
+- **Signature:** ECDSA P-384 with SHA-384 (built into .NET and Windows CNG, works on Windows 10, no package),
+  over the exact bytes of `release.json` prefixed with the fixed text `GameShelf release manifest v1` and a zero byte
+  (so the key can't be tricked into signing anything else that verifies). `release.json.sig` holds the 96-byte
+  signature (IEEE P1363) in base64. Ed25519 isn't in .NET 10 or CNG, and writing our own crypto is out.
+- **Keys in the app:** two public keys compiled in (`Services/UpdateKeys.cs`): the owner's main key and the
+  offline backup key. Either one verifies. The file is on `AGENTS.md`'s "Don't touch" list and `check.ps1`'s protected
+  list.
+- **Verify first, then parse:** the signature is checked on the raw bytes before anything reads the JSON.
+  `release.json` is capped at 64 KB, the signature file at 1 KB.
+- **Then, strictly** (`Library/UpdateManifest`, pure logic, unit-tested): `format` 1, `product` and `channel` exactly
+  as above, `version` three whole numbers, `issued` a UTC time not more than a day in the future, `commit` 40 hex
+  digits, `size` between 1 MB and 200 MB, `sha256` 64 hex digits; notes at most 6 lines of at most 200 characters per
+  language, plain text (shown in a TextBlock, never as markup or links). Anything else is rejected; unknown fields
+  are ignored.
+- **The download address isn't in the manifest:** the app builds it from the version alone,
+  `https://github.com/JannisJostBot/game_shelf/releases/download/v<version>/GameShelfSetup-<version>.exe`.
+
+### Making a release
+
+1. **Prepare (owner):** raise `<Version>` in `Directory.Build.props` and write the notes in
+   `docs/releases/<version>.json` (`en`, `de`, `fr`, same rules as the app's text: short, plain, no selling).
+   Merge to `main` through a pull request with CI green.
+2. **Tag (owner):** `git tag v0.2.0` on that commit of `main`, push it. A tag ruleset lets only the owner create
+   `v*` tags and forbids moving or deleting them.
+3. **Build (GitHub Actions, `.github/workflows/release.yml`, on `v*` tags only):**
+   - Refuses unless the tag equals `<Version>`, the commit is on `main`, and `docs/releases/<version>.json` exists.
+   - `publish.ps1`, the unit tests, the UI smoke test and the setup test, as in CI.
+   - `actions/attest-build-provenance` for `GameShelfSetup.exe` (a Sigstore attestation naming the repository,
+     workflow and commit).
+   - Creates a **draft** release `v0.2.0` with `GameShelfSetup-0.2.0.exe` only.
+   - Permissions only `contents: write`, `id-token: write`, `attestations: write`; every action pinned to a commit
+     hash; no secrets; no `pull_request_target`. The workflow has no signing key and can't publish.
+4. **Sign (owner's PC, `scripts/sign-release.ps1 -Version 0.2.0`):**
+   - Downloads the draft's setup with `gh`, runs `gh attestation verify` (repository, `release.yml`, the tag's
+     commit), computes its SHA-256 and size.
+   - Writes `release.json` itself from what it checked plus the notes file at the tagged commit; nothing from CI's
+     side goes into the manifest unchecked.
+   - Shows version, commit, size, hash and the English notes and asks to confirm.
+   - Signs with the main key and checks the signature with the public key from `UpdateKeys.cs` before uploading.
+   - Uploads `release.json` and `release.json.sig` to the draft and publishes it as the latest release.
+5. **Published:** with "immutable releases" on, the release's files and tag can't change any more. A bad release is
+   fixed by the next version, never by replacing files (the app never downgrades).
+
+### The keys (owner)
+
+- **Main key:** created on the owner's PC by `scripts/sign-release.ps1 -NewKey` as a non-exportable key in Windows'
+  key storage with a password asked on every use (CNG strong key protection), or on a hardware security key
+  (YubiKey PIV through Windows' smart card provider) if the owner has one. Never in GitHub secrets, never in the
+  repository.
+- **Backup key:** made once on an offline PC; the private key on an encrypted USB stick and a paper copy, stored
+  apart from the PC. Used only if the main key is lost or stolen.
+- **Rotation:** a release signed with the old key ships the new public key; the release after that drops the old
+  one.
+- **GitHub account:** passkey or hardware-key two-factor sign-in, branch protection on `main` (no force push, pull
+  requests with CI), the tag ruleset, immutable releases, Dependabot for the workflow's actions.
+
+### In the app
+
+- **When it checks:** when the panel opens, after the first frame (like the rescan), if the last check was over
+  24 hours ago; and from Settings' **Check for updates**. Never on a timer, never in `--background` start-up before
+  the panel has been opened, never while a watcher is tracking a game.
+- **What it fetches:** `https://github.com/JannisJostBot/game_shelf/releases/latest/download/release.json` and
+  `.sig` (about 2 KB). Redirects are followed only over HTTPS and only to `github.com`,
+  `objects.githubusercontent.com` and `release-assets.githubusercontent.com`. 15 s timeout. No GitHub API, no
+  account, no cookies, a plain `User-Agent: GameShelf/<version>`.
+- **What it keeps** (`settings.json`): the last check's time, the highest `issued` accepted, and a version the user
+  skipped. The verified manifest itself goes to `%LOCALAPPDATA%\GameShelf\updates\release.json` with its signature,
+  and is verified again whenever it's read back.
+- **Download:** when the user presses **Update**, or at once with "Install automatically". To
+  `%LOCALAPPDATA%\GameShelf\updates\GameShelfSetup-<version>.exe.part`, hashed while it streams, stopped past the
+  manifest's size, then compared with `sha256` and renamed. One download at a time; a progress bar only while it
+  runs. Cancelled or failed: the part file is deleted; the next try starts over (no ranges). Closing the panel
+  cancels it (nothing downloads while the panel is closed or a game runs).
+- **Start the setup:** the verified file stays open with read sharing only (no write, no delete) until
+  `CreateProcess` has returned, so nothing can swap it in between. If an Authenticode signature is present on the
+  installed `GameShelf.exe`, the new setup must carry the same publisher (`WinVerifyTrust`); unsigned today, so this
+  only starts to matter if the owner gets a certificate.
+  - Arguments: `/S /update` (new: restart the widget with `--updated` afterwards, in the tray or on the desktop as
+    before). The setup's own payload check (`payload.txt` hashes) still runs as today.
+  - The widget exits right after starting it; the setup's `--quit` wait then finds nothing to close.
+- **When it installs:** "Ask before installing": when the user presses **Restart now** (the panel closes, comes
+  back updated). "Install automatically": the next time the panel closes (Stay ready) or at sign-in, never while it's
+  open, never while a watcher tracks a game.
+- **After:** the panel shows the pill (board 23's style) once: "Updated to 0.2.0 · What's new", which opens the
+  About card with the notes. The updates folder is emptied at that start.
+- **Failures:**
+  - No connection, timeout, HTTP error: the About card says "Couldn't check · no connection"; no toast; next try
+    at the next panel open after 24 hours.
+  - Bad signature, unparsable manifest, older `issued`: as above, plus a line in `error.log`. Never retried for the
+    same file within the 24 hours.
+  - Hash or size mismatch: the file is deleted, the card says "The download couldn't be verified. It was deleted.
+    Nothing was changed." with **Try again**. Logged.
+  - Setup exit code other than 0: the setup logs to `%TEMP%\GameShelfSetup.log` as today; the old version keeps
+    running (the setup restarts it); the card says "The update couldn't be installed" with the log's place in its
+    tooltip.
+
+### Settings and UI (board 28)
+
+- **Settings, new group "About" at the bottom:**
+  - Card "Game Shelf 0.1.4", second line the state ("Up to date · checked today at 14:02", "0.2.0 is available",
+    "Downloading · 12 of 31 MB", "Ready to install"), button **Check for updates**, or **Update** / **Restart now**
+    (accent). A `Disclosure` opens "What's new" with the notes when an update is known.
+  - Card "Updates" with a combo: **Install automatically**, **Ask before installing** (default),
+    **Don't check**. Tooltip: "Checks GitHub once a day when Game Shelf opens".
+- **The shelf:** no banner, nothing in the top slot, and no dot on "…" (the owner turned that down for Game mode on
+  2026-11-11: it reads as an unread notification). Instead:
+  - once per version, when the panel opens after the check found it, the pill (board 23's style, bottom of the
+    panel, fades after a few seconds): "Game Shelf 0.2.0 is available" with **Update**. Skipped with "Install
+    automatically", which installs on close instead;
+  - while an update is known: a first item "Update to 0.2.0" ("Restart to update" once downloaded) in the header's
+    "…" menu and in the tray menu, then a separator.
+- **First-run setup:** no new step (the default is set; About shows it).
+- About 20 new strings (EN, DE, FR, with comments).
+
+### Cost
+
+- Idle and gaming: nothing (no timer, no service, no task, no watcher change).
+- A check: two HTTPS requests of about 1 KB, once a day at most, only when the panel opens. `HttpClient` is
+  created for it and released after (as `CoverCache` does). Covered by the 0% idle rule since it's tied to opening.
+- The download: about 30 MB, only after **Update** or with "Install automatically".
+
+### Rules that change (on approval)
+
+- `CLAUDE.md` network rule: add "HTTPS GETs to `github.com` (and its release download hosts) for this repository's
+  release manifest and setup, signed with the owner's key; never anything about the user or the PC".
+- `CLAUDE.md` security rules, a new "Updates" bullet: signature before parsing, keys compiled in, never downgrade,
+  hash before start, file held open, never elevate, delete only inside `%LOCALAPPDATA%\GameShelf\updates\`.
+- `README.md`, `docs/installer.md` ("The app never checks for updates") and the website's FAQ ("It doesn't check
+  for updates") are rewritten to say what it checks and how to turn it off.
+- `AGENTS.md` / `check.ps1`: `UpdateKeys.cs`, `Updater.cs`, `UpdateManifest.cs`, `scripts/sign-release.ps1` and
+  `.github/workflows/release.yml` protected.
+
+### Not chosen
+
+- **Signing the manifest in GitHub Actions** (key in a secret, release environment with approval): simpler, but a
+  compromised GitHub account would then hold the key too.
+- **Verifying Sigstore attestations in the app:** needs a certificate-transparency and Fulcio client, far too heavy
+  for the rule on dependencies; the owner's signature covers it, and the attestation is checked at signing.
+- **Patches / deltas, a separate updater process, a Windows service or scheduled task, MSIX/App Installer, the
+  GitHub API:** more parts and more to trust, for a 30 MB download a few times a year.
+- **Beta channel:** `channel` exists in the manifest so one can be added later; not now.
+- **Forcing updates or a minimum version:** the user can always stay on "Don't check".
+
+### Touches
+
+New `Library/UpdateManifest` (parse and rules, tested), `Services/UpdateKeys`, `Services/Updater` (fetch, verify,
+download, start), `ViewModels/SettingsViewModel` (About group, states; tested with the spy), `SettingsView` (About
+cards), `ShelfView` / `App.ShowTrayMenu` (menu item, dot), `MainWindow` (check after first frame, install on close,
+pill after `--updated`), `Models/Settings` (three fields), the setup's `Program`/`Installer` (`/update`), new
+`.github/workflows/release.yml`, `scripts/sign-release.ps1` (`-NewKey`, signing), `docs/releases/`. Unit tests:
+signature (good, changed byte, wrong key, backup key), manifest rules, downgrade and `issued` checks, the
+download's size and hash checks against a local file.
+
+### To decide (owner)
+
+1. Default for "Updates": **Ask before installing** (proposed) or Install automatically.
+2. Main key: Windows key storage with a password (proposed, nothing to buy) or a hardware key.
+3. While here, the setup could write and verify every file before swapping any (today it swaps file by file), so
+   a failure halfway never leaves a mix of versions. Proposed as part of this milestone.
+
 ## Build order (after milestone 7)
 
 8. **Quick wins:** *(Done.)*
@@ -1733,6 +1939,10 @@ Detail's per-game charts (weeks, months): the tooltip adds the number of session
     first), then b, e and c.
 25. **Weekly chart details** (§24), once approved: `PlaytimeStats.Week` per day and game with tests, then the bar
     tooltips and their automation names, then the card line's top 3, then (optionally) Detail's session counts.
+26. **Updates from GitHub** (§25), once approved: the keys and `scripts/sign-release.ps1` first, then
+    `UpdateManifest` with tests, then `release.yml` with a dry run (a draft that's signed but never
+    published, checked by the unit tests' verifier), then the app's check, About cards and download, then install on close and the
+    pill. Update the rules in `CLAUDE.md`, the README, `docs/installer.md` and the site in the same milestone.
 
 ## Not decided (don't build)
 
