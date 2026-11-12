@@ -76,11 +76,17 @@ public static class RemovedGames
     /// </summary>
     public static List<Game> Remember(List<Game> removed, IEnumerable<Game> dropped)
     {
-        foreach (var game in dropped)
+        // The last entry per id wins, in order; older ones of those ids go, in one pass over the kept list.
+        var list = dropped.Where(g => g.HasUserData).ToList();
+        var ids = new HashSet<string>();
+        var added = new List<Game>(list.Count);
+        for (int i = list.Count - 1; i >= 0; i--)
+            if (ids.Add(list[i].Id)) added.Add(list[i]);
+        added.Reverse();
+        if (added.Count > 0)
         {
-            if (!game.HasUserData) continue;
-            removed.RemoveAll(g => g.Id == game.Id);
-            removed.Add(game);
+            removed.RemoveAll(g => ids.Contains(g.Id));
+            removed.AddRange(added);
         }
         var evicted = new List<Game>();
         if (removed.Count > Max)

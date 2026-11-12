@@ -37,10 +37,13 @@ public static class ShortcutImporter
     /// </summary>
     public static bool RemoveDuplicates(List<Game> games)
     {
-        var stores = games.Where(IsStoreGame).ToList();
+        // Store games by their exe (the first one wins, as before), so each shortcut is one lookup.
+        var storeByExe = new Dictionary<string, Game>(StringComparer.OrdinalIgnoreCase);
+        foreach (var g in games)
+            if (IsStoreGame(g) && g.ExePath is { } exe) storeByExe.TryAdd(exe, g);
         int removed = games.RemoveAll(g =>
         {
-            if (g.Source != GameSource.Shortcut || g.IconPath is not { } target || StoreGameWithExe(target, stores) is not { } store) return false;
+            if (g.Source != GameSource.Shortcut || g.IconPath is not { } target || !storeByExe.TryGetValue(target, out var store)) return false;
             store.Favorite |= g.Favorite;
             return true;
         });

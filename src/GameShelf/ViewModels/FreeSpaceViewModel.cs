@@ -199,8 +199,9 @@ public sealed partial class FreeSpaceViewModel : ObservableObject
     public List<SpaceGame> Chosen(DrivePlan plan)
     {
         var chosen = plan.Picked.Where(g => !State.Overrides.TryGetValue(g.Game.Id, out var on) || on).ToList();
+        var inChosen = new HashSet<SpaceGame>(chosen);
         foreach (var g in plan.Games)
-            if (State.Overrides.TryGetValue(g.Game.Id, out var on) && on && !chosen.Contains(g)) chosen.Add(g);
+            if (State.Overrides.TryGetValue(g.Game.Id, out var on) && on && inChosen.Add(g)) chosen.Add(g);
         return chosen;
     }
 

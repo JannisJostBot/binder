@@ -57,7 +57,9 @@ public static class Moments
     /// </summary>
     public static DateTimeOffset Seed(IReadOnlyList<Session> sessions, IEnumerable<Game> games)
     {
-        foreach (var game in games) game.MilestoneShownHours = Math.Max(game.MilestoneShownHours, Reached(Playtime(sessions, game.Id)));
+        var playtime = ShelfOrder.Stats(sessions).Playtime; // one pass over the sessions, not one per game
+        foreach (var game in games)
+            game.MilestoneShownHours = Math.Max(game.MilestoneShownHours, Reached(playtime.GetValueOrDefault(game.Id)));
         return LastSession(sessions)?.Start ?? DateTimeOffset.MinValue;
     }
 }

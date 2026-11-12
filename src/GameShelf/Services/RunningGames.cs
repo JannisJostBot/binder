@@ -14,8 +14,19 @@ internal static unsafe partial class RunningGames
     public static HashSet<string> Ids(IEnumerable<Game> games)
     {
         var running = new HashSet<string>();
-        var folders = games.Where(g => !string.IsNullOrEmpty(g.InstallDir)).ToList();
-        if (folders.Count == 0) return running;
+        // Game ids by install folder (full, no trailing separator): a process is then matched by looking up each
+        // folder above its exe, O(depth) per process instead of comparing it with every game's folder.
+        var byFolder = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var game in games)
+        {
+            if (string.IsNullOrEmpty(game.InstallDir) || !Path.IsPathFullyQualified(game.InstallDir)) continue;
+            string folder;
+            try { folder = Path.TrimEndingDirectorySeparator(Path.GetFullPath(game.InstallDir)); }
+            catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { continue; }
+            if (!byFolder.TryGetValue(folder, out var ids)) byFolder[folder] = ids = [];
+            ids.Add(game.Id);
+        }
+        if (byFolder.Count == 0) return running;
 
         var buffer = stackalloc char[1024];
         foreach (var process in Process.GetProcesses())
@@ -28,9 +39,9 @@ internal static unsafe partial class RunningGames
                 {
                     int size = 1024;
                     if (!QueryFullProcessImageNameW(handle, 0, buffer, ref size)) continue;
-                    var path = new string(buffer, 0, size);
-                    foreach (var game in folders)
-                        if (LaunchOptions.IsInside(path, game.InstallDir!)) running.Add(game.Id);
+                    // Every folder above the exe (strictly inside, as LaunchOptions.IsInside).
+                    for (var dir = Path.GetDirectoryName(new string(buffer, 0, size)); !string.IsNullOrEmpty(dir); dir = Path.GetDirectoryName(dir))
+                        if (byFolder.TryGetValue(dir, out var ids)) running.UnionWith(ids);
                 }
                 finally
                 {

@@ -24,8 +24,10 @@ public static class PlaytimeStats
         var days = Enumerable.Range(0, 7).Select(i => monday.AddDays(i)).ToList();
         var perDay = new TimeSpan[7];
         var perGame = new Dictionary<string, TimeSpan>();
+        var from = new DateTimeOffset(monday); // local time, as the days are
         foreach (var session in sessions)
         {
+            if (session.End <= from) continue; // earlier weeks: skipped before any time zone work
             var (start, end) = Local(session);
             for (int i = 0; i < 7; i++)
             {
@@ -62,9 +64,12 @@ public static class PlaytimeStats
 
     private static List<PlaytimeBucket> Buckets(IEnumerable<Session> sessions, List<DateTime> starts, Func<DateTime, DateTime> next)
     {
+        if (starts.Count == 0) return [];
         var times = new TimeSpan[starts.Count];
+        var from = new DateTimeOffset(starts[0]); // the oldest bucket's start, in local time
         foreach (var session in sessions)
         {
+            if (session.End <= from) continue; // before every bucket
             var (start, end) = Local(session);
             for (int i = 0; i < starts.Count; i++) times[i] += Overlap(start, end, starts[i], next(starts[i]));
         }

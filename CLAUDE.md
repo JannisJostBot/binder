@@ -21,6 +21,8 @@ their games, and it must feel like part of Windows. When an idea doesn't clearly
   animations; short hover/transition effects only if they cost nothing when idle and are skipped with "Animation
   effects" off. The one approved exception is the panel's Acrylic backdrop (`PanelBackdrop`, WinUI's
   `DesktopAcrylicController`, active while unfocused; solid when Transparency is off, in high contrast or unsupported).
+- Data structures by the operation: lookups by id or path go through a `Dictionary`/`HashSet` built once, never a
+  list search inside a loop over games or sessions (O(n·m)); one pass over the sessions per screen, not one per game.
 - No heavy or reflection-heavy dependencies. Between simpler-but-heavier and a bit-more-code-but-lighter, pick lighter.
 - Measure, don't assume: report CPU, memory and startup after a milestone; fix regressions before moving on.
 

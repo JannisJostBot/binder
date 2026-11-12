@@ -56,11 +56,17 @@ internal static class CrashStore
     /// <summary>
     /// The newest problem whose card hasn't been seen yet (last 7 days), unless that game was played again since.
     /// </summary>
-    public static CrashRecord? Unseen(IReadOnlyList<CrashRecord> records, IReadOnlyList<Session> sessions) =>
-        records.Where(r => r.IsProblem && !r.Seen && r.End > DateTimeOffset.Now.AddDays(-7) &&
-                           !sessions.Any(s => s.GameId == r.GameId && s.Start > r.Start))
-               .OrderByDescending(r => r.End)
-               .FirstOrDefault();
+    public static CrashRecord? Unseen(IReadOnlyList<CrashRecord> records, IReadOnlyList<Session> sessions)
+    {
+        var since = DateTimeOffset.Now.AddDays(-7);
+        var candidates = records.Where(r => r.IsProblem && !r.Seen && r.End > since).ToList();
+        if (candidates.Count == 0) return null; // the usual case: no pass over the sessions at all
+        // Each game's latest session start, in one pass, instead of searching the sessions per record.
+        var latest = new Dictionary<string, DateTimeOffset>();
+        foreach (var s in sessions)
+            if (!latest.TryGetValue(s.GameId, out var t) || s.Start > t) latest[s.GameId] = s.Start;
+        return candidates.Where(r => !(latest.TryGetValue(r.GameId, out var t) && t > r.Start)).MaxBy(r => r.End);
+    }
 
     public static void MarkSeen(List<CrashRecord> records, CrashRecord record)
     {

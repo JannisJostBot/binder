@@ -103,8 +103,8 @@ public static class SpacePlanner
                 var pool = band.ToList();
                 while (left > 0 && pool.Count > 0)
                 {
-                    var next = pool.Where(g => g.Size >= left).OrderBy(g => g.Size).FirstOrDefault()
-                               ?? pool.OrderByDescending(g => g.Size).First();
+                    // The smallest that covers what's left, else the largest: one pass each (no sort per pick).
+                    var next = pool.Where(g => g.Size >= left).MinBy(g => g.Size) ?? pool.MaxBy(g => g.Size)!;
                     picked.Add(next);
                     left -= next.Size;
                     pool.Remove(next);
