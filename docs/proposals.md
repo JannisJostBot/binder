@@ -1859,13 +1859,15 @@ private key never exists anywhere else and can't be copied off it.
     (accent). A `Disclosure` opens "What's new" with the notes when an update is known.
   - Card "Updates" with a combo: **Install automatically**, **Ask before installing** (default),
     **Don't check**. Tooltip: "Checks GitHub once a day when Game Shelf opens".
-- **The shelf:** no banner, nothing in the top slot, and no dot on "…" (the owner turned that down for Game mode on
-  2026-11-11: it reads as an unread notification). Instead:
-  - once per version, when the panel opens after the check found it, the pill (board 23's style, bottom of the
-    panel, fades after a few seconds): "Game Shelf 0.2.0 is available" with **Update**. Skipped with "Install
-    automatically", which installs on close instead;
-  - while an update is known: a first item "Update to 0.2.0" ("Restart to update" once downloaded) in the header's
-    "…" menu and in the tray menu, then a separator.
+- **The shelf:** no banner, nothing in the top slot, no pill. While an update is known (with "Ask before
+  installing"; not after "Skip this version"):
+  - an 8 px accent dot at the top right of the header's "…" button, as browsers mark an update on theirs. Its
+    screen-reader name becomes "More actions, update available"; high contrast uses the system highlight color.
+    This is the one dot on "…": the owner turned one down for Game mode on 2026-11-11 because that is a state, not
+    something waiting; an update is something waiting, so the dot fits here (owner, 2026-11-12);
+  - a first item "Update to 0.2.0" ("Restart to update" once downloaded) in that menu and in the tray menu, then a
+    separator. Choosing it starts the download and opens Settings › About to show it.
+  - With "Install automatically" there's no dot: it installs the next time the panel closes.
 - **First-run setup:** no new step (the default is set; About shows it).
 - About 20 new strings (EN, DE, FR, with comments).
 
