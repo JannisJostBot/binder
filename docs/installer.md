@@ -92,6 +92,8 @@ Settings → Apps → Game Shelf → **Uninstall** (or Start menu → right-clic
 - **Your choice:** "Also delete my game list, play history and settings" (off by default). Leave it off to
   keep them for a later reinstall.
 - If a game is still being tracked, it asks first, because that session's playtime would be lost.
+- **Game mode:** whatever it still has applied (a game was running, or a session didn't end normally) is put back
+  first, by the installed watcher (`GameShelf.Watcher.exe --restore --quiet`), then its admin part is removed.
 
 ## Command line
 

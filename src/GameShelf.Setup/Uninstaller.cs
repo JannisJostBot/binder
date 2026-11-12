@@ -62,7 +62,9 @@ internal static class Uninstaller
             RunningApp.StopWatcher();
         }
         RunningApp.QuitWidget();
-        // Before the app's files go: it puts back what Game mode still has applied.
+        // Before the app's files go: Game mode's own changes (power mode, Game Bar, closed apps, OneDrive) left by
+        // a game that was still running or a session that didn't end normally, then the admin part.
+        RestoreGameMode();
         bool helperLeft = !GameModeHelper.Remove(options.Silent);
 
         bool shortcutsLeft = !RestoreShortcuts();
@@ -113,6 +115,34 @@ internal static class Uninstaller
             Dialogs.Show(Text.Removed, content, [], Dialogs.CommonClose, Dialogs.IdClose);
         }
         return Finish(ExitCode.Ok);
+    }
+
+    /// <summary>
+    /// Runs the installed watcher's <c>--restore --quiet</c> when Game mode's journal is there (a game was being
+    /// played, or a session didn't end normally): it puts back what's still applied, without starting the widget.
+    /// </summary>
+    private static void RestoreGameMode()
+    {
+        var journal = GameModeInfo.JournalPath;
+        var watcher = Path.Combine(Locations.InstallDir, Locations.WatcherExe);
+        if (!File.Exists(journal) || !File.Exists(watcher) || Locations.IsReparsePoint(watcher)) return;
+        var info = new ProcessStartInfo(watcher) { UseShellExecute = false, WorkingDirectory = Locations.InstallDir };
+        info.ArgumentList.Add("--restore");
+        info.ArgumentList.Add("--quiet");
+        try
+        {
+            using var process = Process.Start(info);
+            if (process is null || !process.WaitForExit(120_000))
+            {
+                Locations.Log("Game mode restore didn't finish in time");
+                return;
+            }
+            Locations.Log($"Game mode restore: exit code {process.ExitCode}");
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            Locations.Log("couldn't restore Game mode: " + ex.Message);
+        }
     }
 
     /// <summary>Asks the installed widget to move every imported shortcut back. True when none is left in our folder.</summary>

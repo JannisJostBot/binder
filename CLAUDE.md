@@ -253,6 +253,8 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
   `SetDefaultDllDirectories`).
 - **Shortcuts.** `.lnk` via `IShellLinkW` (load only, never `Resolve`), `.url` as plain INI. Never execute a
   shortcut while scanning. Where the shared desktop can't be changed without admin, copy and leave the original.
+  "Restore to desktop" moves only a `.lnk`/`.url` directly in our `Shortcuts\` folder, and only onto the user's or
+  the Public desktop (`ShortcutImporter.StoredShortcut` / `RestoreTarget`), whatever `imported-shortcuts.json` says.
 - **Files.** Only delete inside our own AppData folders; never follow paths from data files to delete or overwrite
   anything. Never delete the user's files or shortcuts; moves stay reversible. Never delete game files: Free up
   space hands each uninstall to the game's own launcher (or Settings › Apps).
@@ -261,7 +263,7 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
   telemetry, no other calls.
 - **Installer.** `asInvoker`, fixed paths from known folders (never read back from the registry), deletes only
   files it wrote and never through links, hashes each file after writing, ends only processes from its own
-  install folder. Details: `docs/installer.md`.
+  install folder. Uninstall puts back Game mode's changes first (`--restore --quiet`). Details: `docs/installer.md`.
 - **Game mode, no-admin part.** Every change is journaled (flushed) before it's made and put back only if it's still
   the value we set. Apps are closed only with WM_CLOSE to visible windows, never ended; only full paths to an
   `.exe` outside Windows, Store apps and our own folder are closed or reopened (checked in the widget, the watcher

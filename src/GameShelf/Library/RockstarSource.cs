@@ -109,7 +109,8 @@ public static class RockstarSource
         try
         {
             using var key = SourceDefaults.OpenKey(SourceEntry.RockstarKey);
-            if (key?.GetValue("InstallFolder") is not string folder || !Path.IsPathFullyQualified(folder)) return null;
+            // The key may be the user's own (Settings › Advanced): the folder is checked like any install folder.
+            if (InstallFolder.Validate(key?.GetValue("InstallFolder") as string) is not { } folder) return null;
             var exe = Path.Combine(folder, "Launcher.exe");
             return File.Exists(exe) ? exe : null;
         }

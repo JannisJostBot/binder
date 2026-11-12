@@ -87,6 +87,7 @@ static partial class Tests
         ChimeTests();
         MomentTests();
         RemovedGameTests();
+        ShortcutRestoreTests();
         LaunchTests(dir);
         PlaytimeTests();
         CrashTests();
@@ -1157,5 +1158,25 @@ static partial class Tests
         var f = result.Games.First(g => g.Id == "steam:12");
         Check(f.Favorite && f.ExeOverride == "x.exe" && f.AddedAt == now && kept.Count == 0, "a reinstalled store game gets its kept settings back");
         Directory.Delete(dir, recursive: true);
+    }
+
+    static void ShortcutRestoreTests()
+    {
+        // imported-shortcuts.json is a data file: restore moves only our own stored shortcuts, only onto a desktop.
+        var outside = Path.Combine(Path.GetTempPath(), "notes.lnk");
+        Check(ShortcutImporter.StoredShortcut(outside) is null && ShortcutImporter.StoredShortcut(null) is null &&
+              ShortcutImporter.StoredShortcut(Path.Combine(ShortcutImporter.Folder, "..", "library.json")) is null,
+            "a stored shortcut outside our Shortcuts folder is never moved");
+        var target = ShortcutImporter.RestoreTarget(Path.Combine(Path.GetTempPath(), "evil", "Game.lnk"), "Game.lnk");
+        Check(target is null || !target.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase),
+            "a shortcut goes back only onto a desktop, not where the data file says");
+        var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+        if (!string.IsNullOrEmpty(desktop) && Directory.Exists(desktop))
+        {
+            Check(ShortcutImporter.RestoreTarget(Path.Combine(desktop, "Game.lnk"), "Game (2).lnk") == Path.Combine(Path.GetFullPath(desktop), "Game.lnk"),
+                "a shortcut from the desktop goes back to its place");
+            Check(ShortcutImporter.RestoreTarget(Path.Combine(desktop, "Game.exe"), "Game.lnk") == Path.Combine(Path.GetFullPath(desktop), "Game.lnk"),
+                "an original that isn't a shortcut name goes back under the stored name");
+        }
     }
 }

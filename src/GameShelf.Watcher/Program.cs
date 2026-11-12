@@ -17,7 +17,8 @@ namespace GameShelf.Watcher;
 /// Args: --game &lt;id&gt; --dir &lt;install folder&gt; [--process &lt;name&gt;] [--timeout &lt;s&gt;] [--return 0|1] [--restart 0|1]
 ///       [--mode &lt;game mode items, comma-separated&gt; [--close &lt;app exe&gt;]… [--calm &lt;app exe&gt;]… [--toast 0|1]
 ///        [--smooth &lt;exe name&gt;]… [--throttle &lt;exe name&gt;]… [--limit &lt;Mbit/s&gt;]]
-/// Or:   --restore (put back Game mode changes left by a session that didn't end normally)
+/// Or:   --restore [--quiet] (put back Game mode changes left by a session that didn't end normally; --quiet: the
+///       uninstaller, without starting the widget)
 /// </summary>
 internal static class Program
 {
@@ -35,6 +36,11 @@ internal static class Program
             if (GameMode.RecoverPending() is not { } recovered) return 3;
             StartWidget("--restored", recovered.Encode());
             return 0;
+        }
+        if (args is ["--restore", "--quiet"])
+        {
+            // From the uninstaller: the same, without bringing the widget back (it's being removed).
+            return GameMode.RecoverPending() is null ? 3 : 0;
         }
 
         string? gameId = null, dir = null, processName = null, modeItems = null;

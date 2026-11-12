@@ -154,20 +154,23 @@ public static class ShortcutImporter
         {
             try
             {
-                if (!File.Exists(record.StoredPath)) continue;
+                // The paths come from imported-shortcuts.json: only a shortcut in our own folder is moved, and only
+                // back onto a desktop (the one it came from if that's still a desktop, else the user's).
+                if (StoredShortcut(record.StoredPath) is not { } stored) continue;
                 if (record.Copied && File.Exists(record.OriginalPath))
                 {
-                    // Only a copy of ours; the original never left. Delete only inside our own folder.
-                    if (InstallFolder.IsSameOrInside(Path.GetFullPath(record.StoredPath), Folder))
-                        File.Delete(record.StoredPath);
+                    File.Delete(stored); // only a copy of ours; the original never left
                     continue;
                 }
-                var folder = Path.GetDirectoryName(record.OriginalPath)!;
-                Directory.CreateDirectory(folder);
-                var target = File.Exists(record.OriginalPath)
-                    ? UniquePath(folder, Path.GetFileName(record.OriginalPath))
-                    : record.OriginalPath;
-                File.Move(record.StoredPath, target);
+                var original = RestoreTarget(record.OriginalPath, Path.GetFileName(stored));
+                if (original is null)
+                {
+                    failed.Add(record);
+                    continue;
+                }
+                var folder = Path.GetDirectoryName(original)!;
+                var target = File.Exists(original) ? UniquePath(folder, Path.GetFileName(original)) : original;
+                File.Move(stored, target);
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException)
             {
@@ -176,6 +179,42 @@ public static class ShortcutImporter
         }
         return failed;
     }
+
+    /// <summary>The stored shortcut's full path if it's a .lnk or .url file (not a link) directly in our folder, else null.</summary>
+    internal static string? StoredShortcut(string? path)
+    {
+        if (string.IsNullOrEmpty(path) || !Path.IsPathFullyQualified(path)) return null;
+        var full = Path.GetFullPath(path);
+        if (!string.Equals(Path.GetDirectoryName(full), Path.GetFullPath(Folder), StringComparison.OrdinalIgnoreCase) ||
+            !IsShortcutName(Path.GetFileName(full)) || !File.Exists(full) ||
+            File.GetAttributes(full).HasFlag(FileAttributes.ReparsePoint)) return null;
+        return full;
+    }
+
+    /// <summary>
+    /// Where a shortcut goes back to: its original place if that's directly on the user's or the Public desktop
+    /// and a .lnk/.url name, else the user's desktop under its stored name. Null when there's no desktop.
+    /// </summary>
+    internal static string? RestoreTarget(string? original, string storedName)
+    {
+        var desktops = new[]
+        {
+            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
+        }.Where(d => !string.IsNullOrEmpty(d)).Select(d => Path.TrimEndingDirectorySeparator(Path.GetFullPath(d))).ToArray();
+        if (!string.IsNullOrEmpty(original) && Path.IsPathFullyQualified(original))
+        {
+            var full = Path.GetFullPath(original);
+            var dir = Path.GetDirectoryName(full);
+            if (IsShortcutName(Path.GetFileName(full)) && desktops.Any(d => string.Equals(d, dir, StringComparison.OrdinalIgnoreCase)) &&
+                Directory.Exists(dir))
+                return full;
+        }
+        return desktops.Length > 0 && Directory.Exists(desktops[0]) ? Path.Combine(desktops[0], storedName) : null;
+    }
+
+    private static bool IsShortcutName(string name) =>
+        name.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase) || name.EndsWith(".url", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>"Game.lnk", or "Game (2).lnk" if that's taken.</summary>
     public static string UniquePath(string folder, string fileName)
