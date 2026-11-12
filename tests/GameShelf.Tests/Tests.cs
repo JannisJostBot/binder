@@ -921,6 +921,15 @@ static partial class Tests
 
     static void ElevatedTests()
     {
+        // The program names of services and security products, which the upload limit never applies to.
+        Check(GameShelf.Elevated.ProtectedApps.ExeName("\"C:\\Program Files\\CrowdStrike\\CSFalconService.exe\" -k x") == "CSFalconService.exe" &&
+              GameShelf.Elevated.ProtectedApps.ExeName("C:\\Program Files\\Avast Software\\Avast\\AvastSvc.exe /runassvc") == "AvastSvc.exe" &&
+              GameShelf.Elevated.ProtectedApps.ExeName("%SystemRoot%\\system32\\svchost.exe -k netsvcs -p") == "svchost.exe" &&
+              GameShelf.Elevated.ProtectedApps.ExeName("\\??\\C:\\ProgramData\\Agent\\agent.EXE") == "agent.EXE",
+            "service program names read from quoted, unquoted and prefixed image paths");
+        Check(GameShelf.Elevated.ProtectedApps.ExeName("windowsdefender://") is null && GameShelf.Elevated.ProtectedApps.ExeName("") is null &&
+              GameShelf.Elevated.ProtectedApps.ExeName("system32\\drivers\\x.sys") is null && GameShelf.Elevated.ProtectedApps.ExeName("\"\"") is null,
+            "paths without a program give no name");
         var ok = new GameShelf.Shared.RestoreResult(2, 2, []);
         Check(ok.Plus(new GameShelf.Shared.RestoreResult(3, 4, ["Print Spooler"])) is { Restored: 5, Total: 6, Failed: ["Print Spooler"] } &&
               ok.Plus(null) == ok, "the watcher's and the helper's results add up");

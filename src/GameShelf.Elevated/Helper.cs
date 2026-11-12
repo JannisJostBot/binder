@@ -109,7 +109,17 @@ internal static class Helper
         bool? smooth = null, uploads = null;
         foreach (var exe in request.Smooth) Merge(ref smooth, Add(Qos.Prefix + "smooth " + exe, exe, DscpGame, null));
         ulong limit = (ulong)request.UploadLimitMbps * 1_000_000;
-        foreach (var exe in request.Throttle) Merge(ref uploads, Add(Qos.Prefix + "upload " + exe, exe, null, limit));
+        // Never a Windows service, security software or another account's program (ProtectedApps).
+        var guarded = ProtectedApps.Among(request.Throttle, journal.Sid);
+        foreach (var exe in request.Throttle)
+        {
+            if (guarded.Contains(exe))
+            {
+                Log($"Network: {exe} is a service, security software or not yours; its uploads are left alone");
+                continue;
+            }
+            Merge(ref uploads, Add(Qos.Prefix + "upload " + exe, exe, null, limit));
+        }
         return (smooth, uploads);
 
         static void Merge(ref bool? group, bool? one)

@@ -207,7 +207,7 @@ internal sealed unsafe class Qos : IDisposable
     }
 
     /// <summary>IWbemClassObject::Get of a string property, or null.</summary>
-    private static string? GetString(IntPtr obj, string name)
+    internal static string? GetString(IntPtr obj, string name)
     {
         var value = new Variant();
         try
@@ -223,9 +223,9 @@ internal sealed unsafe class Qos : IDisposable
         }
     }
 
-    private static void* Slot(IntPtr obj, int index) => (*(void***)obj)[index];
+    internal static void* Slot(IntPtr obj, int index) => (*(void***)obj)[index];
 
-    private static void Release(IntPtr obj)
+    internal static void Release(IntPtr obj)
     {
         if (obj != IntPtr.Zero) ((delegate* unmanaged[Stdcall]<IntPtr, uint>)Slot(obj, 2))(obj);
     }

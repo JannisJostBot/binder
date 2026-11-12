@@ -16,7 +16,7 @@ internal static unsafe partial class Native
 
     [LibraryImport("advapi32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool GetTokenInformation(nint token, int infoClass, void* info, int length, out int returned);
+    internal static partial bool GetTokenInformation(nint token, int infoClass, void* info, int length, out int returned);
 
     [LibraryImport("advapi32.dll", EntryPoint = "ConvertSidToStringSidW")]
     [return: MarshalAs(UnmanagedType.Bool)]

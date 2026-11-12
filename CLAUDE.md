@@ -277,7 +277,8 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
   - Trusts nothing from the user's side. The request file is size-capped (on bytes actually read), never a link,
     parsed strictly (`ElevatedRequest.Parse`): services only from the compiled-in allowlist (WSearch, SysMain,
     DiagTrack, Spooler); app names only plain exe file names, never system or security processes
-    (`ElevatedPart.IsSystemApp`); upload limit only 1, 5 or 20; ids only 32 hex digits. Paths from known folders
+    (`ElevatedPart.IsSystemApp`); uploads are never limited for a Windows service's program, a protected process,
+    another account's process or an antivirus Windows Security lists (`ProtectedApps`, checked at each apply); upload limit only 1, 5 or 20; ids only 32 hex digits. Paths from known folders
     only. One run at a time via a file lock in its admin-only folder (not a named mutex).
   - Its folder `%ProgramData%\GameShelf\` has a protected ACL (SYSTEM and Administrators write, Users read); an
     existing folder counts as ours only if owned by Administrators/SYSTEM and not a link, else "Allow…" moves it

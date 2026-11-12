@@ -59,6 +59,7 @@
     <Compile Include="..\..\src\GameShelf.Watcher\ElevatedClient.cs" Link="Linked\Watcher\ElevatedClient.cs" />
     <Compile Include="..\..\src\GameShelf.Elevated\Helper.cs" Link="Linked\Elevated\Helper.cs" />
     <Compile Include="..\..\src\GameShelf.Elevated\Qos.cs" Link="Linked\Elevated\Qos.cs" />
+    <Compile Include="..\..\src\GameShelf.Elevated\ProtectedApps.cs" Link="Linked\Elevated\ProtectedApps.cs" />
     <Compile Include="..\..\src\GameShelf.Elevated\Services.cs" Link="Linked\Elevated\Services.cs" />
     <Compile Include="..\..\src\GameShelf.Elevated\Install.cs" Link="Linked\Elevated\Install.cs" />
     <Compile Include="..\..\src\GameShelf.Elevated\Native.cs" Link="Linked\Elevated\Native.cs" />

@@ -265,7 +265,7 @@ public static partial class ElevatedPart
     /// Bump it by hand whenever GameShelf.Elevated changes: what it does, the request, journal or result format,
     /// or how its tasks and folders are set up.
     /// </summary>
-    public const int HelperVersion = 2; // 2: security fixes (file lock, capped request read, system apps refused, self-copy held open)
+    public const int HelperVersion = 3; // 2: security fixes (file lock, capped request read, system apps refused, self-copy held open); 3: no upload limit for services, security software or other accounts (ProtectedApps)
 
     /// <summary>
     /// A marker's text is from another helper version. Markers written before <see cref="HelperVersion"/> hold the

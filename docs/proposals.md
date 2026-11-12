@@ -168,6 +168,10 @@ The build order is at the end of this file. The ideas under "Not decided" at the
     `removed-games.json` (only games with settings, the newest 200) and come back when it's installed or added
     again. Its cached art is deleted; sessions are kept as always. Not shown anywhere ("Showing uninstalled games"
     stays undecided).
+- **Upload limit and security software:** the helper never limits uploads of a Windows service's program, a
+  protected process, a program running as another account, or an antivirus Windows Security lists
+  (`ProtectedApps`, checked at each apply; logged, not shown as a failure). Third-party antivirus and EDR agents
+  are covered without a list of their names. Helper version 3, so "Update…" is offered.
 
 ---
 
