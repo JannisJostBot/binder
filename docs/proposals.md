@@ -1873,6 +1873,47 @@ private key never exists anywhere else and can't be copied off it.
     running (the setup restarts it); the card says "The update couldn't be installed" with the log's place in its
     tooltip.
 
+### Game mode's admin helper after an update (owner's question, 2026-11-12)
+
+The helper in `%ProgramFiles%\GameShelf\` is only ever replaced through a UAC prompt ("Update…"), never by the
+setup or the updater. So after an update that bumps `ElevatedPart.HelperVersion`, the PC runs a **new watcher with
+the old helper** until the user clicks Update…. What the code does today (checked 2026-11-12):
+
+- **The old helper keeps working.** `GameMode.ApplyElevated` only checks that a marker exists
+  (`AllowedVersion` not null), not its number. The new watcher writes its request and runs the old helper's task.
+- **Unknown parts are skipped, nothing breaks.** `ElevatedRequest.Parse` ignores unknown keys and service ids, so an
+  old helper applies what it knows and leaves out newer items. A value it doesn't accept (e.g. a new upload limit)
+  makes it refuse the whole request: nothing is applied and the pill reports "Services and network" as failed.
+- **Restore always matches apply.** The same installed exe applies, journals and restores, so its changes are put
+  back by the code that made them. No mixed state.
+- **The user is told.** The shelf shows "Game mode needs an update" with Update… (`HelperNeedsUpdate`), and Settings ›
+  Game mode offers Update….
+
+Two gaps, fixed in this milestone:
+
+1. **A helper change that is a safety fix keeps the old behaviour until Update….** Helper version 3, for example,
+   stopped limiting uploads of services and security software; a version 2 helper would go on doing it. New:
+   `ElevatedPart.MinimumHelperVersion` (bumped by hand together with `HelperVersion` when the change is a safety
+   fix). A marker below it: the watcher **skips the admin items** (logs it, the pill counts them as "needs an
+   update"), the shelf notice says "Game mode needs an update to use its admin items". Restore of a journal that's
+   already there still goes through the installed helper, whatever its version, so nothing stays changed.
+   - Limit: the old helper and its tasks stay on the PC until Update… or Remove it; a program running as the user
+     could still start its tasks. Only a UAC prompt can replace it, and the updater never asks for one. So such a
+     release's notes say so, and the shelf notice stays until it's done.
+2. **Update… while changes are applied.** `Install.Run` replaces the exe without first putting back a pending
+   `journal.json`, so a newer helper could later meet an older journal. New: Update… restores this user's pending
+   journal first, as `Remove` already does (the journal format stays readable by later helpers too; `Version` in it
+   only ever gains optional fields).
+
+For the updater itself:
+
+- `release.json` gets `"helperVersion": 3`. When it's above the installed marker's number, What's new gets a fixed
+  line first: "Game mode will ask for administrator rights once after this update." (only for users who allowed the
+  helper). An update is never held back for this: the app updates, the helper waits for the user's click.
+- Never installs while a Game mode journal exists (either one): it waits for the restore, like it waits for a game.
+- Urgent updates can't fix the helper on their own (that needs a UAC prompt); with `MinimumHelperVersion` raised
+  they at least stop the new watcher from using the old helper.
+
 ### Settings and UI (board 28)
 
 - **Settings, new group "About" at the bottom:**
