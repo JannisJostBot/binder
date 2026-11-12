@@ -87,10 +87,16 @@ update by running a newer setup.
 
 Settings → Apps → Game Shelf → **Uninstall** (or Start menu → right-click → Uninstall).
 
-- **Removed:** the app's files, the Start menu entry, the Settings → Apps entry, and Start with Windows.
-- **Put back:** every desktop shortcut you moved onto the shelf goes back on the desktop.
-- **Your choice:** "Also delete my game list, play history and settings" (off by default). Leave it off to
-  keep them for a later reinstall.
+- **Removed:** everything Game Shelf put on your PC: the app's files, the Start menu entry, the Settings → Apps entry,
+  Start with Windows, the cache in `%LOCALAPPDATA%\GameShelf` (covers, icons, logs, Game mode's files) and, after
+  it's done, setup's own log in `%TEMP%`.
+- **Your choice, shortcuts:** when you have imported shortcuts, **Put my shortcuts back on the desktop** (the
+  default) or **Don't put them back**. Shortcuts not put back stay with your game list, or are deleted with it.
+  Shortcuts that couldn't go back (no desktop to put them on) are always kept, and the final dialog says where.
+- **Your choice, data:** "Also delete my game list, play history and settings" (off by default). Leave it off to
+  keep them (in `%APPDATA%\GameShelf`) for a later reinstall.
+- **Only with your OK:** Game mode's admin helper in Program Files needs a UAC prompt to remove. If you decline, it
+  stays (it does nothing without Game Shelf), and the final dialog says where.
 - If a game is still being tracked, it asks first, because that session's playtime would be lost.
 - **Game mode:** whatever it still has applied (a game was running, or a session didn't end normally) is put back
   first, by the installed watcher (`GameShelf.Watcher.exe --restore --quiet`), then its admin part is removed.
@@ -104,9 +110,10 @@ Settings → Apps → Game Shelf → **Uninstall** (or Start menu → right-clic
 | `GameShelfSetup.exe /S /launch` | Silent, then start Game Shelf. |
 | `GameShelfSetup.exe /S /allowdowngrade` | Silent, even over a newer version (refused otherwise). |
 | `Uninstall.exe /uninstall` | Uninstall, with dialogs. |
-| `Uninstall.exe /uninstall /S [/removedata]` | Silent uninstall, optionally deleting the data too. |
+| `Uninstall.exe /uninstall /S [/removedata] [/keepshortcuts]` | Silent uninstall, optionally deleting the data too; imported shortcuts go back on the desktop unless `/keepshortcuts`. |
 
-Exit codes: 0 done, 1 cancelled, 2 error, 4 silent downgrade refused, 5 unknown option (3 was "the .NET
+Exit codes: 0 done, 1 cancelled, 2 error, 4 silent downgrade refused, 5 unknown option, 6 another setup is still
+running (3 was "the .NET
 Desktop Runtime is missing", which the self-contained app no longer needs). Every run writes a few lines to `%TEMP%\GameShelfSetup.log`.
 
 ---
@@ -161,19 +168,25 @@ questions, copies itself to a new `%TEMP%\GameShelf-uninstall-<random>\` folder,
 `/continue` and the answers, and exits. The temp copy then:
 
 1. Ends the watcher if a game is being tracked (after asking), and quits the widget.
-2. Runs the installed `GameShelf.exe --restore-shortcuts`. With no UI, this moves every imported shortcut back
-   to where it came from and removes the games made from them.
+2. Unless you chose not to, runs the installed `GameShelf.exe --restore-shortcuts`. With no UI, this moves every
+   imported shortcut back to where it came from and removes the games made from them. Shortcuts in its folder that
+   no record names (an import an older version didn't finish) go back to your desktop too.
 3. Removes the Start with Windows entry, but only if it starts the installed exe.
 4. Removes the Start menu shortcut and the Settings → Apps entry.
 5. Deletes the files `installed-files.txt` lists, plus the ones its own payload names (in case the list is
    gone), retrying while the first `Uninstall.exe` is still exiting, and their `.old`/`.new` leftovers. Every
    listed path is checked again, and nothing is deleted through a link. Then the folders they leave empty and
    the install folder, but only if it's empty. Anything you put there yourself stays.
-6. If you ticked "delete my data", deletes `%APPDATA%\GameShelf` and `%LOCALAPPDATA%\GameShelf`. It doesn't
-   follow links inside them (a link is removed, not entered). If some imported shortcuts couldn't go back to
-   the desktop, they and their list are kept, and the final dialog says where.
-7. After it exits, removes its own temp folder through `cmd.exe` from System32 a few seconds later. This only
-   happens for a folder it made, with a path of plain characters. Otherwise Windows' temp clean-up gets it.
+6. Deletes the cache, `%LOCALAPPDATA%\GameShelf`, always. If you ticked "delete my data", also
+   `%APPDATA%\GameShelf`. It doesn't follow links inside them (a link is removed, not entered). If some imported
+   shortcuts couldn't go back to the desktop, they and their list are kept, and the final dialog says where.
+7. After it exits, removes its own temp folder through `cmd.exe` from System32 a few seconds later, and after a
+   completed uninstall `%TEMP%\GameShelfSetup.log` too (kept after a failure or a cancel). This only happens for
+   paths of plain characters in the temp folder. Otherwise Windows' temp clean-up gets them.
+
+Only one setup or uninstaller runs at a time (the named mutex `Local\GameShelf.Setup`): a second one started by
+hand says so at once (exit code 6); a silent one (an updater) and the uninstaller's temp copy wait up to a minute.
+If an update fails part-way, the widget it closed is started again.
 
 ### Security
 
@@ -185,7 +198,7 @@ questions, copies itself to a new `%TEMP%\GameShelf-uninstall-<random>\` folder,
 - **Fixed paths only.** Every location is computed from your known folders. None is read back from the registry
   or a data file, so a tampered uninstall entry can't point the uninstaller at other files.
 - **Deletes only what it wrote.** The files it listed in its folder, its own Start menu shortcut, registry
-  entry and Run value. Your data only when you ask. Never through links.
+  entry and Run value, Game Shelf's cache and its own log. Your data only when you ask. Never through links.
 - **Checked files.** Each installed file is hashed after it's written to disk, and swapped in only if it
   matches.
 - **Processes.** It only ends processes whose exe is *our installed copy*, never a same-named program elsewhere.

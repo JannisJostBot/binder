@@ -226,6 +226,8 @@ try {
     } else {
         $check.SetFocus(); [Keys]::Press(0x20)
     }
+    # Imported shortcuts are there, so the dialog asks; the default puts them back.
+    Wait-Until { $dialog.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($UIA::NameProperty, 'Put my shortcuts back on the desktop'))) } 5 'put-back choice' | Out-Null
     Start-Sleep -Milliseconds 500
     Shot 'setup-4-uninstall'
     Click $dialog 'Uninstall'
@@ -246,8 +248,9 @@ try {
     if ((Test-Path $dataDir) -or (Test-Path $cacheDir)) { Fail 'Game Shelf data is still there after "delete my data"' }
     if ((Ours 'GameShelf.exe').Count -or (Ours 'GameShelf.Watcher.exe').Count) { Fail 'Game Shelf is still running' }
     Wait-Until { -not (Get-ChildItem ([IO.Path]::GetTempPath()) -Directory -Filter 'GameShelf-uninstall-*') } 15 'temporary uninstaller removed' | Out-Null
+    Wait-Until { -not (Test-Path $log) } 15 'setup log removed after the uninstall' | Out-Null
     Remove-Item $original -ErrorAction SilentlyContinue
-    $metrics += 'Uninstall: files, Start menu, Settings -> Apps entry, Run key and data gone; imported shortcut back on the desktop; temp copy removed'
+    $metrics += 'Uninstall: files, Start menu, Settings -> Apps entry, Run key, data, cache and setup log gone; imported shortcut back on the desktop; temp copy removed'
 }
 finally {
     try { Dump-SetupWindows } catch { }

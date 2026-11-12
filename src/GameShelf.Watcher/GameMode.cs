@@ -200,7 +200,8 @@ internal sealed class GameMode
         {
             var journal = Journal.Load();
             var sid = File.Exists(ElevatedPart.JournalPath) ? ElevatedPart.CurrentUserSid() : null;
-            if (sid is not null && ElevatedPart.AllowedVersion(sid) is null) sid = null;
+            // Only this account's changes: another account's are left for it (the helper would refuse anyway).
+            if (sid is not null && (ElevatedPart.AllowedVersion(sid) is null || !ElevatedPart.JournalIsFor(sid))) sid = null;
             if (journal is null && sid is null) return null;
             Log("Restore of changes left from an earlier session");
             var result = journal is null ? new RestoreResult(0, 0, []) : Restore(journal);
@@ -331,11 +332,18 @@ internal sealed class GameMode
                 _applied++;
                 Log($"Apps: closed {Path.GetFileName(path)}");
             }
+            else if (windowsPerApp[i] == 0)
+            {
+                _journal.ClosedApps.Remove(path); // nothing was asked to close: nothing to reopen
+                _notApplied.Add(Path.GetFileNameWithoutExtension(path));
+                Log($"Apps: {Path.GetFileName(path)} left open (no window to close)");
+            }
             else
             {
-                _journal.ClosedApps.Remove(path);
+                // Asked to close but still running after 5 s (saving, or asking something): it may still close, so it
+                // stays in the journal and is reopened after the game if it did (restore leaves a running app alone).
                 _notApplied.Add(Path.GetFileNameWithoutExtension(path));
-                Log($"Apps: {Path.GetFileName(path)} left open ({(windowsPerApp[i] == 0 ? "no window to close" : "didn't close within 5 s")})");
+                Log($"Apps: {Path.GetFileName(path)} didn't close within 5 s; reopened after the game if it closes later");
             }
             foreach (var h in handles) Native.CloseHandle(h);
         }

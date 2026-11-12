@@ -103,4 +103,39 @@ public static class LibraryScanner
         scanned.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.CurrentCultureIgnoreCase));
         return new RescanResult(scanned, dropped);
     }
+
+    /// <summary>
+    /// A scan runs for a while on a copy of the library (<paramref name="before"/>: the ids it started from). Brings
+    /// its result up to date with the library as it is now (<paramref name="current"/>): settings changed meanwhile
+    /// are copied over, a game removed meanwhile stays removed, and one added meanwhile (Add a game, drag and drop,
+    /// a shortcut import) is kept. Unit-tested.
+    /// </summary>
+    public static List<Game> Reconcile(List<Game> scanned, IReadOnlySet<string> before, IReadOnlyList<Game> current)
+    {
+        var now = new Dictionary<string, Game>(current.Count);
+        foreach (var game in current) now.TryAdd(game.Id, game);
+        var result = new List<Game>(scanned.Count);
+        var ids = new HashSet<string>();
+        foreach (var game in scanned)
+        {
+            if (now.TryGetValue(game.Id, out var old))
+            {
+                if (!ReferenceEquals(old, game)) game.CopyUserData(old);
+            }
+            else if (before.Contains(game.Id))
+            {
+                continue; // removed while the scan ran
+            }
+            if (ids.Add(game.Id)) result.Add(game);
+        }
+        bool added = false;
+        foreach (var game in current)
+        {
+            if (before.Contains(game.Id) || !ids.Add(game.Id)) continue;
+            result.Add(game); // added while the scan ran
+            added = true;
+        }
+        if (added) result.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.CurrentCultureIgnoreCase));
+        return result;
+    }
 }

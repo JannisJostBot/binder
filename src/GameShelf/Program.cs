@@ -28,13 +28,16 @@ internal static partial class Program
 
         if (!firstInstance)
         {
-            // Wait briefly in case the running instance is still starting and hasn't made its window yet.
-            for (int attempt = 0; attempt < 20; attempt++)
+            // Forward to the running instance. It may still be starting (no window yet), or just exiting (Stay ready
+            // off, the installer's --quit): then its mutex comes free and this start carries on as the instance,
+            // instead of the click being lost.
+            long giveUp = Environment.TickCount64 + 10_000;
+            while (true)
             {
                 if (Forward(args)) return 0;
-                Thread.Sleep(100);
+                if (TakeOver(_instanceMutex)) break;
+                if (Environment.TickCount64 > giveUp) return 1;
             }
-            return 1;
         }
 
         if (args.Contains("--quit") || args.Contains("--memory-report")) return 0; // nothing running to ask
@@ -50,6 +53,19 @@ internal static partial class Program
             _ = new App();
         });
         return 0;
+    }
+
+    /// <summary>Waits a moment for the instance mutex; true once this process holds it (the other one has exited).</summary>
+    private static bool TakeOver(Mutex mutex)
+    {
+        try
+        {
+            return mutex.WaitOne(150);
+        }
+        catch (AbandonedMutexException)
+        {
+            return true; // its owner ended without releasing it: ours now
+        }
     }
 
     /// <summary>

@@ -11,8 +11,11 @@ namespace GameShelf.Setup;
 /// </summary>
 internal static class Uninstaller
 {
-    private const int UninstallButton = 100, StopTrackingButton = 101;
+    private const int UninstallButton = 100, StopTrackingButton = 101, PutBackRadio = 200, KeepRadio = 201;
     private const string TempPrefix = "GameShelf-uninstall-";
+
+    /// <summary>The uninstall went through (not cancelled, no unexpected error): setup's log can go too.</summary>
+    private static bool _done;
 
     public static int Run(Options options)
     {
@@ -20,12 +23,16 @@ internal static class Uninstaller
         {
             if (!options.Silent)
             {
+                // Imported shortcuts: put back (the default) or not, asked only when there are some.
+                bool hasShortcuts = HasImportedShortcuts();
                 var confirm = Dialogs.Show(Text.UninstallTitle,
-                    Text.UninstallSummary + (GameModeHelper.IsAllowed ? "\n\n" + Text.UninstallHelper : ""),
+                    Text.UninstallSummary + (hasShortcuts ? "\n\n" + Text.UninstallShortcuts : "") +
+                    (GameModeHelper.IsAllowed ? "\n\n" + Text.UninstallHelper : ""),
                     [(UninstallButton, Text.Uninstall)], Dialogs.CommonCancel, Dialogs.IdCancel,
-                    verification: Text.AlsoDeleteData);
+                    verification: Text.AlsoDeleteData,
+                    radios: hasShortcuts ? [(PutBackRadio, Text.PutShortcutsBack), (KeepRadio, Text.KeepShortcutsHere)] : null);
                 if (confirm.Button != UninstallButton) return ExitCode.Cancelled;
-                options = options with { RemoveData = confirm.Verified };
+                options = options with { RemoveData = confirm.Verified, KeepShortcuts = hasShortcuts && confirm.Radio == KeepRadio };
             }
             if (Locations.IsInside(Environment.ProcessPath, Locations.InstallDir)) return HandOver(options);
         }
@@ -47,7 +54,7 @@ internal static class Uninstaller
 
     private static int Work(Options options)
     {
-        Locations.Log($"uninstalling (remove data: {options.RemoveData})");
+        Locations.Log($"uninstalling (remove data: {options.RemoveData}, keep shortcuts: {options.KeepShortcuts})");
 
         if (RunningApp.WatcherRunning())
         {
@@ -67,7 +74,9 @@ internal static class Uninstaller
         RestoreGameMode();
         bool helperLeft = !GameModeHelper.Remove(options.Silent);
 
-        bool shortcutsLeft = !RestoreShortcuts();
+        // Shortcuts put back unless the user chose not to; those that couldn't go back are never deleted below.
+        bool shortcutsLeft = !options.KeepShortcuts && !RestoreShortcuts();
+        bool shortcutsKept = options.KeepShortcuts && HasImportedShortcuts();
 
         // Start with Windows: only our own entry (one that starts the installed exe).
         using (var run = Registry.CurrentUser.OpenSubKey(Locations.RunKey, writable: true))
@@ -95,14 +104,18 @@ internal static class Uninstaller
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
 
+        // The cache always goes: covers, icons, logs, Game mode's journal and results (put back above), the update
+        // downloads. Nothing in it is the user's own; it's all made again if Game Shelf is installed again.
+        DeleteTree(Locations.CacheDir, keep: []);
         if (options.RemoveData)
         {
-            // Never the imported shortcuts if they couldn't go back: they're the user's files.
+            // Never the imported shortcuts if they couldn't go back: they're the user's files. Ones the user chose not
+            // to put back go with the data, as the dialog said.
             DeleteTree(Locations.DataDir, keep: shortcutsLeft ? [Locations.ImportedShortcutsDir, Path.Combine(Locations.DataDir, "imported-shortcuts.json")] : []);
-            DeleteTree(Locations.CacheDir, keep: []);
         }
         Native.SHChangeNotify(Native.SHCNE_ASSOCCHANGED, 0, IntPtr.Zero, IntPtr.Zero);
         Locations.Log("uninstalled" + (shortcutsLeft ? "; some imported shortcuts are still in " + Locations.ImportedShortcutsDir : ""));
+        _done = true;
 
         if (!options.Silent)
         {
@@ -110,6 +123,7 @@ internal static class Uninstaller
                 ? Text.ShortcutsLeft(Locations.ImportedShortcutsDir)
                 : options.RemoveData ? Text.DataDeleted
                 : Text.DataKept;
+            if (shortcutsKept && !options.RemoveData) content += "\n\n" + Text.ShortcutsKept(Locations.ImportedShortcutsDir);
             if (helperLeft)
                 content += "\n\n" + Text.HelperLeft(ElevatedPart.InstallDir);
             Dialogs.Show(Text.Removed, content, [], Dialogs.CommonClose, Dialogs.IdClose);
@@ -142,6 +156,21 @@ internal static class Uninstaller
         catch (System.ComponentModel.Win32Exception ex)
         {
             Locations.Log("couldn't restore Game mode: " + ex.Message);
+        }
+    }
+
+    /// <summary>There are shortcuts in our folder that came from a desktop (an import), so the question is worth asking.</summary>
+    private static bool HasImportedShortcuts()
+    {
+        try
+        {
+            return Directory.Exists(Locations.ImportedShortcutsDir) &&
+                   Directory.EnumerateFiles(Locations.ImportedShortcutsDir).Any(f =>
+                       f.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".url", StringComparison.OrdinalIgnoreCase));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
         }
     }
 
@@ -232,8 +261,12 @@ internal static class Uninstaller
             !Locations.IsInside(dir, Path.GetTempPath()) || !dir.All(c => char.IsLetterOrDigit(c) || c is '\\' or ':' or '.' or '_' or '-' or ' '))
             return code;
 
+        // After a completed uninstall, setup's own log goes too (kept after a failure or a cancel, to look at).
+        var log = Locations.LogFile;
+        bool dropLog = _done && Locations.IsInside(log, Path.GetTempPath()) && Path.GetFileName(log) == "GameShelfSetup.log" &&
+                       log.All(c => char.IsLetterOrDigit(c) || c is '\\' or ':' or '.' or '_' or '-' or ' ');
         var cmd = Path.Combine(Environment.SystemDirectory, "cmd.exe");
-        var info = new ProcessStartInfo(cmd, $"/d /c ping -n 3 127.0.0.1 >nul & rmdir /s /q \"{dir}\"")
+        var info = new ProcessStartInfo(cmd, $"/d /c ping -n 3 127.0.0.1 >nul & rmdir /s /q \"{dir}\"" + (dropLog ? $" & del /f /q \"{log}\"" : ""))
         {
             UseShellExecute = false,
             CreateNoWindow = true,

@@ -41,6 +41,29 @@ public static class CoverCache
     private static readonly LinkedList<(string Key, ImageSource Image)> Lru = new();
     private static readonly object Sync = new();
 
+    // Bumped whenever cached lookups are dropped (a custom cover set, a game forgotten, artwork places changed): a
+    // lookup that was already running then doesn't write its out-of-date answer back.
+    private static int _generation;
+
+    // Covers that couldn't be downloaded because Steam wasn't reachable (offline, Wi-Fi without internet). Shown as
+    // generated covers for now and looked up again the next time the panel opens, never on a timer. After the first
+    // such failure the rest wait too, so a connection without internet costs one timeout, not one per game.
+    private static bool _offline;
+    private static readonly HashSet<string> RetryKeys = [];
+
+    /// <summary>
+    /// The panel opened: covers that couldn't be downloaded last time (no connection) are tried again when shown.
+    /// </summary>
+    public static void PanelOpened()
+    {
+        lock (Sync)
+        {
+            _offline = false;
+            foreach (var key in RetryKeys) Resolved.Remove(key);
+            RetryKeys.Clear();
+        }
+    }
+
     /// <summary>Returns an already decoded cover without any I/O, so recycled tiles don't flash a placeholder.</summary>
     public static ImageSource? TryGetCached(Game game, int pixelWidth, ArtKind kind = ArtKind.Cover)
     {
@@ -84,12 +107,18 @@ public static class CoverCache
         {
             if (Resolved.TryGetValue(key, out var known)) return Task.FromResult(known);
             if (Resolving.TryGetValue(key, out var running)) return running;
+            int generation = _generation;
             var task = Task.Run(async () =>
             {
-                var path = FindLocal(game, kind) ?? await DownloadAsync(game, kind).ConfigureAwait(false);
+                var local = FindLocal(game, kind);
+                var (path, retry) = local is not null ? (local, false) : await DownloadAsync(game, kind).ConfigureAwait(false);
                 lock (Sync)
                 {
-                    Resolved[key] = path;
+                    if (generation == _generation)
+                    {
+                        Resolved[key] = path;
+                        if (retry) RetryKeys.Add(key);
+                    }
                     Resolving.Remove(key);
                 }
                 return path;
@@ -281,6 +310,7 @@ public static class CoverCache
             Resolved.Remove(ResolvedKey(game, ArtKind.Cover));
             Resolved.Remove(ResolvedKey(game, ArtKind.Hero));
             Resolved.Remove(ResolvedKey(game, ArtKind.Logo));
+            _generation++;
             var prefix = game.Id + "|";
             for (var node = Lru.First; node is not null;)
             {
@@ -307,6 +337,7 @@ public static class CoverCache
             SteamLibraryCache = new(SourceDefaults.SteamArtFolder);
             foreach (var key in Resolved.Keys.Where(k => k.StartsWith("steam:", StringComparison.Ordinal)).ToList())
                 Resolved.Remove(key);
+            _generation++;
         }
         try
         {
@@ -405,30 +436,36 @@ public static class CoverCache
         }
     }
 
-    private static async Task<string?> DownloadAsync(Game game, ArtKind kind)
+    /// <summary>
+    /// Downloads the game's art from Steam once into our cache. Retry: it couldn't be reached (offline, a timeout, a
+    /// server error), so it's looked for again the next time the panel opens; a 404 is remembered for good (".none").
+    /// </summary>
+    private static async Task<(string? Path, bool Retry)> DownloadAsync(Game game, ArtKind kind)
     {
-        if (game.Source != GameSource.Steam || game.StoreId is not { } appId) return null;
+        if (game.Source != GameSource.Steam || game.StoreId is not { } appId) return (null, false);
 
         var target = CachedFile(game, kind, ImageExt(kind));
         var missingMarker = CachedFile(game, kind, ".none");
-        if (File.Exists(missingMarker)) return null; // the CDN had nothing last time; don't ask again
+        if (File.Exists(missingMarker)) return (null, false); // the CDN had nothing last time; don't ask again
 
         await DownloadGate.WaitAsync().ConfigureAwait(false);
         try
         {
+            lock (Sync)
+                if (_offline) return (null, true); // an earlier one just failed: wait for the next open
             // The appid is digits only (checked when the game was read) and the file name a checked image name.
-            if (!appId.All(char.IsAsciiDigit)) return null;
+            if (!appId.All(char.IsAsciiDigit)) return (null, false);
             var url = SourceDefaults.SteamDownloadUrl(appId, SteamFileNames(kind)[0]);
-            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps) return null;
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps) return (null, false);
             using var response = await Http.Value.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
             Directory.CreateDirectory(CoversDir);
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
                 await File.WriteAllBytesAsync(missingMarker, []).ConfigureAwait(false);
-                return null;
+                return (null, false);
             }
-            if (!response.IsSuccessStatusCode) return null;
-            if (response.Content.Headers.ContentLength > MaxDownloadBytes) return null;
+            if (!response.IsSuccessStatusCode) return (null, true); // a server problem: try again later
+            if (response.Content.Headers.ContentLength > MaxDownloadBytes) return (null, false);
 
             var tmp = target + ".tmp";
             bool complete;
@@ -438,14 +475,19 @@ public static class CoverCache
             if (!complete)
             {
                 File.Delete(tmp);
-                return null;
+                return (null, false);
             }
             File.Move(tmp, target, overwrite: true);
-            return target;
+            return (target, false);
         }
-        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or IOException or UnauthorizedAccessException)
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException)
         {
-            return null; // offline or similar: try again next start
+            lock (Sync) _offline = true; // offline or no internet: the others wait for the next open too
+            return (null, true);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return (null, true); // our cache folder was busy: try again next open
         }
         finally
         {

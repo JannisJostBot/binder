@@ -385,6 +385,30 @@ public static partial class ElevatedPart
         }
     }
 
+    /// <summary>
+    /// Whether the admin part's journal (changes still applied) is this account's. The folder is shared by every
+    /// account on the PC; another account's changes are left for it, so they must not look pending here (each
+    /// start would ask the helper to restore them, and it rightly refuses). Users may read the folder. False when
+    /// there's no journal, or it can't be read.
+    /// </summary>
+    public static bool JournalIsFor(string? sid)
+    {
+        if (sid is null) return false;
+        try
+        {
+            var info = new FileInfo(JournalPath);
+            if (!info.Exists || info.Length > 64 * 1024) return false;
+            using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllBytes(info.FullName), new System.Text.Json.JsonDocumentOptions { MaxDepth = 8 });
+            return doc.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object &&
+                   doc.RootElement.TryGetProperty("Sid", out var owner) && owner.ValueKind == System.Text.Json.JsonValueKind.String &&
+                   string.Equals(owner.GetString(), sid, StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
+        {
+            return false;
+        }
+    }
+
     /// <summary>"Allow…" was done for this user and the helper is in place: the helper's version, else null.</summary>
     public static string? AllowedVersion(string? sid)
     {

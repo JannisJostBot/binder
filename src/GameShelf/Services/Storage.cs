@@ -141,27 +141,71 @@ public static class Storage
     public static void SaveImportedShortcuts(List<ImportedShortcut> list) =>
         Save(ImportedPath, list, StorageJsonContext.Default.ListImportedShortcut);
 
-    private static T? Load<T>(string path, JsonTypeInfo<T> info) where T : class
+    /// <summary>
+    /// Reads a data file. A damaged one (cut short by a power loss, edited by hand) is kept aside as ".bad" and the
+    /// copy from the save before is used (".bak", see <see cref="Save"/>), so a broken file never turns into an empty
+    /// library or default settings that the next save would make permanent. A file another program holds for a
+    /// moment is tried again briefly. Null only when there's no file, or neither copy can be read.
+    /// </summary>
+    internal static T? Load<T>(string path, JsonTypeInfo<T> info) where T : class
     {
-        try
+        if (TryRead(path, info, out var value)) return value;
+        if (!File.Exists(path) && !File.Exists(path + BackupSuffix)) return null;
+        if (TryRead(path + BackupSuffix, info, out var backup))
         {
-            using var stream = File.OpenRead(path);
-            return JsonSerializer.Deserialize(stream, info);
+            ErrorLog.Note($"{Path.GetFileName(path)} couldn't be read; the copy from the save before was used");
+            return backup;
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or JsonException)
+        return null;
+    }
+
+    private const string BackupSuffix = ".bak";
+
+    private static bool TryRead<T>(string path, JsonTypeInfo<T> info, out T? value) where T : class
+    {
+        value = null;
+        for (int attempt = 1; ; attempt++)
         {
-            // Missing or corrupt file: start fresh rather than crash.
-            return null;
+            try
+            {
+                using var stream = File.OpenRead(path);
+                value = JsonSerializer.Deserialize(stream, info);
+                return value is not null;
+            }
+            catch (Exception e) when (e is FileNotFoundException or DirectoryNotFoundException)
+            {
+                return false;
+            }
+            catch (JsonException)
+            {
+                // Damaged: keep it for a look, out of the way of the next save.
+                try { File.Move(path, path + ".bad", overwrite: true); }
+                catch (Exception moveError) when (moveError is IOException or UnauthorizedAccessException) { }
+                ErrorLog.Note($"{Path.GetFileName(path)} is damaged; kept as {Path.GetFileName(path)}.bad");
+                return false;
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                if (attempt >= 10) return false; // held by another program (a virus scanner, a sync tool)
+                Thread.Sleep(100);
+            }
         }
     }
 
-    /// <summary>Writes to a temp file and swaps it in, so a crash never leaves a half-written file.</summary>
-    private static void Save<T>(string path, T value, JsonTypeInfo<T> info)
+    /// <summary>
+    /// Writes to a temp file, flushes it to the disk, then swaps it in and keeps the previous file as ".bak". A crash
+    /// or power loss at any point leaves either the old or the new file complete, never a half-written or empty one.
+    /// </summary>
+    internal static void Save<T>(string path, T value, JsonTypeInfo<T> info)
     {
-        Directory.CreateDirectory(DataDir);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var tmp = path + ".tmp";
-        using (var stream = File.Create(tmp))
+        using (var stream = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough))
+        {
             JsonSerializer.Serialize(stream, value, info);
-        File.Move(tmp, path, overwrite: true);
+            stream.Flush(flushToDisk: true);
+        }
+        if (File.Exists(path)) File.Replace(tmp, path, path + BackupSuffix, ignoreMetadataErrors: true);
+        else File.Move(tmp, path);
     }
 }

@@ -26,6 +26,8 @@ internal static partial class Text
     };
 
     public static string WindowTitle => Pick("Game Shelf Setup", "Game Shelf Setup", "Installation de Game Shelf");
+    public static string AlreadyRunning => Pick("Game Shelf Setup is already running", "Game Shelf Setup wird schon ausgeführt", "L’installation de Game Shelf est déjà en cours");
+    public static string AlreadyRunningDetail => Pick("Wait until it has finished, then try again.", "Warten Sie, bis es fertig ist, und versuchen Sie es dann erneut.", "Attendez la fin, puis réessayez.");
 
     // ---- Install ---------------------------------------------------------------------------------------------
     public static string Incomplete => Pick("This setup is incomplete", "Dieses Setup ist unvollständig", "Ce programme d’installation est incomplet");
@@ -88,9 +90,16 @@ internal static partial class Text
 
     // ---- Uninstall ---------------------------------------------------------------------------------------------
     public static string UninstallTitle => Pick("Uninstall Game Shelf?", "Game Shelf deinstallieren?", "Désinstaller Game Shelf ?");
-    public static string UninstallSummary => Pick("Removes the app, its Start menu entry and Start with Windows. Shortcuts you moved onto the shelf go back on your desktop.",
-        "Entfernt die App, ihren Startmenü-Eintrag und den Autostart. Verknüpfungen, die Sie ins Regal verschoben haben, kommen zurück auf den Desktop.",
-        "Supprime l’application, son entrée du menu Démarrer et le démarrage avec Windows. Les raccourcis déplacés sur l’étagère retournent sur le bureau.");
+    public static string UninstallSummary => Pick("Removes the app and everything it keeps on this PC: its Start menu entry, Start with Windows, cached covers and logs.",
+        "Entfernt die App und alles, was sie auf diesem PC ablegt: Startmenü-Eintrag, Autostart, zwischengespeicherte Cover und Protokolle.",
+        "Supprime l’application et tout ce qu’elle conserve sur ce PC : son entrée du menu Démarrer, le démarrage avec Windows, les jaquettes en cache et les journaux.");
+    public static string UninstallShortcuts => Pick("Shortcuts you don't put back stay with your game list, or are deleted with it.",
+        "Verknüpfungen, die Sie nicht zurücklegen, bleiben bei Ihrer Spieleliste oder werden mit ihr gelöscht.",
+        "Les raccourcis que vous ne remettez pas restent avec votre liste de jeux, ou sont supprimés avec elle.");
+    public static string PutShortcutsBack => Pick("Put my shortcuts back on the desktop", "Meine Verknüpfungen zurück auf den Desktop legen", "Remettre mes raccourcis sur le bureau");
+    public static string KeepShortcutsHere => Pick("Don't put them back", "Nicht zurücklegen", "Ne pas les remettre");
+    public static string ShortcutsKept(string dir) => Pick($"Your shortcuts weren't put back. They're in {dir}.",
+        $"Ihre Verknüpfungen wurden nicht zurückgelegt. Sie liegen in {dir}.", $"Vos raccourcis n’ont pas été remis. Ils sont dans {dir}.");
     public static string UninstallHelper => Pick("Windows will ask you to allow removing Game mode's helper too.",
         "Windows fragt außerdem nach, ob das Hilfsprogramm des Spielmodus entfernt werden darf.", "Windows vous demandera aussi d’autoriser la suppression de l’assistant du mode jeu.");
     public static string Uninstall => Pick("Uninstall", "Deinstallieren", "Désinstaller");

@@ -39,13 +39,12 @@ public sealed partial class MainWindow
         foreach (var shortcut in picked)
         {
             var existing = ShortcutImporter.ExistingFor(shortcut, _games);
-            var record = ShortcutImporter.Store(shortcut, move: true);
+            var record = ShortcutImporter.Store(shortcut, move: true, records); // recorded and saved before it moves
             if (record is null)
             {
                 failed++;
                 continue;
             }
-            records.Add(record);
             imported++;
             if (record.Copied) copied++;
             if (existing is not null) continue; // already on the shelf: the shortcut is only tidied away
@@ -55,7 +54,6 @@ public sealed partial class MainWindow
             else AddToLibrary(game);
         }
 
-        TrySave(() => Storage.SaveImportedShortcuts(records));
         SaveLibrary();
         RefreshViews();
         ShellNotify.DesktopsChanged();

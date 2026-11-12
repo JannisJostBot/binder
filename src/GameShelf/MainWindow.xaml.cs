@@ -28,7 +28,6 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     private readonly DispatcherQueue _dispatcher;
     private readonly WindowSubclass _subclass;
     private DesktopLayer? _desktopLayer;
-    private bool _scanning;
     private bool _active, _wasActive;
 
     // What the toast's button does besides closing it (e.g. "Undo"); null for plain notices.
@@ -169,11 +168,13 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     /// <summary>Scans the stores off the UI thread and merges the result. Runs at the first open, on Refresh, and on an open over an hour after the last scan.</summary>
     private async Task RescanAsync()
     {
-        if (_scanning) return;
-        _scanning = true;
+        if (App.State.Scanning) return;
+        App.State.Scanning = true;
         RefreshSettingsPage();
 
-        var stored = _games;
+        // The scan works on its own copy: the library may change on the UI thread while it runs.
+        var stored = _games.ToList();
+        var before = stored.Select(g => g.Id).ToHashSet();
         var settings = App.Settings;
         var removed = new List<Game>(App.State.RemovedGames); // the scan's own copy
         LibraryScanner.RescanResult result;
@@ -183,27 +184,35 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            _scanning = false;
-            RefreshSettingsPage();
             return;
         }
-        _scanning = false;
-        var games = result.Games;
+        finally
+        {
+            App.State.Scanning = false; // also after an unexpected error: Refresh must keep working
+            if (!IsClosing) RefreshSettingsPage();
+        }
         ForgetGames(result.Dropped, removed);
 
-        // The scan copied user data from the list as it was when the scan started. Re-apply it from the
-        // current entries, so a favorite or setting changed while the scan ran isn't lost.
-        var current = new Dictionary<string, Game>(_games.Count);
-        foreach (var game in _games) current.TryAdd(game.Id, game);
+        // Bring the result up to date with what changed while the scan ran: settings (a favorite set meanwhile isn't
+        // lost), games removed meanwhile stay removed, games added meanwhile stay.
+        var games = LibraryScanner.Reconcile(result.Games, before, _games);
         foreach (var game in games)
-        {
-            if (current.TryGetValue(game.Id, out var old) && !ReferenceEquals(old, game)) game.CopyUserData(old);
             if (game.IconChanged) CoverCache.ForgetIcon(game);
-        }
 
         _games = games;
         App.State.Scanned = true;
         SaveLibrary();
+        if (IsClosing)
+        {
+            App.Current.LibraryRescanned(); // the panel was closed and maybe reopened meanwhile: that one shows it
+            return;
+        }
+        await ShowRescanned();
+    }
+
+    /// <summary>Shows the library after a scan that a closed panel had started.</summary>
+    public async Task ShowRescanned()
+    {
         if (IsClosing) return;
         if (OpeningGate.IsHolding) await OpeningGate.WhenOpen; // don't rebuild the grid mid-slide
         RefreshViews();
@@ -254,7 +263,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         if (SettingsPage.Visibility != Visibility.Visible) return;
         var bounds = NativeWindow.GetBounds(_hwnd);
         var current = Monitors.FromPoint(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
-        SettingsPage.ViewModel!.Load(App.Settings, _games, Autostart.IsEnabled(), _scanning,
+        SettingsPage.ViewModel!.Load(App.Settings, _games, Autostart.IsEnabled(), App.State.Scanning,
             Storage.LoadImportedShortcuts().Count, Monitors.All(), current.Device, App.HotkeyFree);
     }
 

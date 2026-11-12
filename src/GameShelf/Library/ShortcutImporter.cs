@@ -12,7 +12,10 @@ namespace GameShelf.Library;
 /// </summary>
 public static class ShortcutImporter
 {
-    public static string Folder => Path.Combine(Storage.DataDir, "Shortcuts");
+    public static string Folder => FolderForTests ?? Path.Combine(Storage.DataDir, "Shortcuts");
+
+    /// <summary>Unit tests only: a scratch folder instead of the user's.</summary>
+    internal static string? FolderForTests { get; set; }
 
     /// <summary>
     /// The library entry a shortcut duplicates, or null: a store link (steam://rungameid/570 → steam:570), or a
@@ -66,29 +69,86 @@ public static class ShortcutImporter
     /// <summary>
     /// Moves the shortcut into our folder; if that isn't allowed (the shared Public desktop needs admin
     /// rights) it's copied instead and the original stays. Returns null if neither worked.
+    /// <para>With <paramref name="records"/> (an import), the record is added and saved <b>before</b> the file moves,
+    /// so a crash or a failed save can never leave a moved shortcut that nothing knows how to put back. Without it
+    /// (a shortcut dropped onto the panel), only a copy is made and the user's file stays.</para>
     /// </summary>
-    public static ImportedShortcut? Store(ShortcutFile shortcut, bool move)
+    public static ImportedShortcut? Store(ShortcutFile shortcut, bool move, List<ImportedShortcut>? records = null)
     {
         Directory.CreateDirectory(Folder);
         var target = UniquePath(Folder, Path.GetFileName(shortcut.Path));
+        var record = new ImportedShortcut { StoredPath = target, OriginalPath = shortcut.Path, Copied = !move };
+        if (records is not null)
+        {
+            records.Add(record);
+            if (!TrySaveRecords(records))
+            {
+                records.Remove(record);
+                return null; // nothing moved: the shortcut stays on the desktop
+            }
+        }
         if (move)
         {
             try
             {
                 File.Move(shortcut.Path, target);
-                return new ImportedShortcut { StoredPath = target, OriginalPath = shortcut.Path };
+                return record;
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            record.Copied = true;
         }
         try
         {
             File.Copy(shortcut.Path, target);
-            return new ImportedShortcut { StoredPath = target, OriginalPath = shortcut.Path, Copied = true };
+            if (records is not null) TrySaveRecords(records); // now "copied": the original stays where it is
+            return record;
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
+            if (records is not null)
+            {
+                records.Remove(record);
+                TrySaveRecords(records);
+            }
             return null;
         }
+    }
+
+    private static bool TrySaveRecords(List<ImportedShortcut> records)
+    {
+        try
+        {
+            Storage.SaveImportedShortcuts(records);
+            return true;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Shortcuts in our folder that no record names (left by an older version's interrupted import, or a lost
+    /// imported-shortcuts.json): records for them, to go back to the user's desktop. A copy a manually added game
+    /// launches (<paramref name="games"/>) isn't one: the user's own file never left.
+    /// </summary>
+    internal static List<ImportedShortcut> Unrecorded(IEnumerable<ImportedShortcut> records, IEnumerable<Game> games)
+    {
+        var known = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var r in records)
+            if (!string.IsNullOrEmpty(r.StoredPath) && Path.IsPathFullyQualified(r.StoredPath)) known.Add(Path.GetFullPath(r.StoredPath));
+        foreach (var g in games)
+            if (g.Source == GameSource.Manual && g.ExePath is { } exe && Path.IsPathFullyQualified(exe)) known.Add(Path.GetFullPath(exe));
+        var found = new List<ImportedShortcut>();
+        if (!Directory.Exists(Folder)) return found;
+        try
+        {
+            foreach (var file in Directory.EnumerateFiles(Folder))
+                if (StoredShortcut(file) is { } stored && !known.Contains(stored))
+                    found.Add(new ImportedShortcut { StoredPath = stored, OriginalPath = "" });
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        return found;
     }
 
     /// <summary>A game that launches the stored shortcut file (keeping its arguments and working folder).</summary>
@@ -136,6 +196,7 @@ public static class ShortcutImporter
     public static (int Restored, int Failed) RestoreAll(List<Game> games)
     {
         var records = Storage.LoadImportedShortcuts();
+        records.AddRange(Unrecorded(records, games));
         if (records.Count == 0) return (0, 0);
         var failed = Restore(records);
         var restored = records.Except(failed).Select(r => r.StoredPath).ToHashSet(StringComparer.OrdinalIgnoreCase);

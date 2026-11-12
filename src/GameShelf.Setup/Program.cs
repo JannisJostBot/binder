@@ -4,7 +4,7 @@ namespace GameShelf.Setup;
 
 internal static class ExitCode
 {
-    public const int Ok = 0, Cancelled = 1, Error = 2, NeedsRuntime = 3, Downgrade = 4, BadArguments = 5;
+    public const int Ok = 0, Cancelled = 1, Error = 2, NeedsRuntime = 3, Downgrade = 4, BadArguments = 5, Busy = 6;
 }
 
 /// <summary>
@@ -12,9 +12,10 @@ internal static class ExitCode
 ///   GameShelfSetup.exe                       install or update, with dialogs
 ///   GameShelfSetup.exe /S [/launch]          silent; /launch starts the app afterwards
 ///   GameShelfSetup.exe /S /allowdowngrade    silent, even over a newer version
-///   Uninstall.exe /uninstall [/S] [/removedata]
+///   Uninstall.exe /uninstall [/S] [/removedata] [/keepshortcuts]
 /// </summary>
-internal sealed record Options(bool Uninstall, bool Silent, bool RemoveData, bool Launch, bool AllowDowngrade, bool Continue)
+internal sealed record Options(bool Uninstall, bool Silent, bool RemoveData, bool Launch, bool AllowDowngrade, bool Continue,
+    bool KeepShortcuts = false)
 {
     public static Options? Parse(string[] args)
     {
@@ -26,6 +27,7 @@ internal sealed record Options(bool Uninstall, bool Silent, bool RemoveData, boo
                 "/uninstall" => o with { Uninstall = true },
                 "/s" or "/silent" => o with { Silent = true },
                 "/removedata" => o with { RemoveData = true },
+                "/keepshortcuts" => o with { KeepShortcuts = true }, // uninstall: don't put imported shortcuts back
                 "/launch" => o with { Launch = true },
                 "/allowdowngrade" => o with { AllowDowngrade = true },
                 "/continue" => o with { Uninstall = true, Continue = true }, // internal: the temp copy
@@ -41,6 +43,7 @@ internal sealed record Options(bool Uninstall, bool Silent, bool RemoveData, boo
         yield return continuing ? "/continue" : "/uninstall";
         if (Silent) yield return "/S";
         if (RemoveData) yield return "/removedata";
+        if (KeepShortcuts) yield return "/keepshortcuts";
     }
 }
 
@@ -53,6 +56,22 @@ internal static class Program
     /// <summary>Major.Minor.Patch from the build (Directory.Build.props), comparable with Settings → Apps.</summary>
     public static readonly Version Version = Normalize(typeof(Program).Assembly.GetName().Version);
     public static string VersionText => Version.ToString(3);
+
+    /// <summary>
+    /// Waits for another setup to finish; true once it's this one's turn. A silent run (the updater) and the
+    /// uninstaller's hand-over wait up to a minute; one opened by hand says at once that another is running.
+    /// </summary>
+    private static bool TakeTurn(Mutex mutex, int waitMs)
+    {
+        try
+        {
+            return mutex.WaitOne(waitMs);
+        }
+        catch (AbandonedMutexException)
+        {
+            return true; // the other one ended without releasing it
+        }
+    }
 
     private static Version Normalize(Version? v) => v is null ? new Version(0, 0, 0) : new Version(v.Major, v.Minor, Math.Max(0, v.Build));
 
@@ -69,6 +88,16 @@ internal static class Program
             return ExitCode.BadArguments;
         }
         Locations.Log($"setup {VersionText} started: {string.Join(' ', args)}");
+
+        // One setup or uninstaller at a time (a double-click on the setup, the updater and a manual run): two would
+        // replace the same files at once. The uninstaller's temp copy waits here for the copy that started it.
+        using var running = new Mutex(false, @"Local\GameShelf.Setup");
+        if (!TakeTurn(running, options.Silent || options.Continue ? 60_000 : 1_000))
+        {
+            Locations.Log("another setup is running");
+            if (!options.Silent) Dialogs.Show(Text.AlreadyRunning, Text.AlreadyRunningDetail, [], Dialogs.CommonClose, Dialogs.IdClose);
+            return ExitCode.Busy;
+        }
         try
         {
             return options.Uninstall ? Uninstaller.Run(options) : Installer.Run(options);
@@ -78,6 +107,10 @@ internal static class Program
             Locations.Log("unexpected: " + ex);
             if (!options.Silent) Dialogs.Error(Text.SomethingWentWrong, ex.Message + "\n\n" + Text.Details(Locations.LogFile));
             return ExitCode.Error;
+        }
+        finally
+        {
+            running.ReleaseMutex(); // the next one (the uninstaller's temp copy) goes on at once
         }
     }
 }

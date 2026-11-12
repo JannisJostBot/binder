@@ -70,13 +70,15 @@ internal static class Installer
         }
 
         Locations.Log(update ? $"updating {installed} -> {version}" : $"installing {version}");
+        bool widgetWasRunning = false, widgetQuit = false;
         try
         {
             CheckFolders();
 
             // A running widget is closed and restarted on the new version. A running watcher (a game is being
             // played) keeps going on its old file, which is moved aside below; it brings back the new widget.
-            bool widgetWasRunning = Native.FindWindow("GameShelf.MessageWindow", null) != IntPtr.Zero;
+            widgetWasRunning = Native.FindWindow("GameShelf.MessageWindow", null) != IntPtr.Zero;
+            widgetQuit = true;
             if (!RunningApp.QuitWidget()) Locations.Log("the widget didn't quit; its file is moved aside instead");
 
             Directory.CreateDirectory(Locations.InstallDir);
@@ -122,6 +124,8 @@ internal static class Installer
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SetupException or CryptographicException)
         {
             Locations.Log("failed: " + ex);
+            // The widget it closed comes back, on whatever is in place (each file is swapped whole, never half).
+            if (widgetWasRunning && widgetQuit && File.Exists(Locations.Widget)) StartWidget("--background");
             if (!options.Silent)
                 Dialogs.Error(update ? Text.UpdateFailed : Text.InstallFailed,
                     ex.Message + "\n\n" + Text.NothingLost);

@@ -76,8 +76,14 @@ public sealed partial class MainWindow
             ShowToast(Strings.Format(Strings.TestLaunchTitle, game.Name), Strings.Format(Strings.TestLaunchDetail, Launcher.Describe(game)), Strings.Ok);
     }
 
+    /// <summary>App-wide: the panel that started a game may close and another open during the countdown.</summary>
+    private static readonly RepeatGuard Repeats = new(TimeSpan.FromSeconds(5));
+
     private void Launch(Game game)
     {
+        // The same game again within a few seconds (a double-click, a held Enter): already starting, so nothing
+        // happens. Otherwise it would start twice and two watchers would each record the session.
+        if (Repeats.IsRepeat(game.Id, Environment.TickCount64)) return;
         App.Current.CancelCountdown();
         HideCountdown();
 
@@ -86,6 +92,7 @@ public sealed partial class MainWindow
             ShowToast(Strings.Format(Strings.CouldntStart, game.Name), launchError, Strings.Ok);
             return;
         }
+        Repeats.Started(game.Id, Environment.TickCount64);
         if (!Launcher.CanWatch(game))
         {
             // Nothing would tell us when it closes (e.g. a web link shortcut), so hiding would be for good.
@@ -107,7 +114,7 @@ public sealed partial class MainWindow
         }
 
         // The countdown runs in App, so it keeps going if the flyout closes (the game takes the foreground).
-        App.Current.StartCountdown(delay, Strings.Format(Strings.StartingGame, game.Name));
+        App.Current.StartCountdown(delay, Strings.Format(Strings.StartingGame, game.Name), game.Id);
         ShowCountdown();
     }
 
@@ -166,11 +173,12 @@ public sealed partial class MainWindow
     }
 
     /// <summary>A game ended while we were still open (e.g. after "Keep open"): show the new session.</summary>
-    public void Returned()
+    public void Returned(string gameId)
     {
-        if (App.Current.CountdownRunning)
+        if (App.Current.CountdownRunning && App.Current.CountdownGameId == gameId)
         {
-            // The game ended before the countdown did; don't hide now.
+            // The game ended before the countdown did; don't hide now. (Another game ending, one started earlier
+            // with Keep open, doesn't stop this one's countdown.)
             App.Current.CancelCountdown();
             HideCountdown();
         }

@@ -38,6 +38,12 @@ public sealed class AppState
     private List<Game>? _removed;
     public void SetRemovedGames(List<Game> list) => _removed = list;
 
+    /// <summary>
+    /// A library scan is running. App-wide, not per window: a panel closed and reopened mid-scan must not start a
+    /// second scan alongside the first.
+    /// </summary>
+    public bool Scanning { get; set; }
+
     /// <summary>Free up space while it's open; mid-uninstall it survives the flyout closing (memory only).</summary>
     public ViewModels.FreeSpaceState? FreeSpace { get; set; }
 }
@@ -170,7 +176,7 @@ public sealed partial class App : Application
             if (!_crashedOnly) // else only the restart pill (or the crash card), after the check
             {
                 if (Settings.DisplayMode == DisplayMode.Desktop) OpenPanel();
-                else _panel?.Returned();
+                else _panel?.Returned(notice.GameId);
             }
             if (firstStart && _panel is null) Footprint.Shrink();
             _ = CheckCrashesAsync(returnedGame: notice.GameId);
@@ -325,6 +331,7 @@ public sealed partial class App : Application
         Footprint.Wake();
         if (_panel is null)
         {
+            CoverCache.PanelOpened(); // covers that couldn't be downloaded last time (offline) are tried again
             if (_kept is { } kept)
             {
                 _kept = null;
@@ -362,6 +369,12 @@ public sealed partial class App : Application
             return;
         }
         _panel.CloseAnimated();
+    }
+
+    /// <summary>A scan started by a panel that has closed since finished: the open panel, if any, shows its result.</summary>
+    public void LibraryRescanned()
+    {
+        if (_panel is { IsClosing: false } panel) _ = panel.ShowRescanned();
     }
 
     /// <summary>Closes the kept (hidden) flyout, if any, so the next open builds a new one.</summary>
@@ -544,11 +557,14 @@ public sealed partial class App : Application
     /// <summary>"Starting [Game]", kept for a flyout that reopens while it counts.</summary>
     public string CountdownTitle { get; private set; } = "";
     public bool CountdownRunning => _countdown is not null;
+    /// <summary>The game the countdown is for (another game ending meanwhile doesn't stop it).</summary>
+    public string? CountdownGameId { get; private set; }
     private DispatcherQueueTimer? _countdown;
 
-    public void StartCountdown(int seconds, string title)
+    public void StartCountdown(int seconds, string title, string gameId)
     {
         CancelCountdown();
+        CountdownGameId = gameId;
         CountdownRemaining = seconds;
         CountdownTotal = seconds;
         CountdownTitle = title;

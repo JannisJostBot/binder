@@ -44,7 +44,8 @@ You need Windows 10 or 11 (x64). Nothing else: the app carries its own runtimes.
 3. Game Shelf opens and walks you through a short first-time setup.
 
 To **update**, run a newer `GameShelfSetup.exe`. It works even while Game Shelf or a game is running. To
-**uninstall**, use Settings → Apps → Game Shelf. Your imported shortcuts go back on the desktop.
+**uninstall**, use Settings → Apps → Game Shelf. It removes everything Game Shelf put on your PC; it asks whether to
+put your imported shortcuts back on the desktop (the default) and whether to delete your game list too.
 
 All the details, including silent install options and how the installer works, are in
 [docs/installer.md](docs/installer.md).

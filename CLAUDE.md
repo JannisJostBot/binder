@@ -75,7 +75,8 @@ src/GameShelf/            the WinUI widget
                           add, game actions), .Input (Esc, controller, type-to-search), .Launch (play, countdown,
                           return), .Notices (toast, errors, crash card)
   Program.cs, MessageWindow.cs   single instance, tray icon, hotkey
-src/GameShelf.Watcher/    windowless; Program.cs, GameMode.cs (apply/restore + journal), ElevatedClient.cs,
+src/GameShelf.Watcher/    windowless (one hidden window on its own thread, SystemEvents.cs: shutdown, sign-out and
+                          sleep); Program.cs, GameMode.cs (apply/restore + journal), ElevatedClient.cs,
                           GameModeShared.cs (also compiled into the widget, helper and setup)
 src/GameShelf.Elevated/   Game mode's admin helper (Native AOT, windowless, run by scheduled tasks)
 src/GameShelf.Setup/      GameShelfSetup.exe: per-user installer/updater/uninstaller (docs/installer.md)
@@ -89,7 +90,9 @@ docs/tasks/, AGENTS.md    task cards and rules for cheaper coding agents
 ```
 
 Data: `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions-<year>.jsonl`, `imported-shortcuts.json`,
-`crashes.json`, `removed-games.json` (settings of games that left the library), `Shortcuts\`). `%LOCALAPPDATA%\GameShelf\`: `covers\`, `error.log`, and Game mode's
+`crashes.json`, `removed-games.json` (settings of games that left the library), `Shortcuts\`; each JSON file with the
+previous save as `.bak`, a damaged one kept as `.bad`: `Storage.Save` flushes, swaps and keeps the backup, `Load` falls
+back to it). `%LOCALAPPDATA%\GameShelf\`: `covers\`, `error.log`, and Game mode's
 `gamemode-journal.json` (only while applied), `gamemode.log`, `gamemode-last.txt`, `gamemode-request.txt`. The
 helper: `%ProgramData%\GameShelf\` (`journal.json`, `elevated.log`, `allowed-<SID>.txt`, `result-<SID>.txt`).
 The version lives in `Directory.Build.props`.
@@ -114,6 +117,9 @@ moves an old `sessions.json` into the year files at start (kept as `sessions.jso
    - On exit: append the session as one line to `sessions-<year>.jsonl` (the year it ended, `SessionLog`; never
      reads the file), relaunch the widget if "Come back when the game closes" is on, or with `--crashed` after a crash exit code of a game with "Restart if it crashes" (spec §17: the widget's
      restart pill counts 5 s down, then plays it again; at most twice in a row).
+   - Time the PC slept isn't playtime: the session is saved as its awake parts. Shutdown or sign-out during the
+     game: the session is saved at once (`SystemEvents`), nothing is relaunched, Game mode's journal is put back
+     at the next start.
    - Game mode (when on for the game): apply right after start (and tell a widget that is still up, never starting
      it for that), Above normal priority once found, restore after the game: with "Come back" on, the widget is
      started first and the result follows as a forwarded `--restored` once it's up (`WaitForInputIdle`); with it off,
@@ -258,8 +264,12 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
   shortcut while scanning. Where the shared desktop can't be changed without admin, copy and leave the original.
   "Restore to desktop" moves only a `.lnk`/`.url` directly in our `Shortcuts\` folder, and only onto the user's or
   the Public desktop (`ShortcutImporter.StoredShortcut` / `RestoreTarget`), whatever `imported-shortcuts.json` says.
+  An import saves each shortcut's record before moving it (`ShortcutImporter.Store`), and a restore also puts back
+  shortcuts in our folder that no record names (`Unrecorded`), except a manually added game's own copy.
 - **Files.** Only delete inside our own AppData folders; never follow paths from data files to delete or overwrite
-  anything. Never delete the user's files or shortcuts; moves stay reversible. Never delete game files: Free up
+  anything. Never delete the user's files or shortcuts; moves stay reversible. The one exception is the
+  uninstaller, when the user chooses both "Don't put them back" and "Also delete my game list": then the imported
+  shortcuts go with the data, as its dialog says. Shortcuts that couldn't go back are never deleted. Never delete game files: Free up
   space hands each uninstall to the game's own launcher (or Settings › Apps).
 - **Network.** HTTPS to the store CDNs only, for artwork, or to an HTTPS address the user typed themselves in
   Settings › Advanced (the page names its host). Downloads are size-capped and only ever decoded as images. No

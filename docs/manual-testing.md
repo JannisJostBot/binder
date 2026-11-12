@@ -122,6 +122,14 @@ Settings → How Game Shelf appears → **On the desktop**.
 - [ ] **P6** A game it can't follow shows "Couldn't detect the game" after a few minutes and points to the
   "Process to watch" setting. Setting it fixes it.
 - [ ] **P7** Settings → "Come back when the game closes" off: it stays gone after the game.
+- [ ] **P8** Double-click a cover, and double-click Continue playing: the game starts once, and its detail shows one
+  session afterwards, not two.
+- [ ] **P9** Put the PC to sleep during a game (a few minutes), wake it, play on, quit: the detail shows the session
+  in two parts, without the time asleep.
+- [ ] **P10** Shut down (or sign out) while a game runs: after starting again, the session is in the detail, and
+  Game mode's changes are put back.
+- [ ] **P11** Unplug the network, open the panel with a new Steam game that has no local art (generated cover),
+  plug it back in, close and reopen the panel: the real cover appears.
 
 ## T · Game details (milestone 4)
 
@@ -160,8 +168,13 @@ Note the numbers. CI's numbers are in brackets.
   games and settings.
 - [ ] **U2** Same, *while a game is running*: the update finishes, and when you close the game, Game Shelf
   comes back and the session is recorded.
-- [ ] **U3** Settings → Apps → Game Shelf → **Uninstall**, *without* "delete my data": the app, Start menu entry
-  and Start with Windows are gone. Imported shortcuts are back on the desktop.
+- [ ] **U3** Settings → Apps → Game Shelf → **Uninstall**, *without* "delete my data": the app, Start menu entry,
+  Start with Windows, `%LOCALAPPDATA%\GameShelf` and `%TEMP%\GameShelfSetup.log` are gone. With "Put my shortcuts
+  back on the desktop" (the default) the imported shortcuts are back on the desktop.
+- [ ] **U3b** Uninstall with **Don't put them back**, without "delete my data": the shortcuts stay in
+  `%APPDATA%\GameShelf\Shortcuts` and the last dialog says so. After installing again, Settings › "Restore
+  shortcuts to desktop" puts them back.
+- [ ] **U3c** Double-click the setup twice quickly: the second says "Game Shelf Setup is already running".
 - [ ] **U4** Install again: your games, favorites and play history are still there.
 - [ ] **U5** *(Only if you're done testing)* Uninstall *with* "delete my data": `%APPDATA%\GameShelf` and
   `%LOCALAPPDATA%\GameShelf` are gone too.

@@ -177,6 +177,26 @@ The build order is at the end of this file. The ideas under "Not decided" at the
 - **Faster return after a game** (owner): the watcher's check for games that restart themselves is 3 s (was 5 s),
   and with "Come back" on the widget starts before Game mode is put back; the "back to normal" toast follows when
   the restore is done. With "Come back" off the old order stays (that widget only starts for a toast or a restart).
+- **Robustness round** (owner: "fix them all"), from a review of races and crashes:
+  - A library scan works on a copy and is reconciled with what changed meanwhile (`LibraryScanner.Reconcile`):
+    games added or removed during a scan stay that way; one scan at a time app-wide; Refresh never stays stuck.
+  - Data files are flushed before they're swapped in, the previous save kept as `.bak` and used when a file is
+    damaged (kept as `.bad`), so a power loss never turns into an empty library or default settings.
+  - Shortcut import saves each record before moving the file; restore also puts back unrecorded shortcuts.
+  - The same game's Play within 5 s is ignored (`RepeatGuard`): no double start, no session counted twice.
+  - Game mode: another Windows account's admin changes never look pending here (no "0 changes put back" toast);
+    an app that closes after the 5 s wait is still reopened after the game.
+  - A start while the running copy exits takes over instead of getting lost; one setup at a time (exit code 6);
+    a failed update starts the widget again.
+  - The watcher hears shutdown, sign-out and sleep (`SystemEvents`, one hidden window on its own thread): the
+    session is saved before Windows ends it, and time asleep isn't counted (the session is saved in its awake parts).
+  - Covers that couldn't be downloaded (offline) are tried again when the panel next opens, one timeout at most per
+    open; a cover lookup can't bring back an old cover after a custom one is set; another game ending doesn't
+    cancel the countdown.
+- **Uninstall removes everything Game Shelf put on the PC** (owner): the cache (`%LOCALAPPDATA%\GameShelf`) always,
+  setup's log after a completed uninstall, the data with "Also delete…". New choice when there are imported
+  shortcuts: **Put my shortcuts back on the desktop** (default) or **Don't put them back** (they stay with the data,
+  or go with it); `/keepshortcuts` for a silent uninstall. Shortcuts that couldn't go back are never deleted.
 
 ---
 

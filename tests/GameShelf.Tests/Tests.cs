@@ -104,6 +104,7 @@ static partial class Tests
         LocalizationTests();
         SourceDefaultsTests(dir);
         SessionLogTests(dir);
+        RobustnessTests(dir);
 
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");

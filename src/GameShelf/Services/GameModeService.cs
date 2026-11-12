@@ -74,7 +74,7 @@ internal static unsafe partial class GameModeService
     public static bool Pending => File.Exists(GameModeInfo.JournalPath) || ElevatedPending;
 
     /// <summary>The admin part's journal is there and "Allow…" was done for this user (its Restore task can run).</summary>
-    private static bool ElevatedPending => File.Exists(ElevatedPart.JournalPath) && Allowed;
+    private static bool ElevatedPending => Allowed && ElevatedPart.JournalIsFor(Sid); // never another account's
 
     // ---- The admin part ------------------------------------------------------------------------------------
 

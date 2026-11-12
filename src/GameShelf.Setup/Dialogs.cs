@@ -22,7 +22,8 @@ internal static unsafe class Dialogs
 
     public static string Title => Text.WindowTitle;
 
-    public sealed record Result(int Button, bool Verified);
+    /// <summary>The button pressed, the checkbox, and the chosen radio button (0 when there were none).</summary>
+    public sealed record Result(int Button, bool Verified, int Radio = 0);
 
     /// <summary>
     /// Shows a dialog; <paramref name="buttons"/> are custom (id ≥ 100) and come before the common ones.
@@ -31,7 +32,7 @@ internal static unsafe class Dialogs
     /// </summary>
     public static Result Show(string instruction, string content, (int Id, string Text)[] buttons, int common,
         int defaultButton, string? verification = null, bool verified = false, bool error = false, bool warning = false,
-        (string Text, string Show, string Hide)? details = null, bool required = false)
+        (string Text, string Show, string Hide)? details = null, bool required = false, (int Id, string Text)[]? radios = null)
     {
         var strings = new List<IntPtr>();
         IntPtr Str(string? s)
@@ -45,9 +46,13 @@ internal static unsafe class Dialogs
         var nativeButtons = new Native.TASKDIALOG_BUTTON[buttons.Length];
         for (int i = 0; i < buttons.Length; i++)
             nativeButtons[i] = new Native.TASKDIALOG_BUTTON { nButtonID = buttons[i].Id, pszButtonText = Str(buttons[i].Text) };
+        radios ??= [];
+        var nativeRadios = new Native.TASKDIALOG_BUTTON[Math.Max(1, radios.Length)];
+        for (int i = 0; i < radios.Length; i++)
+            nativeRadios[i] = new Native.TASKDIALOG_BUTTON { nButtonID = radios[i].Id, pszButtonText = Str(radios[i].Text) };
         try
         {
-            fixed (Native.TASKDIALOG_BUTTON* pButtons = nativeButtons)
+            fixed (Native.TASKDIALOG_BUTTON* pButtons = nativeButtons, pRadios = nativeRadios)
             {
                 var config = new Native.TASKDIALOGCONFIG
                 {
@@ -62,6 +67,9 @@ internal static unsafe class Dialogs
                     cButtons = (uint)buttons.Length,
                     pButtons = buttons.Length > 0 ? (IntPtr)pButtons : IntPtr.Zero,
                     nDefaultButton = defaultButton,
+                    cRadioButtons = (uint)radios.Length,
+                    pRadioButtons = radios.Length > 0 ? (IntPtr)pRadios : IntPtr.Zero,
+                    nDefaultRadioButton = radios.Length > 0 ? radios[0].Id : 0, // the first is the default
                     pszVerificationText = Str(verification),
                     pszExpandedInformation = Str(details?.Text),
                     pszCollapsedControlText = Str(details?.Show),
@@ -81,7 +89,7 @@ internal static unsafe class Dialogs
                     config.hMainIcon = IntPtr.Zero; // the icon resource wasn't found: show it without one
                     hr = Native.TaskDialogIndirect(&config, &button, &radio, &check);
                 }
-                if (hr >= 0) return new Result(button, check != 0);
+                if (hr >= 0) return new Result(button, check != 0, radio);
             }
         }
         catch (EntryPointNotFoundException)
@@ -92,8 +100,9 @@ internal static unsafe class Dialogs
         {
             foreach (var p in strings) Marshal.FreeHGlobal(p);
         }
-        return Fallback(instruction, required ? content + "\n\nPressing OK means you've read and understood this." : content,
+        var fallback = Fallback(instruction, required ? content + "\n\nPressing OK means you've read and understood this." : content,
             buttons, common, verified || required);
+        return fallback with { Radio = radios is { Length: > 0 } ? radios[0].Id : 0 }; // the default choice
     }
 
     /// <summary>Enables the gated button (its id is the callback data) only while the checkbox is ticked.</summary>

@@ -14,6 +14,14 @@ public static class ErrorLog
     public static void Write(Exception? error, string where)
     {
         if (error is null) return;
+        Append($"[{where}] {error}");
+    }
+
+    /// <summary>Something that went wrong and was handled (a damaged file replaced by its backup, …), for a later look.</summary>
+    public static void Note(string text) => Append("[note] " + text);
+
+    private static void Append(string text)
+    {
         try
         {
             lock (Sync)
@@ -22,7 +30,7 @@ public static class ErrorLog
                 var info = new FileInfo(FilePath);
                 if (info.Exists && info.Length > MaxBytes)
                     File.Move(FilePath, Path.Combine(Storage.CacheDir, "error.old.log"), overwrite: true);
-                File.AppendAllText(FilePath, $"{DateTimeOffset.Now:O} [{where}] {error}{Environment.NewLine}{Environment.NewLine}");
+                File.AppendAllText(FilePath, $"{DateTimeOffset.Now:O} {text}{Environment.NewLine}{Environment.NewLine}");
             }
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)

@@ -34,6 +34,8 @@ internal static class Program
         {
             // From the widget (its start, or "Restore now"), which is running and shows the result.
             if (GameMode.RecoverPending() is not { } recovered) return 3;
+            // Nothing was left to put back: no "Back to normal" toast (and sound) for zero changes.
+            if (recovered.Total == 0) return 0;
             StartWidget("--restored", recovered.Encode());
             return 0;
         }
@@ -100,6 +102,13 @@ internal static class Program
         }
 
         var start = DateTimeOffset.Now;
+        // Saved once: here after the game, or from the system events thread when Windows shuts down or the user
+        // signs out while the game runs (the watcher would be ended before it got there).
+        int saved = 0;
+        TimeSpan Save(DateTimeOffset until, GameExit how, bool reporter) =>
+            Interlocked.Exchange(ref saved, 1) == 0 ? SaveSession(gameId, start, until, how, reporter) : TimeSpan.Zero;
+        SystemEvents.Listen(() => Save(DateTimeOffset.Now, default, false));
+
         DateTimeOffset end;
         GameExit exit;
         while (true)
@@ -110,6 +119,8 @@ internal static class Program
             exit = matcher.ExitOf(handles);
             CloseAll(handles);
 
+            // Shutting down or signing out: no time to look for a restart, save now.
+            if (SystemEvents.Ending) break;
             // Some games restart themselves (launcher → game exe): look again briefly before deciding it's closed.
             // An engine crash reporter showing up now is noted, not mistaken for the game coming back.
             matcher.NoteReporters = true;
@@ -124,8 +135,11 @@ internal static class Program
             gameMode?.GameFound(matcher.NamesOf(handles)); // it restarted itself, maybe as another exe
         }
 
-        SaveSession(gameId, start, end, exit, matcher.ReporterSeen);
-        bool crashed = restartOnCrash && MayRestart(exit.Code, end - start);
+        var played = Save(end, exit, matcher.ReporterSeen);
+        // Shutting down or signing out: nothing comes back now. Game mode's journal is put back at the next start
+        // (the widget's, or the admin helper's at logon); reopening closed apps during a shutdown would be wrong.
+        if (SystemEvents.Ending) return 0;
+        bool crashed = restartOnCrash && MayRestart(exit.Code, played);
 
         if (comeBack)
         {
@@ -319,30 +333,41 @@ internal static class Program
     }
 
     /// <summary>
-    /// Saves the session, the crash check's only input. Another program (a virus scanner reading the new file,
-    /// an editor) can hold the sessions file for a moment, so it tries again for a few seconds; a session that still
-    /// can't be saved is written to error.log instead of being lost without a trace.
+    /// Saves the session, the crash check's only input, and returns how long the game ran. Time the PC slept
+    /// isn't playtime: the session is saved as its awake parts (each an ordinary session; only the last carries
+    /// how it ended). Another program (a virus scanner reading the new file, an editor) can hold the sessions file
+    /// for a moment, so each line is tried again for a few seconds; one that still can't be saved is written to
+    /// error.log instead of being lost without a trace.
     /// </summary>
-    private static void SaveSession(string gameId, DateTimeOffset start, DateTimeOffset end, GameExit exit, bool crashReporter)
+    private static TimeSpan SaveSession(string gameId, DateTimeOffset start, DateTimeOffset end, GameExit exit, bool crashReporter)
     {
-        for (int attempt = 1; ; attempt++)
+        var parts = SystemEvents.Awake(start, end, SystemEvents.Sleeps(end));
+        var played = TimeSpan.Zero;
+        for (int i = 0; i < parts.Count; i++)
         {
-            try
+            bool last = i == parts.Count - 1;
+            var (from, to) = parts[i];
+            played += to - from;
+            for (int attempt = 1; ; attempt++)
             {
-                AppendSession(gameId, start, end, exit, crashReporter);
-                return;
-            }
-            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
-            {
-                if (attempt < SaveAttempts)
+                try
                 {
-                    Thread.Sleep(SaveRetryMs);
-                    continue;
+                    AppendSession(gameId, from, to, last ? exit : default, last && crashReporter);
+                    break;
                 }
-                LogError($"Couldn't save the session of {gameId} ({start:O} to {end:O}, exit code {exit.Code}): {e.Message}");
-                return;
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+                {
+                    if (attempt < SaveAttempts)
+                    {
+                        Thread.Sleep(SaveRetryMs);
+                        continue;
+                    }
+                    LogError($"Couldn't save the session of {gameId} ({from:O} to {to:O}, exit code {exit.Code}): {e.Message}");
+                    break;
+                }
             }
         }
+        return played;
     }
 
     /// <summary>One line in %LOCALAPPDATA%\GameShelf\error.log, the widget's error log.</summary>
