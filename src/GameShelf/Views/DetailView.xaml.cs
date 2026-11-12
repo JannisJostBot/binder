@@ -132,7 +132,7 @@ public sealed partial class DetailView : UserControl
     }
 
     /// <summary>
-    /// One session: a warning icon and a Details link when it crashed, a check when Game Shelf knows it ended
+    /// One session: a warning icon and a Details link when it crashed, a check when Binder knows it ended
     /// normally, when it started and how long it lasted.
     /// </summary>
     private Grid SessionRow(SessionRowInfo info)

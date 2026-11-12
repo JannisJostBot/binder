@@ -2,7 +2,7 @@
 # widget and a watcher are running, then uninstall through the dialogs with "delete my data" ticked, and check
 # that nothing is left behind and imported shortcuts went back on the desktop.
 #
-# Installs into the current user's profile and deletes Game Shelf's data at the end: CI machines only.
+# Installs into the current user's profile and deletes Binder's data at the end: CI machines only.
 param(
     [Parameter(Mandatory = $true)] [string] $Setup,
     [Parameter(Mandatory = $true)] [string] $Published   # publish/app, to compare the installed files with
@@ -20,7 +20,7 @@ $Scope = [System.Windows.Automation.TreeScope]
 
 $installDir = Join-Path $env:LOCALAPPDATA 'Programs\GameShelf'
 $uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\GameShelf'
-$startMenuLink = Join-Path ([Environment]::GetFolderPath('Programs')) 'Game Shelf.lnk'
+$startMenuLink = Join-Path ([Environment]::GetFolderPath('Programs')) 'Binder.lnk'
 $dataDir = Join-Path $env:APPDATA 'GameShelf'
 $cacheDir = Join-Path $env:LOCALAPPDATA 'GameShelf'
 $desktop = [Environment]::GetFolderPath('Desktop')
@@ -45,9 +45,9 @@ function Wait-Until([scriptblock] $condition, [int] $seconds, [string] $what) {
     }
     Fail "Timed out after $seconds s waiting for: $what"
 }
-# The task dialog: a top-level window titled "Game Shelf Setup" whose text includes $instruction.
+# The task dialog: a top-level window titled "Binder Setup" whose text includes $instruction.
 function Get-Dialog([string] $instruction) {
-    $cond = New-Object System.Windows.Automation.PropertyCondition($UIA::NameProperty, 'Game Shelf Setup')
+    $cond = New-Object System.Windows.Automation.PropertyCondition($UIA::NameProperty, 'Binder Setup')
     Wait-Until {
         foreach ($w in $UIA::RootElement.FindAll($Scope::Children, $cond)) {
             $text = New-Object System.Windows.Automation.PropertyCondition($UIA::NameProperty, $instruction)
@@ -142,10 +142,10 @@ Remove-Item $log -ErrorAction SilentlyContinue
 try {
     $metrics += "GameShelfSetup.exe: $([int]((Get-Item $Setup).Length / 1KB)) KB"
 
-    # --- 1. Install through the dialogs; "Open Game Shelf now" is ticked, so it starts afterwards. ---
+    # --- 1. Install through the dialogs; "Open Binder now" is ticked, so it starts afterwards. ---
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $proc = Start-Process $Setup -PassThru
-    $dialog = Get-Dialog 'Install Game Shelf'
+    $dialog = Get-Dialog 'Install Binder'
     $metrics += "Setup dialog shown after $($sw.ElapsedMilliseconds) ms"
     Start-Sleep -Milliseconds 500
     Shot 'setup-1-install'
@@ -163,7 +163,7 @@ try {
     $sw.Restart()
     [Win32Button]::Click([IntPtr] $installButton.Current.NativeWindowHandle)
     Write-Host 'clicked: Install'
-    $done = Get-Dialog 'Game Shelf is installed'
+    $done = Get-Dialog 'Binder is installed'
     $metrics += "Install took $($sw.ElapsedMilliseconds) ms (to the done dialog)"
     Start-Sleep -Milliseconds 500
     Shot 'setup-2-installed'
@@ -219,7 +219,7 @@ try {
 
     # --- 3. Uninstall through the dialogs, deleting the data too. ---
     $proc = Start-Process (Join-Path $installDir 'Uninstall.exe') -ArgumentList '/uninstall' -PassThru
-    $dialog = Get-Dialog 'Uninstall Game Shelf?'
+    $dialog = Get-Dialog 'Uninstall Binder?'
     $check = Wait-Until { $dialog.FindFirst($Scope::Descendants, (New-Object System.Windows.Automation.PropertyCondition($UIA::NameProperty, 'Also delete my game list, play history and settings'))) } 5 'delete-data checkbox'
     if ($check.GetCurrentPropertyValue($UIA::IsTogglePatternAvailableProperty)) {
         $check.GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern).Toggle()
@@ -235,7 +235,7 @@ try {
     $running = Get-Dialog 'A game is still running'
     Shot 'setup-5-game-running'
     Click $running 'Uninstall anyway'
-    $removed = Get-Dialog 'Game Shelf was removed'
+    $removed = Get-Dialog 'Binder was removed'
     Start-Sleep -Milliseconds 500
     Shot 'setup-6-removed'
     Click $removed 'Close'
@@ -245,8 +245,8 @@ try {
     if (Test-Path $startMenuLink) { Fail 'The Start menu shortcut is still there' }
     if ((Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -ErrorAction SilentlyContinue).'Game Shelf') { Fail 'Start with Windows is still set' }
     if (-not (Test-Path $original)) { Fail 'The imported shortcut did not go back on the desktop' }
-    if ((Test-Path $dataDir) -or (Test-Path $cacheDir)) { Fail 'Game Shelf data is still there after "delete my data"' }
-    if ((Ours 'GameShelf.exe').Count -or (Ours 'GameShelf.Watcher.exe').Count) { Fail 'Game Shelf is still running' }
+    if ((Test-Path $dataDir) -or (Test-Path $cacheDir)) { Fail 'Binder data is still there after "delete my data"' }
+    if ((Ours 'GameShelf.exe').Count -or (Ours 'GameShelf.Watcher.exe').Count) { Fail 'Binder is still running' }
     Wait-Until { -not (Get-ChildItem ([IO.Path]::GetTempPath()) -Directory -Filter 'GameShelf-uninstall-*') } 15 'temporary uninstaller removed' | Out-Null
     Wait-Until { -not (Test-Path $log) } 15 'setup log removed after the uninstall' | Out-Null
     Remove-Item $original -ErrorAction SilentlyContinue

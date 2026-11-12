@@ -29,8 +29,8 @@
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
 
-    <Product>Game Shelf</Product>
-    <AssemblyTitle>Game Shelf</AssemblyTitle>
+    <Product>Binder</Product>
+    <AssemblyTitle>Binder</AssemblyTitle>
 
     <!-- The app's languages (Strings\Strings.*.resx); also keeps other languages' package resources out. -->
     <SatelliteResourceLanguages>en;de;fr</SatelliteResourceLanguages>

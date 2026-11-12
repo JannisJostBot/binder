@@ -5,9 +5,9 @@ using GameShelf.Shared;
 namespace GameShelf.Setup;
 
 /// <summary>
-/// Game mode's admin part (spec §11), if "Allow…" was done for this user: uninstalling Game Shelf removes it too,
+/// Game mode's admin part (spec §11), if "Allow…" was done for this user: uninstalling Binder removes it too,
 /// through the copy in Program Files (it removes this user's tasks, and itself with the last user). That needs
-/// admin rights, so Windows asks; a silent uninstall leaves it (it does nothing without Game Shelf).
+/// admin rights, so Windows asks; a silent uninstall leaves it (it does nothing without Binder).
 /// </summary>
 internal static class GameModeHelper
 {

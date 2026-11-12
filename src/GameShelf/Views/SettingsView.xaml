@@ -31,7 +31,7 @@
                 <TextBlock Grid.Column="1" Text="{x:Bind s:Strings.Settings}" Style="{StaticResource SubtitleTextBlockStyle}" VerticalAlignment="Center" />
             </Grid>
 
-            <!-- Opening Game Shelf (board 9) -->
+            <!-- Opening Binder (board 9) -->
             <TextBlock Style="{StaticResource GroupLabel}" Margin="20,20,20,12" Text="{x:Bind s:Strings.GroupOpening}" />
             <Border x:Name="ModeCard" Style="{StaticResource SettingCard}">
                 <Grid ColumnSpacing="16">

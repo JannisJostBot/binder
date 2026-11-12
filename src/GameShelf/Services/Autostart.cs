@@ -10,7 +10,7 @@ namespace GameShelf.Services;
 public static class Autostart
 {
     private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private const string ValueName = "Game Shelf";
+    private const string ValueName = "Game Shelf"; // the name before the rename to Binder; kept so existing entries keep working
 
     /// <summary>
     /// The exe path in quotes (an unquoted path with spaces could start the wrong program), plus --background:

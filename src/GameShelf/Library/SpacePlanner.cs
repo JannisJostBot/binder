@@ -26,7 +26,7 @@ public readonly record struct TileRect(double X, double Y, double W, double H);
 
 /// <summary>
 /// Free up space (spec §12, board 17): which installed games to remove, on which drive, so a new game fits.
-/// Pure, so it's unit-tested. Game Shelf never deletes anything itself; the plan only suggests.
+/// Pure, so it's unit-tested. Binder never deletes anything itself; the plan only suggests.
 /// </summary>
 public static class SpacePlanner
 {

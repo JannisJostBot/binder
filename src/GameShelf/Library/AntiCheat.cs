@@ -6,7 +6,7 @@ public enum AntiCheatKind { EasyAntiCheat, BattlEye, Vanguard, Javelin, DenuvoAn
 public enum PcRequirement { SecureBoot, Tpm20, NoTestSigning, NoKernelDebugging, VanguardLoaded }
 
 /// <summary>
-/// What Game Shelf knows about anti-cheats: names, what each needs from the PC, and programs and drivers that
+/// What Binder knows about anti-cheats: names, what each needs from the PC, and programs and drivers that
 /// are known to conflict. A built-in table, updated with app releases; games can change their requirements.
 /// </summary>
 public static class AntiCheat

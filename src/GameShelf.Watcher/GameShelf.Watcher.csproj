@@ -11,8 +11,8 @@
          framework-dependent apphost treat that folder as the .NET install and fail ("You must install .NET"). -->
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
-    <Product>Game Shelf</Product>
-    <AssemblyTitle>Game Shelf game watcher</AssemblyTitle>
+    <Product>Binder</Product>
+    <AssemblyTitle>Binder game watcher</AssemblyTitle>
     <!-- The app's logo with an eye instead of the play mark (scripts\make-watcher-icon.ps1), for Task Manager. -->
     <ApplicationIcon>watcher.ico</ApplicationIcon>
 

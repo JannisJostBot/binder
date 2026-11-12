@@ -1,7 +1,7 @@
-Game Shelf: third-party software notices
+Binder: third-party software notices
 =========================================
 
-Game Shelf's own code is licensed under the GNU General Public License, version 3, with an additional permission
+Binder's own code is licensed under the GNU General Public License, version 3, with an additional permission
 to combine it with the libraries below (LICENSE and LICENSE-EXCEPTION.txt). The installed app and its setup
 include the following software from others. Each stays under its own license, not the GPL.
 
@@ -20,19 +20,19 @@ copies them there.
 
 2. Windows App SDK (WinUI 3 and the Windows App Runtime)
    Used in: the widget (GameShelf.exe) and the Microsoft DLLs next to it in the install folder.
-   License: Microsoft Software License Terms for the Windows App SDK (not open source). By installing Game Shelf you
+   License: Microsoft Software License Terms for the Windows App SDK (not open source). By installing Binder you
    also agree to these terms for these components.
    It includes third-party components of its own, listed in its notices files.
    Files: licenses\WindowsAppSDK-license.txt, licenses\WindowsAppSDK.*-NOTICE.txt
    More: https://github.com/microsoft/WindowsAppSDK
 
 3. WebView2 SDK (Microsoft.Web.WebView2), where its DLLs are in the install folder
-   Used in: brought along by the Windows App SDK; Game Shelf doesn't use it itself.
+   Used in: brought along by the Windows App SDK; Binder doesn't use it itself.
    License: BSD-style license. Copyright (C) Microsoft Corporation.
    Files: licenses\WebView2-LICENSE.txt, licenses\WebView2-NOTICE.txt
 
-Not included: Windows' own system DLLs (they're part of Windows) and the launchers' icons, which Game Shelf reads
+Not included: Windows' own system DLLs (they're part of Windows) and the launchers' icons, which Binder reads
 from the launchers installed on the PC while it runs.
 
-Game Shelf isn't affiliated with or endorsed by Microsoft or any other company named here. Their names and
+Binder isn't affiliated with or endorsed by Microsoft or any other company named here. Their names and
 trademarks belong to their owners.

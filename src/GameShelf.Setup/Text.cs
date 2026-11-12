@@ -25,25 +25,25 @@ internal static partial class Text
         _ => en,
     };
 
-    public static string WindowTitle => Pick("Game Shelf Setup", "Game Shelf Setup", "Installation de Game Shelf");
-    public static string AlreadyRunning => Pick("Game Shelf Setup is already running", "Game Shelf Setup wird schon ausgeführt", "L’installation de Game Shelf est déjà en cours");
+    public static string WindowTitle => Pick("Binder Setup", "Binder Setup", "Installation de Binder");
+    public static string AlreadyRunning => Pick("Binder Setup is already running", "Binder Setup wird schon ausgeführt", "L’installation de Binder est déjà en cours");
     public static string AlreadyRunningDetail => Pick("Wait until it has finished, then try again.", "Warten Sie, bis es fertig ist, und versuchen Sie es dann erneut.", "Attendez la fin, puis réessayez.");
 
     // ---- Install ---------------------------------------------------------------------------------------------
     public static string Incomplete => Pick("This setup is incomplete", "Dieses Setup ist unvollständig", "Ce programme d’installation est incomplet");
     public static string IncompleteDetail => Pick("It was built without the app inside. Build it with publish.ps1.",
         "Es wurde ohne die App erstellt. Erstellen Sie es mit publish.ps1.", "Il a été créé sans l’application. Créez-le avec publish.ps1.");
-    public static string InstallTitle => Pick("Install Game Shelf", "Game Shelf installieren", "Installer Game Shelf");
+    public static string InstallTitle => Pick("Install Binder", "Binder installieren", "Installer Binder");
     public static string Install => Pick("Install", "Installieren", "Installer");
-    public static string UpdateTitle(string version) => Pick($"Update Game Shelf to {version}", $"Game Shelf auf {version} aktualisieren", $"Mettre à jour Game Shelf vers {version}");
+    public static string UpdateTitle(string version) => Pick($"Update Binder to {version}", $"Binder auf {version} aktualisieren", $"Mettre à jour Binder vers {version}");
     public static string Update => Pick("Update", "Aktualisieren", "Mettre à jour");
-    public static string AlreadyInstalled(string version) => Pick($"Game Shelf {version} is already installed", $"Game Shelf {version} ist bereits installiert", $"Game Shelf {version} est déjà installé");
+    public static string AlreadyInstalled(string version) => Pick($"Binder {version} is already installed", $"Binder {version} ist bereits installiert", $"Binder {version} est déjà installé");
     public static string Reinstall => Pick("Reinstall", "Neu installieren", "Réinstaller");
-    public static string NewerInstalled(string installed) => Pick($"A newer Game Shelf ({installed}) is installed", $"Eine neuere Version von Game Shelf ({installed}) ist installiert", $"Une version plus récente de Game Shelf ({installed}) est installée");
+    public static string NewerInstalled(string installed) => Pick($"A newer Binder ({installed}) is installed", $"Eine neuere Version von Binder ({installed}) ist installiert", $"Une version plus récente de Binder ({installed}) est installée");
     public static string ReplaceWith(string version) => Pick($"Replace it with {version}", $"Durch {version} ersetzen", $"Remplacer par {version}");
-    public static string UpdateSummary => Pick("Your games, play history and settings are kept. If Game Shelf is open, it closes and comes back afterwards.",
-        "Ihre Spiele, Spielzeiten und Einstellungen bleiben erhalten. Ein geöffnetes Game Shelf wird geschlossen und danach wieder gestartet.",
-        "Vos jeux, votre historique et vos paramètres sont conservés. Si Game Shelf est ouvert, il se ferme puis revient ensuite.");
+    public static string UpdateSummary => Pick("Your games, play history and settings are kept. If Binder is open, it closes and comes back afterwards.",
+        "Ihre Spiele, Spielzeiten und Einstellungen bleiben erhalten. Ist Binder geöffnet, wird es geschlossen und danach wieder gestartet.",
+        "Vos jeux, votre historique et vos paramètres sont conservés. Si Binder est ouvert, il se ferme puis revient ensuite.");
     public static string InstallSummary => Pick("Installs for your account only. No administrator rights needed.",
         "Wird nur für Ihr Konto installiert. Keine Administratorrechte nötig.", "S’installe pour votre compte uniquement. Aucun droit d’administrateur requis.");
     public static string Versions(string installed, string setup) => Pick($"Installed now: {installed}. This setup: {setup}.",
@@ -56,14 +56,14 @@ internal static partial class Text
     public static string HideDisclaimer => Pick("Hide the disclaimer", "Haftungsausschluss ausblenden", "Masquer l’avertissement");
     public static string Cancel => Pick("Cancel", "Abbrechen", "Annuler");
     public static string StartMenuDescription => Pick("Your installed games", "Ihre installierten Spiele", "Vos jeux installés");
-    public static string UpToDate => Pick("Game Shelf is up to date", "Game Shelf ist aktuell", "Game Shelf est à jour");
-    public static string Installed => Pick("Game Shelf is installed", "Game Shelf ist installiert", "Game Shelf est installé");
+    public static string UpToDate => Pick("Binder is up to date", "Binder ist aktuell", "Binder est à jour");
+    public static string Installed => Pick("Binder is installed", "Binder ist installiert", "Binder est installé");
     public static string VersionLine(string version) => Pick($"Version {version}.", $"Version {version}.", $"Version {version}.");
     public static string InStartMenu => Pick("You'll find it in the Start menu. It sets itself up the first time it opens.",
         "Sie finden es im Startmenü. Beim ersten Öffnen richtet es sich ein.", "Vous le trouverez dans le menu Démarrer. Il se configure à la première ouverture.");
-    public static string OpenNow => Pick("Open Game Shelf now", "Game Shelf jetzt öffnen", "Ouvrir Game Shelf maintenant");
-    public static string UpdateFailed => Pick("Couldn't update Game Shelf", "Game Shelf konnte nicht aktualisiert werden", "Impossible de mettre à jour Game Shelf");
-    public static string InstallFailed => Pick("Couldn't install Game Shelf", "Game Shelf konnte nicht installiert werden", "Impossible d’installer Game Shelf");
+    public static string OpenNow => Pick("Open Binder now", "Binder jetzt öffnen", "Ouvrir Binder maintenant");
+    public static string UpdateFailed => Pick("Couldn't update Binder", "Binder konnte nicht aktualisiert werden", "Impossible de mettre à jour Binder");
+    public static string InstallFailed => Pick("Couldn't install Binder", "Binder konnte nicht installiert werden", "Impossible d’installer Binder");
     public static string NothingLost => Pick("Nothing you had is lost. Running setup again usually fixes it.",
         "Es ist nichts verloren gegangen. Setup erneut auszuführen, behebt das meist.", "Rien n’a été perdu. Relancer l’installation règle généralement le problème.");
 
@@ -89,7 +89,7 @@ internal static partial class Text
     public static string Details(string path) => Pick("Details: " + path, "Details: " + path, "Détails : " + path);
 
     // ---- Uninstall ---------------------------------------------------------------------------------------------
-    public static string UninstallTitle => Pick("Uninstall Game Shelf?", "Game Shelf deinstallieren?", "Désinstaller Game Shelf ?");
+    public static string UninstallTitle => Pick("Uninstall Binder?", "Binder deinstallieren?", "Désinstaller Binder ?");
     public static string UninstallSummary => Pick("Removes the app and everything it keeps on this PC: its Start menu entry, Start with Windows, cached covers and logs.",
         "Entfernt die App und alles, was sie auf diesem PC ablegt: Startmenü-Eintrag, Autostart, zwischengespeicherte Cover und Protokolle.",
         "Supprime l’application et tout ce qu’elle conserve sur ce PC : son entrée du menu Démarrer, le démarrage avec Windows, les jaquettes en cache et les journaux.");
@@ -105,9 +105,9 @@ internal static partial class Text
     public static string Uninstall => Pick("Uninstall", "Deinstallieren", "Désinstaller");
     public static string AlsoDeleteData => Pick("Also delete my game list, play history and settings", "Auch Spieleliste, Spielzeiten und Einstellungen löschen", "Supprimer aussi ma liste de jeux, mon historique et mes paramètres");
     public static string GameRunning => Pick("A game is still running", "Es läuft noch ein Spiel", "Un jeu est toujours en cours");
-    public static string GameRunningDetail => Pick("Game Shelf is keeping track of it. If you uninstall now, this session's playtime isn't saved.",
-        "Game Shelf erfasst es gerade. Wenn Sie jetzt deinstallieren, wird die Spielzeit dieser Sitzung nicht gespeichert.",
-        "Game Shelf le suit en ce moment. Si vous désinstallez maintenant, le temps de jeu de cette session ne sera pas enregistré.");
+    public static string GameRunningDetail => Pick("Binder is keeping track of it. If you uninstall now, this session's playtime isn't saved.",
+        "Binder erfasst es gerade. Wenn Sie jetzt deinstallieren, wird die Spielzeit dieser Sitzung nicht gespeichert.",
+        "Binder le suit en ce moment. Si vous désinstallez maintenant, le temps de jeu de cette session ne sera pas enregistré.");
     public static string UninstallAnyway => Pick("Uninstall anyway", "Trotzdem deinstallieren", "Désinstaller quand même");
     public static string ShortcutsLeft(string dir) => Pick($"Some shortcuts couldn't go back on the desktop. They're still in {dir}.",
         $"Einige Verknüpfungen konnten nicht zurück auf den Desktop. Sie liegen noch in {dir}.", $"Certains raccourcis n’ont pas pu retourner sur le bureau. Ils sont toujours dans {dir}.");
@@ -115,10 +115,10 @@ internal static partial class Text
         "Spieleliste, Spielzeiten und Einstellungen wurden ebenfalls gelöscht.", "Votre liste de jeux, votre historique et vos paramètres ont aussi été supprimés.");
     public static string DataKept => Pick("Your game list, play history and settings are kept, in case you install it again.",
         "Spieleliste, Spielzeiten und Einstellungen bleiben erhalten, falls Sie es wieder installieren.", "Votre liste de jeux, votre historique et vos paramètres sont conservés si vous le réinstallez.");
-    public static string HelperLeft(string dir) => Pick($"Game mode's helper is still in {dir} (it does nothing without Game Shelf). To remove it, install Game Shelf again and use Settings › Game mode › Remove it.",
-        $"Das Hilfsprogramm des Spielmodus liegt noch in {dir} (ohne Game Shelf tut es nichts). Zum Entfernen Game Shelf erneut installieren und Einstellungen › Spielmodus › Entfernen wählen.",
-        $"L’assistant du mode jeu est toujours dans {dir} (il ne fait rien sans Game Shelf). Pour le supprimer, réinstallez Game Shelf et utilisez Paramètres › Mode jeu › Le supprimer.");
-    public static string Removed => Pick("Game Shelf was removed", "Game Shelf wurde entfernt", "Game Shelf a été supprimé");
+    public static string HelperLeft(string dir) => Pick($"Game mode's helper is still in {dir} (it does nothing without Binder). To remove it, install Binder again and use Settings › Game mode › Remove it.",
+        $"Das Hilfsprogramm des Spielmodus liegt noch in {dir} (ohne Binder tut es nichts). Zum Entfernen Binder erneut installieren und Einstellungen › Spielmodus › Entfernen wählen.",
+        $"L’assistant du mode jeu est toujours dans {dir} (il ne fait rien sans Binder). Pour le supprimer, réinstallez Binder et utilisez Paramètres › Mode jeu › Le supprimer.");
+    public static string Removed => Pick("Binder was removed", "Binder wurde entfernt", "Binder a été supprimé");
 
     [LibraryImport("kernel32.dll")]
     private static partial ushort GetUserDefaultUILanguage();

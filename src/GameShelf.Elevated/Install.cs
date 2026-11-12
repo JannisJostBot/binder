@@ -252,8 +252,8 @@ internal static class Install
             <?xml version="1.0" encoding="UTF-16"?>
             <Task version="1.3" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
               <RegistrationInfo>
-                <Author>Game Shelf</Author>
-                <Description>Game Shelf Game mode: {(atLogon ? "puts back what Game mode changed" : "applies Game mode while a game runs")}. Remove it in Game Shelf's Settings, Game mode.</Description>
+                <Author>Binder</Author>
+                <Description>Binder Game mode: {(atLogon ? "puts back what Game mode changed" : "applies Game mode while a game runs")}. Remove it in Binder's Settings, Game mode.</Description>
                 <SecurityDescriptor>D:P(A;;FA;;;BA)(A;;FA;;;SY)(A;;GRGX;;;{sid})</SecurityDescriptor>
               </RegistrationInfo>
               <Triggers>{(atLogon ? $"<LogonTrigger><UserId>{sid}</UserId></LogonTrigger>" : "")}</Triggers>

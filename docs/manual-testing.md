@@ -33,9 +33,9 @@ Tick boxes here on GitHub (edit the file), in a copy, or on paper. Whatever is e
 
 - [x] **I1** Run `GameShelfSetup.exe`. If SmartScreen warns, More info → Run anyway works. **No UAC prompt**.
 - [x] **I2** *(Dropped: the WinUI app is self-contained, so there's no runtime to be missing.)*
-- [x] **I3** Install → "Game Shelf is installed" → Close with "Open Game Shelf now" ticked opens the app.
-- [x] **I4** Start menu has **Game Shelf** with its icon. Typing "Game Shelf" in Start finds it.
-- [x] **I5** Settings → Apps → Installed apps lists **Game Shelf 0.1.0**, publisher "Vibe-coded with Claude
+- [x] **I3** Install → "Binder is installed" → Close with "Open Binder now" ticked opens the app.
+- [x] **I4** Start menu has **Binder** with its icon. Typing "Binder" in Start finds it.
+- [x] **I5** Settings → Apps → Installed apps lists **Binder 0.1.0**, publisher "Vibe-coded with Claude
   (AI-generated) · Jannis Jost", with icon and size.
 
 ## S · First-time setup (milestone 9)
@@ -50,7 +50,7 @@ Tick boxes here on GitHub (edit the file), in a copy, or on paper. Whatever is e
 
 ## F · Flyout, tray icon, shortcut (milestone 9)
 
-- [ ] **F1** The Game Shelf icon is in the notification area (maybe behind the **^** arrow; dragging it onto
+- [ ] **F1** The Binder icon is in the notification area (maybe behind the **^** arrow; dragging it onto
   the taskbar keeps it visible). It matches the taskbar (light/dark).
 - [ ] **F2** Clicking the icon opens the flyout at the screen edge with a short slide-in. Clicking it again
   closes it. The slide stays smooth on a high-refresh screen; covers appear as it ends.
@@ -61,14 +61,14 @@ Tick boxes here on GitHub (edit the file), in a copy, or on paper. Whatever is e
 - [ ] **F5** Right-click on the tray icon: Open, Settings, Quit all do what they say.
 - [ ] **F6** Opening the Start menu entry while it's running opens/closes the same flyout (no second copy in
   Task Manager).
-- [ ] **F7** Restart Windows: Game Shelf starts **without showing** anything, then the icon/shortcut opens it.
+- [ ] **F7** Restart Windows: Binder starts **without showing** anything, then the icon/shortcut opens it.
 - [ ] **F8** The tray icon is in colour while the flyout is open, and white/grey again once it closes.
 - [ ] **F9** Pinned, the pin button shows a filled pin that still has its needle.
 - [ ] **F10** Click the tray icon to close the flyout and click again straight away: it opens again (the second click isn't lost). A double-click on the icon leaves it open.
 
 ## D · Desktop mode (milestones 5 and 7)
 
-Settings → How Game Shelf appears → **On the desktop**.
+Settings → How Binder appears → **On the desktop**.
 
 - [ ] **D1** The panel sits on the desktop, docked right, below other windows. It doesn't come in front when
   clicked.
@@ -112,7 +112,7 @@ Settings → How Game Shelf appears → **On the desktop**.
 
 ## P · Play → hide → come back (milestone 2)
 
-- [ ] **P1** **A Steam game:** Play → "Starting …" countdown → Game Shelf disappears (not in Task Manager, only
+- [ ] **P1** **A Steam game:** Play → "Starting …" countdown → Binder disappears (not in Task Manager, only
   `GameShelf.Watcher`). Close the game → it comes back.
 - [ ] **P2** **An Epic game:** same as P1 (the Epic launcher starts first; detection still works).
 - [ ] **P3** **A GOG or manually added game:** same.
@@ -164,17 +164,17 @@ Note the numbers. CI's numbers are in brackets.
 
 ## U · Update and uninstall (installer)
 
-- [ ] **U1** Run `GameShelfSetup.exe` again → **Reinstall** → Game Shelf comes back as it was (tray), with your
+- [ ] **U1** Run `GameShelfSetup.exe` again → **Reinstall** → Binder comes back as it was (tray), with your
   games and settings.
-- [ ] **U2** Same, *while a game is running*: the update finishes, and when you close the game, Game Shelf
+- [ ] **U2** Same, *while a game is running*: the update finishes, and when you close the game, Binder
   comes back and the session is recorded.
-- [ ] **U3** Settings → Apps → Game Shelf → **Uninstall**, *without* "delete my data": the app, Start menu entry,
+- [ ] **U3** Settings → Apps → Binder → **Uninstall**, *without* "delete my data": the app, Start menu entry,
   Start with Windows, `%LOCALAPPDATA%\GameShelf` and `%TEMP%\GameShelfSetup.log` are gone. With "Put my shortcuts
   back on the desktop" (the default) the imported shortcuts are back on the desktop.
 - [ ] **U3b** Uninstall with **Don't put them back**, without "delete my data": the shortcuts stay in
   `%APPDATA%\GameShelf\Shortcuts` and the last dialog says so. After installing again, Settings › "Restore
   shortcuts to desktop" puts them back.
-- [ ] **U3c** Double-click the setup twice quickly: the second says "Game Shelf Setup is already running".
+- [ ] **U3c** Double-click the setup twice quickly: the second says "Binder Setup is already running".
 - [ ] **U4** Install again: your games, favorites and play history are still there.
 - [ ] **U5** *(Only if you're done testing)* Uninstall *with* "delete my data": `%APPDATA%\GameShelf` and
   `%LOCALAPPDATA%\GameShelf` are gone too.

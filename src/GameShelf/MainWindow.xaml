@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:s="using:GameShelf"
         xmlns:v="using:GameShelf.Views"
-        Title="Game Shelf">
+        Title="Binder">
     <Grid x:Name="Root" AllowDrop="True" DragOver="OnDragOver" Drop="OnDrop"
           CharacterReceived="OnCharacterReceived" KeyDown="OnRootKeyDown" PointerPressed="OnRootPointerPressed">
         <v:ShelfView x:Name="Shelf" />

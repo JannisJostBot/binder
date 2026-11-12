@@ -1,8 +1,9 @@
-# Game Shelf — project brief
+# Binder — project brief
 
 A lightweight Windows desktop widget that replaces game shortcuts on the desktop: a cover grid of the user's
 installed games that launches them, gets completely out of the way while a game runs, and comes back when it closes.
-(The website calls it Binder; the code still says GameShelf, don't rename anything.)
+(The product is Binder; the code, exe names, data folders, scheduled tasks and registry names still say GameShelf
+(or "Game Shelf" for the Run value). Don't rename those: existing installs and data depend on them.)
 
 **Top priority: zero performance cost while gaming.** While a game runs the widget process must not exist; only the
 tiny watcher may remain, blocked/sleeping.
@@ -48,7 +49,7 @@ their games, and it must feel like part of Windows. When an idea doesn't clearly
 - Approved: `Microsoft.WindowsAppSDK.WinUI` 2.6.4 (its binaries are under the Microsoft Software License Terms for
   the Windows App SDK, not MIT; redistributable with the app), only this component, not the `Microsoft.WindowsAppSDK`
   umbrella (it bundles AI runtimes we don't use).
-- **License:** Game Shelf is GPL 3.0 with a section 7 permission to combine it with the Windows App SDK, .NET and
+- **License:** Binder is GPL 3.0 with a section 7 permission to combine it with the Windows App SDK, .NET and
   WebView2 (`LICENSE`, `LICENSE-EXCEPTION.txt`). Every bundled component and its license is listed in
   `THIRD-PARTY-NOTICES.txt`; `publish.ps1` copies the upstream license and notice files into `app\licenses` and
   stops if one is missing. A new dependency must have a GPL-compatible license or be added to that permission,
@@ -228,7 +229,7 @@ times follow the user's regional format.
   `Strings.Plural(n, one, other)` (French counts 0 as one); lists `Strings.List` ("A, B and C"). Capitalize in the
   entry itself; `Strings.LowerFirst` only for text that starts a sentence in one place and sits inside one in
   another (never `ToLower`: German nouns stay capitalized).
-- Not translated: brand and product names (Steam, Epic Games, EA app, Game Shelf), log files, the data files'
+- Not translated: brand and product names (Steam, Epic Games, EA app, Binder), log files, the data files'
   contents, and the setup's disclaimer (English only, as in the README). The watcher and the helper record Game
   mode items by English name (journal, result, log); the widget translates them (`Views/GameModeText.cs`).
 - `GameShelfSetup.exe` keeps its few strings in `Text.cs` (invariant globalization, no resource files).

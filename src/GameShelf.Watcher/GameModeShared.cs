@@ -261,7 +261,7 @@ public static partial class ElevatedPart
 
     /// <summary>
     /// The helper's own version, which "Allow…" writes into the marker; a marker with another one means "Update…"
-    /// (one UAC prompt). It is not the app's version, so a Game Shelf update alone doesn't ask again.
+    /// (one UAC prompt). It is not the app's version, so a Binder update alone doesn't ask again.
     /// Bump it by hand whenever GameShelf.Elevated changes: what it does, the request, journal or result format,
     /// or how its tasks and folders are set up.
     /// </summary>

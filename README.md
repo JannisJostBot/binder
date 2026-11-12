@@ -1,4 +1,4 @@
-# Game Shelf
+# Binder
 
 A small Windows 10/11 app that replaces the game shortcuts on your desktop. It shows the games you have
 installed as a clean cover grid, starts them with one click, gets completely out of the way while you play, and
@@ -13,7 +13,7 @@ comes back when the game closes.
   store, or are generated from the game's icon.
 - **Opens like part of Windows:** a flyout from the notification-area icon or **Win+Shift+G**. It can also sit
   docked on the desktop, behind your windows.
-- **Costs nothing while you play:** a few seconds after a game starts, Game Shelf exits completely. Only a tiny
+- **Costs nothing while you play:** a few seconds after a game starts, Binder exits completely. Only a tiny
   watcher (about 3 MB of memory, no CPU) waits for the game to close, records your playtime and brings the shelf
   back.
 - **Tidies your desktop:** moves the game shortcuts you pick into its own folder. They're never deleted, and
@@ -23,11 +23,11 @@ comes back when the game closes.
 - **Game details:** playtime with weekly and monthly charts, last played, size on disk, recent sessions, launch
   options (with suggestions for the game's engine), an anti-cheat check, per-game hide delay, process to watch
   and custom cover.
-- **Crash detection:** when a game crashes, Game Shelf says so when it comes back, with the likely cause and
+- **Crash detection:** when a game crashes, Binder says so when it comes back, with the likely cause and
   what to try, read from Windows' own event log.
 - **Free up space:** type the size of a game you want to install, and it suggests which games to remove on
   which drive (the ones you play least first), shown as a map of what takes up the space. Each game is removed
-  through its own launcher, which asks first. Game Shelf never deletes game files itself.
+  through its own launcher, which asks first. Binder never deletes game files itself.
 - **Light on your PC:** no background timers or polling. While it waits in the tray, it uses about 12 MB of
   memory and no CPU.
 
@@ -41,10 +41,10 @@ You need Windows 10 or 11 (x64). Nothing else: the app carries its own runtimes.
 1. Build `GameShelfSetup.exe` (see below), or use a copy someone built for you.
 2. Run it and click **Install**. It installs for your account only and never asks for administrator rights.
    (Only Game mode's service and network options do, once, if you choose to allow them in its settings.)
-3. Game Shelf opens and walks you through a short first-time setup.
+3. Binder opens and walks you through a short first-time setup.
 
-To **update**, run a newer `GameShelfSetup.exe`. It works even while Game Shelf or a game is running. To
-**uninstall**, use Settings → Apps → Game Shelf. It removes everything Game Shelf put on your PC; it asks whether to
+To **update**, run a newer `GameShelfSetup.exe`. It works even while Binder or a game is running. To
+**uninstall**, use Settings → Apps → Binder. It removes everything Binder put on your PC; it asks whether to
 put your imported shortcuts back on the desktop (the default) and whether to delete your game list too.
 
 All the details, including silent install options and how the installer works, are in
@@ -67,7 +67,7 @@ dotnet run --project tests/GameShelf.Tests -c Release   # unit tests
 CI (`.github/workflows/ci.yml`) builds and tests every push on a real Windows machine. That includes a UI smoke
 test and an installer test.
 
-Don't run `tests/smoke.ps1` or `tests/setup-test.ps1` on your own PC. They replace your Game Shelf data and
+Don't run `tests/smoke.ps1` or `tests/setup-test.ps1` on your own PC. They replace your Binder data and
 Steam settings with test data, and are meant for CI only.
 
 ## Privacy
@@ -121,15 +121,15 @@ the launcher are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-Game Shelf is free software under the GNU General Public License, version 3, with an additional permission for
+Binder is free software under the GNU General Public License, version 3, with an additional permission for
 the libraries it bundles ([LICENSE](LICENSE), [LICENSE-EXCEPTION.txt](LICENSE-EXCEPTION.txt)). It includes parts of
 Microsoft's .NET and Windows App SDK, which stay under their own licenses
-([THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt)); by installing Game Shelf you also agree to the Windows App
+([THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt)); by installing Binder you also agree to the Windows App
 SDK's license terms. All the licenses are in the `licenses` folder of the install folder.
 
 ## Disclaimer
 
-**Game Shelf is vibe-coded.** Its code was written by an AI (Anthropic's Claude), directed and tested by
+**Binder is vibe-coded.** Its code was written by an AI (Anthropic's Claude), directed and tested by
 Jannis Jost, but not written or reviewed line by line by a human developer.
 
 The software is provided **"as is", without warranty of any kind**, express or implied. That includes, but isn't
@@ -137,11 +137,11 @@ limited to, the warranties of merchantability, fitness for a particular purpose 
 event shall the author or anyone involved be liable for any claim, damages or other liability arising from, out
 of, or in connection with the software or its use. You use it at your own risk.
 
-Game Shelf isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Electronic Arts, Ubisoft,
+Binder isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Electronic Arts, Ubisoft,
 Rockstar Games, Hypixel Studios, Microsoft or any other
 company whose launchers it works with. Their names and icons belong to their owners.
 
-Game Shelf is licensed under the GNU GPL, version 3, with an additional permission for the libraries it bundles. It
+Binder is licensed under the GNU GPL, version 3, with an additional permission for the libraries it bundles. It
 includes parts of Microsoft's .NET and Windows App SDK, which stay under their own licenses; by installing Game
 Shelf you also agree to the Windows App SDK's license terms. The licenses are in the "licenses" folder of the
 install folder.

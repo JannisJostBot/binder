@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:s="using:GameShelf"
-        Title="Game Shelf">
+        Title="Binder">
     <!-- Game mode's toast (board 23): a compact one-line pill, "Game mode on · 5 changes" after it applied and
          "Back to normal · 5 changes put back" after the restore; something that couldn't be changed or put back
          gets a larger card with room for the names and a way to the log. The same pill counts down a restart after

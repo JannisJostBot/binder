@@ -59,7 +59,7 @@ foreach ($satellite in Get-ChildItem $app -Recurse -File -Filter 'GameShelf.reso
     if (-not (Get-ChildItem $folder.FullName -Force)) { Remove-Item $folder.FullName }
 }
 
-# Licenses: Game Shelf's own (GPL 3.0 with its section 7 permission) and those of everything it bundles, taken from
+# Licenses: Binder's own (GPL 3.0 with its section 7 permission) and those of everything it bundles, taken from
 # the exact package versions this build used, into app\licenses (THIRD-PARTY-NOTICES.txt lists them). A build
 # without them must not ship, so a missing file stops it.
 $licenses = Join-Path $app 'licenses'

@@ -207,7 +207,7 @@ public static class CrashAnalysis
         _ => Strings.CrashUnknown,
     };
 
-    /// <summary>The AI prompt is offered only when Game Shelf has no advice of its own.</summary>
+    /// <summary>The AI prompt is offered only when Binder has no advice of its own.</summary>
     public static bool OffersAiPrompt(CrashRecord r) => r.Culprit == CrashCulprit.Unknown;
 
     /// <summary>The Visual C++ Redistributable download page, for the runtime cases.</summary>

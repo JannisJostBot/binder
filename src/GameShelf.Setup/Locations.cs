@@ -23,11 +23,15 @@ internal static class Locations
     public static string Widget => Path.Combine(InstallDir, WidgetExe);
 
     public static readonly string StartMenuLink =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "Binder.lnk");
+
+    /// <summary>The Start menu shortcut's name before the rename to Binder; setup and uninstall delete it.</summary>
+    public static readonly string LegacyStartMenuLink =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "Game Shelf.lnk");
 
     public const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\GameShelf";
     public const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    public const string RunValue = "Game Shelf";
+    public const string RunValue = "Game Shelf"; // kept from before the rename to Binder (the widget writes this name)
 
     /// <summary>The widget's data (settings, library, sessions, imported shortcuts) and its cache (covers, logs).</summary>
     public static readonly string DataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GameShelf");

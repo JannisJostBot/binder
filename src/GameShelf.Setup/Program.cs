@@ -51,7 +51,7 @@ internal static class Program
 {
     /// <summary>Settings → Apps "publisher": the Company from Directory.Build.props, so there's one place to change it.</summary>
     public static readonly string Publisher =
-        typeof(Program).Assembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? "Game Shelf";
+        typeof(Program).Assembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? "Binder";
 
     /// <summary>Major.Minor.Patch from the build (Directory.Build.props), comparable with Settings → Apps.</summary>
     public static readonly Version Version = Normalize(typeof(Program).Assembly.GetName().Version);

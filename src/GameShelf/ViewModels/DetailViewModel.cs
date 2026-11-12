@@ -219,7 +219,7 @@ public sealed partial class DetailViewModel : ObservableObject
     private CrashRecord? CrashFor(Session s) => CrashAnalysis.For(Crashes, s);
 
     /// <summary>
-    /// A warning and a Details link when it crashed, a check when Game Shelf knows it ended normally (sessions
+    /// A warning and a Details link when it crashed, a check when Binder knows it ended normally (sessions
     /// from before crash checks get neither), when it started and how long it lasted.
     /// </summary>
     private static SessionRowInfo SessionRow(Session session, CrashRecord? crash)

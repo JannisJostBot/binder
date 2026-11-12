@@ -38,7 +38,7 @@ internal sealed class MessageWindow : IDisposable
     private IntPtr _hwnd;
     private IntPtr _trayIcon;
     private bool _trayShown;
-    private string _tooltip = "Game Shelf";
+    private string _tooltip = "Binder";
 
     private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcher;
 
@@ -55,7 +55,7 @@ internal sealed class MessageWindow : IDisposable
         };
         if (RegisterClassExW(ref wc) == 0 && Marshal.GetLastWin32Error() != ERROR_CLASS_ALREADY_EXISTS)
             throw new Win32Exception();
-        _hwnd = CreateWindowExW(WS_EX_TOOLWINDOW, ClassName, "Game Shelf", WS_POPUP, 0, 0, 0, 0,
+        _hwnd = CreateWindowExW(WS_EX_TOOLWINDOW, ClassName, "Binder", WS_POPUP, 0, 0, 0, 0,
             IntPtr.Zero, IntPtr.Zero, wc.hInstance, IntPtr.Zero);
         if (_hwnd == IntPtr.Zero) throw new Win32Exception();
         _taskbarCreated = RegisterWindowMessageW("TaskbarCreated");

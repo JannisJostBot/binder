@@ -62,7 +62,7 @@
   </data>
   <data name="Instantly" xml:space="preserve">
     <value>Instantly</value>
-    <comment>Choice for how soon Game Shelf hides after a game starts: immediately, no delay.</comment>
+    <comment>Choice for how soon Binder hides after a game starts: immediately, no delay.</comment>
   </data>
   <data name="SizeGb" xml:space="preserve">
     <value>{0} GB</value>
@@ -214,15 +214,15 @@
   </data>
   <data name="FooterHides" xml:space="preserve">
     <value>Hides when a game starts</value>
-    <comment>Footer hint under the grid: Game Shelf hides itself as soon as a game starts.</comment>
+    <comment>Footer hint under the grid: Binder hides itself as soon as a game starts.</comment>
   </data>
   <data name="FooterHidesAfter" xml:space="preserve">
     <value>Hides {0} s after a game starts</value>
-    <comment>Footer hint under the grid. {0} = seconds until Game Shelf hides after a game starts.</comment>
+    <comment>Footer hint under the grid. {0} = seconds until Binder hides after a game starts.</comment>
   </data>
   <data name="FooterComesBack" xml:space="preserve">
     <value>{0} · comes back when it closes</value>
-    <comment>Footer hint. {0} = the hide hint before it ("Hides when a game starts"). Game Shelf comes back when the game closes.</comment>
+    <comment>Footer hint. {0} = the hide hint before it ("Hides when a game starts"). Binder comes back when the game closes.</comment>
   </data>
   <data name="SearchGames" xml:space="preserve">
     <value>Search games</value>
@@ -246,7 +246,7 @@
   </data>
   <data name="EmptyRecent" xml:space="preserve">
     <value>Games you play appear here.</value>
-    <comment>Shown in the Recent filter before any game was played from Game Shelf.</comment>
+    <comment>Shown in the Recent filter before any game was played from Binder.</comment>
   </data>
   <data name="EmptyFavorites" xml:space="preserve">
     <value>No favorites yet.</value>
@@ -386,7 +386,7 @@
   </data>
   <data name="ImportShortcuts" xml:space="preserve">
     <value>Import desktop shortcuts</value>
-    <comment>Button and page title: move game shortcuts from the desktop into Game Shelf.</comment>
+    <comment>Button and page title: move game shortcuts from the desktop into Binder.</comment>
   </data>
   <data name="HelperBarTitle" xml:space="preserve">
     <value>Game mode needs an update</value>
@@ -502,7 +502,7 @@
   </data>
   <data name="NoSessions" xml:space="preserve">
     <value>No sessions yet. Playtime is recorded when you start the game here.</value>
-    <comment>Shown on a game's details before any session was recorded. "here" = from Game Shelf.</comment>
+    <comment>Shown on a game's details before any session was recorded. "here" = from Binder.</comment>
   </data>
   <data name="SessionClosedNormally" xml:space="preserve">
     <value>Closed normally</value>
@@ -554,7 +554,7 @@
   </data>
   <data name="HideDelay" xml:space="preserve">
     <value>Hide delay</value>
-    <comment>Card title and choice box: how soon Game Shelf hides after this game starts.</comment>
+    <comment>Card title and choice box: how soon Binder hides after this game starts.</comment>
   </data>
   <data name="DefaultChoice" xml:space="preserve">
     <value>Default ({0})</value>
@@ -669,7 +669,7 @@
     <comment>Button: start the game with these options now, without hiding the app. A verb phrase or noun ("test start").</comment>
   </data>
   <data name="TestLaunchToolTip" xml:space="preserve">
-    <value>Starts the game with these options and keeps Game Shelf open</value>
+    <value>Starts the game with these options and keeps Binder open</value>
     <comment>Tooltip of the Test launch button.</comment>
   </data>
   <data name="ResetLaunchToolTip" xml:space="preserve">
@@ -889,7 +889,7 @@
     <comment>Tooltip of that check box.</comment>
   </data>
   <data name="AntiCheatFootnote" xml:space="preserve">
-    <value>Game Shelf only reads these settings. Requirements can change with game updates.</value>
+    <value>Binder only reads these settings. Requirements can change with game updates.</value>
     <comment>Small print under the anti-cheat card.</comment>
   </data>
   <data name="CheckingPc" xml:space="preserve">
@@ -921,7 +921,7 @@
     <comment>Tooltip of the store page link.</comment>
   </data>
   <data name="GroupOpening" xml:space="preserve">
-    <value>Opening Game Shelf</value>
+    <value>Opening Binder</value>
     <comment>Heading of the settings group about how the app opens.</comment>
   </data>
   <data name="ShowItAs" xml:space="preserve">
@@ -950,7 +950,7 @@
   </data>
   <data name="KeyboardShortcut" xml:space="preserve">
     <value>Keyboard shortcut</value>
-    <comment>Card title and setup label: the global key combination that opens Game Shelf.</comment>
+    <comment>Card title and setup label: the global key combination that opens Binder.</comment>
   </data>
   <data name="HotkeyTaken" xml:space="preserve">
     <value>Used by another app. Choose a different one.</value>
@@ -962,10 +962,10 @@
   </data>
   <data name="TrayIcon" xml:space="preserve">
     <value>Icon in the notification area</value>
-    <comment>Card title: show Game Shelf's icon in the notification area (system tray). Use Windows' term.</comment>
+    <comment>Card title: show Binder's icon in the notification area (system tray). Use Windows' term.</comment>
   </data>
   <data name="TrayIconToolTip" xml:space="preserve">
-    <value>Click it to open or close Game Shelf</value>
+    <value>Click it to open or close Binder</value>
     <comment>Tooltip of that card.</comment>
   </data>
   <data name="ClickAway" xml:space="preserve">
@@ -985,7 +985,7 @@
     <comment>Tooltip of that card. "Efficiency mode" is Windows' Task Manager term: use its translation.</comment>
   </data>
   <data name="StayReadyOff" xml:space="preserve">
-    <value>Off: closing it quits Game Shelf</value>
+    <value>Off: closing it quits Binder</value>
     <comment>State line when "Stay ready" is off.</comment>
   </data>
   <data name="StayReadyFast" xml:space="preserve">
@@ -1022,15 +1022,15 @@
   </data>
   <data name="StartWithWindows" xml:space="preserve">
     <value>Start with Windows</value>
-    <comment>Card title and setup option: start Game Shelf when the user signs in. Use Windows' usual wording.</comment>
+    <comment>Card title and setup option: start Binder when the user signs in. Use Windows' usual wording.</comment>
   </data>
   <data name="GroupGameStarts" xml:space="preserve">
     <value>When a game starts</value>
     <comment>Heading of the settings group about what happens when a game starts.</comment>
   </data>
   <data name="HideGameShelf" xml:space="preserve">
-    <value>Hide Game Shelf</value>
-    <comment>Card title: how soon Game Shelf hides after a game starts.</comment>
+    <value>Hide Binder</value>
+    <comment>Card title: how soon Binder hides after a game starts.</comment>
   </data>
   <data name="After5s" xml:space="preserve">
     <value>After 5 s</value>
@@ -1046,10 +1046,10 @@
   </data>
   <data name="ComeBack" xml:space="preserve">
     <value>Come back when the game closes</value>
-    <comment>Card title: reopen Game Shelf when the game closes.</comment>
+    <comment>Card title: reopen Binder when the game closes.</comment>
   </data>
   <data name="ComeBackToolTip" xml:space="preserve">
-    <value>Reopens Game Shelf automatically</value>
+    <value>Reopens Binder automatically</value>
     <comment>Tooltip of that card.</comment>
   </data>
   <data name="GameModeSettings" xml:space="preserve">
@@ -1581,7 +1581,7 @@
     <comment>Button, plural. {0} = number of games to uninstall. Keep the ellipsis.</comment>
   </data>
   <data name="UninstallFootnote" xml:space="preserve">
-    <value>Each game's own launcher removes it and asks first. Game Shelf never deletes game files.</value>
+    <value>Each game's own launcher removes it and asks first. Binder never deletes game files.</value>
     <comment>Small print next to the Uninstall button.</comment>
   </data>
   <data name="Played" xml:space="preserve">
@@ -2222,7 +2222,7 @@ Calm: efficiency mode while you play</value>
     <comment>Crash card text when the game only returned an error code. "The texts below" = the bug report and AI prompt the user can copy.</comment>
   </data>
   <data name="CrashUnknown" xml:space="preserve">
-    <value>Game Shelf doesn't recognize this error. You can copy a question for an AI assistant or a report for the game's developer.</value>
+    <value>Binder doesn't recognize this error. You can copy a question for an AI assistant or a report for the game's developer.</value>
     <comment>Crash card text for an unknown error.</comment>
   </data>
   <data name="CodeAccessViolation" xml:space="preserve">
@@ -2478,7 +2478,7 @@ Calm: efficiency mode while you play</value>
     <comment>Field label in the bug report: the computer's specs. Keep short.</comment>
   </data>
   <data name="ReportFooter" xml:space="preserve">
-    <value>(Report from Game Shelf. No personal data or file paths included.)</value>
+    <value>(Report from Binder. No personal data or file paths included.)</value>
     <comment>Last line of the bug report, in parentheses.</comment>
   </data>
   <data name="CrashWhatHappened" xml:space="preserve">
@@ -2555,14 +2555,14 @@ Calm: efficiency mode while you play</value>
   </data>
   <data name="KeepOpen" xml:space="preserve">
     <value>Keep open</value>
-    <comment>Button in the launch message: don't hide Game Shelf after this game starts.</comment>
+    <comment>Button in the launch message: don't hide Binder after this game starts.</comment>
   </data>
   <data name="KeepOpenToolTip" xml:space="preserve">
-    <value>Don't hide Game Shelf this time</value>
+    <value>Don't hide Binder this time</value>
     <comment>Tooltip of that button.</comment>
   </data>
   <data name="KeepOpenName" xml:space="preserve">
-    <value>Keep Game Shelf open</value>
+    <value>Keep Binder open</value>
     <comment>Screen-reader name of that button.</comment>
   </data>
   <data name="StartingGame" xml:space="preserve">
@@ -2578,11 +2578,11 @@ Calm: efficiency mode while you play</value>
     <comment>Toast title. {0} = game name.</comment>
   </data>
   <data name="StayingOpenNoWatch" xml:space="preserve">
-    <value>Game Shelf stays open because it can't tell when this game closes. Choose its program under Process to watch.</value>
+    <value>Binder stays open because it can't tell when this game closes. Choose its program under Process to watch.</value>
     <comment>Toast text. "Process to watch" = the card title on a game's details (ProcessToWatch); use the same words.</comment>
   </data>
   <data name="StayingOpenNoWatcher" xml:space="preserve">
-    <value>Game Shelf stays open because the watcher couldn't start. {0}</value>
+    <value>Binder stays open because the watcher couldn't start. {0}</value>
     <comment>Toast text. {0} = Windows' error message, in its own language.</comment>
   </data>
   <data name="CouldntStart" xml:space="preserve">
@@ -2594,7 +2594,7 @@ Calm: efficiency mode while you play</value>
     <comment>Toast title after a test launch. {0} = game name.</comment>
   </data>
   <data name="TestLaunchDetail" xml:space="preserve">
-    <value>Starts as: {0}. Game Shelf stays open and this run doesn't count as playtime.</value>
+    <value>Starts as: {0}. Binder stays open and this run doesn't count as playtime.</value>
     <comment>Toast text. {0} = the program and arguments (StartsAs value).</comment>
   </data>
   <data name="LauncherNotFound" xml:space="preserve">
@@ -2686,12 +2686,12 @@ Calm: efficiency mode while you play</value>
     <comment>Toast text, plural. {0} = number restored.</comment>
   </data>
   <data name="StillInFolderOne" xml:space="preserve">
-    <value>{0} is still in Game Shelf's folder.</value>
-    <comment>Toast text, singular. {0} = number of shortcuts still in Game Shelf's own folder.</comment>
+    <value>{0} is still in Binder's folder.</value>
+    <comment>Toast text, singular. {0} = number of shortcuts still in Binder's own folder.</comment>
   </data>
   <data name="StillInFolder" xml:space="preserve">
-    <value>{0} are still in Game Shelf's folder.</value>
-    <comment>Toast text, plural. {0} = number of shortcuts still in Game Shelf's own folder.</comment>
+    <value>{0} are still in Binder's folder.</value>
+    <comment>Toast text, plural. {0} = number of shortcuts still in Binder's own folder.</comment>
   </data>
   <data name="FilterGames" xml:space="preserve">
     <value>Games and shortcuts ({0})</value>
@@ -2710,7 +2710,7 @@ Calm: efficiency mode while you play</value>
     <comment>Toast title.</comment>
   </data>
   <data name="CouldntAddFileDetail" xml:space="preserve">
-    <value>It isn't a program or shortcut Game Shelf can read.</value>
+    <value>It isn't a program or shortcut Binder can read.</value>
     <comment>Toast text.</comment>
   </data>
   <data name="AddedGame" xml:space="preserve">
@@ -2742,7 +2742,7 @@ Calm: efficiency mode while you play</value>
     <comment>Toast title after an unexpected error.</comment>
   </data>
   <data name="ErrorDetail" xml:space="preserve">
-    <value>Game Shelf kept running. Details: {0}</value>
+    <value>Binder kept running. Details: {0}</value>
     <comment>Toast text. {0} = path of the error log file; keep it unchanged.</comment>
   </data>
   <data name="TheGame" xml:space="preserve">
@@ -2770,7 +2770,7 @@ Calm: efficiency mode while you play</value>
     <comment>Name of a drive without a label. Use the name File Explorer shows in your language.</comment>
   </data>
   <data name="OpenGameShelf" xml:space="preserve">
-    <value>Open Game Shelf</value>
+    <value>Open Binder</value>
     <comment>Tray menu item.</comment>
   </data>
   <data name="OpenLauncher" xml:space="preserve">
@@ -2783,7 +2783,7 @@ Calm: efficiency mode while you play</value>
   </data>
   <data name="Quit" xml:space="preserve">
     <value>Quit</value>
-    <comment>Tray menu item: exit Game Shelf completely.</comment>
+    <comment>Tray menu item: exit Binder completely.</comment>
   </data>
   <data name="DisclosureShow" xml:space="preserve">
     <value>Show {0}</value>
@@ -2826,7 +2826,7 @@ Calm: efficiency mode while you play</value>
     <comment>Heading of the last settings group, for rarely needed options.</comment>
   </data>
   <data name="SourcePaths" xml:space="preserve">
-    <value>Where Game Shelf finds games and pictures</value>
+    <value>Where Binder finds games and pictures</value>
     <comment>Settings card that opens the list of folders, registry keys and addresses the app reads launchers' games and pictures from.</comment>
   </data>
   <data name="SourcePathsDefault" xml:space="preserve">
@@ -2910,7 +2910,7 @@ Calm: efficiency mode while you play</value>
     <comment>Error under the download address text box. Keep https:// and {appid} exactly as they are (not placeholders to fill in).</comment>
   </data>
   <data name="DownloadHostNotice" xml:space="preserve">
-    <value>Game Shelf will download pictures from {0}</value>
+    <value>Binder will download pictures from {0}</value>
     <comment>Note under the download address when it points to another site. {0} is the site's host name, e.g. cdn.example.com.</comment>
   </data>
   <data name="ResetEntry" xml:space="preserve">
@@ -3034,7 +3034,7 @@ Calm: efficiency mode while you play</value>
     <comment>Screen-reader name and tooltip of the Cancel button in that pill: the game is not started again.</comment>
   </data>
   <data name="RestartLimit" xml:space="preserve">
-    <value>Restarted twice already, so Game Shelf stopped trying.</value>
-    <comment>Extra line on the crash card when the game crashed a third time in a row with "Restart if it crashes" on. Keep "Game Shelf" as is.</comment>
+    <value>Restarted twice already, so Binder stopped trying.</value>
+    <comment>Extra line on the crash card when the game crashed a third time in a row with "Restart if it crashes" on. Keep "Binder" as is.</comment>
   </data>
 </root>

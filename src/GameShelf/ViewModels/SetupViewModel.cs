@@ -19,7 +19,7 @@ public sealed record SetupChoices(DisplayMode Mode, bool StartWithWindows);
 /// <summary>What first-run setup asks its owner to do.</summary>
 public interface ISetupActions
 {
-    /// <summary>Every launcher Game Shelf reads, in its fixed order.</summary>
+    /// <summary>Every launcher Binder reads, in its fixed order.</summary>
     IReadOnlyList<GameSource> Launchers { get; }
     /// <summary>"Skip setup": keep the defaults.</summary>
     void Skip();
@@ -127,7 +127,7 @@ public sealed partial class SetupViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Every launcher Game Shelf reads: the ones with games first (most first), then the ones with none found,
+    /// Every launcher Binder reads: the ones with games first (most first), then the ones with none found,
     /// so none is left unmentioned. A tick changed here is kept when the counts come in.
     /// </summary>
     private void BuildLaunchers()

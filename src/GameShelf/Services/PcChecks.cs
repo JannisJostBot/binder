@@ -7,7 +7,7 @@ namespace GameShelf.Services;
 
 /// <summary>
 /// Reads the PC settings anti-cheats care about. Everything here works without admin rights and only reads:
-/// Game Shelf never changes these settings. Run when the detail view opens, never in the background.
+/// Binder never changes these settings. Run when the detail view opens, never in the background.
 /// </summary>
 internal static unsafe partial class PcChecks
 {

@@ -15,7 +15,7 @@ public sealed class SourcePathRow(SourceEntry entry, string label)
     public string Value { get; internal set; } = "";
     /// <summary>Why the typed value wasn't taken, or null.</summary>
     public string? Error { get; internal set; }
-    /// <summary>"Game Shelf will download pictures from …" when the download address points elsewhere.</summary>
+    /// <summary>"Binder will download pictures from …" when the download address points elsewhere.</summary>
     public string? Notice { get; internal set; }
     public bool IsChanged => Value.Length > 0;
 }

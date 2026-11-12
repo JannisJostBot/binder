@@ -253,7 +253,7 @@ internal static unsafe partial class GameModeService
         }
     }
 
-    /// <summary>An app Game mode can close and reopen: a plain exe outside Windows, Store apps and Game Shelf.</summary>
+    /// <summary>An app Game mode can close and reopen: a plain exe outside Windows, Store apps and Binder.</summary>
     public static bool IsClosable(string path)
     {
         if (!Path.IsPathFullyQualified(path) || !path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) return false;

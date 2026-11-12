@@ -125,7 +125,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         return index >= 0 && index < options.Length;
     }
 
-    // --- Opening Game Shelf ------------------------------------------------------------------------------
+    // --- Opening Binder ------------------------------------------------------------------------------
 
     public int ModeIndex
     {

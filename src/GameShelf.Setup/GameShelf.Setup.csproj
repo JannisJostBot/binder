@@ -12,8 +12,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>GameShelf.Setup</RootNamespace>
     <AssemblyName>GameShelfSetup</AssemblyName>
-    <Product>Game Shelf</Product>
-    <AssemblyTitle>Game Shelf Setup</AssemblyTitle>
+    <Product>Binder</Product>
+    <AssemblyTitle>Binder Setup</AssemblyTitle>
     <!-- asInvoker: without a manifest, Windows guesses that a file named "...Setup.exe" needs admin rights. -->
     <ApplicationManifest>setup.manifest</ApplicationManifest>
     <ApplicationIcon>..\GameShelf\Assets\app.ico</ApplicationIcon>

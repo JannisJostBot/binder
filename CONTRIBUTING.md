@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for wanting to help. Game Shelf is a small project run by one person, so please read this before you open
+Thanks for wanting to help. Binder is a small project run by one person, so please read this before you open
 a pull request.
 
 ## Code contributions aren't accepted
@@ -8,7 +8,7 @@ a pull request.
 Pull requests that change the app's code will be closed without review. There isn't enough time to review them
 properly, and an unreviewed change is a risk to everyone who installs the app.
 
-Game Shelf's own code is written by an AI (see the disclaimer in the [README](README.md)) and isn't often reviewed
+Binder's own code is written by an AI (see the disclaimer in the [README](README.md)) and isn't often reviewed
 line by line either. It still carries less risk than code from outside: it's written within this project's rules
 (`CLAUDE.md`), directed and tested by the maintainer, and comes from one known source. Code from someone else
 would need a careful review that there's no time for.
@@ -26,7 +26,7 @@ Better wording and translation fixes are welcome. The app's text is in `src/Game
 When you change text:
 
 - Change only the `<value>` of existing entries. Keep every `{0}`, `{1}` placeholder, and keep brand names
-  (Steam, Epic Games, Game Shelf).
+  (Steam, Epic Games, Binder).
 - Use the words Windows itself uses in that language for its own settings and buttons. German uses "Sie",
   French "vous", like Windows.
 - Keep it short and plain: say what something does, not why it's good.
@@ -42,15 +42,15 @@ the same report, or in a pull request once that's agreed.
 
 ## Licensing of contributions
 
-Game Shelf is licensed under the GNU GPL, version 3, with an additional permission for the libraries it bundles
+Binder is licensed under the GNU GPL, version 3, with an additional permission for the libraries it bundles
 (`LICENSE`, `LICENSE-EXCEPTION.txt`). By sending a contribution (a translation, wording or a security fix), you
 agree that it's licensed under the same terms, and that the maintainer may also license it under other terms in
-later versions, so Game Shelf can change its license without asking every contributor. Versions already released
+later versions, so Binder can change its license without asking every contributor. Versions already released
 keep their license.
 
 ## Feature requests
 
-You can suggest features in an issue. Game Shelf is a launcher, not a game toolbox, and stays small on purpose.
+You can suggest features in an issue. Binder is a launcher, not a game toolbox, and stays small on purpose.
 A request has a chance if it:
 
 - helps you start, find or manage your installed games,

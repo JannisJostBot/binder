@@ -914,7 +914,7 @@ static partial class Tests
 
         Check(!GameShelf.Watcher.GameMode.IsClosableApp("notepad.exe") && !GameShelf.Watcher.GameMode.IsClosableApp(@"C:\Apps\run.bat") &&
               !GameShelf.Watcher.GameMode.IsClosableApp(Path.Combine(AppContext.BaseDirectory, "GameShelf.exe")),
-            "relative paths, non-exes and Game Shelf itself aren't closed");
+            "relative paths, non-exes and Binder itself aren't closed");
         if (OperatingSystem.IsWindows())
         {
             var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);

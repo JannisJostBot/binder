@@ -13,8 +13,8 @@
     <RootNamespace>GameShelf.Elevated</RootNamespace>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
-    <Product>Game Shelf</Product>
-    <AssemblyTitle>Game Shelf Game mode helper</AssemblyTitle>
+    <Product>Binder</Product>
+    <AssemblyTitle>Binder Game mode helper</AssemblyTitle>
     <ApplicationManifest>elevated.manifest</ApplicationManifest>
     <ApplicationIcon>..\GameShelf\Assets\app.ico</ApplicationIcon>
 

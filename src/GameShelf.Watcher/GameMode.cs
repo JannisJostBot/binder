@@ -466,7 +466,7 @@ internal sealed class GameMode
     }
 
     /// <summary>
-    /// A full path to an exe that isn't part of Windows, a Store app or Game Shelf (the list comes from
+    /// A full path to an exe that isn't part of Windows, a Store app or Binder (the list comes from
     /// settings.json; the widget checks the same).
     /// </summary>
     internal static bool IsClosableApp(string path)

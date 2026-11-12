@@ -1,9 +1,9 @@
-# Building, installing and updating Game Shelf
+# Building, installing and updating Binder
 
-Game Shelf ships as one file, `GameShelfSetup.exe`. It installs the app for your Windows account (no
+Binder ships as one file, `GameShelfSetup.exe`. It installs the app for your Windows account (no
 administrator rights), updates an existing install, and is what Settings → Apps runs to uninstall it.
 
-> Game Shelf is vibe-coded: the code was written by an AI (Claude) and is provided as is. Settings → Apps lists
+> Binder is vibe-coded: the code was written by an AI (Claude) and is provided as is. Settings → Apps lists
 > its publisher as "Vibe-coded with Claude (AI-generated) · Jannis Jost". That text comes from `<Company>` in
 > `Directory.Build.props`.
 
@@ -48,9 +48,9 @@ Double-click `GameShelfSetup.exe`, read the disclaimer, tick **I've read and und
 button stays disabled until the box is ticked. Updates and reinstalls ask the same way.
 
 - It installs to `%LOCALAPPDATA%\Programs\GameShelf\` (your account only, no UAC prompt).
-- It adds **Game Shelf** to the Start menu and to **Settings → Apps → Installed apps**, with its icon, version
+- It adds **Binder** to the Start menu and to **Settings → Apps → Installed apps**, with its icon, version
   and size.
-- At the end, "Open Game Shelf now" starts it. The first time, it runs its own first-run setup (launchers,
+- At the end, "Open Binder now" starts it. The first time, it runs its own first-run setup (launchers,
   tidying the desktop, how it opens, Start with Windows).
 
 The app carries its own runtimes, so there's nothing else to install. Setup downloads nothing.
@@ -69,10 +69,10 @@ starts. You can then delete the old `publish\` copy.
 ## Update
 
 Build the new version (raise `<Version>` in `Directory.Build.props` first) and run its `GameShelfSetup.exe`.
-It shows **Update Game Shelf to x.y.z**. Updating:
+It shows **Update Binder to x.y.z**. Updating:
 
 - keeps your games, play history, settings and imported shortcuts (they're not in the install folder);
-- closes Game Shelf if it's running and starts it again afterwards, back in the tray (or on the desktop, in
+- closes Binder if it's running and starts it again afterwards, back in the tray (or on the desktop, in
   desktop mode);
 - works while you're playing: the watcher that's tracking your game keeps running on its old file, records the
   session as usual, and brings back the *new* widget when the game closes.
@@ -85,9 +85,9 @@ update by running a newer setup.
 
 ## Uninstall
 
-Settings → Apps → Game Shelf → **Uninstall** (or Start menu → right-click → Uninstall).
+Settings → Apps → Binder → **Uninstall** (or Start menu → right-click → Uninstall).
 
-- **Removed:** everything Game Shelf put on your PC: the app's files, the Start menu entry, the Settings → Apps entry,
+- **Removed:** everything Binder put on your PC: the app's files, the Start menu entry, the Settings → Apps entry,
   Start with Windows, the cache in `%LOCALAPPDATA%\GameShelf` (covers, icons, logs, Game mode's files) and, after
   it's done, setup's own log in `%TEMP%`.
 - **Your choice, shortcuts:** when you have imported shortcuts, **Put my shortcuts back on the desktop** (the
@@ -96,7 +96,7 @@ Settings → Apps → Game Shelf → **Uninstall** (or Start menu → right-clic
 - **Your choice, data:** "Also delete my game list, play history and settings" (off by default). Leave it off to
   keep them (in `%APPDATA%\GameShelf`) for a later reinstall.
 - **Only with your OK:** Game mode's admin helper in Program Files needs a UAC prompt to remove. If you decline, it
-  stays (it does nothing without Game Shelf), and the final dialog says where.
+  stays (it does nothing without Binder), and the final dialog says where.
 - If a game is still being tracked, it asks first, because that session's playtime would be lost.
 - **Game mode:** whatever it still has applied (a game was running, or a session didn't end normally) is put back
   first, by the installed watcher (`GameShelf.Watcher.exe --restore --quiet`), then its admin part is removed.
@@ -107,7 +107,7 @@ Settings → Apps → Game Shelf → **Uninstall** (or Start menu → right-clic
 |---|---|
 | `GameShelfSetup.exe` | Install or update, with dialogs. |
 | `GameShelfSetup.exe /S` | Silent install or update. Doesn't open the app, except to restart one that was running. Running it silently counts as having read the disclaimer (README). |
-| `GameShelfSetup.exe /S /launch` | Silent, then start Game Shelf. |
+| `GameShelfSetup.exe /S /launch` | Silent, then start Binder. |
 | `GameShelfSetup.exe /S /allowdowngrade` | Silent, even over a newer version (refused otherwise). |
 | `Uninstall.exe /uninstall` | Uninstall, with dialogs. |
 | `Uninstall.exe /uninstall /S [/removedata] [/keepshortcuts]` | Silent uninstall, optionally deleting the data too; imported shortcuts go back on the desktop unless `/keepshortcuts`. |
@@ -134,7 +134,7 @@ Setup only accepts a list of well-formed hashes and plain relative paths (no roo
 dotted names, or stream syntax; at most 8 levels and 2000 files) that includes the widget and the watcher, and
 it extracts only the files that list names.
 
-The app folder includes `licenses\`: Game Shelf's license (GPL 3.0 and its additional permission),
+The app folder includes `licenses\`: Binder's license (GPL 3.0 and its additional permission),
 `THIRD-PARTY-NOTICES.txt`, and the license and notice files of the .NET runtime, the Windows App SDK and WebView2,
 copied from the exact package versions the build used. `publish.ps1` stops if one is missing.
 
@@ -202,7 +202,7 @@ If an update fails part-way, the widget it closed is started again.
 - **Fixed paths only.** Every location is computed from your known folders. None is read back from the registry
   or a data file, so a tampered uninstall entry can't point the uninstaller at other files.
 - **Deletes only what it wrote.** The files it listed in its folder, its own Start menu shortcut, registry
-  entry and Run value, Game Shelf's cache and its own log. Your data only when you ask. Never through links.
+  entry and Run value, Binder's cache and its own log. Your data only when you ask. Never through links.
 - **Checked files.** Each installed file is hashed after it's written to disk, and swapped in only if it
   matches.
 - **Processes.** It only ends processes whose exe is *our installed copy*, never a same-named program elsewhere.

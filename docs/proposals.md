@@ -122,7 +122,7 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   with a little more spacing than first drawn. Not chosen: a Settings home page with sub-pages (board 20), tabs on
   the detail page (board 22). Store page and Hide from shelf stay as links at the bottom.
 - **Game mode toast:** design B, the one-line pill; the failure case is a larger card with room for the names.
-- **Restore sound:** sound 1 "Open fourths", made by Game Shelf in memory, replacing the Windows notification sound.
+- **Restore sound:** sound 1 "Open fourths", made by Binder in memory, replacing the Windows notification sound.
 - **Restore sound, replaced (§19 a, board 25):** "Lullaby": two soft notes falling a major third over a low D, 2 s,
   quiet (−34 LUFS, −40 between 22:00 and 7:00), silent when Windows' notification sound is off. Rejected along the
   way: struck tones ("too much like a notification"), long swells, bright ones ("way too bright"), rising ones
@@ -135,7 +135,7 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   menu. Not chosen: a launcher row on the shelf, deep links into launchers.
 - **Faster than Start, and showing why** approved (§22), all five parts: Enter plays the top match with smarter
   matching (initials), Enter plays the last game on an empty search, optional Start search entries that launch
-  through Game Shelf (`--play`), the user's own numbers in setup / import / Welcome back, and a Play tooltip that
+  through Binder (`--play`), the user's own numbers in setup / import / Welcome back, and a Play tooltip that
   says what's different. This replaces "Start menu search integration" under "Not decided". Not chosen: opening
   on controller pick-up, a "you saved" counter.
 - **Lean speed-ups** approved (§23), all six: hide when the game appears (the countdown becomes only the limit, and
@@ -193,7 +193,7 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   - Covers that couldn't be downloaded (offline) are tried again when the panel next opens, one timeout at most per
     open; a cover lookup can't bring back an old cover after a custom one is set; another game ending doesn't
     cancel the countdown.
-- **Uninstall removes everything Game Shelf put on the PC** (owner): the cache (`%LOCALAPPDATA%\GameShelf`) always,
+- **Uninstall removes everything Binder put on the PC** (owner): the cache (`%LOCALAPPDATA%\GameShelf`) always,
   setup's log after a completed uninstall, the data with "Also delete…". New choice when there are imported
   shortcuts: **Put my shortcuts back on the desktop** (default) or **Don't put them back** (they stay with the data,
   or go with it); `/keepshortcuts` for a silent uninstall. Shortcuts that couldn't go back are never deleted.
@@ -509,7 +509,7 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
     - **Open game log**: Unity `Player.log`, Unreal `Saved\Logs`, found via the engine detection.
     - **Copy bug report** (every crash card and the "didn't start" card).
     - **Copy AI prompt**, only when the error isn't in the table above (the "Unknown" row): the card then says
-      "Game Shelf doesn't know this error" and offers both copy actions instead of advice (board 13, right column).
+      "Binder doesn't know this error" and offers both copy actions instead of advice (board 13, right column).
 - **The two texts** (plain language, no technical background needed; built locally; copied with the Windows
   clipboard and confirmed with "Copied", with the text shown so the user sees what they paste):
   - **AI prompt:** a question in the first person for any AI assistant: the game, how long it ran, the exception code
@@ -610,7 +610,7 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
   - Installs `GameShelf.Elevated.exe` to `%ProgramFiles%\GameShelf\`. Never in a user-writable folder.
   - Registers the scheduled tasks *GameShelf Apply* / *GameShelf Restore* with "Run with highest privileges".
 - **Helper version:** "Allow…" writes `ElevatedPart.HelperVersion` (a whole number, not the app version) into
-  `allowed-<SID>.txt`. Only another number there asks for "Update…" (one UAC prompt), so a Game Shelf update that
+  `allowed-<SID>.txt`. Only another number there asks for "Update…" (one UAC prompt), so a Binder update that
   doesn't change the helper doesn't ask again. **Bump `HelperVersion` whenever `GameShelf.Elevated` changes**: what
   it does, the request, journal or result format, or how its tasks and folders are set up. Markers from before it
   hold the app version ("0.1.3") and update once more. Update replaces the copy in Program Files; the same exe
@@ -633,7 +633,7 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
   flyout, centered above the taskbar. The dot pops in and its check draws itself once (no idle cost; skipped with
   "Animation effects" off).
 - **After the restore** (`GameShelf.exe --restored <result>`; with "Come back" off only the toast shows, then it exits):
-  - "Windows is back to normal · Game mode put back 5 changes" (closes after 4 s), with Game Shelf's own calm sound
+  - "Windows is back to normal · Game mode put back 5 changes" (closes after 4 s), with Binder's own calm sound
     (§18; "Play a sound with it", on by default; system sounds volume, skipped while
     `SHQueryUserNotificationState` says notifications are held back), or
   - "Restored 4 of 5 · Print Spooler couldn't be put back" plus **Details** (stays until dismissed).
@@ -667,7 +667,7 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
 
 ## 12. Free up space (board 17)
 
-A new game needs more room than a drive has. The user says how big it is; Game Shelf suggests which installed games
+A new game needs more room than a drive has. The user says how big it is; Binder suggests which installed games
 to remove and on which drive, and hands each removal to the game's own launcher. It never deletes game files itself.
 
 ### Where
@@ -735,7 +735,7 @@ Signals:
   - Launchers without an uninstall link (Epic, EA app, Ubisoft Connect, GOG Galaxy, …): open the launcher, with a
     toast naming the game to remove there. Where no launcher is installed, open Settings → Apps.
 - "Check again" re-reads free space and the library afterwards.
-- Security: only built-in links from validated ids; nothing deleted by Game Shelf.
+- Security: only built-in links from validated ids; nothing deleted by Binder.
 
 ---
 
@@ -944,7 +944,7 @@ shorter way in, without taking room from the grid.
 
 ### b. The same items in the tray menu
 
-- Today: Open Game Shelf, Settings, Quit. New: Open Game Shelf, separator, **Game mode** (checked while on;
+- Today: Open Binder, Settings, Quit. New: Open Binder, separator, **Game mode** (checked while on;
   `MF_CHECKED`), **Free up space…**, separator, Settings, Quit.
 - Game mode switches without opening the panel (the setting is saved straight away). With the helper out of date,
   it opens the panel on the Game mode page, like the header item.
@@ -963,7 +963,7 @@ checked item), `FreeSpaceView` (choosing the drive). No new settings.
 
 ## 17. Restart after a crash (milestone 20)
 
-For games that crash now and then mid-session (long online sessions, unstable mods): Game Shelf starts the game
+For games that crash now and then mid-session (long online sessions, unstable mods): Binder starts the game
 again on its own, with a short countdown the user can cancel. Off by default; it's a per-game choice, since a game
 that crashes on every start would loop.
 
@@ -980,7 +980,7 @@ that crashes on every start would loop.
   never when the session ran under 60 s.
 - At most **2 restarts in a row**: the count is the game's consecutive crashed sessions in `crashes.json` within
   the last 30 minutes, so there's no new state and nothing kept in memory (the widget is gone while the game runs).
-  After the second, the crash card shows as today, with the line "Restarted twice already, so Game Shelf stopped
+  After the second, the crash card shows as today, with the line "Restarted twice already, so Binder stopped
   trying".
 - It needs the widget to come back. With "Come back when the game closes" off, the watcher still relaunches the
   widget after a crash exit code when the game has `RestartOnCrash` (it passes `--crashed`; the widget shows only
@@ -1005,7 +1005,7 @@ that crashes on every start would loop.
 
 - Restarting from the watcher without the widget: the watcher doesn't know the launch paths (store URIs, launch
   options, "Start with"), would have to duplicate `Launcher`, and the user couldn't cancel.
-- Restarting after a whole-PC crash: Game Shelf doesn't detect those (owner's decision, §10).
+- Restarting after a whole-PC crash: Binder doesn't detect those (owner's decision, §10).
 
 ### Touches
 
@@ -1033,10 +1033,10 @@ more inside opens from its card. **Nothing was removed**; every setting and acti
 
 ### Settings (board 19)
 
-- **Opening Game Shelf:** How it opens (opens to the two mode pictures), Keyboard shortcut (a caution line only
+- **Opening Binder:** How it opens (opens to the two mode pictures), Keyboard shortcut (a caution line only
   when the shortcut is taken), Notification-area icon, Hide when I click elsewhere, Stay ready (switch on the card;
   "While it's closed" inside), Start with Windows.
-- **When a game starts:** Hide Game Shelf (the delay), Come back when the game closes, Game mode › (its page).
+- **When a game starts:** Hide Binder (the delay), Come back when the game closes, Game mode › (its page).
 - **Shelf:** Cover size, the "This week" switch.
 - **Library:** Game sources (Refresh on the card, the eight checkboxes inside), Desktop shortcuts (Import… on the
   card, Restore inside), Add a game, Hidden games (the list inside), Free up space ›.
@@ -1348,7 +1348,7 @@ length and level. b: `Views/GameTile.xaml(.cs)`, `Themes/Theme.xaml` (`CoverScri
   - Each process is journaled with its pid, start time and previous masks. Restore touches only that same process,
     and only if it's still in efficiency mode.
   - Never the game: the watcher drops paths inside its install folder, and the widget drops the game's own files.
-    Windows' own programs, Store apps and Game Shelf are never calmed either (`IsClosableApp`).
+    Windows' own programs, Store apps and Binder are never calmed either (`IsClosableApp`).
   - Tested live on 2026-11-08: one process went into efficiency mode, and the same process was restored.
 - Item 4 is the Do not disturb row in that card.
 
@@ -1361,7 +1361,7 @@ of the four picks don't change anything at all: they only *show* Windows' own ga
 
 | # | Item | Benefit (source) | Admin | Restore | Risk | Suggested default |
 |---|---|---|---|---|---|---|
-| 1 | **"Windows' own gaming settings" card**: shows Windows Game Mode and "Optimizations for windowed games", each with its state and an "Open" link | Windows Game Mode: no driver installs or restart prompts from Windows Update during play, "more stable frame rate" depending on game ([Xbox Support][xbox-gm]). Windowed optimizations: DX10/11 windowed and borderless games move from blt to flip model, which lowers frame latency and enables VRR and Auto HDR ([Microsoft Support][winopt]) | No | Nothing to restore: read-only, Game Shelf never changes them | None. Reads two undocumented HKCU values behind documented settings; if they can't be read, the row shows only "Open" | On (it's just a card) |
+| 1 | **"Windows' own gaming settings" card**: shows Windows Game Mode and "Optimizations for windowed games", each with its state and an "Open" link | Windows Game Mode: no driver installs or restart prompts from Windows Update during play, "more stable frame rate" depending on game ([Xbox Support][xbox-gm]). Windowed optimizations: DX10/11 windowed and borderless games move from blt to flip model, which lowers frame latency and enables VRR and Auto HDR ([Microsoft Support][winopt]) | No | Nothing to restore: read-only, Binder never changes them | None. Reads two undocumented HKCU values behind documented settings; if they can't be read, the row shows only "Open" | On (it's just a card) |
 | 2 | **OneDrive: pause sync while playing** (closes OneDrive with its own `/shutdown`, reopens it with `/background`) | Stops sync hashing, disk I/O and downloads; the existing upload limit only slows what it *sends*. Helps only while OneDrive is actually syncing; no benchmark exists, so measure it on the PC | No | Journal "we closed it" + exe path, flushed before; reopen only if we closed it and it isn't running again. Crash: the normal journal recovery reopens it on the next start | `/shutdown` is community-documented, not on Microsoft Learn (flag). Online-only files can't open while it's off: a game whose saves are in a OneDrive-backed Documents folder with online-only saves would fail to load, so skip when Documents is redirected to OneDrive and not all local. Files changed during play sync afterwards | Off |
 | 3 | **Calm chosen apps** (efficiency mode, the green leaf in Task Manager) instead of closing them | EcoQoS "always selects most efficient CPU frequency and schedules to efficient cores" ([Microsoft Learn, Quality of Service][qos]): on hybrid Intel CPUs it keeps those apps off the P-cores the game uses. Helps only when the app is busy (encoding, syncing, a heavy browser tab); on non-hybrid CPUs only that app's clocks drop | No (same user's processes) | `SetProcessInformation(ProcessPowerThrottling)`. Journal pid + start time + exe path + the previous state (`GetProcessInformation`, verify it returns what the app set itself) before; restore only that state, only on the same process, only if it's still EcoQoS. Crash: an app that is still running gets it back on the next start; one that closed has nothing to restore | Owner decision: §11 excluded "lowering other apps' priority". This is not priority (Task Manager's mode also sets Idle priority; we wouldn't), but it touches other apps. Never the game, its launcher, the "kept smooth" apps, Windows or security processes (`IsSystemApp`), or our own | Off, empty list |
 | 4 | **Do not disturb**: a link row only | Windows turns DND on automatically "when playing a game" by default ([Microsoft Support, Focus][focus]) | No | Nothing | None | Link only |
@@ -1433,7 +1433,7 @@ Notes:
 ## 21. Open a launcher (milestone 22, no board yet)
 
 After the shortcut import, the launchers' own icons (Steam, Epic, …) are often the last game shortcuts left on the
-desktop. People still open them for game reasons: updates, installing something new, the store, friends. Game Shelf
+desktop. People still open them for game reasons: updates, installing something new, the store, friends. Binder
 can open them, so the desktop can be cleared completely. Two entry points, both menus, nothing new on the shelf.
 
 ### a. Filter chip menu
@@ -1447,7 +1447,7 @@ can open them, so the desktop can be cleared completely. Two entry points, both 
 - The tray menu (§16 b) gets the launchers that have games, in the chip order, as their own group before Settings:
 
   ```
-  Open Game Shelf
+  Open Binder
   ───────────
   Game mode
   Free up space…
@@ -1486,7 +1486,7 @@ can open them, so the desktop can be cleared completely. Two entry points, both 
 
 ### Not chosen
 - A launcher row or tiles on the shelf: permanent space taken from the grid for something used far less than games.
-- Deep links into launchers (store pages, friends, downloads): that turns Game Shelf into a front-end for them.
+- Deep links into launchers (store pages, friends, downloads): that turns Binder into a front-end for them.
 
 ### Touches
 `ShelfView` (chip menu), `App.ShowTrayMenu`, `GameActions`, `LauncherIcons`, `FreeSpaceView` (reuse the helper).
@@ -1495,7 +1495,7 @@ No new settings. Cost: nothing while idle; the items are built when a menu opens
 ## 22. Faster than Start, and showing why (milestone 23, no board yet)
 
 The question this answers: "why not just press Windows and search for the game?" If you know the game, Start
-search is good. Game Shelf wins in three ways it doesn't show today:
+search is good. Binder wins in three ways it doesn't show today:
 - **It finds every game.** Start only finds games that made a Start menu shortcut; Epic, EA, Ubisoft and GOG games
   often don't, and Steam only when that box was ticked.
 - **It helps when you don't know what to play:** covers, Continue playing, Recent, Favorites.
@@ -1534,18 +1534,18 @@ advantages with the user's own numbers, at the moment they matter (d, e).
 
 ### c. Your games in Start search (optional)
 
-Instead of competing with Start, put the games there, launched through Game Shelf.
+Instead of competing with Start, put the games there, launched through Binder.
 - A setting, off by default and offered in first-run setup (next to the numbers in d): **"Add my games to Start
   search"**.
-- Shortcuts go only into our own folder, `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Game Shelf games\`, one
+- Shortcuts go only into our own folder, `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Binder games\`, one
   `.lnk` per game, written with the Shell API (`IShellLinkW` + `IPersistFile.Save`, the same interfaces
   `ShortcutFile` already loads).
-- Each shortcut runs **`GameShelf.exe --play <gameId>`**, so a launch from Start gets everything Game Shelf adds:
+- Each shortcut runs **`GameShelf.exe --play <gameId>`**, so a launch from Start gets everything Binder adds:
   silent Steam, the watcher, Game mode, playtime, crash help. Its icon is the game's icon (`SteamSource.IconFor`,
   the exe, or the fallback cover's icon saved as `.ico` in our cache).
 - **`--play <id>`:** the id must match a game in `library.json`; anything else is ignored. It plays the game
   exactly as the Play button does, without opening the panel (the launch toast is skipped; the hide delay doesn't
-  apply since nothing is shown). Through the single-instance forwarding when Game Shelf is already running.
+  apply since nothing is shown). Through the single-instance forwarding when Binder is already running.
 - Only for games **without** a Start entry of their own (checked as in d), so Start search never shows a game
   twice. Existing Start entries are never touched.
 - Kept in step on every rescan: added, renamed or removed with the library (hidden games are removed too). Turning
@@ -1561,7 +1561,7 @@ Instead of competing with Start, put the games there, launched through Game Shel
   matching targets to games by install folder, exe or store link. No result is stored.
 - **After the desktop import:** the toast says "Your desktop has 14 fewer icons · Undo" (Undo = Restore to
   desktop, as today).
-- **Welcome back, once:** the first Welcome back after setup adds one line, "Game Shelf was closed the whole time
+- **Welcome back, once:** the first Welcome back after setup adds one line, "Binder was closed the whole time
   you played", so the zero-cost promise is seen once. Not repeated.
 - Plain statements only; no badges, scores or "you saved" counters.
 
@@ -1609,13 +1609,13 @@ and where possible a setting or a line of text goes away instead of one being ad
 
 ### b. Recent games in the tray menu
 
-- The tray menu gets the last three games played (by our sessions), as its first group under "Open Game Shelf":
+- The tray menu gets the last three games played (by our sessions), as its first group under "Open Binder":
   "Play Hades II", "Play Baldur's Gate 3", … Choosing one plays it exactly as the Play button does, without opening
   the panel.
 - Built when the menu opens from the in-memory library and sessions, like the Game mode item. None played yet: no
   group and no extra separator.
 - This resolves "A taskbar jump list with recent games" from "Not decided": the same reach, with the tray icon
-  Game Shelf already has, no taskbar pin needed.
+  Binder already has, no taskbar pin needed.
 
 ### c. Open on the screen with the mouse
 
@@ -1653,7 +1653,7 @@ and where possible a setting or a line of text goes away instead of one being ad
 
 - Starting Steam ahead of time when the panel opens: work done just in case.
 - Number keys to play favorites: they clash with typing names that contain digits.
-- An Explorer right-click "Add to Game Shelf": a shell extension; drag and drop onto the panel already adds games.
+- An Explorer right-click "Add to Binder": a shell extension; drag and drop onto the panel already adds games.
 - Ratings, tags or notes: a library manager, not a launcher.
 
 ### Touches
@@ -1717,7 +1717,7 @@ Detail's per-game charts (weeks, months): the tooltip adds the number of session
 
 ## 25. Updates from GitHub (milestone 26, proposed, boards 28 and 29)
 
-Game Shelf finds, downloads and installs its own updates from the public GitHub repository's releases. **Proposed,
+Binder finds, downloads and installs its own updates from the public GitHub repository's releases. **Proposed,
 not approved yet:** build only after the owner's go. Today the app never contacts anything to update (README,
 `docs/installer.md`, the website's FAQ); approving this changes that rule (see "Rules that change").
 
@@ -1797,7 +1797,7 @@ A release can be marked `"urgent": true` for a security fix that shouldn't wait 
   bring back a skipped version faster than the next check, and doesn't change the check's schedule (once a day, when
   the panel opens).
 - **Settings:** the "Ask before installing" choice gets the tooltip "Security fixes still install when you close
-  Game Shelf".
+  Binder".
 
 ### Making a release
 
@@ -1937,11 +1937,11 @@ For the updater itself:
 ### Settings and UI (board 28)
 
 - **Settings, new group "About" at the bottom:**
-  - Card "Game Shelf 0.1.4", second line the state ("Up to date · checked today at 14:02", "0.2.0 is available",
+  - Card "Binder 0.1.4", second line the state ("Up to date · checked today at 14:02", "0.2.0 is available",
     "Downloading · 12 of 31 MB", "Ready to install"), button **Check for updates**, or **Update** / **Restart now**
     (accent). A `Disclosure` opens "What's new" with the notes when an update is known.
   - Card "Updates" with a combo: **Install automatically**, **Ask before installing** (default),
-    **Don't check**. Tooltip: "Checks GitHub once a day when Game Shelf opens".
+    **Don't check**. Tooltip: "Checks GitHub once a day when Binder opens".
 - **The shelf:** no banner, nothing in the top slot, no pill. While an update is known (with "Ask before
   installing"; not after "Skip this version"):
   - an 8 px accent dot at the top right of the header's "…" button, as browsers mark an update on theirs. Its

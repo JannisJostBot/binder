@@ -85,6 +85,7 @@ internal static class Uninstaller
                 run.DeleteValue(Locations.RunValue, throwOnMissingValue: false);
         }
         TryDelete(Locations.StartMenuLink);
+        TryDelete(Locations.LegacyStartMenuLink);
         Registry.CurrentUser.DeleteSubKeyTree(Locations.UninstallKey, throwOnMissingSubKey: false);
 
         // Only the files setup put there; anything else the user added stays, and so does the folder then.
@@ -105,7 +106,7 @@ internal static class Uninstaller
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
 
         // The cache always goes: covers, icons, logs, Game mode's journal and results (put back above), the update
-        // downloads. Nothing in it is the user's own; it's all made again if Game Shelf is installed again.
+        // downloads. Nothing in it is the user's own; it's all made again if Binder is installed again.
         DeleteTree(Locations.CacheDir, keep: []);
         if (options.RemoveData)
         {

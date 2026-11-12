@@ -3,7 +3,7 @@
 This file is for AI coding agents doing small, defined tasks in this repo. `CLAUDE.md` is the full project brief;
 you don't need all of it for a task card, but the rules below come from it and always apply.
 
-**The app:** Game Shelf (to be renamed Binder; the code still says GameShelf, don't rename anything) is a small
+**The app:** Binder (the code, exe names and data folders still say GameShelf; don't rename those) is a small
 Windows desktop app in C# / WinUI 3 / .NET 10 that shows the user's installed games and launches them. It must use
 as little CPU and memory as possible, and it is published with Native AOT.
 

@@ -12,16 +12,16 @@ internal static class Installer
 
     /// <summary>The full disclaimer, as in the README.</summary>
     private const string Disclaimer =
-        "Game Shelf is vibe-coded. Its code was written by an AI (Anthropic's Claude), directed and tested by Jannis Jost, " +
+        "Binder is vibe-coded. Its code was written by an AI (Anthropic's Claude), directed and tested by Jannis Jost, " +
         "but not written or reviewed line by line by a human developer.\n\n" +
         "The software is provided \"as is\", without warranty of any kind, express or implied. That includes, but isn't " +
         "limited to, the warranties of merchantability, fitness for a particular purpose and non-infringement. In no event " +
         "shall the author or anyone involved be liable for any claim, damages or other liability arising from, out of, or " +
         "in connection with the software or its use. You use it at your own risk.\n\n" +
-        "Game Shelf isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Electronic Arts, Ubisoft, Rockstar Games, " +
+        "Binder isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Electronic Arts, Ubisoft, Rockstar Games, " +
         "Hypixel Studios, Microsoft or any other " +
         "company whose launchers it works with. Their names and icons belong to their owners.\n\n" +
-        "Game Shelf is licensed under the GNU GPL, version 3, with an additional permission for the libraries it bundles. It " +
+        "Binder is licensed under the GNU GPL, version 3, with an additional permission for the libraries it bundles. It " +
         "includes parts of Microsoft's .NET and Windows App SDK, which stay under their own licenses; by installing Game " +
         "Shelf you also agree to the Windows App SDK's license terms. The licenses are in the \"licenses\" folder of the " +
         "install folder.";
@@ -104,6 +104,7 @@ internal static class Installer
             InstalledFiles.Remove(previous.Where(p => !kept.Contains(p)), TryDeleteFile);
             RemoveOldFiles(current); // the ones that weren't in use any more
 
+            TryDeleteFile(Locations.LegacyStartMenuLink); // from before the rename to Binder
             ShellLink.Create(Locations.StartMenuLink, Locations.Widget, Locations.InstallDir, Text.StartMenuDescription);
             WriteUninstallEntry(payload);
             Native.SHChangeNotify(Native.SHCNE_ASSOCCHANGED, 0, IntPtr.Zero, IntPtr.Zero);
@@ -208,7 +209,7 @@ internal static class Installer
         using var key = Registry.CurrentUser.CreateSubKey(Locations.UninstallKey)
             ?? throw new SetupException(Text.AppsEntryFailed);
         var uninstaller = Path.Combine(Locations.InstallDir, Locations.UninstallerExe);
-        key.SetValue("DisplayName", "Game Shelf");
+        key.SetValue("DisplayName", "Binder");
         key.SetValue("DisplayVersion", Program.VersionText);
         key.SetValue("Publisher", Program.Publisher);
         key.SetValue("DisplayIcon", $"\"{Locations.Widget}\",0");

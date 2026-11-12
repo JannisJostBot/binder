@@ -5,7 +5,7 @@ namespace GameShelf.Library;
 /// <summary>Runs the enabled sources and merges results with the stored library.</summary>
 public static class LibraryScanner
 {
-    /// <summary>Every launcher Game Shelf reads, in the order Settings lists them.</summary>
+    /// <summary>Every launcher Binder reads, in the order Settings lists them.</summary>
     public static readonly GameSource[] StoreSources =
         [GameSource.Steam, GameSource.Epic, GameSource.Gog, GameSource.Ea, GameSource.Ubisoft, GameSource.Xbox, GameSource.Rockstar, GameSource.Hytale];
 

@@ -1,6 +1,6 @@
 namespace GameShelf.Models;
 
-/// <summary>How a session ended, as far as Game Shelf can tell (milestone 11).</summary>
+/// <summary>How a session ended, as far as Binder can tell (milestone 11).</summary>
 public enum GameEnding { Normal, Crashed, ClosedUnexpectedly, StartFailed }
 
 /// <summary>What the crash points at, which decides the plain-words advice. Stored by name: append freely.</summary>

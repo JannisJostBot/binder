@@ -503,7 +503,7 @@
     <value>Lancer un test</value>
   </data>
   <data name="TestLaunchToolTip" xml:space="preserve">
-    <value>Lance le jeu avec ces options et garde Game Shelf ouvert</value>
+    <value>Lance le jeu avec ces options et garde Binder ouvert</value>
   </data>
   <data name="ResetLaunchToolTip" xml:space="preserve">
     <value>Supprime les options personnalisées</value>
@@ -668,7 +668,7 @@
     <value>Propose de fermer les programmes que cet anti-triche peut bloquer</value>
   </data>
   <data name="AntiCheatFootnote" xml:space="preserve">
-    <value>Game Shelf ne fait que lire ces paramètres. Les prérequis peuvent changer avec les mises à jour.</value>
+    <value>Binder ne fait que lire ces paramètres. Les prérequis peuvent changer avec les mises à jour.</value>
   </data>
   <data name="CheckingPc" xml:space="preserve">
     <value>Vérification du PC…</value>
@@ -692,7 +692,7 @@
     <value>S’ouvre dans votre navigateur</value>
   </data>
   <data name="GroupOpening" xml:space="preserve">
-    <value>Ouverture de Game Shelf</value>
+    <value>Ouverture de Binder</value>
   </data>
   <data name="ShowItAs" xml:space="preserve">
     <value>Afficher comme</value>
@@ -725,7 +725,7 @@
     <value>Icône dans la zone de notification</value>
   </data>
   <data name="TrayIconToolTip" xml:space="preserve">
-    <value>Cliquez dessus pour ouvrir ou fermer Game Shelf</value>
+    <value>Cliquez dessus pour ouvrir ou fermer Binder</value>
   </data>
   <data name="ClickAway" xml:space="preserve">
     <value>Masquer quand je clique ailleurs</value>
@@ -740,7 +740,7 @@
     <value>Continue en mode efficacité après fermeture pour s’ouvrir rapidement</value>
   </data>
   <data name="StayReadyOff" xml:space="preserve">
-    <value>Désactivé : la fermeture quitte Game Shelf</value>
+    <value>Désactivé : la fermeture quitte Binder</value>
   </data>
   <data name="StayReadyFast" xml:space="preserve">
     <value>S’ouvre plus vite</value>
@@ -773,7 +773,7 @@
     <value>Au lancement d’un jeu</value>
   </data>
   <data name="HideGameShelf" xml:space="preserve">
-    <value>Masquer Game Shelf</value>
+    <value>Masquer Binder</value>
   </data>
   <data name="After5s" xml:space="preserve">
     <value>Après 5 s</value>
@@ -788,7 +788,7 @@
     <value>Revenir à la fermeture du jeu</value>
   </data>
   <data name="ComeBackToolTip" xml:space="preserve">
-    <value>Rouvre Game Shelf automatiquement</value>
+    <value>Rouvre Binder automatiquement</value>
   </data>
   <data name="GameModeSettings" xml:space="preserve">
     <value>Paramètres du mode jeu</value>
@@ -1187,7 +1187,7 @@
     <value>Désinstaller {0} jeux…</value>
   </data>
   <data name="UninstallFootnote" xml:space="preserve">
-    <value>Chaque jeu est supprimé par son propre lanceur, qui demande confirmation. Game Shelf ne supprime jamais de fichiers de jeu.</value>
+    <value>Chaque jeu est supprimé par son propre lanceur, qui demande confirmation. Binder ne supprime jamais de fichiers de jeu.</value>
   </data>
   <data name="Played" xml:space="preserve">
     <value>{0} de jeu</value>
@@ -1668,7 +1668,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Il s’est terminé avec un code d’erreur, mais Windows n’a enregistré aucun plantage. Certains jeux font cela en quittant. Si cela se répète, copiez les textes ci-dessous.</value>
   </data>
   <data name="CrashUnknown" xml:space="preserve">
-    <value>Game Shelf ne reconnaît pas cette erreur. Vous pouvez copier une question pour un assistant IA ou un rapport pour le développeur du jeu.</value>
+    <value>Binder ne reconnaît pas cette erreur. Vous pouvez copier une question pour un assistant IA ou un rapport pour le développeur du jeu.</value>
   </data>
   <data name="CodeAccessViolation" xml:space="preserve">
     <value>Violation d’accès</value>
@@ -1860,7 +1860,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>PC</value>
   </data>
   <data name="ReportFooter" xml:space="preserve">
-    <value>(Rapport de Game Shelf. Sans données personnelles ni chemins de fichiers.)</value>
+    <value>(Rapport de Binder. Sans données personnelles ni chemins de fichiers.)</value>
   </data>
   <data name="CrashWhatHappened" xml:space="preserve">
     <value>Ce qui s’est passé</value>
@@ -1920,10 +1920,10 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Garder ouvert</value>
   </data>
   <data name="KeepOpenToolTip" xml:space="preserve">
-    <value>Ne pas masquer Game Shelf cette fois</value>
+    <value>Ne pas masquer Binder cette fois</value>
   </data>
   <data name="KeepOpenName" xml:space="preserve">
-    <value>Garder Game Shelf ouvert</value>
+    <value>Garder Binder ouvert</value>
   </data>
   <data name="StartingGame" xml:space="preserve">
     <value>Lancement de {0}</value>
@@ -1935,10 +1935,10 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>{0} lancé</value>
   </data>
   <data name="StayingOpenNoWatch" xml:space="preserve">
-    <value>Game Shelf reste ouvert car il ne peut pas savoir quand ce jeu se ferme. Choisissez son programme sous Processus à surveiller.</value>
+    <value>Binder reste ouvert car il ne peut pas savoir quand ce jeu se ferme. Choisissez son programme sous Processus à surveiller.</value>
   </data>
   <data name="StayingOpenNoWatcher" xml:space="preserve">
-    <value>Game Shelf reste ouvert car la surveillance n’a pas pu démarrer. {0}</value>
+    <value>Binder reste ouvert car la surveillance n’a pas pu démarrer. {0}</value>
   </data>
   <data name="CouldntStart" xml:space="preserve">
     <value>Impossible de lancer {0}</value>
@@ -1947,7 +1947,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Lancement test : {0}</value>
   </data>
   <data name="TestLaunchDetail" xml:space="preserve">
-    <value>Se lance avec : {0}. Game Shelf reste ouvert et ce lancement ne compte pas dans le temps de jeu.</value>
+    <value>Se lance avec : {0}. Binder reste ouvert et ce lancement ne compte pas dans le temps de jeu.</value>
   </data>
   <data name="LauncherNotFound" xml:space="preserve">
     <value>{0} est introuvable.</value>
@@ -2016,10 +2016,10 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>{0} restaurés.</value>
   </data>
   <data name="StillInFolderOne" xml:space="preserve">
-    <value>{0} est toujours dans le dossier de Game Shelf.</value>
+    <value>{0} est toujours dans le dossier de Binder.</value>
   </data>
   <data name="StillInFolder" xml:space="preserve">
-    <value>{0} sont toujours dans le dossier de Game Shelf.</value>
+    <value>{0} sont toujours dans le dossier de Binder.</value>
   </data>
   <data name="FilterGames" xml:space="preserve">
     <value>Jeux et raccourcis ({0})</value>
@@ -2034,7 +2034,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Impossible d’ajouter ce fichier</value>
   </data>
   <data name="CouldntAddFileDetail" xml:space="preserve">
-    <value>Ce n’est pas un programme ou un raccourci que Game Shelf peut lire.</value>
+    <value>Ce n’est pas un programme ou un raccourci que Binder peut lire.</value>
   </data>
   <data name="AddedGame" xml:space="preserve">
     <value>{0} ajouté</value>
@@ -2058,7 +2058,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Un problème est survenu</value>
   </data>
   <data name="ErrorDetail" xml:space="preserve">
-    <value>Game Shelf continue de fonctionner. Détails : {0}</value>
+    <value>Binder continue de fonctionner. Détails : {0}</value>
   </data>
   <data name="TheGame" xml:space="preserve">
     <value>Le jeu</value>
@@ -2079,7 +2079,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Disque local</value>
   </data>
   <data name="OpenGameShelf" xml:space="preserve">
-    <value>Ouvrir Game Shelf</value>
+    <value>Ouvrir Binder</value>
   </data>
   <data name="OpenLauncher" xml:space="preserve">
     <value>Ouvrir {0}</value>
@@ -2121,7 +2121,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Avancé</value>
   </data>
   <data name="SourcePaths" xml:space="preserve">
-    <value>Où Game Shelf trouve les jeux et les images</value>
+    <value>Où Binder trouve les jeux et les images</value>
   </data>
   <data name="SourcePathsDefault" xml:space="preserve">
     <value>Tout par défaut</value>
@@ -2184,7 +2184,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Saisissez une adresse https:// contenant {appid}.</value>
   </data>
   <data name="DownloadHostNotice" xml:space="preserve">
-    <value>Game Shelf téléchargera les images depuis {0}</value>
+    <value>Binder téléchargera les images depuis {0}</value>
   </data>
   <data name="ResetEntry" xml:space="preserve">
     <value>Réinitialiser</value>
@@ -2277,6 +2277,6 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Annuler le redémarrage</value>
   </data>
   <data name="RestartLimit" xml:space="preserve">
-    <value>Déjà redémarré deux fois, Game Shelf n’essaie donc plus.</value>
+    <value>Déjà redémarré deux fois, Binder n’essaie donc plus.</value>
   </data>
 </root>
