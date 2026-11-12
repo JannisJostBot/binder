@@ -35,6 +35,7 @@ public static class Storage
     private static string SettingsPath => Path.Combine(DataDir, "settings.json");
     private static string ImportedPath => Path.Combine(DataDir, "imported-shortcuts.json");
     private static string CrashesPath => Path.Combine(DataDir, "crashes.json");
+    private static string RemovedPath => Path.Combine(DataDir, "removed-games.json");
 
     public static List<Game> LoadLibrary() => Load(LibraryPath, StorageJsonContext.Default.ListGame) ?? [];
     public static void SaveLibrary(List<Game> games) => Save(LibraryPath, games, StorageJsonContext.Default.ListGame);
@@ -127,6 +128,10 @@ public static class Storage
             // Held by another program: what was written is skipped next time, the rest follows then.
         }
     }
+
+    /// <summary>The kept settings of games that left the library (<see cref="Library.RemovedGames"/>).</summary>
+    public static List<Game> LoadRemovedGames() => Load(RemovedPath, StorageJsonContext.Default.ListGame) ?? [];
+    public static void SaveRemovedGames(List<Game> games) => Save(RemovedPath, games, StorageJsonContext.Default.ListGame);
 
     public static List<CrashRecord> LoadCrashes() => Load(CrashesPath, StorageJsonContext.Default.ListCrashRecord) ?? [];
     public static void SaveCrashes(List<CrashRecord> list) => Save(CrashesPath, list, StorageJsonContext.Default.ListCrashRecord);

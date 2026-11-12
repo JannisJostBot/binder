@@ -52,7 +52,7 @@ public sealed partial class MainWindow
 
             var game = ShortcutImporter.CreateGame(shortcut, record.StoredPath, GameSource.Shortcut);
             if (FindGame(game.Id) is { } same) same.ExePath = record.StoredPath;
-            else _games.Add(game);
+            else AddToLibrary(game);
         }
 
         TrySave(() => Storage.SaveImportedShortcuts(records));
@@ -162,7 +162,7 @@ public sealed partial class MainWindow
         }
         else
         {
-            _games.Add(game);
+            AddToLibrary(game);
         }
         SaveLibrary();
         RefreshViews();
@@ -221,6 +221,34 @@ public sealed partial class MainWindow
                 TestLaunch(game);
                 break;
         }
+    }
+
+    /// <summary>Adds a new game; one that was on the shelf before gets its kept settings back.</summary>
+    private void AddToLibrary(Game game)
+    {
+        var removed = new List<Game>(App.State.RemovedGames);
+        if (RemovedGames.Restore(removed, game))
+        {
+            App.State.SetRemovedGames(removed);
+            TrySave(() => Storage.SaveRemovedGames(removed));
+            game.Hidden = false; // the user just added it
+        }
+        _games.Add(game);
+    }
+
+    /// <summary>
+    /// Play and Details check the game is still installed (one attribute read). An uninstalled or deleted game
+    /// leaves the shelf at once, with a toast, instead of waiting for the next rescan. Its settings are kept.
+    /// </summary>
+    private bool RemoveIfGone(Game game)
+    {
+        if (!GameFiles.IsGone(game)) return false;
+        _games.RemoveAll(g => g.Id == game.Id);
+        ForgetGames([game], new List<Game>(App.State.RemovedGames));
+        SaveLibrary();
+        RefreshViews(); // back to the shelf if its details were open
+        ShowToast(Strings.Format(Strings.GameGoneTitle, game.Name), Strings.GameGoneDetail, Strings.Ok);
+        return true;
     }
 
     /// <summary>Hides a game from the shelf, with an Undo in the toast.</summary>

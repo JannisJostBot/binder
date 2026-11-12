@@ -2048,6 +2048,12 @@ Ralentir : mode efficacité pendant le jeu</value>
   <data name="HidGameDetail" xml:space="preserve">
     <value>Il n’apparaît plus sur l’étagère.</value>
   </data>
+  <data name="GameGoneTitle" xml:space="preserve">
+    <value>{0} n’est plus installé</value>
+  </data>
+  <data name="GameGoneDetail" xml:space="preserve">
+    <value>Il a été retiré de l’étagère. Ses paramètres reviendront si vous le réinstallez.</value>
+  </data>
   <data name="SomethingWentWrong" xml:space="preserve">
     <value>Un problème est survenu</value>
   </data>

@@ -683,6 +683,8 @@ public sealed partial class Strings
     public static string CouldntAddFileDetail => Get(nameof(CouldntAddFileDetail));
     public static string AddedGame => Get(nameof(AddedGame));
     public static string AddedGameDetail => Get(nameof(AddedGameDetail));
+    public static string GameGoneTitle => Get(nameof(GameGoneTitle));
+    public static string GameGoneDetail => Get(nameof(GameGoneDetail));
     public static string HidGame => Get(nameof(HidGame));
     public static string HidGameDetail => Get(nameof(HidGameDetail));
     public static string SomethingWentWrong => Get(nameof(SomethingWentWrong));

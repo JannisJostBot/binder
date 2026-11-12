@@ -2729,6 +2729,14 @@ Calm: efficiency mode while you play</value>
     <value>It no longer shows on the shelf.</value>
     <comment>Toast text.</comment>
   </data>
+  <data name="GameGoneTitle" xml:space="preserve">
+    <value>{0} isn't installed anymore</value>
+    <comment>Toast title after Play or Details on a game whose files were uninstalled or deleted. {0} = game name.</comment>
+  </data>
+  <data name="GameGoneDetail" xml:space="preserve">
+    <value>It was removed from the shelf. Its settings come back if you install it again.</value>
+    <comment>Toast text under GameGoneTitle. "Its settings" = the game's favorite, launch options and other per-game settings in this app.</comment>
+  </data>
   <data name="SomethingWentWrong" xml:space="preserve">
     <value>Something went wrong</value>
     <comment>Toast title after an unexpected error.</comment>

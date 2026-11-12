@@ -16,8 +16,27 @@ public sealed class AppState
     /// <summary>Crash checks of sessions that ended with an error (crashes.json, milestone 11).</summary>
     public List<CrashRecord> Crashes { get; set; } = [];
 
-    /// <summary>The stores are scanned once per run (and on Refresh), not every time the flyout opens.</summary>
-    public bool Scanned { get; set; }
+    /// <summary>
+    /// The stores are scanned when the panel first opens, on Refresh, and when it opens again more than
+    /// <see cref="RescanAfter"/> after the last scan (games uninstalled meanwhile leave the shelf), not every time.
+    /// </summary>
+    public bool Scanned
+    {
+        get => _scanned;
+        set { _scanned = value; if (value) _scannedAt = Environment.TickCount64; }
+    }
+    private bool _scanned;
+    private long _scannedAt;
+
+    public static readonly TimeSpan RescanAfter = TimeSpan.FromHours(1);
+
+    /// <summary>Whether opening the panel should scan the stores.</summary>
+    public bool ScanDue => !_scanned || Environment.TickCount64 - _scannedAt > (long)RescanAfter.TotalMilliseconds;
+
+    /// <summary>The kept settings of games that left the library (removed-games.json), read on first use.</summary>
+    public List<Game> RemovedGames => _removed ??= Storage.LoadRemovedGames();
+    private List<Game>? _removed;
+    public void SetRemovedGames(List<Game> list) => _removed = list;
 
     /// <summary>Free up space while it's open; mid-uninstall it survives the flyout closing (memory only).</summary>
     public ViewModels.FreeSpaceState? FreeSpace { get; set; }

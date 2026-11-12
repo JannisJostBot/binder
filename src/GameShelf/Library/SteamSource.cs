@@ -68,7 +68,9 @@ public static class SteamSource
                 foreach (var manifest in Directory.EnumerateFiles(steamapps, "appmanifest_*.acf"))
                 {
                     var game = ReadManifest(manifest, steamapps);
-                    if (game is not null && seen.Add(game.StoreId!)) games.Add(game);
+                    // Steam keeps the manifest of a game whose folder was deleted by hand: that game is gone.
+                    if (game is null || GameFiles.Check(game.InstallDir) == PathState.Gone) continue;
+                    if (seen.Add(game.StoreId!)) games.Add(game);
                 }
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }

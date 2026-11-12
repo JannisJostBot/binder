@@ -155,6 +155,20 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   record; a future "year in review" clips it at Jan 1. Not yet: a cache of finished years' totals, only once
   loading all years measures slow.
 
+**2026-11-12**
+- **Uninstalled or deleted games leave the shelf**, and nothing is ever deleted from the game's side:
+  - Play and Details check the game first (one attribute read): gone means removed at once, with the toast
+    "[Game] isn't installed anymore".
+  - A rescan drops a store game its launcher no longer lists (as before), a Steam game whose folder was deleted by
+    hand (Steam keeps its manifest), and a manual or shortcut game whose program is gone. Never on an unplugged
+    drive or an offline share: "gone" needs the drive to be there (`GameFiles.Check`).
+  - The panel rescans when it opens more than an hour after the last scan (with Stay ready the process can live for
+    days); still never on a timer.
+  - A dropped game's settings (favorite, launch options, Game mode, custom cover, …) are kept in
+    `removed-games.json` (only games with settings, the newest 200) and come back when it's installed or added
+    again. Its cached art is deleted; sessions are kept as always. Not shown anywhere ("Showing uninstalled games"
+    stays undecided).
+
 ---
 
 ## 1. App icon (board 1)

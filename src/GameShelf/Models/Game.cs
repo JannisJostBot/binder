@@ -111,6 +111,12 @@ public sealed class Game
         else IconChanged = true;
     }
 
+    /// <summary>Whether the user changed anything on this game: worth keeping when it leaves the library.</summary>
+    [JsonIgnore]
+    public bool HasUserData => Favorite || Hidden || HideDelaySeconds is not null || ProcessName is not null ||
+        CustomCover is not null || LaunchArgs is not null || ExeOverride is not null || AntiCheatReminder ||
+        GameMode is not null || RestartOnCrash || MilestoneShownHours > 0;
+
     /// <summary>A rescan found a different <see cref="IconSource"/> than the stored entry: its cached icon is stale.</summary>
     [JsonIgnore]
     public bool IconChanged { get; set; }

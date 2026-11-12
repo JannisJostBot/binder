@@ -163,10 +163,10 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         {
             CoverQueue.ReleaseHold();
         }
-        if (!App.State.Scanned) _ = RescanAsync(); // once per run, not on every flyout open
+        if (App.State.ScanDue) _ = RescanAsync(); // the first open, then only after an hour (AppState.ScanDue)
     }
 
-    /// <summary>Scans the stores off the UI thread and merges the result. Runs at startup and on Refresh.</summary>
+    /// <summary>Scans the stores off the UI thread and merges the result. Runs at the first open, on Refresh, and on an open over an hour after the last scan.</summary>
     private async Task RescanAsync()
     {
         if (_scanning) return;
@@ -175,10 +175,11 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
 
         var stored = _games;
         var settings = App.Settings;
-        List<Game> games;
+        var removed = new List<Game>(App.State.RemovedGames); // the scan's own copy
+        LibraryScanner.RescanResult result;
         try
         {
-            games = await Task.Run(() => LibraryScanner.Rescan(stored, settings));
+            result = await Task.Run(() => LibraryScanner.Rescan(stored, removed, settings));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -187,6 +188,8 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
             return;
         }
         _scanning = false;
+        var games = result.Games;
+        ForgetGames(result.Dropped, removed);
 
         // The scan copied user data from the list as it was when the scan started. Re-apply it from the
         // current entries, so a favorite or setting changed while the scan ran isn't lost.
@@ -204,6 +207,21 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         if (IsClosing) return;
         if (OpeningGate.IsHolding) await OpeningGate.WhenOpen; // don't rebuild the grid mid-slide
         RefreshViews();
+    }
+
+    /// <summary>
+    /// Games that left the library: keeps their settings (<see cref="RemovedGames"/>, in <paramref name="removed"/>,
+    /// which becomes the kept list) and deletes their cached art; a custom cover goes only when its settings do.
+    /// </summary>
+    private static void ForgetGames(List<Game> dropped, List<Game> removed)
+    {
+        bool changed = removed.Count != App.State.RemovedGames.Count || dropped.Count > 0;
+        foreach (var game in RemovedGames.Remember(removed, dropped)) CoverCache.Forget(game, customToo: true);
+        foreach (var game in dropped) CoverCache.Forget(game, customToo: !game.HasUserData);
+        App.State.SetRemovedGames(removed);
+        if (!changed) return; // nothing restored or added
+        try { Storage.SaveRemovedGames(removed); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
     }
 
     private void SaveLibrary()
@@ -269,6 +287,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
 
     private void ShowDetail(Game game)
     {
+        if (RemoveIfGone(game)) return;
         Detail.ViewModel!.Show(game, _sessions, App.Settings, App.State.Crashes);
         ShowPage(Detail);
         Detail.UpdateLayout();

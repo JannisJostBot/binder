@@ -86,6 +86,7 @@ static partial class Tests
         PayloadTests();
         ChimeTests();
         MomentTests();
+        RemovedGameTests();
         LaunchTests(dir);
         PlaytimeTests();
         CrashTests();
@@ -1092,5 +1093,69 @@ static partial class Tests
             "payload with a repeated path rejected");
         Check(GameShelf.Setup.PayloadList.Parse(new StringReader(List($"{new string('g', 64)} 10 GameShelf.exe")), "GameShelf.exe") is null,
             "payload with a malformed hash rejected");
+    }
+
+    static void RemovedGameTests()
+    {
+        // GameFiles: gone only when the drive is there and the path isn't; an unplugged drive is never "gone".
+        var dir = Directory.CreateTempSubdirectory().FullName;
+        var exe = Path.Combine(dir, "game.exe");
+        File.WriteAllBytes(exe, []);
+        Check(GameFiles.Check(exe) == PathState.Present && GameFiles.Check(dir) == PathState.Present, "existing file and folder are present");
+        Check(GameFiles.Check(Path.Combine(dir, "nope.exe")) == PathState.Gone &&
+              GameFiles.Check(Path.Combine(dir, "nope", "x.exe")) == PathState.Gone, "missing file or folder on a present drive is gone");
+        Check(GameFiles.Check(null) == PathState.Unknown && GameFiles.Check("relative\\game.exe") == PathState.Unknown,
+            "no path or a relative path is unknown, never gone");
+        if (OperatingSystem.IsWindows())
+        {
+            var free = Enumerable.Range('D', 23).Select(c => (char)c).FirstOrDefault(c => !Directory.Exists(c + ":\\"));
+            if (free != default)
+                Check(GameFiles.Check(free + ":\\Games\\x.exe") == PathState.Unknown, "a path on a missing drive is unknown, never gone");
+        }
+        Check(!GameFiles.IsGone(new Game { Source = GameSource.Manual, ExePath = exe, InstallDir = dir }), "manual game with its exe is there");
+        Check(GameFiles.IsGone(new Game { Source = GameSource.Manual, ExePath = Path.Combine(dir, "old.exe") }), "manual game without its exe is gone");
+        var lnk = Path.Combine(dir, "Game.lnk");
+        File.WriteAllBytes(lnk, []);
+        Check(GameFiles.IsGone(new Game { Source = GameSource.Shortcut, ExePath = lnk, IconPath = Path.Combine(dir, "gone.exe") }),
+            "shortcut whose target exe is gone is gone");
+        Check(!GameFiles.IsGone(new Game { Source = GameSource.Shortcut, ExePath = lnk }), "shortcut without a known target stays");
+        Check(GameFiles.IsGone(new Game { Source = GameSource.Steam, InstallDir = Path.Combine(dir, "common", "Gone") }) &&
+              !GameFiles.IsGone(new Game { Source = GameSource.Steam, InstallDir = dir }) &&
+              !GameFiles.IsGone(new Game { Source = GameSource.Xbox }), "store game: gone only when its folder is");
+
+        // RemovedGames: only games with settings are kept, newest last, capped; a returning game gets them back.
+        var removed = new List<Game>();
+        RemovedGames.Remember(removed, [new Game { Id = "steam:1" }, new Game { Id = "steam:2", Favorite = true, LaunchArgs = "-dx11" }]);
+        Check(removed.Count == 1 && removed[0].Id == "steam:2", "only games with settings are remembered");
+        var back = new Game { Id = "steam:2", AddedAt = new DateTimeOffset(2026, 11, 12, 0, 0, 0, TimeSpan.Zero) };
+        Check(RemovedGames.Restore(removed, back) && back.Favorite && back.LaunchArgs == "-dx11" && removed.Count == 0 &&
+              back.AddedAt!.Value.Day == 12, "a reinstalled game gets its settings back (and counts as new)");
+        Check(!RemovedGames.Restore(removed, new Game { Id = "steam:3" }), "nothing kept, nothing restored");
+        var many = Enumerable.Range(0, RemovedGames.Max + 5).Select(i => new Game { Id = "manual:" + i, Favorite = true, CustomCover = "c" + i }).ToList();
+        var evicted = RemovedGames.Remember(removed, many);
+        Check(removed.Count == RemovedGames.Max && evicted.Count == 5 && evicted[0].Id == "manual:0" && removed[^1].Id == "manual:" + (RemovedGames.Max + 4),
+            "the kept list is capped, the oldest go first");
+        RemovedGames.Remember(removed, [new Game { Id = "manual:10", Hidden = true }]);
+        Check(removed.Count(g => g.Id == "manual:10") == 1 && removed[^1].Hidden, "remembering again replaces the older entry");
+
+        // The merge: a scanned store's missing games are dropped (and kept), gone manual games too, others stay.
+        var stored = new List<Game>
+        {
+            new() { Id = "steam:10", Source = GameSource.Steam, Name = "A", Favorite = true },
+            new() { Id = "steam:11", Source = GameSource.Steam, Name = "B" },
+            new() { Id = "epic:x", Source = GameSource.Epic, Name = "C" }, // Epic turned off: kept as is
+            new() { Id = "manual:a", Source = GameSource.Manual, Name = "D", ExePath = exe },
+            new() { Id = "manual:b", Source = GameSource.Manual, Name = "E", ExePath = Path.Combine(dir, "deleted.exe"), GameMode = true },
+        };
+        var kept = new List<Game> { new() { Id = "steam:12", Favorite = true, ExeOverride = "x.exe" } };
+        var scanned = new List<Game> { new() { Id = "steam:11", Source = GameSource.Steam, Name = "B" }, new() { Id = "steam:12", Source = GameSource.Steam, Name = "F" } };
+        var now = DateTimeOffset.Now;
+        var result = LibraryScanner.Merge(stored, scanned, [GameSource.Steam], kept, now, GameFiles.IsGone);
+        var ids = result.Games.Select(g => g.Id).ToHashSet();
+        Check(ids.SetEquals(["steam:11", "steam:12", "epic:x", "manual:a"]), "uninstalled store game and deleted manual game leave the library");
+        Check(result.Dropped.Select(g => g.Id).Order().SequenceEqual(["manual:b", "steam:10"]), "the dropped games are reported");
+        var f = result.Games.First(g => g.Id == "steam:12");
+        Check(f.Favorite && f.ExeOverride == "x.exe" && f.AddedAt == now && kept.Count == 0, "a reinstalled store game gets its kept settings back");
+        Directory.Delete(dir, recursive: true);
     }
 }

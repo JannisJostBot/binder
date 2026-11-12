@@ -2048,6 +2048,12 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   <data name="HidGameDetail" xml:space="preserve">
     <value>Es wird nicht mehr im Regal angezeigt.</value>
   </data>
+  <data name="GameGoneTitle" xml:space="preserve">
+    <value>{0} ist nicht mehr installiert</value>
+  </data>
+  <data name="GameGoneDetail" xml:space="preserve">
+    <value>Es wurde aus dem Regal entfernt. Seine Einstellungen kehren zurück, wenn Sie es wieder installieren.</value>
+  </data>
   <data name="SomethingWentWrong" xml:space="preserve">
     <value>Etwas ist schiefgelaufen</value>
   </data>

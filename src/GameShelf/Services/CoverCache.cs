@@ -250,6 +250,29 @@ public static class CoverCache
         }
     }
 
+    /// <summary>
+    /// A game left the library: deletes its cached art, icon and "missing" markers from our cache folder. Its
+    /// custom cover copy is deleted only with <paramref name="customToo"/> (otherwise it's kept with the game's
+    /// remembered settings). Only our own files, by name; never a path from the library.
+    /// </summary>
+    public static void Forget(Game game, bool customToo)
+    {
+        Invalidate(game);
+        lock (Sync)
+        {
+            Icons.Remove(game.Id);
+            IconImages.Remove(game.Id);
+        }
+        foreach (var kind in new[] { ArtKind.Cover, ArtKind.Hero, ArtKind.Logo })
+        {
+            DeleteQuietly(CachedFile(game, kind, ImageExt(kind)));
+            DeleteQuietly(CachedFile(game, kind, ".none"));
+        }
+        DeleteQuietly(CachedFile(game, ArtKind.Cover, "_icon.png"));
+        DeleteQuietly(CachedFile(game, ArtKind.Cover, "_icon2.png"));
+        if (customToo) DeleteOwnCopy(game.CustomCover, except: null);
+    }
+
     /// <summary>Forgets resolved paths and decoded images for a game, e.g. after its custom cover changed.</summary>
     public static void Invalidate(Game game)
     {

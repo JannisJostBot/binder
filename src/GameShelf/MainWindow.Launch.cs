@@ -16,6 +16,7 @@ public sealed partial class MainWindow
     /// </summary>
     private void Play(Game game)
     {
+        if (RemoveIfGone(game)) return;
         if (game.AntiCheatReminder && game.AntiCheats is { Count: > 0 } && PcChecks.RunningConflicts() is { Count: > 0 } conflicts)
             _ = ConfirmConflictsAsync(game, conflicts);
         else

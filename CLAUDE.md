@@ -53,7 +53,7 @@ their games, and it must feel like part of Windows. When an idea doesn't clearly
 src/GameShelf/            the WinUI widget
   Library/                sources (*Source.cs), SourceDefaults (where each source reads, user overrides),
                           InstallFolder (folder safety), Vdf, ShortcutFile/ShortcutImporter,
-                          LaunchOptions, GameScan, AntiCheat, PlaytimeStats, CrashAnalysis, SpacePlanner,
+                          LaunchOptions, GameScan, GameFiles (installed or gone, removed games' settings), AntiCheat, PlaytimeStats, CrashAnalysis, SpacePlanner,
                           Moments ("Welcome back") (pure logic)
   Models/                 Game, Session, Settings, ImportedShortcut, CrashRecord
   Services/               Launcher, CoverCache, Storage, Windows integration (DesktopLayer, Monitors, Placement,
@@ -87,7 +87,7 @@ docs/tasks/, AGENTS.md    task cards and rules for cheaper coding agents
 ```
 
 Data: `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions-<year>.jsonl`, `imported-shortcuts.json`,
-`crashes.json`, `Shortcuts\`). `%LOCALAPPDATA%\GameShelf\`: `covers\`, `error.log`, and Game mode's
+`crashes.json`, `removed-games.json` (settings of games that left the library), `Shortcuts\`). `%LOCALAPPDATA%\GameShelf\`: `covers\`, `error.log`, and Game mode's
 `gamemode-journal.json` (only while applied), `gamemode.log`, `gamemode-last.txt`, `gamemode-request.txt`. The
 helper: `%ProgramData%\GameShelf\` (`journal.json`, `elevated.log`, `allowed-<SID>.txt`, `result-<SID>.txt`).
 The version lives in `Directory.Build.props`.
@@ -145,7 +145,9 @@ hidden `MessageWindow` (WM_COPYDATA). With no arguments that toggles the flyout.
 ## Library sources
 
 Steam, Epic, GOG, EA app, Ubisoft Connect, Xbox app, Rockstar, Hytale, imported desktop shortcuts and manual adds;
-each `*Source.cs` documents where it reads and how it launches. Rescan on startup and on manual refresh only.
+each `*Source.cs` documents where it reads and how it launches. Rescan on startup, on manual refresh and when the
+panel opens over an hour after the last scan, never on a timer. Uninstalled or deleted games leave the shelf (rescan,
+or at once on Play/Details via `GameFiles`, never for an unplugged drive); their settings wait in `removed-games.json`.
 
 - Steam: skip non-games (redistributables, Proton, SDKs, servers). When Steam isn't running, start
   `steam.exe -silent <link>` so its window doesn't open.
