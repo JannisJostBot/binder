@@ -35,6 +35,7 @@ break the user's system.
 | 22 Open a launcher | §21 | Done; the owner tried it on the real PC on 2026-11-11 and it works. `GameActions.OpenLauncher` / `LauncherTarget` (Free up space's launcher step uses it too), names in `Format.LauncherAppName`, the tray group (`ShelfViewModel.LaunchersByGames`, chip order) and the launcher chips' right-click menu with the launcher's icon; unit-tested. On the owner's PC every launcher with games resolves (Steam, Epic, GOG Galaxy, EA app, Ubisoft Connect, Xbox app, Hytale); Steam, already running, comes to the front without a second copy |
 | 23 Faster than Start | §22 | To do |
 | 24 Lean speed-ups | §23 | To do |
+| 25 Weekly chart details | §24 | Proposed (2026-11-12), waiting for the owner's go; two choices open (§24 "To decide") |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
 
 The build order is at the end of this file. The ideas under "Not decided" at the bottom must **not** be built.
@@ -1644,6 +1645,55 @@ flag parsing, the "New" rule and the delay migration.
 
 ---
 
+## 24. Weekly chart details (milestone 25, proposed, no board yet)
+
+The "This week" chart in the shelf's top slot shows only a total per day ("Monday: 2 h 35 min"); which games were
+played isn't visible. **Proposed, not approved yet:** build only after the owner's go.
+
+### Bar tooltips
+
+```
+Monday · 2 h 35 min
+────────────────────────────────
+▮ Elden Ring            1 h 50 min
+▮ Hades                     35 min
+▮ Balatro                   10 min
+  2 more · 10 min
+```
+
+- Title: the day's full name and its total (as now).
+- Up to 3 games, longest first: a small accent mark, the name, the time right-aligned; beyond that one line
+  "N more · time" (`Strings.Plural`).
+- A day without play keeps the one-line tooltip ("Tuesday · not played").
+- The card's line ("This week · 4 games · most: …") gets the week's top 3 in the same layout as its tooltip.
+- Today's day letter in primary text, later days stay tertiary and empty: where the week stands, at a glance.
+- Screen readers: each bar reads "Monday, 2 h 35 min, mostly Elden Ring" (one name per bar, not one long chart
+  name).
+
+### Cost
+
+- `PlaytimeStats.Week` already makes one pass over the sessions and the 7 days; it also keeps each day's time per
+  game id (`Dictionary<string, TimeSpan>[7]`), still one pass. Names through a lookup built once (id → game).
+- The tooltip content is plain WinUI (a small Grid per bar), built when the panel gets its data; nothing while idle.
+- About 3 new strings (EN, DE, FR, with comments).
+
+### Optional, same pattern
+
+Detail's per-game charts (weeks, months): the tooltip adds the number of sessions, "Week of 3 Nov · 4 h 10 min ·
+3 sessions".
+
+### Left out
+
+- Stacked bars coloured per game: 16 px wide and 44 px tall bars in a fixed 168 px slot can't carry 3–4 colours
+  or a legend, and the chart stays single-accent.
+- Clicking a bar to open the day: a second view in the slot for what hovering already answers.
+
+### To decide (owner)
+
+1. Hidden games: proposed to show them in the tooltips (it's the user's own history; leaving them out makes the
+   totals look wrong). Today the "most played" line skips them.
+2. Games no longer in the library: the name from `removed-games.json` where kept, else "A removed game".
+
 ## Build order (after milestone 7)
 
 8. **Quick wins:** *(Done.)*
@@ -1681,6 +1731,8 @@ flag parsing, the "New" rule and the delay migration.
     and compare with what Start actually finds.
 24. **Lean speed-ups** (§23): a first (with the footer removal in f), then d (check the Steam flags on the real PC
     first), then b, e and c.
+25. **Weekly chart details** (§24), once approved: `PlaytimeStats.Week` per day and game with tests, then the bar
+    tooltips and their automation names, then the card line's top 3, then (optionally) Detail's session counts.
 
 ## Not decided (don't build)
 
