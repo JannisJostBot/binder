@@ -1,0 +1,72 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Plain console test runner (no test framework packages, see Dependencies policy).
+       Compiles the non-UI sources directly; runs on Windows and Linux with "dotnet run" in this folder. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <StartupObject>Binder.Tests.Tests</StartupObject>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <!-- Keep test output out of the shared app folder (Directory.Build.props). -->
+    <OutputPath>$(MSBuildProjectDirectory)\out\</OutputPath>
+    <SatelliteResourceLanguages>en;de;fr</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\Binder\Strings\*.cs" Link="Strings\%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\src\Binder\Strings\*.resx" Link="Strings\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\Binder\Models\*.cs" Link="Linked\Models\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\Binder\Library\Vdf.cs" Link="Linked\Library\Vdf.cs" />
+    <Compile Include="..\..\src\Binder\Library\GameFiles.cs" Link="Linked\Library\GameFiles.cs" />
+    <Compile Include="..\..\src\Binder\Library\LibraryScanner.cs" Link="Linked\Library\LibraryScanner.cs" />
+    <Compile Include="..\..\src\Binder\Library\SteamSource.cs" Link="Linked\Library\SteamSource.cs" />
+    <Compile Include="..\..\src\Binder\Library\SourceDefaults.cs" Link="Linked\Library\SourceDefaults.cs" />
+    <Compile Include="..\..\src\Binder\Library\InstallFolder.cs" Link="Linked\Library\InstallFolder.cs" />
+    <Compile Include="..\..\src\Binder\Library\EpicSource.cs" Link="Linked\Library\EpicSource.cs" />
+    <Compile Include="..\..\src\Binder\Library\GogSource.cs" Link="Linked\Library\GogSource.cs" />
+    <Compile Include="..\..\src\Binder\Library\EaSource.cs" Link="Linked\Library\EaSource.cs" />
+    <Compile Include="..\..\src\Binder\Library\UbisoftSource.cs" Link="Linked\Library\UbisoftSource.cs" />
+    <Compile Include="..\..\src\Binder\Library\XboxSource.cs" Link="Linked\Library\XboxSource.cs" />
+    <Compile Include="..\..\src\Binder\Library\RockstarSource.cs" Link="Linked\Library\RockstarSource.cs" />
+    <Compile Include="..\..\src\Binder\Library\HytaleSource.cs" Link="Linked\Library\HytaleSource.cs" />
+    <Compile Include="..\..\src\Binder\Library\ShortcutFile.cs" Link="Linked\Library\ShortcutFile.cs" />
+    <Compile Include="..\..\src\Binder\Library\ShortcutImporter.cs" Link="Linked\Library\ShortcutImporter.cs" />
+    <Compile Include="..\..\src\Binder\Services\Storage.cs" Link="Linked\Services\Storage.cs" />
+    <Compile Include="..\..\src\Binder\Services\ErrorLog.cs" Link="Linked\Services\ErrorLog.cs" />
+    <Compile Include="..\..\src\Binder\Services\Placement.cs" Link="Linked\Services\Placement.cs" />
+    <Compile Include="..\..\src\Binder\Services\ShellNotify.cs" Link="Linked\Services\ShellNotify.cs" />
+    <Compile Include="..\..\src\Binder\Library\CoverColors.cs" Link="Linked\Library\CoverColors.cs" />
+    <Compile Include="..\..\src\Binder\Library\ShelfOrder.cs" Link="Linked\Library\ShelfOrder.cs" />
+    <Compile Include="..\..\src\Binder\Library\LaunchOptions.cs" Link="Linked\Library\LaunchOptions.cs" />
+    <Compile Include="..\..\src\Binder\Library\GameScan.cs" Link="Linked\Library\GameScan.cs" />
+    <Compile Include="..\..\src\Binder\Library\AntiCheat.cs" Link="Linked\Library\AntiCheat.cs" />
+    <Compile Include="..\..\src\Binder\Library\PlaytimeStats.cs" Link="Linked\Library\PlaytimeStats.cs" />
+    <Compile Include="..\..\src\Binder\Library\CrashAnalysis.cs" Link="Linked\Library\CrashAnalysis.cs" />
+    <Compile Include="..\..\src\Binder\Library\SpacePlanner.cs" Link="Linked\Library\SpacePlanner.cs" />
+    <Compile Include="..\..\src\Binder\Library\Moments.cs" Link="Linked\Library\Moments.cs" />
+    <Compile Include="..\..\src\Binder\Library\RepeatGuard.cs" Link="Linked\Library\RepeatGuard.cs" />
+    <Compile Include="..\..\src\Binder\Views\Format.cs" Link="Linked\Views\Format.cs" />
+    <Compile Include="..\..\src\Binder\Views\GameModeText.cs" Link="Linked\Views\GameModeText.cs" />
+    <Compile Include="..\..\src\Binder\Views\GameAction.cs" Link="Linked\Views\GameAction.cs" />
+    <Compile Include="..\..\src\Binder\ViewModels\*.cs" Link="Linked\ViewModels\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\Binder\Services\Chime.cs" Link="Linked\Services\Chime.cs" />
+    <Compile Include="..\..\src\Binder.Watcher\Program.cs" Link="Linked\Watcher\Program.cs" />
+    <Compile Include="..\..\src\Binder.Watcher\GameMode.cs" Link="Linked\Watcher\GameMode.cs" />
+    <Compile Include="..\..\src\Binder.Watcher\GameModeShared.cs" Link="Linked\Watcher\GameModeShared.cs" />
+    <Compile Include="..\..\src\Binder.Watcher\SessionLog.cs" Link="Linked\Watcher\SessionLog.cs" />
+    <Compile Include="..\..\src\Binder.Watcher\SystemEvents.cs" Link="Linked\Watcher\SystemEvents.cs" />
+    <Compile Include="..\..\src\Binder.Watcher\ElevatedClient.cs" Link="Linked\Watcher\ElevatedClient.cs" />
+    <Compile Include="..\..\src\Binder.Elevated\Helper.cs" Link="Linked\Elevated\Helper.cs" />
+    <Compile Include="..\..\src\Binder.Elevated\Qos.cs" Link="Linked\Elevated\Qos.cs" />
+    <Compile Include="..\..\src\Binder.Elevated\ProtectedApps.cs" Link="Linked\Elevated\ProtectedApps.cs" />
+    <Compile Include="..\..\src\Binder.Elevated\Services.cs" Link="Linked\Elevated\Services.cs" />
+    <Compile Include="..\..\src\Binder.Elevated\Install.cs" Link="Linked\Elevated\Install.cs" />
+    <Compile Include="..\..\src\Binder.Elevated\Native.cs" Link="Linked\Elevated\Native.cs" />
+    <Compile Include="..\..\src\Binder.Setup\PayloadList.cs" Link="Linked\Setup\PayloadList.cs" />
+  </ItemGroup>
+
+</Project>

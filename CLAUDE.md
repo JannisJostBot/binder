@@ -2,8 +2,6 @@
 
 A lightweight Windows desktop widget that replaces game shortcuts on the desktop: a cover grid of the user's
 installed games that launches them, gets completely out of the way while a game runs, and comes back when it closes.
-(The product is Binder; the code, exe names, data folders, scheduled tasks and registry names still say GameShelf
-(or "Game Shelf" for the Run value). Don't rename those: existing installs and data depend on them.)
 
 **Top priority: zero performance cost while gaming.** While a game runs the widget process must not exist; only the
 tiny watcher may remain, blocked/sleeping.
@@ -59,7 +57,7 @@ their games, and it must feel like part of Windows. When an idea doesn't clearly
 ## Layout
 
 ```
-src/GameShelf/            the WinUI widget
+src/Binder/            the WinUI widget
   Library/                sources (*Source.cs), SourceDefaults (where each source reads, user overrides),
                           InstallFolder (folder safety), Vdf, ShortcutFile/ShortcutImporter,
                           LaunchOptions, GameScan, GameFiles (installed or gone, removed games' settings), AntiCheat, PlaytimeStats, CrashAnalysis, SpacePlanner,
@@ -82,13 +80,13 @@ src/GameShelf/            the WinUI widget
                           add, game actions), .Input (Esc, controller, type-to-search), .Launch (play, countdown,
                           return), .Notices (toast, errors, crash card)
   Program.cs, MessageWindow.cs   single instance, tray icon, hotkey
-src/GameShelf.Watcher/    windowless (one hidden window on its own thread, SystemEvents.cs: shutdown, sign-out and
+src/Binder.Watcher/    windowless (one hidden window on its own thread, SystemEvents.cs: shutdown, sign-out and
                           sleep); Program.cs, GameMode.cs (apply/restore + journal), ElevatedClient.cs,
                           GameModeShared.cs (also compiled into the widget, helper and setup)
-src/GameShelf.Elevated/   Game mode's admin helper (Native AOT, windowless, run by scheduled tasks)
-src/GameShelf.Setup/      GameShelfSetup.exe: per-user installer/updater/uninstaller (docs/installer.md)
-tests/GameShelf.Tests/    plain console unit tests (no test framework packages); smoke.ps1 / setup-test.ps1 are CI-only
-scripts/                  publish.ps1 (builds publish\app: widget folder + AOT watcher + helper, and GameShelfSetup.exe),
+src/Binder.Elevated/   Game mode's admin helper (Native AOT, windowless, run by scheduled tasks)
+src/Binder.Setup/      BinderSetup.exe: per-user installer/updater/uninstaller (docs/installer.md)
+tests/Binder.Tests/    plain console unit tests (no test framework packages); smoke.ps1 / setup-test.ps1 are CI-only
+scripts/                  publish.ps1 (builds publish\app: widget folder + AOT watcher + helper, and BinderSetup.exe),
                           check.ps1 (the hard rules on a diff, then build + tests; -Task for agent cards),
                           make-tray-icons.ps1 / make-watcher-icon.ps1 (redraw icons after a logo change)
 site/                     one-page website: plain HTML + CSS, no scripts, nothing from other servers
@@ -96,15 +94,15 @@ docs/proposals.md         approved feature specs, progress table (§0), decision
 docs/tasks/, AGENTS.md    task cards and rules for cheaper coding agents
 ```
 
-Data: `%APPDATA%\GameShelf\` (`settings.json`, `library.json`, `sessions-<year>.jsonl`, `imported-shortcuts.json`,
+Data: `%APPDATA%\Binder\` (`settings.json`, `library.json`, `sessions-<year>.jsonl`, `imported-shortcuts.json`,
 `crashes.json`, `removed-games.json` (settings of games that left the library), `Shortcuts\`; each JSON file with the
 previous save as `.bak`, a damaged one kept as `.bad`: `Storage.Save` flushes, swaps and keeps the backup, `Load` falls
-back to it). `%LOCALAPPDATA%\GameShelf\`: `covers\`, `error.log`, and Game mode's
+back to it). `%LOCALAPPDATA%\Binder\`: `covers\`, `error.log`, and Game mode's
 `gamemode-journal.json` (only while applied), `gamemode.log`, `gamemode-last.txt`, `gamemode-request.txt`. The
-helper: `%ProgramData%\GameShelf\` (`journal.json`, `elevated.log`, `allowed-<SID>.txt`, `result-<SID>.txt`).
+helper: `%ProgramData%\Binder\` (`journal.json`, `elevated.log`, `allowed-<SID>.txt`, `result-<SID>.txt`).
 The version lives in `Directory.Build.props`.
 
-Sessions (`GameShelf.Watcher/SessionLog.cs`, shared with the widget): JSON Lines, one compact object per line, one
+Sessions (`Binder.Watcher/SessionLog.cs`, shared with the widget): JSON Lines, one compact object per line, one
 file per year by the session's end. A session over New Year stays one record in the year it ended; per-year
 totals clip it at Jan 1. Readers load every year file and go by the timestamps, skip lines that don't parse, and
 ignore unknown fields: new fields are optional, never renamed; a breaking change gets a new file name. The widget
@@ -114,7 +112,7 @@ moves an old `sessions.json` into the year files at start (kept as `sessions.jso
 
 1. Play: `Launcher` starts the game via the launcher's URI/command, or the exe directly (GOG, manual, shortcut).
 2. The in-panel launch toast: "Starting [Game]", a countdown (default 10 s, per-game override) and **Keep open**.
-3. The widget starts `GameShelf.Watcher.exe` (game id, install folder, optional process name, timeout).
+3. The widget starts `Binder.Watcher.exe` (game id, install folder, optional process name, timeout).
 4. When the countdown ends the widget **exits** (unless Keep open).
 5. The watcher:
    - Detection: any process whose exe is inside the install folder, or the explicit process name. Polling every
@@ -130,8 +128,8 @@ moves an old `sessions.json` into the year files at start (kept as `sessions.jso
    - Game mode (when on for the game): apply right after start (and tell a widget that is still up, never starting
      it for that), Above normal priority once found, restore after the game: with "Come back" on, the widget is
      started first and the result follows as a forwarded `--restored` once it's up (`WaitForInputIdle`); with it off,
-     the restore comes first. A new Game mode session waits up to 30 s for a previous watcher still restoring. Admin items go through the helper's scheduled tasks (`GameShelf Apply/Restore <SID>`, waiting on
-     `Local\GameShelf.Elevated.<id>`). Not detected: restore at once.
+     the restore comes first. A new Game mode session waits up to 30 s for a previous watcher still restoring. Admin items go through the helper's scheduled tasks (`Binder Apply/Restore <SID>`, waiting on
+     `Local\Binder.Elevated.<id>`). Not detected: restore at once.
 6. A game the watcher can't follow (no folder, no process name) starts without hiding the widget, with a toast
    pointing to "Process to watch".
 
@@ -153,7 +151,7 @@ hidden `MessageWindow` (WM_COPYDATA). With no arguments that toggles the flyout.
 - What a page asks its owner to do is an interface (`I<Page>Actions`), implemented by `MainWindow` with explicit
   interface members in the page's partial file (`MainWindow.<Page>.cs`), so a missing action is a compile error,
   not a dead button. What the page needs from Windows (drives, running apps, the helper) goes through it too.
-- View models don't reference WinUI types, so `tests/GameShelf.Tests` compiles them and tests them with a spy for
+- View models don't reference WinUI types, so `tests/Binder.Tests` compiles them and tests them with a spy for
   the actions interface (`ViewModelTests.cs`). Add checks there with each view model.
 - `MainWindow` itself is split by area into partial files (see Layout); a new area gets its own file rather than
   growing `MainWindow.xaml.cs`.
@@ -168,7 +166,7 @@ or at once on Play/Details via `GameFiles`, never for an unplugged drive); their
 - Steam: skip non-games (redistributables, Proton, SDKs, servers). When Steam isn't running, start
   `steam.exe -silent <link>` so its window doesn't open.
 - Shortcut import: scan the user's and the Public Desktop; the user ticks which are games; chosen shortcuts are
-  **moved** to `%APPDATA%\GameShelf\Shortcuts\` (reversible, "Restore to desktop"); Steam/Epic URIs merge with the
+  **moved** to `%APPDATA%\Binder\Shortcuts\` (reversible, "Restore to desktop"); Steam/Epic URIs merge with the
   detected entry.
 - Covers: store art where a source has it (Steam: local cache, else the CDN once, cached); otherwise a generated
   cover (the game's icon on its own muted color, or a monogram), no network.
@@ -218,7 +216,7 @@ times follow the user's regional format.
 - **No user-visible text in code or XAML.** Every label, tooltip, UI Automation name, toast, menu item and file
   picker filter is an entry in `Strings/Strings.resx` with its German and French in `Strings.de.resx` and
   `Strings.fr.resx`, plus its line in `Strings.Entries.cs`. Code reads `Strings.Name`; XAML binds
-  `{x:Bind s:Strings.Name}` (`xmlns:s="using:GameShelf"`), except on a page's root element and on per-item
+  `{x:Bind s:Strings.Name}` (`xmlns:s="using:Binder"`), except on a page's root element and on per-item
   controls of the grid (GameTile, GameRow), which set theirs in code. The unit tests check that the three tables
   have the same entries and `{0}` placeholders and that every `Strings.X` in `src/` exists.
 - **Every English entry has a `<comment>` for translators** (only in `Strings.resx`): where the text appears
@@ -232,7 +230,7 @@ times follow the user's regional format.
 - Not translated: brand and product names (Steam, Epic Games, EA app, Binder), log files, the data files'
   contents, and the setup's disclaimer (English only, as in the README). The watcher and the helper record Game
   mode items by English name (journal, result, log); the widget translates them (`Views/GameModeText.cs`).
-- `GameShelfSetup.exe` keeps its few strings in `Text.cs` (invariant globalization, no resource files).
+- `BinderSetup.exe` keeps its few strings in `Text.cs` (invariant globalization, no resource files).
 - The CI tests (`tests/smoke.ps1`, `setup-test.ps1`) find controls by their English names: renaming an English
   label means updating them.
 - **Wording:** short and plain, in the words Windows uses. Say what something does or what happened, not why it's
@@ -240,13 +238,13 @@ times follow the user's regional format.
   a tooltip is one short line. German uses "Sie", like Windows; French "vous". Keep the three languages saying the
   same thing.
 
-Errors: unexpected UI errors go to `%LOCALAPPDATA%\GameShelf\error.log` (1 MB rotation) and a toast; a burst
+Errors: unexpected UI errors go to `%LOCALAPPDATA%\Binder\error.log` (1 MB rotation) and a toast; a burst
 (more than 5 in 10 s) isn't caught, so a broken state ends instead of spinning.
 
 ## Security rules
 
 The widget and watcher run as the normal user and never ask for admin rights. The one exception (owner, spec §11):
-Game mode's "Allow…" starts `GameShelf.Elevated.exe` once with a UAC prompt. Untrusted input: every launcher's
+Game mode's "Allow…" starts `Binder.Elevated.exe` once with a UAC prompt. Untrusted input: every launcher's
 manifests, config files and registry entries (library folders can be on drives others can write to), desktop
 shortcuts, downloaded images, and the places typed in Settings › Advanced.
 
@@ -290,7 +288,7 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
   and when reading the journal); only the journaled exe is reopened, without arguments. Priority: Above normal at
   most, never lowered, never High/Realtime.
 - **Game mode, admin part (the helper).**
-  - Lives only in `%ProgramFiles%\GameShelf\` (a hashed copy made by "Allow…", which holds its own exe open without
+  - Lives only in `%ProgramFiles%\Binder\` (a hashed copy made by "Allow…", which holds its own exe open without
     delete sharing so the copy is the approved file); never runs elevated from a user-writable folder except that
     one `--install`. Its tasks run that path as the user's SID, highest privileges, only while signed in; the user
     may run them, not change them.
@@ -300,12 +298,12 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
     (`ElevatedPart.IsSystemApp`); uploads are never limited for a Windows service's program, a protected process,
     another account's process or an antivirus Windows Security lists (`ProtectedApps`, checked at each apply); upload limit only 1, 5 or 20; ids only 32 hex digits. Paths from known folders
     only. One run at a time via a file lock in its admin-only folder (not a named mutex).
-  - Its folder `%ProgramData%\GameShelf\` has a protected ACL (SYSTEM and Administrators write, Users read); an
+  - Its folder `%ProgramData%\Binder\` has a protected ACL (SYSTEM and Administrators write, Users read); an
     existing folder counts as ours only if owned by Administrators/SYSTEM and not a link, else "Allow…" moves it
     aside and the helper refuses to work.
   - Services are only stopped (never their start type), only when running, stoppable and without running
     dependents, and restarted only if we stopped them and they weren't disabled meanwhile. QoS policies go into the
-    ActiveStore, named `GameShelf …`, and only those are removed. The Delivery Optimization value is restored
+    ActiveStore, named `Binder …`, and only those are removed. The Delivery Optimization value is restored
     exactly (including "not set" and its key if we created it).
   - Removal ("Remove it", uninstaller) runs the installed copy's `--uninstall`: restores what's still applied,
     deletes this user's tasks, marker and result, and with the last user the ProgramData folder and itself.

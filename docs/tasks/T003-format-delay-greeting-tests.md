@@ -10,7 +10,7 @@ Add checks for the hide-delay label and the exact hours where the shelf's greeti
 
 ## Files
 
-- `tests/GameShelf.Tests/Tests.cs`
+- `tests/Binder.Tests/Tests.cs`
 
 ## Steps
 
@@ -46,5 +46,5 @@ For example, the first row becomes:
 
 ## Don't
 
-- Don't change `src/GameShelf/Views/Format.cs` or any existing check (there are greeting checks in `Main()`
+- Don't change `src/Binder/Views/Format.cs` or any existing check (there are greeting checks in `Main()`
   already; leave them).

@@ -6,12 +6,12 @@ to combine it with the libraries below (LICENSE and LICENSE-EXCEPTION.txt). The 
 include the following software from others. Each stays under its own license, not the GPL.
 
 The full license texts and the upstream notice files, taken from the exact package versions each build uses, are
-in the "licenses" folder of the install folder (%LOCALAPPDATA%\Programs\GameShelf\licenses). scripts/publish.ps1
+in the "licenses" folder of the install folder (%LOCALAPPDATA%\Programs\Binder\licenses). scripts/publish.ps1
 copies them there.
 
 
 1. .NET runtime (Microsoft.NETCore.App)
-   Used in: every exe (GameShelf.exe, GameShelf.Watcher.exe, GameShelf.Elevated.exe, GameShelfSetup.exe and its
+   Used in: every exe (Binder.exe, Binder.Watcher.exe, Binder.Elevated.exe, BinderSetup.exe and its
    copy Uninstall.exe), compiled in by Native AOT.
    License: MIT. Copyright (c) .NET Foundation and Contributors.
    It includes third-party components of its own, listed in its notices file.
@@ -19,7 +19,7 @@ copies them there.
    Source: https://github.com/dotnet/runtime
 
 2. Windows App SDK (WinUI 3 and the Windows App Runtime)
-   Used in: the widget (GameShelf.exe) and the Microsoft DLLs next to it in the install folder.
+   Used in: the widget (Binder.exe) and the Microsoft DLLs next to it in the install folder.
    License: Microsoft Software License Terms for the Windows App SDK (not open source). By installing Binder you
    also agree to these terms for these components.
    It includes third-party components of its own, listed in its notices files.

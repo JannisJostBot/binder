@@ -23,7 +23,7 @@ Make exactly these four replacements. Each old text appears once in the file.
 | `· [SIZE] MB ·` | `· 31 MB ·` |
 | `href="[SOURCE LINK]"` | `href="https://github.com/JannisJostBot/binder"` |
 
-(0.1.0 is the version in `Directory.Build.props`; 31 MB is the size of `GameShelfSetup.exe` from CI on
+(0.1.0 is the version in `Directory.Build.props`; 31 MB is the size of `BinderSetup.exe` from CI on
 2026-11-05, 32,558,080 bytes.)
 
 ## Done when

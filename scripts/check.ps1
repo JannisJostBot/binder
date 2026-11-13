@@ -97,11 +97,11 @@ Scan '^site/.*\.(html?|css)$' '(@import|url\(\s*["'']?\s*(https?:)?//)' 'the web
 # --- Rules for agent work -------------------------------------------------------------------------------
 if ($Strict) {
     $protected = @(
-        '^src/GameShelf\.Watcher/', '^src/GameShelf\.Setup/', '^src/GameShelf\.Elevated/',
-        '^src/GameShelf/(Program|MessageWindow)\.cs$', '^src/GameShelf/app\.manifest$',
-        '^src/GameShelf/Services/(Launcher|Native\w*|DesktopLayer|Monitors|Footprint|ShellImage[\w.]*|ShellNotify|PcChecks|PcInfo|CrashLog|Autostart|CoverCache|Storage|RunningGames|GameLogs|GameModeService)\.cs$',
-        '^src/GameShelf/Library/(\w+Source|SourceDefaults|InstallFolder|ShortcutFile|ShortcutImporter|Vdf|LibraryScanner)\.cs$',
-        '^src/GameShelf/Views/PanelBackdrop\.cs$',
+        '^src/Binder\.Watcher/', '^src/Binder\.Setup/', '^src/Binder\.Elevated/',
+        '^src/Binder/(Program|MessageWindow)\.cs$', '^src/Binder/app\.manifest$',
+        '^src/Binder/Services/(Launcher|Native\w*|DesktopLayer|Monitors|Footprint|ShellImage[\w.]*|ShellNotify|PcChecks|PcInfo|CrashLog|Autostart|CoverCache|Storage|RunningGames|GameLogs|GameModeService)\.cs$',
+        '^src/Binder/Library/(\w+Source|SourceDefaults|InstallFolder|ShortcutFile|ShortcutImporter|Vdf|LibraryScanner)\.cs$',
+        '^src/Binder/Views/PanelBackdrop\.cs$',
         '\.(csproj|sln|props|targets)$', '^scripts/', '^\.github/',
         '^tests/(smoke|setup-test)\.ps1$', '^tests/FakeGame/',
         '^(CLAUDE|AGENTS)\.md$', '^docs/(proposals|installer)\.md$', '^docs/tasks/'
@@ -115,7 +115,7 @@ if ($Strict) {
         'timers, waiting and endless loops need the owner''s review (no background work while idle)'
     Scan '\.cs$' '\[\s*(LibraryImport|GeneratedComInterface|UnmanagedCallersOnly)' 'native code is protected: leave it to a reviewed change'
     foreach ($f in $changed) {
-        if ($f -notmatch '^tests/GameShelf\.Tests/') { continue }
+        if ($f -notmatch '^tests/Binder\.Tests/') { continue }
         foreach ($l in $removed[$f]) {
             if ($l -match 'Check\s*\(') { Problem "${f}: an existing test check was removed or changed; only add new ones`n        $($l.Trim())" }
         }
@@ -142,14 +142,14 @@ if (-not $SkipBuild) {
     $ErrorActionPreference = 'Continue'
     $onWindows = [Environment]::OSVersion.Platform -eq 'Win32NT'
     if ($onWindows) {
-        Write-Host "`nBuilding (dotnet build GameShelf.sln -c Release)..."
-        & dotnet build GameShelf.sln -c Release -nologo -v quiet
+        Write-Host "`nBuilding (dotnet build Binder.sln -c Release)..."
+        & dotnet build Binder.sln -c Release -nologo -v quiet
         if ($LASTEXITCODE -ne 0) { Problem 'the build failed (see the errors above)' }
     } else {
         Write-Host "`nSkipping the app build: the WinUI app only builds on Windows." -ForegroundColor Yellow
     }
-    Write-Host "`nUnit tests (dotnet run --project tests/GameShelf.Tests -c Release)..."
-    $out = & dotnet run --project tests/GameShelf.Tests -c Release 2>&1
+    Write-Host "`nUnit tests (dotnet run --project tests/Binder.Tests -c Release)..."
+    $out = & dotnet run --project tests/Binder.Tests -c Release 2>&1
     $out | ForEach-Object { if ("$_" -like 'FAIL *') { Write-Host $_ -ForegroundColor Red } }
     $summary = ($out | Select-Object -Last 1)
     Write-Host "  $summary"

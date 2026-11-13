@@ -10,17 +10,17 @@ All milestone branches build on each other in one line (`main` → milestone 4 �
 milestone, and you're testing exactly the combination that will end up on `main`.
 
 1. **Get the build.** No build tools needed: on GitHub, switch to the branch **`ci-results/installer`** (or
-   whichever branch is newest) and download **`GameShelfSetup.exe`**. CI builds it from that branch on every
+   whichever branch is newest) and download **`BinderSetup.exe`**. CI builds it from that branch on every
    push. Building it yourself works too: check out the branch and run `./scripts/publish.ps1` (see
    [installer.md](installer.md)).
-2. **Back up your data** (optional, but cheap): copy `%APPDATA%\GameShelf` somewhere. Imported desktop
+2. **Back up your data** (optional, but cheap): copy `%APPDATA%\Binder` somewhere. Imported desktop
    shortcuts are only ever moved, never deleted.
 3. **Quit any old copy** you're running from the tray (right-click → Quit), then run the setup.
 4. Go through the list below, in order (later sections reuse earlier ones). Tick what works.
 5. **Report back** the numbers of what failed (e.g. "F4, L7"), with a sentence or a screenshot each, plus
    these two files if something broke:
-   - `%LOCALAPPDATA%\GameShelf\error.log` (the app's errors)
-   - `%TEMP%\GameShelfSetup.log` (setup)
+   - `%LOCALAPPDATA%\Binder\error.log` (the app's errors)
+   - `%TEMP%\BinderSetup.log` (setup)
 
    I fix those on the newest branch, CI builds a new setup, and you re-test only the failed items.
 6. When everything passes, `main` can simply be fast-forwarded to the tested branch.
@@ -31,7 +31,7 @@ Tick boxes here on GitHub (edit the file), in a copy, or on paper. Whatever is e
 
 ## I · Install (installer)
 
-- [x] **I1** Run `GameShelfSetup.exe`. If SmartScreen warns, More info → Run anyway works. **No UAC prompt**.
+- [x] **I1** Run `BinderSetup.exe`. If SmartScreen warns, More info → Run anyway works. **No UAC prompt**.
 - [x] **I2** *(Dropped: the WinUI app is self-contained, so there's no runtime to be missing.)*
 - [x] **I3** Install → "Binder is installed" → Close with "Open Binder now" ticked opens the app.
 - [x] **I4** Start menu has **Binder** with its icon. Typing "Binder" in Start finds it.
@@ -113,7 +113,7 @@ Settings → How Binder appears → **On the desktop**.
 ## P · Play → hide → come back (milestone 2)
 
 - [ ] **P1** **A Steam game:** Play → "Starting …" countdown → Binder disappears (not in Task Manager, only
-  `GameShelf.Watcher`). Close the game → it comes back.
+  `Binder.Watcher`). Close the game → it comes back.
 - [ ] **P2** **An Epic game:** same as P1 (the Epic launcher starts first; detection still works).
 - [ ] **P3** **A GOG or manually added game:** same.
 - [ ] **P4** A game that restarts itself, or starts through its own launcher: it's still tracked until the real
@@ -160,24 +160,24 @@ Note the numbers. CI's numbers are in brackets.
   ~12 MB) and after opening and closing once (CI ~12–15 MB in RAM). "Commit size" stays higher after the first
   open: that's WinUI's graphics stack, paged out rather than in RAM.
 - [ ] **R3** Opening with Win+Shift+G feels instant (CI 0.3–0.6 s).
-- [ ] **R4** During a game: no `GameShelf.exe` process, `GameShelf.Watcher.exe` at ~3 MB and 0 % CPU.
+- [ ] **R4** During a game: no `Binder.exe` process, `Binder.Watcher.exe` at ~3 MB and 0 % CPU.
 
 ## U · Update and uninstall (installer)
 
-- [ ] **U1** Run `GameShelfSetup.exe` again → **Reinstall** → Binder comes back as it was (tray), with your
+- [ ] **U1** Run `BinderSetup.exe` again → **Reinstall** → Binder comes back as it was (tray), with your
   games and settings.
 - [ ] **U2** Same, *while a game is running*: the update finishes, and when you close the game, Binder
   comes back and the session is recorded.
 - [ ] **U3** Settings → Apps → Binder → **Uninstall**, *without* "delete my data": the app, Start menu entry,
-  Start with Windows, `%LOCALAPPDATA%\GameShelf` and `%TEMP%\GameShelfSetup.log` are gone. With "Put my shortcuts
+  Start with Windows, `%LOCALAPPDATA%\Binder` and `%TEMP%\BinderSetup.log` are gone. With "Put my shortcuts
   back on the desktop" (the default) the imported shortcuts are back on the desktop.
 - [ ] **U3b** Uninstall with **Don't put them back**, without "delete my data": the shortcuts stay in
-  `%APPDATA%\GameShelf\Shortcuts` and the last dialog says so. After installing again, Settings › "Restore
+  `%APPDATA%\Binder\Shortcuts` and the last dialog says so. After installing again, Settings › "Restore
   shortcuts to desktop" puts them back.
 - [ ] **U3c** Double-click the setup twice quickly: the second says "Binder Setup is already running".
 - [ ] **U4** Install again: your games, favorites and play history are still there.
-- [ ] **U5** *(Only if you're done testing)* Uninstall *with* "delete my data": `%APPDATA%\GameShelf` and
-  `%LOCALAPPDATA%\GameShelf` are gone too.
+- [ ] **U5** *(Only if you're done testing)* Uninstall *with* "delete my data": `%APPDATA%\Binder` and
+  `%LOCALAPPDATA%\Binder` are gone too.
 
 ---
 

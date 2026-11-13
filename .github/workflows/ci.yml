@@ -49,7 +49,7 @@ jobs:
       - name: Build
         run: |
           New-Item -ItemType Directory -Force artifacts | Out-Null
-          dotnet build GameShelf.sln -c Release 2>&1 | Tee-Object artifacts/build.txt
+          dotnet build Binder.sln -c Release 2>&1 | Tee-Object artifacts/build.txt
 
       # Test what ships: the published WinUI widget folder and the Native AOT watcher (publish.ps1).
       - name: Publish
@@ -60,10 +60,10 @@ jobs:
             Tee-Object artifacts/publish-sizes.txt
           # The built installer, so a manual test on a real PC needs no build tools: download it from the
           # "smoke-test" artifact or the ci-results/<branch> branch.
-          Copy-Item publish/GameShelfSetup.exe artifacts/
+          Copy-Item publish/BinderSetup.exe artifacts/
 
       - name: Unit tests
-        run: dotnet run --project tests/GameShelf.Tests -c Release 2>&1 | Tee-Object artifacts/unit-tests.txt
+        run: dotnet run --project tests/Binder.Tests -c Release 2>&1 | Tee-Object artifacts/unit-tests.txt
 
       - name: Build stand-in game
         run: dotnet build tests/FakeGame -c Release
@@ -72,13 +72,13 @@ jobs:
         shell: powershell
         env:
           WATCHER_BUILD: Native AOT
-        run: ./tests/smoke.ps1 -Exe publish/app/GameShelf.exe -FakeGame tests/FakeGame/out/FakeGame.exe
+        run: ./tests/smoke.ps1 -Exe publish/app/Binder.exe -FakeGame tests/FakeGame/out/FakeGame.exe
 
       # The installer: install through its dialogs, update while the app and a watcher run, uninstall.
       - name: Setup test
         if: always()
         shell: powershell
-        run: ./tests/setup-test.ps1 -Setup publish/GameShelfSetup.exe -Published publish/app
+        run: ./tests/setup-test.ps1 -Setup publish/BinderSetup.exe -Published publish/app
 
       # Also prints the screenshots as base64 JPEGs into the log, for reviewers (and agents) that can read
       # the job log but not download artifacts.

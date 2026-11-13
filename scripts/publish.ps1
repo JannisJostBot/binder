@@ -1,8 +1,8 @@
 # Builds what ships, into publish/ (see docs/installer.md):
 #   app\                   the widget (WinUI 3, Native AOT, self-contained: no runtime to install) and the watcher
-#                          (Native AOT, ~1 MB, ~3 MB of memory) and Game mode's helper (GameShelf.Elevated.exe),
+#                          (Native AOT, ~1 MB, ~3 MB of memory) and Game mode's helper (Binder.Elevated.exe),
 #                          as they're laid out in the install folder
-#   GameShelfSetup.exe     Native AOT installer/updater with app\ inside
+#   BinderSetup.exe     Native AOT installer/updater with app\ inside
 #
 #   ./scripts/publish.ps1
 #   ./scripts/publish.ps1 -CertificateThumbprint <sha1>   # also Authenticode-signs the exes (cert in your store)
@@ -36,24 +36,24 @@ $app = Join-Path $Output 'app'
 Remove-Item $app -Recurse -Force -ErrorAction SilentlyContinue
 
 # Intermediate output goes to obj/publish-* so it can't mix with the normal bin/ build.
-dotnet publish src/GameShelf -c Release -r $runtime -p:PublishAot=true -p:DebugType=none `
+dotnet publish src/Binder -c Release -r $runtime -p:PublishAot=true -p:DebugType=none `
     -p:OutputPath="$repo/obj/publish-widget/" -o $app
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-dotnet publish src/GameShelf.Watcher -c Release -r $runtime -p:PublishAot=true `
+dotnet publish src/Binder.Watcher -c Release -r $runtime -p:PublishAot=true `
     -p:DebugType=none -p:OutputPath="$repo/obj/publish-watcher/" -o $app
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # Game mode's admin part: "Allow..." copies it to Program Files (one UAC prompt); it never runs from here otherwise.
-dotnet publish src/GameShelf.Elevated -c Release -r $runtime -p:PublishAot=true `
+dotnet publish src/Binder.Elevated -c Release -r $runtime -p:PublishAot=true `
     -p:DebugType=none -p:OutputPath="$repo/obj/publish-elevated/" -o $app
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # Metadata for compilers and debug symbols: not needed to run.
 Get-ChildItem $app -Recurse -File -Include *.winmd, *.pdb | Remove-Item
 
-# The app's translations (de\, fr\ GameShelf.resources.dll): Native AOT compiles them into GameShelf.exe.
-foreach ($satellite in Get-ChildItem $app -Recurse -File -Filter 'GameShelf.resources.dll') {
+# The app's translations (de\, fr\ Binder.resources.dll): Native AOT compiles them into Binder.exe.
+foreach ($satellite in Get-ChildItem $app -Recurse -File -Filter 'Binder.resources.dll') {
     $folder = $satellite.Directory
     Remove-Item $satellite.FullName
     if (-not (Get-ChildItem $folder.FullName -Force)) { Remove-Item $folder.FullName }
@@ -68,11 +68,11 @@ function Add-License([string] $source, [string] $name) {
     if (-not (Test-Path -LiteralPath $source)) { throw "License file missing: $source" }
     Copy-Item -LiteralPath $source (Join-Path $licenses $name)
 }
-Add-License (Join-Path $repo 'LICENSE') 'GameShelf-LICENSE.txt'
-Add-License (Join-Path $repo 'LICENSE-EXCEPTION.txt') 'GameShelf-LICENSE-EXCEPTION.txt'
+Add-License (Join-Path $repo 'LICENSE') 'Binder-LICENSE.txt'
+Add-License (Join-Path $repo 'LICENSE-EXCEPTION.txt') 'Binder-LICENSE-EXCEPTION.txt'
 Add-License (Join-Path $repo 'THIRD-PARTY-NOTICES.txt') 'THIRD-PARTY-NOTICES.txt'
 
-$assets = Get-Content (Join-Path $repo 'src/GameShelf/obj/project.assets.json') -Raw | ConvertFrom-Json
+$assets = Get-Content (Join-Path $repo 'src/Binder/obj/project.assets.json') -Raw | ConvertFrom-Json
 $packages = @($assets.packageFolders.PSObject.Properties.Name)[0]
 # The .NET runtime pack (compiled into every exe by Native AOT).
 $runtimeVersion = $assets.project.frameworks.PSObject.Properties.Value |
@@ -108,9 +108,9 @@ if (Get-ChildItem $app -Recurse -File -Filter 'Microsoft.Web.WebView2*.dll') {
     Add-License (Join-Path $dir 'NOTICE.txt') 'WebView2-NOTICE.txt'
 }
 
-$widget = Join-Path $app 'GameShelf.exe'
-$watcher = Join-Path $app 'GameShelf.Watcher.exe'
-$elevated = Join-Path $app 'GameShelf.Elevated.exe'
+$widget = Join-Path $app 'Binder.exe'
+$watcher = Join-Path $app 'Binder.Watcher.exe'
+$elevated = Join-Path $app 'Binder.Elevated.exe'
 Sign @($widget, $watcher, $elevated)
 
 # The setup's payload: app.zip with the app folder, plus payload.txt with every file's SHA-256 and path, which
@@ -136,19 +136,19 @@ finally {
     $zip.Dispose()
 }
 
-dotnet publish src/GameShelf.Setup -c Release -r $runtime -p:PublishAot=true `
+dotnet publish src/Binder.Setup -c Release -r $runtime -p:PublishAot=true `
     -p:PayloadDir="$payload/" -p:DebugType=none -p:OutputPath="$repo/obj/publish-setup/" -o "$repo/obj/setup-out"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-$setup = Join-Path $Output 'GameShelfSetup.exe'
-Copy-Item (Join-Path $repo 'obj/setup-out/GameShelfSetup.exe') $setup -Force
+$setup = Join-Path $Output 'BinderSetup.exe'
+Copy-Item (Join-Path $repo 'obj/setup-out/BinderSetup.exe') $setup -Force
 Sign @($setup)
 
 # Single files of earlier versions of this script, so publish/ only holds what this build made.
-Remove-Item (Join-Path $Output 'GameShelf.exe'), (Join-Path $Output 'GameShelf.Watcher.exe') -ErrorAction SilentlyContinue
+Remove-Item (Join-Path $Output 'Binder.exe'), (Join-Path $Output 'Binder.Watcher.exe') -ErrorAction SilentlyContinue
 
 Write-Host ''
 $appFiles = Get-ChildItem $app -Recurse -File
 Write-Host ('{0,-28} {1,8:N0} KB in {2} files' -f 'app\', (($appFiles | Measure-Object Length -Sum).Sum / 1KB), $appFiles.Count)
-Write-Host ('{0,-28} {1,8:N0} KB' -f 'GameShelfSetup.exe', ((Get-Item $setup).Length / 1KB))
-Write-Host ("GameShelfSetup.exe SHA-256: {0}" -f (Get-FileHash $setup -Algorithm SHA256).Hash)
+Write-Host ('{0,-28} {1,8:N0} KB' -f 'BinderSetup.exe', ((Get-Item $setup).Length / 1KB))
+Write-Host ("BinderSetup.exe SHA-256: {0}" -f (Get-FileHash $setup -Algorithm SHA256).Hash)
 Write-Host "Published to $Output"

@@ -11,7 +11,7 @@ Add checks for `Format.RelativeDay` ("Today", "Yesterday", "3 days ago", or a sh
 
 ## Files
 
-- `tests/GameShelf.Tests/Tests.cs`
+- `tests/Binder.Tests/Tests.cs`
 
 ## Steps
 
@@ -54,4 +54,4 @@ For example, the first row becomes:
 
 - Don't add a `using` line at the top of the file; the full name `System.Globalization.CultureInfo` is used on
   purpose.
-- Don't change `src/GameShelf/Views/Format.cs` or any existing check.
+- Don't change `src/Binder/Views/Format.cs` or any existing check.

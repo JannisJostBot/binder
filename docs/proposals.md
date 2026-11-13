@@ -23,7 +23,7 @@ break the user's system.
 | 11 Crash detection | §10 | Done. With "Come back" off the crash card shows the next time the panel opens instead of a toast (Game mode's "Restored" toast doesn't exist yet); memory is the installed amount (`GetPhysicallyInstalledSystemMemory`) |
 | 12 More launchers | §8 | **In progress.** Done: EA app, Ubisoft Connect, Xbox app (tile logo as the cover picture) and Rockstar (tested with synthetic data only, no Rockstar game installed). Not yet: Battle.net, Riot, Amazon, itch, Humble and Meta |
 | 13 Controller | §4 | Built (`Services/Gamepad`, XInput; the hint bar, LB/RB pills and bold focus ring of board 3, without its "Controller" header pill). B closes menus and dialogs too; A on other controls goes through their UI Automation pattern; Menu toggles Settings. To try with a real pad. `Windows.Gaming.Input` (PlayStation, Switch) not yet |
-| 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Game mode toast ("Game mode is on" after applying, while the widget is still up, and "Windows is back to normal" after the restore; animated badge) and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\GameShelf\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `GameShelf.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `GameShelf Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\GameShelf\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing). Tested live on the owner's PC on 2026-11-07: the tasks register and run, the Print Spooler is paused and restarted, the QoS policies and the Windows Update limit are applied and restored. Windows keeps ActiveStore policy names lowercased, so ours are matched ignoring case. The shelf shows "Game mode needs an update" with Update… when Game mode uses the helper and it's from another version. Still to check: Delivery Optimization picks up the policy without a restart. Also built: §20 (board 24), the "Windows' own settings" card, Pause OneDrive syncing and Close / Calm per app (efficiency mode) |
+| 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Game mode toast ("Game mode is on" after applying, while the widget is still up, and "Windows is back to normal" after the restore; animated badge) and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\Binder\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `Binder.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `Binder Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\Binder\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing). Tested live on the owner's PC on 2026-11-07: the tasks register and run, the Print Spooler is paused and restarted, the QoS policies and the Windows Update limit are applied and restored. Windows keeps ActiveStore policy names lowercased, so ours are matched ignoring case. The shelf shows "Game mode needs an update" with Update… when Game mode uses the helper and it's from another version. Still to check: Delivery Optimization picks up the policy without a restart. Also built: §20 (board 24), the "Windows' own settings" card, Pause OneDrive syncing and Close / Calm per app (efficiency mode) |
 | 19 Quick actions | §16 | Done (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); tried on the real PC |
 | 20 Restart after a crash | §17 | Built: the Detail toggle, `CrashAnalysis.ShouldRestart` (in a row from `crashes.json`, at most 2), the watcher's `--restart` / `--crashed`, the restart pill (Game mode's pill with a 5 s countdown, bar and Cancel, owner's change) and the crash card's "Restarted twice already" line; unit-tested. To try on the real PC with a game that crashes (or a test exe that exits with 0xC0000005 after a minute) |
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
@@ -49,7 +49,7 @@ The build order is at the end of this file. The ideas under "Not decided" at the
 - Logo **B** (cover stack).
 - Game mode may use admin rights:
   - One-time UAC prompt.
-  - Helper in `%ProgramFiles%\GameShelf\`.
+  - Helper in `%ProgramFiles%\Binder\`.
   - A real installer is therefore needed.
 - Power mode via the undocumented overlay API is OK.
 
@@ -193,10 +193,15 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   - Covers that couldn't be downloaded (offline) are tried again when the panel next opens, one timeout at most per
     open; a cover lookup can't bring back an old cover after a custom one is set; another game ending doesn't
     cancel the countdown.
-- **Uninstall removes everything Binder put on the PC** (owner): the cache (`%LOCALAPPDATA%\GameShelf`) always,
+- **Uninstall removes everything Binder put on the PC** (owner): the cache (`%LOCALAPPDATA%\Binder`) always,
   setup's log after a completed uninstall, the data with "Also delete…". New choice when there are imported
   shortcuts: **Put my shortcuts back on the desktop** (default) or **Don't put them back** (they stay with the data,
   or go with it); `/keepshortcuts` for a silent uninstall. Shortcuts that couldn't go back are never deleted.
+
+**2026-11-13**
+- **Renamed to Binder everywhere** (owner): the name, projects, namespaces and exes (`Binder.exe`,
+  `Binder.Watcher.exe`, `Binder.Elevated.exe`, `BinderSetup.exe`), data folders, scheduled tasks, registry entries
+  and mutexes. No migration from Game Shelf: it was never released, so an old install is uninstalled first.
 
 ---
 
@@ -607,18 +612,18 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
 ### Elevation and security
 
 - **One "Allow…" UAC prompt:**
-  - Installs `GameShelf.Elevated.exe` to `%ProgramFiles%\GameShelf\`. Never in a user-writable folder.
-  - Registers the scheduled tasks *GameShelf Apply* / *GameShelf Restore* with "Run with highest privileges".
+  - Installs `Binder.Elevated.exe` to `%ProgramFiles%\Binder\`. Never in a user-writable folder.
+  - Registers the scheduled tasks *Binder Apply* / *Binder Restore* with "Run with highest privileges".
 - **Helper version:** "Allow…" writes `ElevatedPart.HelperVersion` (a whole number, not the app version) into
   `allowed-<SID>.txt`. Only another number there asks for "Update…" (one UAC prompt), so a Binder update that
-  doesn't change the helper doesn't ask again. **Bump `HelperVersion` whenever `GameShelf.Elevated` changes**: what
+  doesn't change the helper doesn't ask again. **Bump `HelperVersion` whenever `Binder.Elevated` changes**: what
   it does, the request, journal or result format, or how its tasks and folders are set up. Markers from before it
   hold the app version ("0.1.3") and update once more. Update replaces the copy in Program Files; the same exe
   already there is left alone.
 - **Per game:** the watcher runs a task (`schtasks /run`) and waits on a named event with a timeout.
 - **The helper trusts nothing from the user side:**
   - It acts only on ids from its compiled-in allowlist.
-  - The journal lives in `%ProgramData%\GameShelf\` with an admin-only ACL.
+  - The journal lives in `%ProgramData%\Binder\` with an admin-only ACL.
 - **Without the helper:** the no-admin items still work.
 
 ### Timing
@@ -632,7 +637,7 @@ lists only the launchers that are installed, plus "Show N that aren't installed"
 - **Style:** replaced by the one-line pill and the failure card of §18 (board 23). Like the Windows 11 volume
   flyout, centered above the taskbar. The dot pops in and its check draws itself once (no idle cost; skipped with
   "Animation effects" off).
-- **After the restore** (`GameShelf.exe --restored <result>`; with "Come back" off only the toast shows, then it exits):
+- **After the restore** (`Binder.exe --restored <result>`; with "Come back" off only the toast shows, then it exits):
   - "Windows is back to normal · Game mode put back 5 changes" (closes after 4 s), with Binder's own calm sound
     (§18; "Play a sound with it", on by default; system sounds volume, skipped while
     `SHQueryUserNotificationState` says notifications are held back), or
@@ -1540,7 +1545,7 @@ Instead of competing with Start, put the games there, launched through Binder.
 - Shortcuts go only into our own folder, `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Binder games\`, one
   `.lnk` per game, written with the Shell API (`IShellLinkW` + `IPersistFile.Save`, the same interfaces
   `ShortcutFile` already loads).
-- Each shortcut runs **`GameShelf.exe --play <gameId>`**, so a launch from Start gets everything Binder adds:
+- Each shortcut runs **`Binder.exe --play <gameId>`**, so a launch from Start gets everything Binder adds:
   silent Steam, the watcher, Game mode, playtime, crash help. Its icon is the game's icon (`SteamSource.IconFor`,
   the exe, or the fallback cover's icon saved as `.ico` in our cache).
 - **`--play <id>`:** the id must match a game in `library.json`; anything else is ignored. It plays the game
@@ -1598,7 +1603,7 @@ and where possible a setting or a line of text goes away instead of one being ad
   `Game.HideDelaySeconds`), whatever the game is doing: too early while Steam is still updating, too late for a game
   that's up in 3 s.
 - New: the watcher tells the widget the moment it finds the game's process, the same way it reports Game mode
-  today (`StartWidget("--applied", …)`): it starts `GameShelf.exe --detected <gameId>`, which the single instance
+  today (`StartWidget("--applied", …)`): it starts `Binder.exe --detected <gameId>`, which the single instance
   forwards to the running widget, or which exits at once when none is running. The widget then ends the countdown
   and exits, as when the countdown ends today.
 - The countdown stays as the **upper limit** (if detection takes longer, the panel still hides then), and Keep open
@@ -1728,7 +1733,7 @@ not approved yet:** build only after the owner's go. Today the app never contact
 - **Zero cost while idle or gaming:** no timer, no background service, no scheduled task. The check is one small
   request when the panel opens, at most once a day. During a game the widget doesn't exist, so nothing updates.
 - **Nothing new to trust on the PC:** no elevation, no new process that stays running, no package. The installer
-  that's already there (`GameShelfSetup.exe /S`) does the install.
+  that's already there (`BinderSetup.exe /S`) does the install.
 
 ### What an attacker would need (threat model)
 
@@ -1746,12 +1751,12 @@ not approved yet:** build only after the owner's go. Today the app never contact
 
 ### The signed manifest
 
-Every release carries three files: `GameShelfSetup-<version>.exe`, `release.json` and `release.json.sig`.
+Every release carries three files: `BinderSetup-<version>.exe`, `release.json` and `release.json.sig`.
 
 ```json
 {
   "format": 1,
-  "product": "GameShelf",
+  "product": "Binder",
   "channel": "stable",
   "version": "0.2.0",
   "issued": "2026-11-20T18:04:00Z",
@@ -1763,7 +1768,7 @@ Every release carries three files: `GameShelfSetup-<version>.exe`, `release.json
 ```
 
 - **Signature:** ECDSA P-384 with SHA-384 (built into .NET and Windows CNG, works on Windows 10, no package),
-  over the exact bytes of `release.json` prefixed with the fixed text `GameShelf release manifest v1` and a zero byte
+  over the exact bytes of `release.json` prefixed with the fixed text `Binder release manifest v1` and a zero byte
   (so the key can't be tricked into signing anything else that verifies). `release.json.sig` holds the 96-byte
   signature (IEEE P1363) in base64, one per line: one line normally, two (one per YubiKey) for an urgent update. Ed25519 isn't in .NET 10 or CNG, and writing our own crypto is out.
 - **Keys in the app:** two public keys compiled in (`Services/UpdateKeys.cs`): the owner's main key and the
@@ -1777,7 +1782,7 @@ Every release carries three files: `GameShelfSetup-<version>.exe`, `release.json
   language, plain text (shown in a TextBlock, never as markup or links). Anything else is rejected; unknown fields
   are ignored.
 - **The download address isn't in the manifest:** the app builds it from the version alone,
-  `https://github.com/JannisJostBot/binder/releases/download/v<version>/GameShelfSetup-<version>.exe`.
+  `https://github.com/JannisJostBot/binder/releases/download/v<version>/BinderSetup-<version>.exe`.
 
 ### Urgent security updates (owner's request, 2026-11-12)
 
@@ -1809,9 +1814,9 @@ A release can be marked `"urgent": true` for a security fix that shouldn't wait 
 3. **Build (GitHub Actions, `.github/workflows/release.yml`, on `v*` tags only):**
    - Refuses unless the tag equals `<Version>`, the commit is on `main`, and `docs/releases/<version>.json` exists.
    - `publish.ps1`, the unit tests, the UI smoke test and the setup test, as in CI.
-   - `actions/attest-build-provenance` for `GameShelfSetup.exe` (a Sigstore attestation naming the repository,
+   - `actions/attest-build-provenance` for `BinderSetup.exe` (a Sigstore attestation naming the repository,
      workflow and commit).
-   - Creates a **draft** release `v0.2.0` with `GameShelfSetup-0.2.0.exe` only.
+   - Creates a **draft** release `v0.2.0` with `BinderSetup-0.2.0.exe` only.
    - Permissions only `contents: write`, `id-token: write`, `attestations: write`; every action pinned to a commit
      hash; no secrets; no `pull_request_target`. The workflow has no signing key and can't publish.
 4. **Sign (owner's PC, `scripts/sign-release.ps1 -Version 0.2.0`):**
@@ -1861,18 +1866,18 @@ private key never exists anywhere else and can't be copied off it.
 - **What it fetches:** `https://github.com/JannisJostBot/binder/releases/latest/download/release.json` and
   `.sig` (about 2 KB). Redirects are followed only over HTTPS and only to `github.com`,
   `objects.githubusercontent.com` and `release-assets.githubusercontent.com`. 15 s timeout. No GitHub API, no
-  account, no cookies, a plain `User-Agent: GameShelf/<version>`.
+  account, no cookies, a plain `User-Agent: Binder/<version>`.
 - **What it keeps** (`settings.json`): the last check's time, the highest `issued` accepted, and a version the user
-  skipped. The verified manifest itself goes to `%LOCALAPPDATA%\GameShelf\updates\release.json` with its signature,
+  skipped. The verified manifest itself goes to `%LOCALAPPDATA%\Binder\updates\release.json` with its signature,
   and is verified again whenever it's read back.
 - **Download:** when the user presses **Update**, or at once with "Install automatically". To
-  `%LOCALAPPDATA%\GameShelf\updates\GameShelfSetup-<version>.exe.part`, hashed while it streams, stopped past the
+  `%LOCALAPPDATA%\Binder\updates\BinderSetup-<version>.exe.part`, hashed while it streams, stopped past the
   manifest's size, then compared with `sha256` and renamed. One download at a time; a progress bar only while it
   runs. Cancelled or failed: the part file is deleted; the next try starts over (no ranges). Closing the panel
   cancels it (nothing downloads while the panel is closed or a game runs).
 - **Start the setup:** the verified file stays open with read sharing only (no write, no delete) until
   `CreateProcess` has returned, so nothing can swap it in between. If an Authenticode signature is present on the
-  installed `GameShelf.exe`, the new setup must carry the same publisher (`WinVerifyTrust`); unsigned today, so this
+  installed `Binder.exe`, the new setup must carry the same publisher (`WinVerifyTrust`); unsigned today, so this
   only starts to matter if the owner gets a certificate.
   - Arguments: `/S /update` (new: restart the widget with `--updated` afterwards, in the tray or on the desktop as
     before). The setup's own payload check (`payload.txt` hashes) still runs as today.
@@ -1889,13 +1894,13 @@ private key never exists anywhere else and can't be copied off it.
     same file within the 24 hours.
   - Hash or size mismatch: the file is deleted, the card says "The download couldn't be verified. It was deleted.
     Nothing was changed." with **Try again**. Logged.
-  - Setup exit code other than 0: the setup logs to `%TEMP%\GameShelfSetup.log` as today; the old version keeps
+  - Setup exit code other than 0: the setup logs to `%TEMP%\BinderSetup.log` as today; the old version keeps
     running (the setup restarts it); the card says "The update couldn't be installed" with the log's place in its
     tooltip.
 
 ### Game mode's admin helper after an update (owner's question, 2026-11-12)
 
-The helper in `%ProgramFiles%\GameShelf\` is only ever replaced through a UAC prompt ("Update…"), never by the
+The helper in `%ProgramFiles%\Binder\` is only ever replaced through a UAC prompt ("Update…"), never by the
 setup or the updater. So after an update that bumps `ElevatedPart.HelperVersion`, the PC runs a **new watcher with
 the old helper** until the user clicks Update…. What the code does today (checked 2026-11-12):
 
@@ -1966,7 +1971,7 @@ For the updater itself:
 - `CLAUDE.md` network rule: add "HTTPS GETs to `github.com` (and its release download hosts) for this repository's
   release manifest and setup, signed with the owner's key; never anything about the user or the PC".
 - `CLAUDE.md` security rules, a new "Updates" bullet: signature before parsing, keys compiled in, never downgrade,
-  hash before start, file held open, never elevate, delete only inside `%LOCALAPPDATA%\GameShelf\updates\`.
+  hash before start, file held open, never elevate, delete only inside `%LOCALAPPDATA%\Binder\updates\`.
 - `README.md`, `docs/installer.md` ("The app never checks for updates") and the website's FAQ ("It doesn't check
   for updates") are rewritten to say what it checks and how to turn it off.
 - `AGENTS.md` / `check.ps1`: `UpdateKeys.cs`, `Updater.cs`, `UpdateManifest.cs`, `scripts/sign-release.ps1` and

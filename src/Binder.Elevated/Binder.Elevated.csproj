@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Binder.Elevated.exe: Game mode's admin part (spec §11). "Allow…" in Settings runs it once with a UAC
+    prompt (install); it copies itself to %ProgramFiles%\Binder and registers the two scheduled tasks the
+    watcher runs (apply, restore). Windowless, Native AOT like the watcher, no packages.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Binder.Elevated</RootNamespace>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <Product>Binder</Product>
+    <AssemblyTitle>Binder Game mode helper</AssemblyTitle>
+    <ApplicationManifest>elevated.manifest</ApplicationManifest>
+    <ApplicationIcon>..\Binder\Assets\app.ico</ApplicationIcon>
+
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Binder.Watcher\GameModeShared.cs" Link="Shared\GameModeShared.cs" />
+  </ItemGroup>
+
+  <!-- It runs with admin rights: load the DLLs the exe imports from System32 only, never from its own folder
+       (the first run, from "Allow…", is from the user's install folder). -->
+  <ItemGroup Condition="'$(PublishAot)' == 'true'">
+    <LinkerArg Include="/DEPENDENTLOADFLAG:0x800" />
+  </ItemGroup>
+
+</Project>

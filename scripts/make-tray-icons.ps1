@@ -1,10 +1,10 @@
-# Draws the notification-area icons into src\GameShelf\Assets (Windows PowerShell 5.1, System.Drawing).
+# Draws the notification-area icons into src\Binder\Assets (Windows PowerShell 5.1, System.Drawing).
 #   tray-dark.ico / tray-light.ico   closed: one card, monochrome, play mark cut out (dark / light taskbars)
 #   tray-open-0..6.ico               opening: the back card slides out from behind the front one into the
 #                                    coloured small logo (Assets\logo-small.svg); played backwards on close
 # Each .ico holds the small-icon sizes for 100-300 % scaling, PNG-compressed. Geometry is in the logo's 48 x 48
 # units. Run again after changing the logo:  powershell -File scripts\make-tray-icons.ps1
-param([string]$Out = (Join-Path $PSScriptRoot '..\src\GameShelf\Assets'))
+param([string]$Out = (Join-Path $PSScriptRoot '..\src\Binder\Assets'))
 
 Add-Type -AssemblyName System.Drawing
 $ErrorActionPreference = 'Stop'

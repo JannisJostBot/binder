@@ -9,7 +9,7 @@ Add checks for the initials on generated covers (games without cover art), for t
 
 ## Files
 
-- `tests/GameShelf.Tests/Tests.cs`
+- `tests/Binder.Tests/Tests.cs`
 
 ## Steps
 
@@ -56,4 +56,4 @@ and the last row becomes:
 
 ## Don't
 
-- Don't change `src/GameShelf/Library/CoverColors.cs` or any existing check.
+- Don't change `src/Binder/Library/CoverColors.cs` or any existing check.

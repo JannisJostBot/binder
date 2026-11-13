@@ -3,7 +3,7 @@
 This file is for AI coding agents doing small, defined tasks in this repo. `CLAUDE.md` is the full project brief;
 you don't need all of it for a task card, but the rules below come from it and always apply.
 
-**The app:** Binder (the code, exe names and data folders still say GameShelf; don't rename those) is a small
+**The app:** Binder is a small
 Windows desktop app in C# / WinUI 3 / .NET 10 that shows the user's installed games and launches them. It must use
 as little CPU and memory as possible, and it is published with Native AOT.
 
@@ -34,7 +34,7 @@ to be wrong. Say what you found; don't change the expected value to make a test 
   exists), no reflection in app code. (The unit tests may use reflection.)
 - Never remove, weaken or skip an existing test. Only add new checks.
 - Never delete or overwrite the user's files from code.
-- No user-visible text in code or XAML: add it to `src/GameShelf/Strings/Strings.resx`, `Strings.de.resx` and
+- No user-visible text in code or XAML: add it to `src/Binder/Strings/Strings.resx`, `Strings.de.resx` and
   `Strings.fr.resx` (same name, same `{0}` placeholders) and a line in `Strings.Entries.cs`, then use
   `Strings.Name` (XAML: `{x:Bind s:Strings.Name}`). Keep it short and plain: say what happens, don't sell.
   Give the English entry a `<comment>`: where it appears and what each `{0}` holds (the tests check this).
@@ -45,8 +45,8 @@ to be wrong. Say what you found; don't change the expected value to make a test 
 
 These need a reviewed change by the owner; `check.ps1 -Task` fails if you change them:
 
-- `src/GameShelf.Watcher/` (the game watcher), `src/GameShelf.Setup/` (the installer) and
-  `src/GameShelf.Elevated/` (Game mode's admin helper)
+- `src/Binder.Watcher/` (the game watcher), `src/Binder.Setup/` (the installer) and
+  `src/Binder.Elevated/` (Game mode's admin helper)
 - `Program.cs`, `MessageWindow.cs`, `app.manifest`
 - `Services/Launcher.cs` and the services that call into Windows directly (`Native*`, `DesktopLayer`,
   `Monitors`, `Footprint`, `ShellImage*`, `ShellNotify`, `PcChecks`, `PcInfo`, `CrashLog`, `Autostart`,
@@ -61,11 +61,11 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
 
 | Path | What |
 |---|---|
-| `src/GameShelf/Library/` | Finding games, sorting, playtime, crash and disk-space logic (mostly no UI) |
-| `src/GameShelf/Models/` | Data classes saved as JSON |
-| `src/GameShelf/Services/` | Launching, storage, Windows integration |
-| `src/GameShelf/Views/` | The UI (XAML + code-behind); `Format.cs` has the text formatting |
-| `tests/GameShelf.Tests/Tests.cs` | All unit tests: one console program, `Check(condition, "description")` per check |
+| `src/Binder/Library/` | Finding games, sorting, playtime, crash and disk-space logic (mostly no UI) |
+| `src/Binder/Models/` | Data classes saved as JSON |
+| `src/Binder/Services/` | Launching, storage, Windows integration |
+| `src/Binder/Views/` | The UI (XAML + code-behind); `Format.cs` has the text formatting |
+| `tests/Binder.Tests/Tests.cs` | All unit tests: one console program, `Check(condition, "description")` per check |
 | `site/` | The website: `index.html`, `styles.css`, `logo.svg` (see "The website" below) |
 
 ## The website (`site/`)
@@ -89,9 +89,9 @@ from this repo (for example with GitHub Pages) once the repo is public.
 
 ## Commands
 
-- Unit tests (Windows or Linux, .NET 10 SDK): `dotnet run --project tests/GameShelf.Tests -c Release`
+- Unit tests (Windows or Linux, .NET 10 SDK): `dotnet run --project tests/Binder.Tests -c Release`
   The last line is `ALL PASS` or `N FAILED`; each check prints `PASS …` or `FAIL …`.
-- Build (Windows only): `dotnet build GameShelf.sln -c Release`
+- Build (Windows only): `dotnet build Binder.sln -c Release`
 - Both, plus the rules: `./scripts/check.ps1 -Task docs/tasks/<card>.md` (PowerShell 5.1 or 7)
 
 Don't run `tests/smoke.ps1` or `tests/setup-test.ps1` on a real PC: they replace the user's data. They're for CI.

@@ -10,7 +10,7 @@ of the existing `PlaytimeTests()` method.
 
 ## Files
 
-- `tests/GameShelf.Tests/Tests.cs`
+- `tests/Binder.Tests/Tests.cs`
 
 ## Steps
 
@@ -53,4 +53,4 @@ For example, the first row becomes:
 
 ## Don't
 
-- Don't change `src/GameShelf/Library/PlaytimeStats.cs` or any existing check.
+- Don't change `src/Binder/Library/PlaytimeStats.cs` or any existing check.

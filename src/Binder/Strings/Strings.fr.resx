@@ -1,0 +1,2282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="ListAnd" xml:space="preserve">
+    <value>{0} et {1}</value>
+  </data>
+  <data name="GoodMorning" xml:space="preserve">
+    <value>Bonjour</value>
+  </data>
+  <data name="GoodAfternoon" xml:space="preserve">
+    <value>Bon après-midi</value>
+  </data>
+  <data name="GoodEvening" xml:space="preserve">
+    <value>Bonsoir</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>Aujourd’hui</value>
+  </data>
+  <data name="Yesterday" xml:space="preserve">
+    <value>Hier</value>
+  </data>
+  <data name="DaysAgo" xml:space="preserve">
+    <value>Il y a {0} jours</value>
+  </data>
+  <data name="DayAndTime" xml:space="preserve">
+    <value>{0}, {1}</value>
+  </data>
+  <data name="UnderAMinute" xml:space="preserve">
+    <value>&lt; 1 min</value>
+  </data>
+  <data name="Minutes" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="HoursMinutes" xml:space="preserve">
+    <value>{0} h {1} min</value>
+  </data>
+  <data name="Hours" xml:space="preserve">
+    <value>{0} h</value>
+  </data>
+  <data name="Seconds" xml:space="preserve">
+    <value>{0} s</value>
+  </data>
+  <data name="Instantly" xml:space="preserve">
+    <value>Immédiatement</value>
+  </data>
+  <data name="SizeGb" xml:space="preserve">
+    <value>{0} Go</value>
+  </data>
+  <data name="SizeMb" xml:space="preserve">
+    <value>{0} Mo</value>
+  </data>
+  <data name="XboxApp" xml:space="preserve">
+    <value>Application Xbox</value>
+  </data>
+  <data name="SourceOther" xml:space="preserve">
+    <value>Autres</value>
+  </data>
+  <data name="On" xml:space="preserve">
+    <value>Activé</value>
+  </data>
+  <data name="Off" xml:space="preserve">
+    <value>Désactivé</value>
+  </data>
+  <data name="Never" xml:space="preserve">
+    <value>Jamais</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>Aucun</value>
+  </data>
+  <data name="Play" xml:space="preserve">
+    <value>Jouer</value>
+  </data>
+  <data name="PlayGame" xml:space="preserve">
+    <value>Jouer à {0}</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>Détails</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+  <data name="Favorite" xml:space="preserve">
+    <value>Favori</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Dismiss" xml:space="preserve">
+    <value>Ignorer</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="Reset" xml:space="preserve">
+    <value>Réinitialiser</value>
+  </data>
+  <data name="Done" xml:space="preserve">
+    <value>Terminé</value>
+  </data>
+  <data name="More" xml:space="preserve">
+    <value>Plus</value>
+  </data>
+  <data name="MoreActions" xml:space="preserve">
+    <value>Plus d’actions</value>
+  </data>
+  <data name="GameModeOnToolTip" xml:space="preserve">
+    <value>Le mode jeu est activé. Sélectionnez pour le désactiver.</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Retour</value>
+  </data>
+  <data name="WithEsc" xml:space="preserve">
+    <value>{0} (Échap)</value>
+  </data>
+  <data name="BackToGames" xml:space="preserve">
+    <value>Retour à tous les jeux</value>
+  </data>
+  <data name="BackToSettings" xml:space="preserve">
+    <value>Retour aux paramètres</value>
+  </data>
+  <data name="Checking" xml:space="preserve">
+    <value>Vérification…</value>
+  </data>
+  <data name="NotPlayed" xml:space="preserve">
+    <value>Pas joué</value>
+  </data>
+  <data name="NotPlayedLower" xml:space="preserve">
+    <value>pas joué</value>
+  </data>
+  <data name="ChooseProgram" xml:space="preserve">
+    <value>Choisir un programme…</value>
+  </data>
+  <data name="Games" xml:space="preserve">
+    <value>Jeux</value>
+  </data>
+  <data name="GameCount" xml:space="preserve">
+    <value>{0} jeux</value>
+  </data>
+  <data name="GameCountOne" xml:space="preserve">
+    <value>{0} jeu</value>
+  </data>
+  <data name="ShelfName" xml:space="preserve">
+    <value>Étagère de jeux</value>
+  </data>
+  <data name="Dot" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="LabelValue" xml:space="preserve">
+    <value>{0} : {1}</value>
+  </data>
+  <data name="FooterHides" xml:space="preserve">
+    <value>Se masque au lancement d’un jeu</value>
+  </data>
+  <data name="FooterHidesAfter" xml:space="preserve">
+    <value>Se masque {0} s après le lancement d’un jeu</value>
+  </data>
+  <data name="FooterComesBack" xml:space="preserve">
+    <value>{0} · revient à la fermeture du jeu</value>
+  </data>
+  <data name="SearchGames" xml:space="preserve">
+    <value>Rechercher des jeux</value>
+  </data>
+  <data name="SearchCountOne" xml:space="preserve">
+    <value>Rechercher parmi {0} jeu</value>
+  </data>
+  <data name="SearchCount" xml:space="preserve">
+    <value>Rechercher parmi {0} jeux</value>
+  </data>
+  <data name="EmptyNoGames" xml:space="preserve">
+    <value>Aucun jeu trouvé. Les jeux installés via vos lanceurs apparaissent ici.</value>
+  </data>
+  <data name="EmptyNoMatch" xml:space="preserve">
+    <value>Aucun jeu ne correspond à « {0} ».</value>
+  </data>
+  <data name="EmptyRecent" xml:space="preserve">
+    <value>Les jeux auxquels vous jouez apparaissent ici.</value>
+  </data>
+  <data name="EmptyFavorites" xml:space="preserve">
+    <value>Aucun favori pour l’instant.</value>
+  </data>
+  <data name="EmptyStore" xml:space="preserve">
+    <value>Aucun jeu de ce lanceur.</value>
+  </data>
+  <data name="FilterAll" xml:space="preserve">
+    <value>Tous</value>
+  </data>
+  <data name="FilterFavorites" xml:space="preserve">
+    <value>Favoris</value>
+  </data>
+  <data name="FilterRecent" xml:space="preserve">
+    <value>Récents</value>
+  </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Filtre</value>
+  </data>
+  <data name="MoreLaunchers" xml:space="preserve">
+    <value>Autres lanceurs</value>
+  </data>
+  <data name="SortMostPlayed" xml:space="preserve">
+    <value>Les plus joués</value>
+  </data>
+  <data name="SortName" xml:space="preserve">
+    <value>Nom (A–Z)</value>
+  </data>
+  <data name="SortRecentlyAdded" xml:space="preserve">
+    <value>Ajoutés récemment</value>
+  </data>
+  <data name="SortSize" xml:space="preserve">
+    <value>Taille sur le disque</value>
+  </data>
+  <data name="SortRecentlyPlayed" xml:space="preserve">
+    <value>Joués récemment</value>
+  </data>
+  <data name="SortCurrent" xml:space="preserve">
+    <value>Trier : {0}</value>
+  </data>
+  <data name="FavoritesFirst" xml:space="preserve">
+    <value>Favoris en premier</value>
+  </data>
+  <data name="ContinuePlaying" xml:space="preserve">
+    <value>Reprendre</value>
+  </data>
+  <data name="SpotlightContinue" xml:space="preserve">
+    <value>Reprendre</value>
+  </data>
+  <data name="WelcomeBack" xml:space="preserve">
+    <value>Bon retour</value>
+  </data>
+  <data name="WelcomeDetail" xml:space="preserve">
+    <value>{0} de jeu · {1} cette semaine</value>
+  </data>
+  <data name="WelcomeMilestone" xml:space="preserve">
+    <value>{0:N0} heures sur {1}</value>
+  </data>
+  <data name="ThisWeek" xml:space="preserve">
+    <value>Cette semaine</value>
+  </data>
+  <data name="WeekGamesMost" xml:space="preserve">
+    <value>{0} · surtout : {1}</value>
+  </data>
+  <data name="WeekMostPlayed" xml:space="preserve">
+    <value>Le plus joué : {0}, {1}</value>
+  </data>
+  <data name="PlaytimeThisWeek" xml:space="preserve">
+    <value>Temps de jeu cette semaine</value>
+  </data>
+  <data name="TopCard" xml:space="preserve">
+    <value>Carte du haut</value>
+  </data>
+  <data name="PinOpen" xml:space="preserve">
+    <value>Garder ouvert</value>
+  </data>
+  <data name="Unpin" xml:space="preserve">
+    <value>Ne plus garder ouvert</value>
+  </data>
+  <data name="GameMode" xml:space="preserve">
+    <value>Mode jeu</value>
+  </data>
+  <data name="GameModeNeedsUpdateMenu" xml:space="preserve">
+    <value>Mode jeu (mise à jour requise)</value>
+  </data>
+  <data name="GameModeSettingsMenu" xml:space="preserve">
+    <value>Paramètres du mode jeu…</value>
+  </data>
+  <data name="FreeUpSpaceMenu" xml:space="preserve">
+    <value>Libérer de l’espace…</value>
+  </data>
+  <data name="AddGameMenu" xml:space="preserve">
+    <value>Ajouter un jeu…</value>
+  </data>
+  <data name="AddGame" xml:space="preserve">
+    <value>Ajouter un jeu</value>
+  </data>
+  <data name="RefreshLibrary" xml:space="preserve">
+    <value>Actualiser la bibliothèque</value>
+  </data>
+  <data name="ClearSearch" xml:space="preserve">
+    <value>Effacer la recherche</value>
+  </data>
+  <data name="ImportShortcuts" xml:space="preserve">
+    <value>Importer les raccourcis du bureau</value>
+  </data>
+  <data name="HelperBarTitle" xml:space="preserve">
+    <value>Le mode jeu doit être mis à jour</value>
+  </data>
+  <data name="HelperBarMessage" xml:space="preserve">
+    <value>Son assistant administrateur date d’une version précédente. Windows demandera l’autorisation une fois.</value>
+  </data>
+  <data name="UpdateEllipsis" xml:space="preserve">
+    <value>Mettre à jour…</value>
+  </data>
+  <data name="PadHintsName" xml:space="preserve">
+    <value>Manette : A jouer, X détails, Y favori, B fermer, Menu paramètres</value>
+  </data>
+  <data name="OpenInstallFolder" xml:space="preserve">
+    <value>Ouvrir le dossier d’installation</value>
+  </data>
+  <data name="StorePage" xml:space="preserve">
+    <value>Page du magasin</value>
+  </data>
+  <data name="VerifyFiles" xml:space="preserve">
+    <value>Vérifier les fichiers du jeu</value>
+  </data>
+  <data name="UninstallInSteam" xml:space="preserve">
+    <value>Désinstaller dans Steam…</value>
+  </data>
+  <data name="AddFavorite" xml:space="preserve">
+    <value>Ajouter aux favoris</value>
+  </data>
+  <data name="RemoveFavorite" xml:space="preserve">
+    <value>Retirer des favoris</value>
+  </data>
+  <data name="HideFromShelf" xml:space="preserve">
+    <value>Masquer de l’étagère</value>
+  </data>
+  <data name="DetailsFor" xml:space="preserve">
+    <value>Détails de {0}</value>
+  </data>
+  <data name="UninstallHintSteam" xml:space="preserve">
+    <value>Steam demande confirmation avant de supprimer {0}.</value>
+  </data>
+  <data name="UninstallHintGog" xml:space="preserve">
+    <value>Dans GOG Galaxy, ouvrez le menu à côté de Jouer et choisissez Désinstaller.</value>
+  </data>
+  <data name="UninstallHintLauncher" xml:space="preserve">
+    <value>Trouvez {0} dans votre bibliothèque {1} et choisissez Désinstaller.</value>
+  </data>
+  <data name="UninstallHintApps" xml:space="preserve">
+    <value>Trouvez {0} dans Paramètres › Applications et choisissez Désinstaller.</value>
+  </data>
+  <data name="TheLauncher" xml:space="preserve">
+    <value>lanceur</value>
+  </data>
+  <data name="DetailName" xml:space="preserve">
+    <value>Détails du jeu</value>
+  </data>
+  <data name="BackToGamesEsc" xml:space="preserve">
+    <value>Retour à tous les jeux (Échap)</value>
+  </data>
+  <data name="ShowAntiCheatDetails" xml:space="preserve">
+    <value>Afficher les détails de l’anti-triche</value>
+  </data>
+  <data name="InstallFolderNotFound" xml:space="preserve">
+    <value>Dossier d’installation introuvable</value>
+  </data>
+  <data name="Playtime" xml:space="preserve">
+    <value>Temps de jeu</value>
+  </data>
+  <data name="LastPlayed" xml:space="preserve">
+    <value>Dernière partie</value>
+  </data>
+  <data name="Activity" xml:space="preserve">
+    <value>Activité</value>
+  </data>
+  <data name="ChartPeriod" xml:space="preserve">
+    <value>Période</value>
+  </data>
+  <data name="EightWeeks" xml:space="preserve">
+    <value>8 semaines</value>
+  </data>
+  <data name="TwelveMonths" xml:space="preserve">
+    <value>12 mois</value>
+  </data>
+  <data name="RecentSessions" xml:space="preserve">
+    <value>Sessions récentes</value>
+  </data>
+  <data name="NoSessions" xml:space="preserve">
+    <value>Aucune session. Le temps de jeu est enregistré quand vous lancez le jeu d’ici.</value>
+  </data>
+  <data name="SessionClosedNormally" xml:space="preserve">
+    <value>Fermé normalement</value>
+  </data>
+  <data name="SessionStartFailed" xml:space="preserve">
+    <value>Fermé juste après le lancement</value>
+  </data>
+  <data name="SessionClosedUnexpectedly" xml:space="preserve">
+    <value>Fermé de façon inattendue</value>
+  </data>
+  <data name="SessionCrashed" xml:space="preserve">
+    <value>Planté</value>
+  </data>
+  <data name="SessionDetailsName" xml:space="preserve">
+    <value>Détails de la session du {0}</value>
+  </data>
+  <data name="ChartMonthsName" xml:space="preserve">
+    <value>Temps de jeu par mois, 12 derniers mois</value>
+  </data>
+  <data name="ChartWeeksName" xml:space="preserve">
+    <value>Temps de jeu par semaine, 8 dernières semaines</value>
+  </data>
+  <data name="PeriodMonths" xml:space="preserve">
+    <value>sur les 12 derniers mois · ce mois-ci {0}</value>
+  </data>
+  <data name="PeriodWeeks" xml:space="preserve">
+    <value>sur les 8 dernières semaines · cette semaine {0}</value>
+  </data>
+  <data name="NoneYet" xml:space="preserve">
+    <value>rien pour l’instant</value>
+  </data>
+  <data name="WeekOf" xml:space="preserve">
+    <value>Semaine du {0}</value>
+  </data>
+  <data name="ThisGame" xml:space="preserve">
+    <value>Ce jeu</value>
+  </data>
+  <data name="HideDelay" xml:space="preserve">
+    <value>Délai de masquage</value>
+  </data>
+  <data name="DefaultChoice" xml:space="preserve">
+    <value>Par défaut ({0})</value>
+  </data>
+  <data name="Default" xml:space="preserve">
+    <value>Par défaut</value>
+  </data>
+  <data name="GameModeForGame" xml:space="preserve">
+    <value>Mode jeu pour ce jeu</value>
+  </data>
+  <data name="GameModeForGameToolTip" xml:space="preserve">
+    <value>À configurer dans Paramètres › Mode jeu</value>
+  </data>
+  <data name="CoverImage" xml:space="preserve">
+    <value>Image de couverture</value>
+  </data>
+  <data name="ChangeCover" xml:space="preserve">
+    <value>Modifier l’image de couverture</value>
+  </data>
+  <data name="ChooseImage" xml:space="preserve">
+    <value>Choisir une image…</value>
+  </data>
+  <data name="UseDefault" xml:space="preserve">
+    <value>Utiliser l’image par défaut</value>
+  </data>
+  <data name="CoverCustom" xml:space="preserve">
+    <value>Image personnalisée</value>
+  </data>
+  <data name="CoverSteam" xml:space="preserve">
+    <value>Depuis Steam</value>
+  </data>
+  <data name="CoverGenerated" xml:space="preserve">
+    <value>Générée</value>
+  </data>
+  <data name="PickCoverTitle" xml:space="preserve">
+    <value>Choisir une couverture pour {0}</value>
+  </data>
+  <data name="FilterImages" xml:space="preserve">
+    <value>Images ({0})</value>
+  </data>
+  <data name="FilterPrograms" xml:space="preserve">
+    <value>Programmes ({0})</value>
+  </data>
+  <data name="ProcessToWatch" xml:space="preserve">
+    <value>Processus à surveiller</value>
+  </data>
+  <data name="ChangeProcess" xml:space="preserve">
+    <value>Modifier le processus à surveiller</value>
+  </data>
+  <data name="UseAutoDetect" xml:space="preserve">
+    <value>Détection automatique</value>
+  </data>
+  <data name="ProcessAutoFolder" xml:space="preserve">
+    <value>Automatique : tout programme du dossier d’installation</value>
+  </data>
+  <data name="ProcessAuto" xml:space="preserve">
+    <value>Automatique</value>
+  </data>
+  <data name="PickProcessTitle" xml:space="preserve">
+    <value>Choisir le programme sous lequel {0} s’exécute</value>
+  </data>
+  <data name="LaunchOptions" xml:space="preserve">
+    <value>Options de lancement</value>
+  </data>
+  <data name="SuggestedLaunchOptions" xml:space="preserve">
+    <value>Options de lancement suggérées</value>
+  </data>
+  <data name="SuggestedOptions" xml:space="preserve">
+    <value>Suggestions</value>
+  </data>
+  <data name="NoSuggestions" xml:space="preserve">
+    <value>Saisissez les arguments ci-dessous.</value>
+  </data>
+  <data name="OptionWithArgs" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="ExtraArguments" xml:space="preserve">
+    <value>Arguments supplémentaires</value>
+  </data>
+  <data name="ExtraArgumentsExample" xml:space="preserve">
+    <value>Par exemple -windowed</value>
+  </data>
+  <data name="TestLaunch" xml:space="preserve">
+    <value>Lancer un test</value>
+  </data>
+  <data name="TestLaunchToolTip" xml:space="preserve">
+    <value>Lance le jeu avec ces options et garde Binder ouvert</value>
+  </data>
+  <data name="ResetLaunchToolTip" xml:space="preserve">
+    <value>Supprime les options personnalisées</value>
+  </data>
+  <data name="StartWith" xml:space="preserve">
+    <value>Lancer avec</value>
+  </data>
+  <data name="ChangeStartWith" xml:space="preserve">
+    <value>Modifier le programme de lancement</value>
+  </data>
+  <data name="PickStartWithTitle" xml:space="preserve">
+    <value>Choisir le programme pour lancer {0}</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Automatique</value>
+  </data>
+  <data name="AutomaticNoFolder" xml:space="preserve">
+    <value>Automatique (pas de dossier d’installation)</value>
+  </data>
+  <data name="EngineUnknown" xml:space="preserve">
+    <value>Non reconnu</value>
+  </data>
+  <data name="EngineName" xml:space="preserve">
+    <value>Moteur : {0}</value>
+  </data>
+  <data name="EngineWithVersion" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="StartsAs" xml:space="preserve">
+    <value>Se lance avec : {0}</value>
+  </data>
+  <data name="StartsExe" xml:space="preserve">
+    <value>lance {0}</value>
+  </data>
+  <data name="NoteSteamArgs" xml:space="preserve">
+    <value>Steam peut demander de confirmer ces arguments la première fois.</value>
+  </data>
+  <data name="NoteEpicArgs" xml:space="preserve">
+    <value>Pour les jeux Epic, définissez les arguments dans l’Epic Games Launcher : Bibliothèque › … › Gérer › Options de lancement.</value>
+  </data>
+  <data name="NoteShortcutArgs" xml:space="preserve">
+    <value>Les raccourcis ne transmettent pas d’arguments. Pour en utiliser, choisissez le programme du jeu sous Lancer avec.</value>
+  </data>
+  <data name="NoteLauncherArgs" xml:space="preserve">
+    <value>{0} n’accepte pas d’arguments d’autres applications. Pour en utiliser, choisissez le programme du jeu sous Lancer avec.</value>
+  </data>
+  <data name="NoteInsideFolder" xml:space="preserve">
+    <value>Choisissez un programme dans le dossier du jeu.</value>
+  </data>
+  <data name="OptManyGames" xml:space="preserve">
+    <value>{0} (de nombreux jeux)</value>
+  </data>
+  <data name="OptBorderless" xml:space="preserve">
+    <value>Fenêtre sans bordure</value>
+  </data>
+  <data name="OptWindowed" xml:space="preserve">
+    <value>Fenêtré</value>
+  </data>
+  <data name="OptFullscreen" xml:space="preserve">
+    <value>Plein écran</value>
+  </data>
+  <data name="OptDx11" xml:space="preserve">
+    <value>Utiliser DirectX 11</value>
+  </data>
+  <data name="OptDx12" xml:space="preserve">
+    <value>Utiliser DirectX 12</value>
+  </data>
+  <data name="OptVulkan" xml:space="preserve">
+    <value>Utiliser Vulkan</value>
+  </data>
+  <data name="OptSecondMonitor" xml:space="preserve">
+    <value>Lancer sur le deuxième écran</value>
+  </data>
+  <data name="OptSkipIntro" xml:space="preserve">
+    <value>Passer la vidéo d’introduction</value>
+  </data>
+  <data name="OptSkipIntros" xml:space="preserve">
+    <value>Passer les vidéos d’introduction</value>
+  </data>
+  <data name="OptNoKeyPress" xml:space="preserve">
+    <value>Pas de touche à presser après les chargements</value>
+  </data>
+  <data name="OptSkipLauncher" xml:space="preserve">
+    <value>Passer la fenêtre du lanceur</value>
+  </data>
+  <data name="AntiCheat" xml:space="preserve">
+    <value>Anti-triche</value>
+  </data>
+  <data name="AntiCheatOk" xml:space="preserve">
+    <value>Tout est prêt</value>
+  </data>
+  <data name="AntiCheatShowDetails" xml:space="preserve">
+    <value>{0}. Afficher les détails</value>
+  </data>
+  <data name="AntiCheatCardName" xml:space="preserve">
+    <value>Anti-triche : {0}, {1}</value>
+  </data>
+  <data name="IssueCountOne" xml:space="preserve">
+    <value>{0} problème</value>
+  </data>
+  <data name="IssueCount" xml:space="preserve">
+    <value>{0} problèmes</value>
+  </data>
+  <data name="ConflictRunning" xml:space="preserve">
+    <value>{0} est en cours d’exécution et peut empêcher {1} de démarrer.</value>
+  </data>
+  <data name="DriverToolLoaded" xml:space="preserve">
+    <value>Un pilote de {0} est chargé et certains anti-triches le bloquent. Le mettre à jour aide en général.</value>
+  </data>
+  <data name="DriverWinRing0" xml:space="preserve">
+    <value>un ancien outil de surveillance matérielle (pilote WinRing0)</value>
+  </data>
+  <data name="DriverOlderVersion" xml:space="preserve">
+    <value>{0} (ancienne version)</value>
+  </data>
+  <data name="DriverGigabyte" xml:space="preserve">
+    <value>les outils de réglage de Gigabyte (ancienne version)</value>
+  </data>
+  <data name="CouldntCheck" xml:space="preserve">
+    <value>Vérification impossible</value>
+  </data>
+  <data name="Found" xml:space="preserve">
+    <value>Trouvé</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Introuvable</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>En cours</value>
+  </data>
+  <data name="RestartNeeded" xml:space="preserve">
+    <value>Redémarrage requis</value>
+  </data>
+  <data name="TestSigning" xml:space="preserve">
+    <value>Signature de test</value>
+  </data>
+  <data name="KernelDebugging" xml:space="preserve">
+    <value>Débogage du noyau</value>
+  </data>
+  <data name="VanguardDriver" xml:space="preserve">
+    <value>Pilote Vanguard</value>
+  </data>
+  <data name="TestSigningOff" xml:space="preserve">
+    <value>Signature de test désactivée</value>
+  </data>
+  <data name="KernelDebuggingOff" xml:space="preserve">
+    <value>Débogage du noyau désactivé</value>
+  </data>
+  <data name="VanguardRunning" xml:space="preserve">
+    <value>Vanguard actif (redémarrage requis après l’installation)</value>
+  </data>
+  <data name="Requirements" xml:space="preserve">
+    <value>Prérequis</value>
+  </data>
+  <data name="ConflictingPrograms" xml:space="preserve">
+    <value>Programmes pouvant poser problème</value>
+  </data>
+  <data name="RemindBeforeLaunch" xml:space="preserve">
+    <value>Me le rappeler avant le lancement</value>
+  </data>
+  <data name="RemindBeforeLaunchToolTip" xml:space="preserve">
+    <value>Propose de fermer les programmes que cet anti-triche peut bloquer</value>
+  </data>
+  <data name="AntiCheatFootnote" xml:space="preserve">
+    <value>Binder ne fait que lire ces paramètres. Les prérequis peuvent changer avec les mises à jour.</value>
+  </data>
+  <data name="CheckingPc" xml:space="preserve">
+    <value>Vérification du PC…</value>
+  </data>
+  <data name="HowToFix" xml:space="preserve">
+    <value>Comment corriger</value>
+  </data>
+  <data name="HowToFixName" xml:space="preserve">
+    <value>Comment corriger : {0}</value>
+  </data>
+  <data name="CloseApp" xml:space="preserve">
+    <value>Fermer {0}</value>
+  </data>
+  <data name="CloseAppToolTip" xml:space="preserve">
+    <value>Demande à {0} de se fermer, comme un clic sur son X</value>
+  </data>
+  <data name="AskedToClose" xml:space="preserve">
+    <value>Fermeture demandée</value>
+  </data>
+  <data name="OpensInBrowser" xml:space="preserve">
+    <value>S’ouvre dans votre navigateur</value>
+  </data>
+  <data name="GroupOpening" xml:space="preserve">
+    <value>Ouverture de Binder</value>
+  </data>
+  <data name="ShowItAs" xml:space="preserve">
+    <value>Afficher comme</value>
+  </data>
+  <data name="ModeFlyout" xml:space="preserve">
+    <value>Volet</value>
+  </data>
+  <data name="ModeFlyoutText" xml:space="preserve">
+    <value>Volet depuis la zone de notification</value>
+  </data>
+  <data name="ModeFlyoutToolTip" xml:space="preserve">
+    <value>S’ouvre depuis la zone de notification et se masque quand vous cliquez ailleurs</value>
+  </data>
+  <data name="ModeDesktop" xml:space="preserve">
+    <value>Sur le bureau</value>
+  </data>
+  <data name="ModeDesktopToolTip" xml:space="preserve">
+    <value>Toujours là, derrière vos fenêtres</value>
+  </data>
+  <data name="KeyboardShortcut" xml:space="preserve">
+    <value>Raccourci clavier</value>
+  </data>
+  <data name="HotkeyTaken" xml:space="preserve">
+    <value>Utilisé par une autre application. Choisissez-en un autre.</value>
+  </data>
+  <data name="HotkeyFree" xml:space="preserve">
+    <value>Non utilisé par Windows ou d’autres applications</value>
+  </data>
+  <data name="TrayIcon" xml:space="preserve">
+    <value>Icône dans la zone de notification</value>
+  </data>
+  <data name="TrayIconToolTip" xml:space="preserve">
+    <value>Cliquez dessus pour ouvrir ou fermer Binder</value>
+  </data>
+  <data name="ClickAway" xml:space="preserve">
+    <value>Masquer quand je clique ailleurs</value>
+  </data>
+  <data name="ClickAwayToolTip" xml:space="preserve">
+    <value>Pour le garder ouvert, utilisez l’épingle en haut</value>
+  </data>
+  <data name="StayReady" xml:space="preserve">
+    <value>Rester prêt en arrière-plan</value>
+  </data>
+  <data name="StayReadyToolTip" xml:space="preserve">
+    <value>Continue en mode efficacité après fermeture pour s’ouvrir rapidement</value>
+  </data>
+  <data name="StayReadyOff" xml:space="preserve">
+    <value>Désactivé : la fermeture quitte Binder</value>
+  </data>
+  <data name="StayReadyFast" xml:space="preserve">
+    <value>S’ouvre plus vite</value>
+  </data>
+  <data name="StayReadySmall" xml:space="preserve">
+    <value>Utilise moins de mémoire</value>
+  </data>
+  <data name="WhileClosed" xml:space="preserve">
+    <value>Une fois fermé</value>
+  </data>
+  <data name="OpenFaster" xml:space="preserve">
+    <value>Ouvrir plus vite</value>
+  </data>
+  <data name="UseLessMemory" xml:space="preserve">
+    <value>Utiliser moins de mémoire</value>
+  </data>
+  <data name="KeepLoadedNeedsStayReady" xml:space="preserve">
+    <value>Uniquement s’il reste prêt en arrière-plan</value>
+  </data>
+  <data name="KeepLoadedFastDetail" xml:space="preserve">
+    <value>Reste chargé (jusqu’à ~200 Mo, que Windows libère en priorité). Il se ferme pendant que vous jouez.</value>
+  </data>
+  <data name="KeepLoadedSmallDetail" xml:space="preserve">
+    <value>Ne garde que quelques Mo et s’ouvre donc un peu plus lentement. Il se ferme pendant que vous jouez.</value>
+  </data>
+  <data name="StartWithWindows" xml:space="preserve">
+    <value>Démarrer avec Windows</value>
+  </data>
+  <data name="GroupGameStarts" xml:space="preserve">
+    <value>Au lancement d’un jeu</value>
+  </data>
+  <data name="HideBinder" xml:space="preserve">
+    <value>Masquer Binder</value>
+  </data>
+  <data name="After5s" xml:space="preserve">
+    <value>Après 5 s</value>
+  </data>
+  <data name="After10s" xml:space="preserve">
+    <value>Après 10 s</value>
+  </data>
+  <data name="After30s" xml:space="preserve">
+    <value>Après 30 s</value>
+  </data>
+  <data name="ComeBack" xml:space="preserve">
+    <value>Revenir à la fermeture du jeu</value>
+  </data>
+  <data name="ComeBackToolTip" xml:space="preserve">
+    <value>Rouvre Binder automatiquement</value>
+  </data>
+  <data name="GameModeSettings" xml:space="preserve">
+    <value>Paramètres du mode jeu</value>
+  </data>
+  <data name="GroupShelf" xml:space="preserve">
+    <value>Étagère</value>
+  </data>
+  <data name="CoverSize" xml:space="preserve">
+    <value>Taille des couvertures</value>
+  </data>
+  <data name="CoverSmall" xml:space="preserve">
+    <value>Petite</value>
+  </data>
+  <data name="CoverMedium" xml:space="preserve">
+    <value>Moyenne</value>
+  </data>
+  <data name="CoverLarge" xml:space="preserve">
+    <value>Grande</value>
+  </data>
+  <data name="CoverList" xml:space="preserve">
+    <value>Liste</value>
+  </data>
+  <data name="ShowWeek" xml:space="preserve">
+    <value>Afficher le temps de jeu de la semaine</value>
+  </data>
+  <data name="WeekCardToolTip" xml:space="preserve">
+    <value>Une carte au-dessus des jeux avec le temps de jeu par jour</value>
+  </data>
+  <data name="Shiny" xml:space="preserve">
+    <value>Favoris brillants</value>
+  </data>
+  <data name="ShinyToolTip" xml:space="preserve">
+    <value>Les couvertures des favoris brillent légèrement sous le pointeur</value>
+  </data>
+  <data name="GroupLibrary" xml:space="preserve">
+    <value>Bibliothèque</value>
+  </data>
+  <data name="GameSources" xml:space="preserve">
+    <value>Sources de jeux</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Actualiser</value>
+  </data>
+  <data name="RefreshToolTip" xml:space="preserve">
+    <value>Rechercher de nouveaux jeux</value>
+  </data>
+  <data name="Scanning" xml:space="preserve">
+    <value>Recherche de jeux…</value>
+  </data>
+  <data name="SourcesOn" xml:space="preserve">
+    <value>{0} sur {1} activées</value>
+  </data>
+  <data name="XboxAppGamePass" xml:space="preserve">
+    <value>Application Xbox (Game Pass)</value>
+  </data>
+  <data name="DesktopShortcuts" xml:space="preserve">
+    <value>Raccourcis du bureau</value>
+  </data>
+  <data name="ImportedShortcuts" xml:space="preserve">
+    <value>Raccourcis du bureau importés</value>
+  </data>
+  <data name="ImportEllipsis" xml:space="preserve">
+    <value>Importer…</value>
+  </data>
+  <data name="ImportToolTip" xml:space="preserve">
+    <value>Déplace les raccourcis de jeux du bureau vers l’étagère</value>
+  </data>
+  <data name="NoneImported" xml:space="preserve">
+    <value>Aucun importé</value>
+  </data>
+  <data name="ImportedCountOne" xml:space="preserve">
+    <value>{0} importé</value>
+  </data>
+  <data name="ImportedCount" xml:space="preserve">
+    <value>{0} importés</value>
+  </data>
+  <data name="RestoreShortcutsText" xml:space="preserve">
+    <value>Remet les raccourcis importés sur le bureau et les retire de l’étagère.</value>
+  </data>
+  <data name="Restore" xml:space="preserve">
+    <value>Restaurer</value>
+  </data>
+  <data name="RestoreShortcuts" xml:space="preserve">
+    <value>Restaurer les raccourcis sur le bureau</value>
+  </data>
+  <data name="Browse" xml:space="preserve">
+    <value>Parcourir…</value>
+  </data>
+  <data name="BrowseToolTip" xml:space="preserve">
+    <value>Un programme (.exe) ou un raccourci</value>
+  </data>
+  <data name="HiddenGames" xml:space="preserve">
+    <value>Jeux masqués</value>
+  </data>
+  <data name="NoHiddenGames" xml:space="preserve">
+    <value>Aucun jeu masqué.</value>
+  </data>
+  <data name="HiddenCountOne" xml:space="preserve">
+    <value>{0} masqué</value>
+  </data>
+  <data name="HiddenCount" xml:space="preserve">
+    <value>{0} masqués</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>Afficher</value>
+  </data>
+  <data name="ShowGame" xml:space="preserve">
+    <value>Afficher {0}</value>
+  </data>
+  <data name="FreeUpSpace" xml:space="preserve">
+    <value>Libérer de l’espace</value>
+  </data>
+  <data name="FreeUpSpaceToolTip" xml:space="preserve">
+    <value>Quels jeux supprimer pour faire de la place</value>
+  </data>
+  <data name="GroupWindow" xml:space="preserve">
+    <value>Fenêtre</value>
+  </data>
+  <data name="Position" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="PositionFreeHint" xml:space="preserve">
+    <value>Faites glisser une zone vide pour le déplacer</value>
+  </data>
+  <data name="LeftEdge" xml:space="preserve">
+    <value>Bord gauche</value>
+  </data>
+  <data name="RightEdge" xml:space="preserve">
+    <value>Bord droit</value>
+  </data>
+  <data name="PositionFree" xml:space="preserve">
+    <value>Libre</value>
+  </data>
+  <data name="Screen" xml:space="preserve">
+    <value>Écran</value>
+  </data>
+  <data name="ScreenToolTip" xml:space="preserve">
+    <value>Numérotés de gauche à droite</value>
+  </data>
+  <data name="ScreenEntry" xml:space="preserve">
+    <value>{0} · {1} × {2}</value>
+  </data>
+  <data name="ScreenMain" xml:space="preserve">
+    <value>{0} (principal)</value>
+  </data>
+  <data name="DesktopLayer" xml:space="preserve">
+    <value>Rester au niveau du bureau</value>
+  </data>
+  <data name="DesktopLayerToolTip" xml:space="preserve">
+    <value>Reste derrière les autres fenêtres, comme les icônes du bureau</value>
+  </data>
+  <data name="RunSetupAgain" xml:space="preserve">
+    <value>Relancer la configuration initiale</value>
+  </data>
+  <data name="SetupName" xml:space="preserve">
+    <value>Configuration initiale</value>
+  </data>
+  <data name="Step1" xml:space="preserve">
+    <value>Étape 1 sur 3</value>
+  </data>
+  <data name="Step2" xml:space="preserve">
+    <value>Étape 2 sur 3</value>
+  </data>
+  <data name="Step3" xml:space="preserve">
+    <value>Étape 3 sur 3</value>
+  </data>
+  <data name="SetupTitleEmpty" xml:space="preserve">
+    <value>Configurer votre étagère</value>
+  </data>
+  <data name="SetupFoundOne" xml:space="preserve">
+    <value>{0} jeu trouvé</value>
+  </data>
+  <data name="SetupFound" xml:space="preserve">
+    <value>{0} jeux trouvés</value>
+  </data>
+  <data name="SetupStep1Text" xml:space="preserve">
+    <value>Décochez les lanceurs dont vous ne voulez pas. Vous pourrez changer cela dans les paramètres.</value>
+  </data>
+  <data name="Launchers" xml:space="preserve">
+    <value>Lanceurs</value>
+  </data>
+  <data name="NoneFound" xml:space="preserve">
+    <value>Aucun trouvé</value>
+  </data>
+  <data name="SetupNothingFound" xml:space="preserve">
+    <value>Aucun jeu de lanceur trouvé. Vous pourrez importer des raccourcis du bureau à l’étape suivante.</value>
+  </data>
+  <data name="SkipSetup" xml:space="preserve">
+    <value>Passer la configuration</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Suivant</value>
+  </data>
+  <data name="SetupStep2Title" xml:space="preserve">
+    <value>Importer les raccourcis du bureau ?</value>
+  </data>
+  <data name="SetupStep2Text" xml:space="preserve">
+    <value>Les raccourcis cochés passent du bureau à l’étagère. Vous pourrez les restaurer dans les paramètres.</value>
+  </data>
+  <data name="NotNow" xml:space="preserve">
+    <value>Pas maintenant</value>
+  </data>
+  <data name="Move" xml:space="preserve">
+    <value>Déplacer</value>
+  </data>
+  <data name="MoveCount" xml:space="preserve">
+    <value>Déplacer {0}</value>
+  </data>
+  <data name="NothingSelected" xml:space="preserve">
+    <value>Aucune sélection</value>
+  </data>
+  <data name="SelectedCountOne" xml:space="preserve">
+    <value>{0} sélectionné</value>
+  </data>
+  <data name="SelectedCount" xml:space="preserve">
+    <value>{0} sélectionnés</value>
+  </data>
+  <data name="SetupStep3Title" xml:space="preserve">
+    <value>Comment l’ouvrir ?</value>
+  </data>
+  <data name="SetupFlyoutText" xml:space="preserve">
+    <value>S’ouvre depuis la zone de notification ou le raccourci clavier.</value>
+  </data>
+  <data name="SetupDesktopText" xml:space="preserve">
+    <value>Reste sur le bureau, derrière vos fenêtres.</value>
+  </data>
+  <data name="SetupWhereTitle" xml:space="preserve">
+    <value>Où le trouver</value>
+  </data>
+  <data name="SetupWhereText" xml:space="preserve">
+    <value>L’icône se trouve près de l’horloge. Si Windows la masque derrière la flèche ^, faites-la glisser sur la barre des tâches.</value>
+  </data>
+  <data name="BackToSettingsEsc" xml:space="preserve">
+    <value>Retour aux paramètres (Échap)</value>
+  </data>
+  <data name="ImportIntro" xml:space="preserve">
+    <value>Cochez les raccourcis qui sont des jeux. Ils passent du bureau à l’étagère, et les paramètres peuvent les remettre en place.</value>
+  </data>
+  <data name="Shortcuts" xml:space="preserve">
+    <value>Raccourcis</value>
+  </data>
+  <data name="ImportNothingFound" xml:space="preserve">
+    <value>Aucun raccourci de programme ou de jeu sur le bureau.</value>
+  </data>
+  <data name="AlreadyOnShelf" xml:space="preserve">
+    <value>déjà sur l’étagère</value>
+  </data>
+  <data name="LinkFrom" xml:space="preserve">
+    <value>Lien {0}</value>
+  </data>
+  <data name="Link" xml:space="preserve">
+    <value>Lien</value>
+  </data>
+  <data name="ImportCountOne" xml:space="preserve">
+    <value>Importer {0} raccourci</value>
+  </data>
+  <data name="ImportCount" xml:space="preserve">
+    <value>Importer {0} raccourcis</value>
+  </data>
+  <data name="BackToGame" xml:space="preserve">
+    <value>Retour au jeu</value>
+  </data>
+  <data name="BackToShelf" xml:space="preserve">
+    <value>Retour à l’étagère</value>
+  </data>
+  <data name="NeedQuestion" xml:space="preserve">
+    <value>De combien d’espace le nouveau jeu a-t-il besoin ?</value>
+  </data>
+  <data name="NeedName" xml:space="preserve">
+    <value>Espace requis par le nouveau jeu, en gigaoctets</value>
+  </data>
+  <data name="GbUnit" xml:space="preserve">
+    <value>Go</value>
+  </data>
+  <data name="NeedHint" xml:space="preserve">
+    <value>au total, comme sur sa page du magasin</value>
+  </data>
+  <data name="InstallOn" xml:space="preserve">
+    <value>Installer sur</value>
+  </data>
+  <data name="CheckAgain" xml:space="preserve">
+    <value>Vérifier à nouveau</value>
+  </data>
+  <data name="CheckAgainToolTip" xml:space="preserve">
+    <value>Relit l’espace libre et votre bibliothèque</value>
+  </data>
+  <data name="DriveFreeOf" xml:space="preserve">
+    <value>{0} Go libres sur {1} Go</value>
+  </data>
+  <data name="DriveName" xml:space="preserve">
+    <value>Lecteur {0} {1}, {2}</value>
+  </data>
+  <data name="BestChoice" xml:space="preserve">
+    <value>meilleur choix</value>
+  </data>
+  <data name="BestChoiceTag" xml:space="preserve">
+    <value>Meilleur choix</value>
+  </data>
+  <data name="FitsAlready" xml:space="preserve">
+    <value>Il y a déjà assez de place</value>
+  </data>
+  <data name="FitsAlreadyLower" xml:space="preserve">
+    <value>assez de place</value>
+  </data>
+  <data name="NotEnoughSpace" xml:space="preserve">
+    <value>pas assez de place</value>
+  </data>
+  <data name="NotEnoughEvenAfter" xml:space="preserve">
+    <value>pas assez, même après suppression</value>
+  </data>
+  <data name="ToRemoveOne" xml:space="preserve">
+    <value>{0} jeu à supprimer</value>
+  </data>
+  <data name="ToRemove" xml:space="preserve">
+    <value>{0} jeux à supprimer</value>
+  </data>
+  <data name="SpaceMapTitle" xml:space="preserve">
+    <value>Ce qui occupe l’espace sur</value>
+  </data>
+  <data name="SpaceMapName" xml:space="preserve">
+    <value>Jeux du lecteur par taille</value>
+  </data>
+  <data name="SpaceMapText" xml:space="preserve">
+    <value>Chaque tuile est un jeu, à la taille de l’espace qu’il occupe. Les tuiles en surbrillance sont suggérées pour suppression. Cliquez sur une tuile pour changer cela.</value>
+  </data>
+  <data name="RulesTitle" xml:space="preserve">
+    <value>Comment les jeux sont choisis</value>
+  </data>
+  <data name="Rule1" xml:space="preserve">
+    <value>1. Les moins joués d’abord. À temps de jeu égal, celui qui correspond le mieux à l’espace manquant.</value>
+  </data>
+  <data name="Rule2" xml:space="preserve">
+    <value>2. Les jeux joués ces 14 derniers jours, seulement si cela ne suffit pas.</value>
+  </data>
+  <data name="Rule3" xml:space="preserve">
+    <value>3. Les favoris en dernier.</value>
+  </data>
+  <data name="RulesFootnote" xml:space="preserve">
+    <value>Les jeux finalement inutiles sont retirés de la sélection.</value>
+  </data>
+  <data name="MapNoSizes" xml:space="preserve">
+    <value>Aucun jeu de ce lecteur n’a de taille connue.</value>
+  </data>
+  <data name="MapNoGames" xml:space="preserve">
+    <value>Aucun jeu de vos lanceurs sur ce lecteur.</value>
+  </data>
+  <data name="UnknownSizes" xml:space="preserve">
+    <value>Non comptés, taille inconnue : {0}</value>
+  </data>
+  <data name="MoreCount" xml:space="preserve">
+    <value>{0} autres</value>
+  </data>
+  <data name="SuggestedToRemove" xml:space="preserve">
+    <value>Suggérés pour suppression</value>
+  </data>
+  <data name="Kept" xml:space="preserve">
+    <value>Conservés</value>
+  </data>
+  <data name="FreeNow" xml:space="preserve">
+    <value>Libre maintenant</value>
+  </data>
+  <data name="FreeNowName" xml:space="preserve">
+    <value>Libre maintenant, {0} Go</value>
+  </data>
+  <data name="GamesToRemove" xml:space="preserve">
+    <value>Jeux à supprimer</value>
+  </data>
+  <data name="FreeAfterwards" xml:space="preserve">
+    <value>{0} Go libres ensuite</value>
+  </data>
+  <data name="Missing" xml:space="preserve">
+    <value>Il manque {0} Go</value>
+  </data>
+  <data name="StillMissing" xml:space="preserve">
+    <value>Il manque encore {0} Go</value>
+  </data>
+  <data name="NothingToRemove" xml:space="preserve">
+    <value>Aucun jeu à supprimer ici</value>
+  </data>
+  <data name="FreesOfMissing" xml:space="preserve">
+    <value>Libère {0} Go sur les {1} Go manquants</value>
+  </data>
+  <data name="UninstallStep" xml:space="preserve">
+    <value>{0} sur {1} : {2}</value>
+  </data>
+  <data name="NextGame" xml:space="preserve">
+    <value>Jeu suivant</value>
+  </data>
+  <data name="NothingToUninstall" xml:space="preserve">
+    <value>Rien à désinstaller</value>
+  </data>
+  <data name="UninstallCountOne" xml:space="preserve">
+    <value>Désinstaller {0} jeu…</value>
+  </data>
+  <data name="UninstallCount" xml:space="preserve">
+    <value>Désinstaller {0} jeux…</value>
+  </data>
+  <data name="UninstallFootnote" xml:space="preserve">
+    <value>Chaque jeu est supprimé par son propre lanceur, qui demande confirmation. Binder ne supprime jamais de fichiers de jeu.</value>
+  </data>
+  <data name="Played" xml:space="preserve">
+    <value>{0} de jeu</value>
+  </data>
+  <data name="LastPlayedAgo" xml:space="preserve">
+    <value>Joué pour la dernière fois {0}</value>
+  </data>
+  <data name="NeverPlayed" xml:space="preserve">
+    <value>Jamais joué</value>
+  </data>
+  <data name="SpaceTileName" xml:space="preserve">
+    <value>{0}, {1} Go, {2}</value>
+  </data>
+  <data name="FavoriteLower" xml:space="preserve">
+    <value>favori</value>
+  </data>
+  <data name="PlayedRecently" xml:space="preserve">
+    <value>joué ces 14 derniers jours</value>
+  </data>
+  <data name="LastWeek" xml:space="preserve">
+    <value>La semaine dernière</value>
+  </data>
+  <data name="WeeksAgo" xml:space="preserve">
+    <value>Il y a {0} semaines</value>
+  </data>
+  <data name="AMonthAgo" xml:space="preserve">
+    <value>Il y a un mois</value>
+  </data>
+  <data name="MonthsAgo" xml:space="preserve">
+    <value>Il y a {0} mois</value>
+  </data>
+  <data name="AYearAgo" xml:space="preserve">
+    <value>Il y a un an</value>
+  </data>
+  <data name="YearsAgo" xml:space="preserve">
+    <value>Il y a {0} ans</value>
+  </data>
+  <data name="GmMaster" xml:space="preserve">
+    <value>Optimiser Windows pendant que je joue</value>
+  </data>
+  <data name="GmMasterText" xml:space="preserve">
+    <value>Tout ce qui suit est annulé à la fermeture du jeu.</value>
+  </data>
+  <data name="GmAllowTitle" xml:space="preserve">
+    <value>Les services et le réseau demandent une fois les droits d’administrateur</value>
+  </data>
+  <data name="GmAllowName" xml:space="preserve">
+    <value>Autoriser le mode jeu à suspendre des services et à définir la priorité réseau</value>
+  </data>
+  <data name="AllowEllipsis" xml:space="preserve">
+    <value>Autoriser…</value>
+  </data>
+  <data name="GmAllowFailed" xml:space="preserve">
+    <value>Cela n’a pas fonctionné (code {0}). Détails : {1}</value>
+  </data>
+  <data name="GmHelperOutdated" xml:space="preserve">
+    <value>Mettez à jour l’assistant pour que ces options continuent de fonctionner.</value>
+  </data>
+  <data name="GmHelperExplain" xml:space="preserve">
+    <value>Ces options utilisent un petit assistant administrateur. Windows demande une fois, et il ne peut faire que ce qui est listé ici.</value>
+  </data>
+  <data name="GmHelperNeedsAdmin" xml:space="preserve">
+    <value>Nécessite un compte administrateur. Les autres options fonctionnent sans.</value>
+  </data>
+  <data name="GmHelperUpdateFailed" xml:space="preserve">
+    <value>Impossible de mettre à jour l’assistant du mode jeu</value>
+  </data>
+  <data name="GmPerformance" xml:space="preserve">
+    <value>Performances</value>
+  </data>
+  <data name="GmPowerTitle" xml:space="preserve">
+    <value>Mode d’alimentation Meilleures performances</value>
+  </data>
+  <data name="GmPowerFastest" xml:space="preserve">
+    <value>Actuellement : {0}, déjà le plus rapide.</value>
+  </data>
+  <data name="GmPowerSwitch" xml:space="preserve">
+    <value>Actuellement : {0}. Rétabli après le jeu.</value>
+  </data>
+  <data name="PowerBalanced" xml:space="preserve">
+    <value>Équilibré</value>
+  </data>
+  <data name="PowerBestPerformance" xml:space="preserve">
+    <value>Meilleures performances</value>
+  </data>
+  <data name="PowerBestEfficiency" xml:space="preserve">
+    <value>Meilleure efficacité énergétique</value>
+  </data>
+  <data name="PowerHighPlan" xml:space="preserve">
+    <value>Mode de gestion Performances élevées</value>
+  </data>
+  <data name="PowerUltimatePlan" xml:space="preserve">
+    <value>Mode de gestion Performances optimales</value>
+  </data>
+  <data name="PowerCustomPlan" xml:space="preserve">
+    <value>un mode de gestion personnalisé</value>
+  </data>
+  <data name="GmPriorityTitle" xml:space="preserve">
+    <value>Donner la priorité au jeu</value>
+  </data>
+  <data name="GmPriorityText" xml:space="preserve">
+    <value>Exécute le jeu en priorité « Supérieure à la normale ».</value>
+  </data>
+  <data name="GmServicesTitle" xml:space="preserve">
+    <value>Suspendre les services en arrière-plan</value>
+  </data>
+  <data name="ServiceSearch" xml:space="preserve">
+    <value>Windows Search</value>
+  </data>
+  <data name="ServiceTelemetry" xml:space="preserve">
+    <value>Télémétrie</value>
+  </data>
+  <data name="ServiceSpooler" xml:space="preserve">
+    <value>Spouleur d’impression</value>
+  </data>
+  <data name="ServiceSearchDetail" xml:space="preserve">
+    <value>Arrête l’indexation des fichiers ; la recherche fonctionne toujours.</value>
+  </data>
+  <data name="ServiceSysMainDetail" xml:space="preserve">
+    <value>Arrête le préchargement des applications en mémoire.</value>
+  </data>
+  <data name="ServiceTelemetryDetail" xml:space="preserve">
+    <value>Arrête l’envoi de données de diagnostic à Microsoft.</value>
+  </data>
+  <data name="ServiceSpoolerDetail" xml:space="preserve">
+    <value>L’impression attend la fermeture du jeu.</value>
+  </data>
+  <data name="GmServiceNow" xml:space="preserve">
+    <value>{0} Actuellement : {1}.</value>
+  </data>
+  <data name="GmRunningLower" xml:space="preserve">
+    <value>en cours d’exécution</value>
+  </data>
+  <data name="GmNotRunningLower" xml:space="preserve">
+    <value>arrêté</value>
+  </data>
+  <data name="GmServiceStopped" xml:space="preserve">
+    <value>arrêté, laissé tel quel</value>
+  </data>
+  <data name="GmServiceDisabled" xml:space="preserve">
+    <value>désactivé, laissé tel quel</value>
+  </data>
+  <data name="GmServiceMissing" xml:space="preserve">
+    <value>absent de ce PC</value>
+  </data>
+  <data name="GmPauseName" xml:space="preserve">
+    <value>Suspendre {0}</value>
+  </data>
+  <data name="GmGameBarTitle" xml:space="preserve">
+    <value>Enregistrement en arrière-plan de la Game Bar</value>
+  </data>
+  <data name="GmGameBarName" xml:space="preserve">
+    <value>Suspendre l’enregistrement en arrière-plan de la Game Bar</value>
+  </data>
+  <data name="GmGameBarText" xml:space="preserve">
+    <value>Désactive « Enregistrer ce qui s’est passé » pendant le jeu. Actuellement : {0}.</value>
+  </data>
+  <data name="GmOneDriveTitle" xml:space="preserve">
+    <value>Suspendre la synchronisation OneDrive</value>
+  </data>
+  <data name="GmOneDriveDocuments" xml:space="preserve">
+    <value>Laissé actif : votre dossier Documents est dans OneDrive, où les jeux gardent souvent leurs sauvegardes.</value>
+  </data>
+  <data name="GmOneDriveText" xml:space="preserve">
+    <value>Ferme OneDrive pendant le jeu, puis le relance. Actuellement : {0}.</value>
+  </data>
+  <data name="GmNetwork" xml:space="preserve">
+    <value>Réseau</value>
+  </data>
+  <data name="GmSmoothTitle" xml:space="preserve">
+    <value>Jeu et chat vocal en priorité</value>
+  </data>
+  <data name="GmSmoothText" xml:space="preserve">
+    <value>Marque leur trafic comme urgent (DSCP 46), si votre routeur le prend en charge. Toujours inclus : {0}.</value>
+  </data>
+  <data name="GmTheGame" xml:space="preserve">
+    <value>le jeu</value>
+  </data>
+  <data name="GmSmoothList" xml:space="preserve">
+    <value>Applications prioritaires</value>
+  </data>
+  <data name="GmAddSmooth" xml:space="preserve">
+    <value>Ajouter une application prioritaire</value>
+  </data>
+  <data name="GmAddRunningApp" xml:space="preserve">
+    <value>Ajouter une application ouverte</value>
+  </data>
+  <data name="GmUploadsTitle" xml:space="preserve">
+    <value>Ralentir les envois en arrière-plan</value>
+  </data>
+  <data name="GmUploadsText" xml:space="preserve">
+    <value>Limite uniquement ce que ces applications envoient.</value>
+  </data>
+  <data name="GmUploadLimit" xml:space="preserve">
+    <value>Limite d’envoi</value>
+  </data>
+  <data name="GmUploadList" xml:space="preserve">
+    <value>Applications dont les envois sont ralentis</value>
+  </data>
+  <data name="GmAddUpload" xml:space="preserve">
+    <value>Ajouter une application à ralentir</value>
+  </data>
+  <data name="GmUpdatesTitle" xml:space="preserve">
+    <value>Limiter les téléchargements de Windows Update</value>
+  </data>
+  <data name="GmUpdatesText" xml:space="preserve">
+    <value>Limite les téléchargements en arrière-plan de Windows Update à {0} % de la bande passante.</value>
+  </data>
+  <data name="GmDownloadsNote" xml:space="preserve">
+    <value>Les autres téléchargements ne peuvent pas être limités ici. Steam suspend ses téléchargements pendant le jeu ; Epic et Battle.net ont une limite dans leurs paramètres.</value>
+  </data>
+  <data name="GmAppsTitle" xml:space="preserve">
+    <value>Applications pendant le jeu</value>
+  </data>
+  <data name="GmAppList" xml:space="preserve">
+    <value>Applications fermées ou ralenties pendant le jeu</value>
+  </data>
+  <data name="GmAppsText" xml:space="preserve">
+    <value>Fermer : l’application est invitée à se fermer et rouverte après le jeu (celles avec du travail non enregistré restent ouvertes). Ralentir : elle tourne en mode efficacité jusqu’à la fin du jeu.</value>
+  </data>
+  <data name="GmClose" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="GmCalm" xml:space="preserve">
+    <value>Ralentir</value>
+  </data>
+  <data name="GmCloseCalmToolTip" xml:space="preserve">
+    <value>Fermer : fermée puis rouverte après le jeu
+Ralentir : mode efficacité pendant le jeu</value>
+  </data>
+  <data name="GmWhilePlaying" xml:space="preserve">
+    <value>Pendant le jeu : {0}</value>
+  </data>
+  <data name="GmAppNotFound" xml:space="preserve">
+    <value>Introuvable. Elle a peut-être été désinstallée.</value>
+  </data>
+  <data name="GmAppNotRunning" xml:space="preserve">
+    <value>Pas ouverte</value>
+  </data>
+  <data name="GmAppCalmed" xml:space="preserve">
+    <value>Ouverte · mode efficacité pendant le jeu</value>
+  </data>
+  <data name="GmAppClosed" xml:space="preserve">
+    <value>Ouverte · rouverte après le jeu</value>
+  </data>
+  <data name="GmNoOtherApps" xml:space="preserve">
+    <value>Aucune autre application avec une fenêtre n’est ouverte</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="RemoveName" xml:space="preserve">
+    <value>Supprimer {0}</value>
+  </data>
+  <data name="GmWindowsSettings" xml:space="preserve">
+    <value>Paramètres de Windows</value>
+  </data>
+  <data name="GmWinGameMode" xml:space="preserve">
+    <value>Mode Jeu de Windows</value>
+  </data>
+  <data name="GmWinGameModeOn" xml:space="preserve">
+    <value>Windows donne la priorité au jeu et retarde les redémarrages de mise à jour.</value>
+  </data>
+  <data name="GmWinGameModeOff" xml:space="preserve">
+    <value>Activez-le pour donner la priorité au jeu.</value>
+  </data>
+  <data name="GmOpenWinGameMode" xml:space="preserve">
+    <value>Ouvrir le Mode Jeu dans les paramètres Windows</value>
+  </data>
+  <data name="GmWindowedTitle" xml:space="preserve">
+    <value>Optimisations pour les jeux en fenêtre</value>
+  </data>
+  <data name="GmWindowedOn" xml:space="preserve">
+    <value>Les jeux en fenêtre et sans bordure ont moins de latence.</value>
+  </data>
+  <data name="GmWindowedOff" xml:space="preserve">
+    <value>Activez-le pour réduire la latence des jeux en fenêtre et sans bordure.</value>
+  </data>
+  <data name="GmOpenWindowed" xml:space="preserve">
+    <value>Ouvrir les optimisations pour les jeux en fenêtre dans les paramètres Windows</value>
+  </data>
+  <data name="GmDnd" xml:space="preserve">
+    <value>Ne pas déranger</value>
+  </data>
+  <data name="GmDndText" xml:space="preserve">
+    <value>Windows peut l’activer pendant les jeux en plein écran : « Lorsque vous jouez à un jeu » sous Activer automatiquement Ne pas déranger.</value>
+  </data>
+  <data name="GmOpenNotifications" xml:space="preserve">
+    <value>Ouvrir les paramètres de notification de Windows</value>
+  </data>
+  <data name="Open" xml:space="preserve">
+    <value>Ouvrir</value>
+  </data>
+  <data name="GmWhenCloses" xml:space="preserve">
+    <value>À la fermeture du jeu</value>
+  </data>
+  <data name="GmToastTitle" xml:space="preserve">
+    <value>Afficher une confirmation « Rétabli »</value>
+  </data>
+  <data name="GmToastName" xml:space="preserve">
+    <value>Afficher une confirmation Rétabli</value>
+  </data>
+  <data name="GmToastText" xml:space="preserve">
+    <value>Ce qui n’a pas pu être rétabli est toujours affiché.</value>
+  </data>
+  <data name="GmSoundTitle" xml:space="preserve">
+    <value>Avec un son</value>
+  </data>
+  <data name="GmSoundName" xml:space="preserve">
+    <value>Jouer un son avec la confirmation</value>
+  </data>
+  <data name="GmSoundText" xml:space="preserve">
+    <value>Le son de notification de Windows. Muet en mode Ne pas déranger.</value>
+  </data>
+  <data name="ViewLog" xml:space="preserve">
+    <value>Afficher le journal</value>
+  </data>
+  <data name="GmViewLogName" xml:space="preserve">
+    <value>Afficher le journal du mode jeu</value>
+  </data>
+  <data name="OpenLog" xml:space="preserve">
+    <value>Ouvrir le journal</value>
+  </data>
+  <data name="GmLastRestore" xml:space="preserve">
+    <value>Dernier rétablissement : {0}</value>
+  </data>
+  <data name="GmNothingRestored" xml:space="preserve">
+    <value>Rien n’a encore été rétabli</value>
+  </data>
+  <data name="GmUndoneOnClose" xml:space="preserve">
+    <value>Les modifications sont annulées à la fermeture du jeu.</value>
+  </data>
+  <data name="GmPutBackOfOne" xml:space="preserve">
+    <value>{0} modification sur {1} rétablie</value>
+  </data>
+  <data name="GmPutBackOf" xml:space="preserve">
+    <value>{0} modifications sur {1} rétablies</value>
+  </data>
+  <data name="GmPutBackOfFailed" xml:space="preserve">
+    <value>{0} sur {1} rétablies · sauf {2}</value>
+  </data>
+  <data name="RestoreNow" xml:space="preserve">
+    <value>Rétablir maintenant</value>
+  </data>
+  <data name="Restoring" xml:space="preserve">
+    <value>Rétablissement…</value>
+  </data>
+  <data name="GmGameRunning" xml:space="preserve">
+    <value>un jeu est en cours</value>
+  </data>
+  <data name="GmNothingPending" xml:space="preserve">
+    <value>rien en attente</value>
+  </data>
+  <data name="GmPerGameNote" xml:space="preserve">
+    <value>Le mode jeu peut être activé ou désactivé pour chaque jeu dans ses détails.</value>
+  </data>
+  <data name="GmHelperNote" xml:space="preserve">
+    <value>Les services et le réseau utilisent un assistant dans Program Files.</value>
+  </data>
+  <data name="RemoveIt" xml:space="preserve">
+    <value>Le supprimer</value>
+  </data>
+  <data name="GmRemoveName" xml:space="preserve">
+    <value>Supprimer l’assistant du mode jeu</value>
+  </data>
+  <data name="GmIsOn" xml:space="preserve">
+    <value>Le mode jeu est activé</value>
+  </data>
+  <data name="GmIsOff" xml:space="preserve">
+    <value>Le mode jeu est désactivé</value>
+  </data>
+  <data name="GmOnNextGame" xml:space="preserve">
+    <value>S’applique au prochain jeu que vous lancez.</value>
+  </data>
+  <data name="GmOffNextGame" xml:space="preserve">
+    <value>Les jeux se lancent sans lui.</value>
+  </data>
+  <data name="Undo" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="GmChangeCountOne" xml:space="preserve">
+    <value>{0} modification</value>
+  </data>
+  <data name="GmChangeCount" xml:space="preserve">
+    <value>{0} modifications</value>
+  </data>
+  <data name="GmBackToNormal" xml:space="preserve">
+    <value>Windows est revenu à la normale</value>
+  </data>
+  <data name="GmPutBack" xml:space="preserve">
+    <value>Le mode jeu a rétabli {0}</value>
+  </data>
+  <data name="GmRestoredOf" xml:space="preserve">
+    <value>{0} sur {1} rétablies</value>
+  </data>
+  <data name="GmCouldntPutBack" xml:space="preserve">
+    <value>{0} n’a pas pu être rétabli</value>
+  </data>
+  <data name="GmCouldntChange" xml:space="preserve">
+    <value>Le mode jeu n’a pas pu modifier Windows</value>
+  </data>
+  <data name="GmCouldntBeChanged" xml:space="preserve">
+    <value>{0} n’a pas pu être modifié</value>
+  </data>
+  <data name="GmAlreadySet" xml:space="preserve">
+    <value>Windows était déjà configuré pour le jeu</value>
+  </data>
+  <data name="GmChangesUntilClose" xml:space="preserve">
+    <value>{0} · annulées à la fermeture du jeu</value>
+  </data>
+  <data name="GmPillOn" xml:space="preserve">
+    <value>Mode jeu activé</value>
+  </data>
+  <data name="GmPillAlreadySet" xml:space="preserve">
+    <value>déjà configuré</value>
+  </data>
+  <data name="GmPillBack" xml:space="preserve">
+    <value>Retour à la normale</value>
+  </data>
+  <data name="GmPillPutBack" xml:space="preserve">
+    <value>{0} rétablies</value>
+  </data>
+  <data name="GmDetailWithLog" xml:space="preserve">
+    <value>{0}. Le journal contient les détails.</value>
+  </data>
+  <data name="Sentence" xml:space="preserve">
+    <value>{0}.</value>
+  </data>
+  <data name="Sentences" xml:space="preserve">
+    <value>{0}. {1}</value>
+  </data>
+  <data name="GmPowerMode" xml:space="preserve">
+    <value>Mode d’alimentation</value>
+  </data>
+  <data name="GmGameBar" xml:space="preserve">
+    <value>Enregistrement Game Bar</value>
+  </data>
+  <data name="GmServicesNetwork" xml:space="preserve">
+    <value>Services et réseau</value>
+  </data>
+  <data name="GmUpdateLimit" xml:space="preserve">
+    <value>Limite Windows Update</value>
+  </data>
+  <data name="GmNetworkPriority" xml:space="preserve">
+    <value>Priorité réseau</value>
+  </data>
+  <data name="CrashTitleStart" xml:space="preserve">
+    <value>{0} s’est fermé juste après le lancement</value>
+  </data>
+  <data name="CrashTitleClosed" xml:space="preserve">
+    <value>{0} s’est fermé de façon inattendue après {1}</value>
+  </data>
+  <data name="CrashTitleHang" xml:space="preserve">
+    <value>{0} a cessé de répondre après {1}</value>
+  </data>
+  <data name="CrashTitleCrash" xml:space="preserve">
+    <value>{0} a planté après {1}</value>
+  </data>
+  <data name="CrashInDriverOverclock" xml:space="preserve">
+    <value>Le plantage s’est produit dans le pilote graphique {0}. Mettre à jour le pilote ou désactiver l’overclocking du GPU règle souvent le problème.</value>
+  </data>
+  <data name="CrashInDriver" xml:space="preserve">
+    <value>Le plantage s’est produit dans le pilote graphique {0}. Mettre à jour le pilote règle souvent le problème.</value>
+  </data>
+  <data name="CrashGpu" xml:space="preserve">
+    <value>La carte graphique a cessé de répondre. Mettre à jour le pilote ou désactiver l’overclocking du GPU règle souvent le problème.</value>
+  </data>
+  <data name="CrashOverlay" xml:space="preserve">
+    <value>Le plantage s’est produit dans un overlay ou un mod ({0}). Le désactiver pour ce jeu règle souvent le problème.</value>
+  </data>
+  <data name="CrashCppRuntime" xml:space="preserve">
+    <value>Le plantage s’est produit dans le runtime Visual C++ de Microsoft. Réinstaller le Visual C++ Redistributable règle souvent le problème.</value>
+  </data>
+  <data name="CrashMissingRuntime" xml:space="preserve">
+    <value>Un fichier nécessaire au jeu est absent, généralement parce que le Microsoft Visual C++ Redistributable n’est pas installé.</value>
+  </data>
+  <data name="CrashExitCode" xml:space="preserve">
+    <value>Il s’est terminé avec un code d’erreur, mais Windows n’a enregistré aucun plantage. Certains jeux font cela en quittant. Si cela se répète, copiez les textes ci-dessous.</value>
+  </data>
+  <data name="CrashUnknown" xml:space="preserve">
+    <value>Binder ne reconnaît pas cette erreur. Vous pouvez copier une question pour un assistant IA ou un rapport pour le développeur du jeu.</value>
+  </data>
+  <data name="CodeAccessViolation" xml:space="preserve">
+    <value>Violation d’accès</value>
+  </data>
+  <data name="CodeStackBuffer" xml:space="preserve">
+    <value>Le programme s’est arrêté après avoir détecté un problème</value>
+  </data>
+  <data name="CodeHeapCorruption" xml:space="preserve">
+    <value>Corruption de la mémoire</value>
+  </data>
+  <data name="CodeStackOverflow" xml:space="preserve">
+    <value>Dépassement de pile</value>
+  </data>
+  <data name="CodeOutOfMemory" xml:space="preserve">
+    <value>Mémoire insuffisante</value>
+  </data>
+  <data name="CodeIllegalInstruction" xml:space="preserve">
+    <value>Une instruction non prise en charge par le processeur</value>
+  </data>
+  <data name="CodeDivideByZero" xml:space="preserve">
+    <value>Division par zéro</value>
+  </data>
+  <data name="CodeBreakpoint" xml:space="preserve">
+    <value>Point d’arrêt</value>
+  </data>
+  <data name="CodeCppException" xml:space="preserve">
+    <value>Exception C++ non gérée</value>
+  </data>
+  <data name="CodeAppError" xml:space="preserve">
+    <value>Erreur d’application non gérée</value>
+  </data>
+  <data name="CodeDllNotFound" xml:space="preserve">
+    <value>Un fichier requis (DLL) est introuvable</value>
+  </data>
+  <data name="CodeBadImage" xml:space="preserve">
+    <value>Un fichier ne correspond pas au type de système (32/64 bits)</value>
+  </data>
+  <data name="CodeDllInitFailed" xml:space="preserve">
+    <value>Un fichier requis (DLL) n’a pas pu démarrer</value>
+  </data>
+  <data name="CodeEntryPointNotFound" xml:space="preserve">
+    <value>Une fonction requise est absente d’une DLL</value>
+  </data>
+  <data name="CodeGpuRemoved" xml:space="preserve">
+    <value>La carte graphique a été retirée ou réinitialisée</value>
+  </data>
+  <data name="CodeGpuHung" xml:space="preserve">
+    <value>La carte graphique a cessé de répondre</value>
+  </data>
+  <data name="CodeGpuReset" xml:space="preserve">
+    <value>La carte graphique a été réinitialisée</value>
+  </data>
+  <data name="CodeMinusOne" xml:space="preserve">
+    <value>Code de sortie -1</value>
+  </data>
+  <data name="CodeWithName" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="ErrorCode" xml:space="preserve">
+    <value>Erreur {0}</value>
+  </data>
+  <data name="CodeInFile" xml:space="preserve">
+    <value>{0} dans le fichier {1}</value>
+  </data>
+  <data name="CodeIn" xml:space="preserve">
+    <value>{0} dans {1}</value>
+  </data>
+  <data name="CrashHangClosed" xml:space="preserve">
+    <value>A cessé de répondre et Windows l’a fermé</value>
+  </data>
+  <data name="GraphicsDriverOf" xml:space="preserve">
+    <value>Pilote graphique {0}</value>
+  </data>
+  <data name="GraphicsCard" xml:space="preserve">
+    <value>carte graphique</value>
+  </data>
+  <data name="OverlayOrMod" xml:space="preserve">
+    <value>overlay ou mod</value>
+  </data>
+  <data name="CppRuntime" xml:space="preserve">
+    <value>runtime Visual C++</value>
+  </data>
+  <data name="AlsoDriverReset" xml:space="preserve">
+    <value>Le pilote d’affichage a cessé de répondre puis a récupéré</value>
+  </data>
+  <data name="AlsoHang" xml:space="preserve">
+    <value>Windows a signalé qu’il ne répondait plus</value>
+  </data>
+  <data name="AlsoCrashReporter" xml:space="preserve">
+    <value>L’outil de rapport de plantage du jeu s’est ouvert</value>
+  </data>
+  <data name="FamilyDriver" xml:space="preserve">
+    <value>le pilote graphique</value>
+  </data>
+  <data name="FamilyOverlay" xml:space="preserve">
+    <value>un overlay ou un mod</value>
+  </data>
+  <data name="FamilyRuntime" xml:space="preserve">
+    <value>le runtime Visual C++</value>
+  </data>
+  <data name="Pattern" xml:space="preserve">
+    <value>{0} plantages lors des {1} dernières sessions.</value>
+  </data>
+  <data name="PatternBothIn" xml:space="preserve">
+    <value>{0} plantages lors des {1} dernières sessions, tous deux dans {2}.</value>
+  </data>
+  <data name="PatternAllIn" xml:space="preserve">
+    <value>{0} plantages lors des {1} dernières sessions, tous dans {2}.</value>
+  </data>
+  <data name="AFewSeconds" xml:space="preserve">
+    <value>quelques secondes</value>
+  </data>
+  <data name="AboutMinutes" xml:space="preserve">
+    <value>environ {0} minutes</value>
+  </data>
+  <data name="AboutHours" xml:space="preserve">
+    <value>environ {0} heures</value>
+  </data>
+  <data name="MemoryGb" xml:space="preserve">
+    <value>{0} Go de mémoire</value>
+  </data>
+  <data name="PromptStartFailed" xml:space="preserve">
+    <value>Mon jeu « {0} » s’est fermé juste après son lancement sous Windows.</value>
+  </data>
+  <data name="PromptClosed" xml:space="preserve">
+    <value>Mon jeu « {0} » s’est fermé de façon inattendue sous Windows après {1} de jeu.</value>
+  </data>
+  <data name="PromptCrashed" xml:space="preserve">
+    <value>Mon jeu « {0} » a planté sous Windows après {1} de jeu.</value>
+  </data>
+  <data name="PromptReported" xml:space="preserve">
+    <value>Windows a signalé l’erreur {0}.</value>
+  </data>
+  <data name="PromptAlso" xml:space="preserve">
+    <value>Au même moment : {0}.</value>
+  </data>
+  <data name="PromptPc" xml:space="preserve">
+    <value>Mon PC : {0}.</value>
+  </data>
+  <data name="PromptHowOften" xml:space="preserve">
+    <value>C’est arrivé {0}.</value>
+  </data>
+  <data name="PromptFirstTime" xml:space="preserve">
+    <value>pour la première fois lors de mes {0} dernières sessions</value>
+  </data>
+  <data name="PromptTimes" xml:space="preserve">
+    <value>{0} fois lors de mes {1} dernières sessions</value>
+  </data>
+  <data name="PromptQuestion" xml:space="preserve">
+    <value>Je ne suis pas technicien. Quelle peut en être la cause, et que puis-je essayer, étape par étape, en commençant par la solution la plus simple ?</value>
+  </data>
+  <data name="ReportGame" xml:space="preserve">
+    <value>Jeu</value>
+  </data>
+  <data name="ReportGameStore" xml:space="preserve">
+    <value>{0} (version {1})</value>
+  </data>
+  <data name="ReportWhat" xml:space="preserve">
+    <value>Ce qui s’est passé</value>
+  </data>
+  <data name="ReportStartFailed" xml:space="preserve">
+    <value>le jeu s’est fermé juste après le lancement ({0})</value>
+  </data>
+  <data name="ReportClosed" xml:space="preserve">
+    <value>le jeu s’est fermé de façon inattendue après {0} de jeu ({1})</value>
+  </data>
+  <data name="ReportHang" xml:space="preserve">
+    <value>le jeu a cessé de répondre après {0} de jeu ({1})</value>
+  </data>
+  <data name="ReportCrashed" xml:space="preserve">
+    <value>le jeu a planté après {0} de jeu ({1})</value>
+  </data>
+  <data name="ReportError" xml:space="preserve">
+    <value>Erreur</value>
+  </data>
+  <data name="ReportAlso" xml:space="preserve">
+    <value>Aussi</value>
+  </data>
+  <data name="ReportHowOften" xml:space="preserve">
+    <value>Fréquence</value>
+  </data>
+  <data name="ReportFirstTime" xml:space="preserve">
+    <value>première fois lors des {0} dernières sessions</value>
+  </data>
+  <data name="ReportTimes" xml:space="preserve">
+    <value>{0} fois lors des {1} dernières sessions</value>
+  </data>
+  <data name="ReportPc" xml:space="preserve">
+    <value>PC</value>
+  </data>
+  <data name="ReportFooter" xml:space="preserve">
+    <value>(Rapport de Binder. Sans données personnelles ni chemins de fichiers.)</value>
+  </data>
+  <data name="CrashWhatHappened" xml:space="preserve">
+    <value>Ce qui s’est passé</value>
+  </data>
+  <data name="CrashWhere" xml:space="preserve">
+    <value>Où</value>
+  </data>
+  <data name="CrashAlso" xml:space="preserve">
+    <value>Au même moment</value>
+  </data>
+  <data name="CrashWhen" xml:space="preserve">
+    <value>Quand</value>
+  </data>
+  <data name="PlayAgain" xml:space="preserve">
+    <value>Rejouer</value>
+  </data>
+  <data name="PlayAgainName" xml:space="preserve">
+    <value>Rejouer à {0}</value>
+  </data>
+  <data name="OpenGameLog" xml:space="preserve">
+    <value>Ouvrir le journal du jeu</value>
+  </data>
+  <data name="OpenGameLogToolTip" xml:space="preserve">
+    <value>Le fichier journal du jeu, dans le Bloc-notes</value>
+  </data>
+  <data name="GetRedist" xml:space="preserve">
+    <value>Le télécharger chez Microsoft</value>
+  </data>
+  <data name="GetRedistToolTip" xml:space="preserve">
+    <value>Page de téléchargement du Visual C++ Redistributable de Microsoft</value>
+  </data>
+  <data name="CopyReport" xml:space="preserve">
+    <value>Copier le rapport de bug</value>
+  </data>
+  <data name="CopyReportToolTip" xml:space="preserve">
+    <value>Un court rapport pour le développeur, sans données personnelles ni chemins de fichiers</value>
+  </data>
+  <data name="CopyPrompt" xml:space="preserve">
+    <value>Copier la question pour l’IA</value>
+  </data>
+  <data name="CopyPromptToolTip" xml:space="preserve">
+    <value>Une question à coller dans Copilot, ChatGPT ou un autre assistant IA</value>
+  </data>
+  <data name="CopiedReport" xml:space="preserve">
+    <value>Copié. Collez-le dans le forum du jeu, les discussions Steam ou le formulaire d’assistance du développeur :</value>
+  </data>
+  <data name="CopiedPrompt" xml:space="preserve">
+    <value>Copié. Collez-la dans Copilot, ChatGPT ou un autre assistant IA :</value>
+  </data>
+  <data name="ClipboardFailed" xml:space="preserve">
+    <value>Presse-papiers inaccessible. Sélectionnez le texte et appuyez sur Ctrl+C :</value>
+  </data>
+  <data name="WithDriver" xml:space="preserve">
+    <value>{0} avec le pilote {1}</value>
+  </data>
+  <data name="KeepOpen" xml:space="preserve">
+    <value>Garder ouvert</value>
+  </data>
+  <data name="KeepOpenToolTip" xml:space="preserve">
+    <value>Ne pas masquer Binder cette fois</value>
+  </data>
+  <data name="KeepOpenName" xml:space="preserve">
+    <value>Garder Binder ouvert</value>
+  </data>
+  <data name="StartingGame" xml:space="preserve">
+    <value>Lancement de {0}</value>
+  </data>
+  <data name="HidingIn" xml:space="preserve">
+    <value>Masquage dans {0} s</value>
+  </data>
+  <data name="StartedGame" xml:space="preserve">
+    <value>{0} lancé</value>
+  </data>
+  <data name="StayingOpenNoWatch" xml:space="preserve">
+    <value>Binder reste ouvert car il ne peut pas savoir quand ce jeu se ferme. Choisissez son programme sous Processus à surveiller.</value>
+  </data>
+  <data name="StayingOpenNoWatcher" xml:space="preserve">
+    <value>Binder reste ouvert car la surveillance n’a pas pu démarrer. {0}</value>
+  </data>
+  <data name="CouldntStart" xml:space="preserve">
+    <value>Impossible de lancer {0}</value>
+  </data>
+  <data name="TestLaunchTitle" xml:space="preserve">
+    <value>Lancement test : {0}</value>
+  </data>
+  <data name="TestLaunchDetail" xml:space="preserve">
+    <value>Se lance avec : {0}. Binder reste ouvert et ce lancement ne compte pas dans le temps de jeu.</value>
+  </data>
+  <data name="LauncherNotFound" xml:space="preserve">
+    <value>{0} est introuvable.</value>
+  </data>
+  <data name="ExeNotFound" xml:space="preserve">
+    <value>Le programme du jeu est introuvable.</value>
+  </data>
+  <data name="SteamWith" xml:space="preserve">
+    <value>Steam, avec {0}</value>
+  </data>
+  <data name="ItsShortcut" xml:space="preserve">
+    <value>son raccourci</value>
+  </data>
+  <data name="TheSourceLauncher" xml:space="preserve">
+    <value>le lanceur {0}</value>
+  </data>
+  <data name="ConflictTitle" xml:space="preserve">
+    <value>Fermer {0} d’abord ?</value>
+  </data>
+  <data name="ConflictTextOne" xml:space="preserve">
+    <value>{0} utilise {1}, qui peut refuser de démarrer tant que {2} est ouvert.</value>
+  </data>
+  <data name="ConflictText" xml:space="preserve">
+    <value>{0} utilise {1}, qui peut refuser de démarrer tant que {2} sont ouverts.</value>
+  </data>
+  <data name="ConflictCloseOne" xml:space="preserve">
+    <value>Le fermer et jouer</value>
+  </data>
+  <data name="ConflictClose" xml:space="preserve">
+    <value>Les fermer et jouer</value>
+  </data>
+  <data name="PlayAnyway" xml:space="preserve">
+    <value>Jouer quand même</value>
+  </data>
+  <data name="ImportDoneOne" xml:space="preserve">
+    <value>{0} raccourci importé</value>
+  </data>
+  <data name="ImportDone" xml:space="preserve">
+    <value>{0} raccourcis importés</value>
+  </data>
+  <data name="ImportRestoreHint" xml:space="preserve">
+    <value>Vous pouvez les remettre en place depuis les paramètres.</value>
+  </data>
+  <data name="ImportCopiedOne" xml:space="preserve">
+    <value>{0} reste aussi sur le bureau partagé, qui ne peut être modifié qu’avec les droits d’administrateur.</value>
+  </data>
+  <data name="ImportCopied" xml:space="preserve">
+    <value>{0} restent aussi sur le bureau partagé, qui ne peut être modifié qu’avec les droits d’administrateur.</value>
+  </data>
+  <data name="ImportFailedOne" xml:space="preserve">
+    <value>{0} n’a pas pu être importé.</value>
+  </data>
+  <data name="ImportFailed" xml:space="preserve">
+    <value>{0} n’ont pas pu être importés.</value>
+  </data>
+  <data name="RestoredShortcuts" xml:space="preserve">
+    <value>Les raccourcis sont de retour sur le bureau</value>
+  </data>
+  <data name="RestoreShortcutsFailed" xml:space="preserve">
+    <value>Certains raccourcis n’ont pas pu être restaurés</value>
+  </data>
+  <data name="RestoredCountOne" xml:space="preserve">
+    <value>{0} restauré.</value>
+  </data>
+  <data name="RestoredCount" xml:space="preserve">
+    <value>{0} restaurés.</value>
+  </data>
+  <data name="StillInFolderOne" xml:space="preserve">
+    <value>{0} est toujours dans le dossier de Binder.</value>
+  </data>
+  <data name="StillInFolder" xml:space="preserve">
+    <value>{0} sont toujours dans le dossier de Binder.</value>
+  </data>
+  <data name="FilterGames" xml:space="preserve">
+    <value>Jeux et raccourcis ({0})</value>
+  </data>
+  <data name="AlreadyOnShelfTitle" xml:space="preserve">
+    <value>{0} est déjà sur l’étagère</value>
+  </data>
+  <data name="FromLibrary" xml:space="preserve">
+    <value>Il vient de votre bibliothèque {0}.</value>
+  </data>
+  <data name="CouldntAddFile" xml:space="preserve">
+    <value>Impossible d’ajouter ce fichier</value>
+  </data>
+  <data name="CouldntAddFileDetail" xml:space="preserve">
+    <value>Ce n’est pas un programme ou un raccourci que Binder peut lire.</value>
+  </data>
+  <data name="AddedGame" xml:space="preserve">
+    <value>{0} ajouté</value>
+  </data>
+  <data name="AddedGameDetail" xml:space="preserve">
+    <value>Il est maintenant sur l’étagère.</value>
+  </data>
+  <data name="HidGame" xml:space="preserve">
+    <value>{0} masqué</value>
+  </data>
+  <data name="HidGameDetail" xml:space="preserve">
+    <value>Il n’apparaît plus sur l’étagère.</value>
+  </data>
+  <data name="GameGoneTitle" xml:space="preserve">
+    <value>{0} n’est plus installé</value>
+  </data>
+  <data name="GameGoneDetail" xml:space="preserve">
+    <value>Il a été retiré de l’étagère. Ses paramètres reviendront si vous le réinstallez.</value>
+  </data>
+  <data name="SomethingWentWrong" xml:space="preserve">
+    <value>Un problème est survenu</value>
+  </data>
+  <data name="ErrorDetail" xml:space="preserve">
+    <value>Binder continue de fonctionner. Détails : {0}</value>
+  </data>
+  <data name="TheGame" xml:space="preserve">
+    <value>Le jeu</value>
+  </data>
+  <data name="NotDetectedTitle" xml:space="preserve">
+    <value>Jeu non détecté</value>
+  </data>
+  <data name="NotDetectedDetail" xml:space="preserve">
+    <value>{0} ne semble pas avoir démarré, ou s’exécute hors de son dossier d’installation. Définissez son processus dans les détails du jeu.</value>
+  </data>
+  <data name="AutostartFailed" xml:space="preserve">
+    <value>Impossible de modifier Démarrer avec Windows</value>
+  </data>
+  <data name="AutostartFailedDetail" xml:space="preserve">
+    <value>Windows n’a pas autorisé la modification.</value>
+  </data>
+  <data name="LocalDisk" xml:space="preserve">
+    <value>Disque local</value>
+  </data>
+  <data name="OpenBinder" xml:space="preserve">
+    <value>Ouvrir Binder</value>
+  </data>
+  <data name="OpenLauncher" xml:space="preserve">
+    <value>Ouvrir {0}</value>
+  </data>
+  <data name="ChipOpenLauncherHelp" xml:space="preserve">
+    <value>Clic droit pour ouvrir {0}</value>
+  </data>
+  <data name="Quit" xml:space="preserve">
+    <value>Quitter</value>
+  </data>
+  <data name="DisclosureShow" xml:space="preserve">
+    <value>Afficher {0}</value>
+  </data>
+  <data name="DisclosureHide" xml:space="preserve">
+    <value>Masquer {0}</value>
+  </data>
+  <data name="DisclosureModes" xml:space="preserve">
+    <value>les modes d’affichage</value>
+  </data>
+  <data name="DisclosureStayReady" xml:space="preserve">
+    <value>les options Rester prêt</value>
+  </data>
+  <data name="DisclosureSources" xml:space="preserve">
+    <value>les sources de jeux</value>
+  </data>
+  <data name="DisclosureShortcuts" xml:space="preserve">
+    <value>les options des raccourcis du bureau</value>
+  </data>
+  <data name="DisclosureHidden" xml:space="preserve">
+    <value>les jeux masqués</value>
+  </data>
+  <data name="DisclosureLaunch" xml:space="preserve">
+    <value>les options de lancement</value>
+  </data>
+  <data name="DisclosureAntiCheat" xml:space="preserve">
+    <value>les détails de l’anti-triche</value>
+  </data>
+  <data name="GroupAdvanced" xml:space="preserve">
+    <value>Avancé</value>
+  </data>
+  <data name="SourcePaths" xml:space="preserve">
+    <value>Où Binder trouve les jeux et les images</value>
+  </data>
+  <data name="SourcePathsDefault" xml:space="preserve">
+    <value>Tout par défaut</value>
+  </data>
+  <data name="SourcePathsChangedOne" xml:space="preserve">
+    <value>1 emplacement modifié</value>
+  </data>
+  <data name="SourcePathsChanged" xml:space="preserve">
+    <value>{0} emplacements modifiés</value>
+  </data>
+  <data name="SourcePathsIntro" xml:space="preserve">
+    <value>Ne les modifiez que si des jeux ou des images ont disparu après une mise à jour d'un lanceur.</value>
+  </data>
+  <data name="DisclosureSourcePaths" xml:space="preserve">
+    <value>emplacements des jeux et des images</value>
+  </data>
+  <data name="EntrySteamFolder" xml:space="preserve">
+    <value>Dossier de Steam</value>
+  </data>
+  <data name="EntrySteamArtFolder" xml:space="preserve">
+    <value>Dossier des illustrations</value>
+  </data>
+  <data name="EntrySteamCoverFiles" xml:space="preserve">
+    <value>Noms des fichiers de jaquette (essayés dans l'ordre)</value>
+  </data>
+  <data name="EntrySteamBannerFile" xml:space="preserve">
+    <value>Nom du fichier de bannière</value>
+  </data>
+  <data name="EntrySteamLogoFile" xml:space="preserve">
+    <value>Nom du fichier de logo</value>
+  </data>
+  <data name="EntrySteamDownload" xml:space="preserve">
+    <value>Adresse de téléchargement</value>
+  </data>
+  <data name="EntryEpicManifests" xml:space="preserve">
+    <value>Dossier des manifestes</value>
+  </data>
+  <data name="EntryGamesKey" xml:space="preserve">
+    <value>Clé de registre des jeux</value>
+  </data>
+  <data name="EntryInstallsKey" xml:space="preserve">
+    <value>Clé de registre des installations</value>
+  </data>
+  <data name="EntryLauncherKey" xml:space="preserve">
+    <value>Clé de registre du lanceur</value>
+  </data>
+  <data name="InvalidFolder" xml:space="preserve">
+    <value>Saisissez le chemin complet d'un dossier sur ce PC.</value>
+  </data>
+  <data name="InvalidRegistryKey" xml:space="preserve">
+    <value>Saisissez une clé sous HKLM\SOFTWARE ou HKCU\Software.</value>
+  </data>
+  <data name="InvalidFileName" xml:space="preserve">
+    <value>Saisissez un nom de fichier se terminant par .jpg, .jpeg ou .png, sans dossier.</value>
+  </data>
+  <data name="InvalidFileNames" xml:space="preserve">
+    <value>Saisissez jusqu'à 5 noms de fichier se terminant par .jpg, .jpeg ou .png, séparés par des virgules.</value>
+  </data>
+  <data name="InvalidAddress" xml:space="preserve">
+    <value>Saisissez une adresse https:// contenant {appid}.</value>
+  </data>
+  <data name="DownloadHostNotice" xml:space="preserve">
+    <value>Binder téléchargera les images depuis {0}</value>
+  </data>
+  <data name="ResetEntry" xml:space="preserve">
+    <value>Réinitialiser</value>
+  </data>
+  <data name="ResetEntryName" xml:space="preserve">
+    <value>Réinitialiser {0}</value>
+  </data>
+  <data name="ResetAll" xml:space="preserve">
+    <value>Tout réinitialiser</value>
+  </data>
+  <data name="CheckSource" xml:space="preserve">
+    <value>Vérifier</value>
+  </data>
+  <data name="CheckSourceName" xml:space="preserve">
+    <value>Vérifier {0}</value>
+  </data>
+  <data name="CheckFoundOne" xml:space="preserve">
+    <value>1 jeu trouvé</value>
+  </data>
+  <data name="CheckFound" xml:space="preserve">
+    <value>{0} jeux trouvés</value>
+  </data>
+  <data name="CheckSteamArt" xml:space="preserve">
+    <value>jaquettes pour {0} · bannières pour {1} · logos pour {2}</value>
+  </data>
+  <data name="EntryNotFound" xml:space="preserve">
+    <value>{0} introuvable</value>
+  </data>
+  <data name="InfoHowItWorks" xml:space="preserve">
+    <value>Comment ça marche</value>
+  </data>
+  <data name="InfoAbout" xml:space="preserve">
+    <value>À propos de {0}</value>
+  </data>
+  <data name="HelpSourcePaths1" xml:space="preserve">
+    <value>Chaque champ affiche sa valeur par défaut en gris. Laissez-le vide pour continuer à l'utiliser.</value>
+  </data>
+  <data name="HelpSourcePaths2" xml:space="preserve">
+    <value>Saisissez une nouvelle valeur, puis appuyez sur Entrée ou quittez le champ pour l'enregistrer. Une valeur inutilisable indique pourquoi et n'est pas enregistrée.</value>
+  </data>
+  <data name="HelpSourcePaths3" xml:space="preserve">
+    <value>Les nouvelles valeurs sont utilisées dès la prochaine actualisation (F5) ou le prochain démarrage. « Vérifier » les essaie tout de suite, sans rien télécharger.</value>
+  </data>
+  <data name="HelpSourcePaths4" xml:space="preserve">
+    <value>« Réinitialiser » revient à la valeur par défaut. Les images déjà sur ce PC restent.</value>
+  </data>
+  <data name="HelpSteamFolder" xml:space="preserve">
+    <value>Le dossier où Steam est installé, celui qui contient steam.exe. Par défaut, il est lu dans l'entrée de registre de Steam. Exemple : D:\Steam</value>
+  </data>
+  <data name="HelpSteamArtFolder" xml:space="preserve">
+    <value>L'endroit où Steam conserve les images des jeux sur ce PC. Par défaut, le dossier appcache\librarycache du dossier Steam. Exemple : D:\Steam\appcache\librarycache</value>
+  </data>
+  <data name="HelpSteamCoverFiles" xml:space="preserve">
+    <value>Les noms de fichier de la jaquette verticale, séparés par des virgules et essayés dans l'ordre. Le premier est aussi celui téléchargé quand aucune jaquette n'est sur ce PC. Jusqu'à 5 noms se terminant par .jpg, .jpeg ou .png.</value>
+  </data>
+  <data name="HelpSteamBannerFile" xml:space="preserve">
+    <value>Le nom de fichier de la bannière large derrière « Reprendre » et dans les détails du jeu. Un nom se terminant par .jpg, .jpeg ou .png, sans dossier.</value>
+  </data>
+  <data name="HelpSteamLogoFile" xml:space="preserve">
+    <value>Le nom de fichier du logo transparent du jeu, affiché sur les bannières à la place de son nom. Un nom se terminant par .jpg, .jpeg ou .png, sans dossier.</value>
+  </data>
+  <data name="HelpSteamDownload" xml:space="preserve">
+    <value>L'adresse d'où les images absentes de ce PC sont téléchargées, une fois chacune. Elle doit commencer par https:// et contenir {appid}, remplacé par le numéro Steam du jeu ; {file} est remplacé par le nom du fichier. Exemple : https://cdn.example.com/apps/{appid}/{file}</value>
+  </data>
+  <data name="HelpEpicManifests" xml:space="preserve">
+    <value>Le dossier où l'Epic Games Launcher répertorie les jeux installés, un fichier .item par jeu.</value>
+  </data>
+  <data name="HelpGogKey" xml:space="preserve">
+    <value>La clé de registre où GOG répertorie les jeux installés, une sous-clé par jeu. Elle doit se trouver sous HKLM\SOFTWARE ou HKCU\Software et n'est que lue.</value>
+  </data>
+  <data name="HelpUbisoftKey" xml:space="preserve">
+    <value>La clé de registre où Ubisoft Connect répertorie les jeux installés, une sous-clé par jeu. Elle doit se trouver sous HKLM\SOFTWARE ou HKCU\Software et n'est que lue.</value>
+  </data>
+  <data name="HelpRockstarKey" xml:space="preserve">
+    <value>La clé de registre du Rockstar Games Launcher ; sa valeur InstallFolder indique où se trouve Launcher.exe. Elle doit se trouver sous HKLM\SOFTWARE ou HKCU\Software et n'est que lue.</value>
+  </data>
+  <data name="RestartOnCrash" xml:space="preserve">
+    <value>Redémarrer en cas de plantage</value>
+  </data>
+  <data name="RestartOnCrashToolTip" xml:space="preserve">
+    <value>Relance le jeu après un plantage, au plus deux fois de suite</value>
+  </data>
+  <data name="RestartPillTitle" xml:space="preserve">
+    <value>{0} a planté</value>
+  </data>
+  <data name="RestartPillDetail" xml:space="preserve">
+    <value>Redémarrage dans {0} s</value>
+  </data>
+  <data name="RestartCancelName" xml:space="preserve">
+    <value>Annuler le redémarrage</value>
+  </data>
+  <data name="RestartLimit" xml:space="preserve">
+    <value>Déjà redémarré deux fois, Binder n’essaie donc plus.</value>
+  </data>
+</root>

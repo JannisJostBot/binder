@@ -1,4 +1,4 @@
-# CI test for GameShelfSetup.exe (Windows PowerShell 5.1): install through the dialogs, update silently while the
+# CI test for BinderSetup.exe (Windows PowerShell 5.1): install through the dialogs, update silently while the
 # widget and a watcher are running, then uninstall through the dialogs with "delete my data" ticked, and check
 # that nothing is left behind and imported shortcuts went back on the desktop.
 #
@@ -18,13 +18,13 @@ $metrics = @()
 $UIA = [System.Windows.Automation.AutomationElement]
 $Scope = [System.Windows.Automation.TreeScope]
 
-$installDir = Join-Path $env:LOCALAPPDATA 'Programs\GameShelf'
-$uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\GameShelf'
+$installDir = Join-Path $env:LOCALAPPDATA 'Programs\Binder'
+$uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Binder'
 $startMenuLink = Join-Path ([Environment]::GetFolderPath('Programs')) 'Binder.lnk'
-$dataDir = Join-Path $env:APPDATA 'GameShelf'
-$cacheDir = Join-Path $env:LOCALAPPDATA 'GameShelf'
+$dataDir = Join-Path $env:APPDATA 'Binder'
+$cacheDir = Join-Path $env:LOCALAPPDATA 'Binder'
 $desktop = [Environment]::GetFolderPath('Desktop')
-$log = Join-Path ([IO.Path]::GetTempPath()) 'GameShelfSetup.log'
+$log = Join-Path ([IO.Path]::GetTempPath()) 'BinderSetup.log'
 
 function Shot([string] $name) {
     $b = [System.Windows.Forms.SystemInformation]::VirtualScreen
@@ -58,7 +58,7 @@ function Get-Dialog([string] $instruction) {
 }
 # For a failed run: every top-level window of the setup processes (the task dialog may be hidden or off-screen).
 function Dump-SetupWindows {
-    $ids = @(Get-Process GameShelfSetup, Uninstall -ErrorAction SilentlyContinue | ForEach-Object { $_.Id })
+    $ids = @(Get-Process BinderSetup, Uninstall -ErrorAction SilentlyContinue | ForEach-Object { $_.Id })
     $lines = @("setup processes: $($ids -join ', ')")
     $UIA::RootElement.FindAll($Scope::Children, [System.Windows.Automation.Condition]::TrueCondition) | ForEach-Object {
         if ($ids -contains $_.Current.ProcessId) {
@@ -133,14 +133,14 @@ function Same-File([string] $name) {
 }
 
 # Start clean: the smoke test ran the portable copy; make sure nothing of it is running.
-Get-Process GameShelf, GameShelf.Watcher, FakeGame -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+Get-Process Binder, Binder.Watcher, FakeGame -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 Remove-Item $installDir -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item $uninstallKey -Recurse -ErrorAction SilentlyContinue
 Remove-Item $log -ErrorAction SilentlyContinue
 (New-Object -ComObject Shell.Application).MinimizeAll()
 
 try {
-    $metrics += "GameShelfSetup.exe: $([int]((Get-Item $Setup).Length / 1KB)) KB"
+    $metrics += "BinderSetup.exe: $([int]((Get-Item $Setup).Length / 1KB)) KB"
 
     # --- 1. Install through the dialogs; "Open Binder now" is ticked, so it starts afterwards. ---
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
@@ -186,13 +186,13 @@ try {
     if ($entry.UninstallString -ne ('"' + (Join-Path $installDir 'Uninstall.exe') + '" /uninstall')) { Fail "UninstallString is $($entry.UninstallString)" }
     $metrics += "Installed: files match the published build, Start menu shortcut, Settings -> Apps entry '$($entry.DisplayName) $($entry.DisplayVersion)' by $($entry.Publisher), $($entry.EstimatedSize) KB"
 
-    $widget = Wait-Until { Ours 'GameShelf.exe' | Select-Object -First 1 } 15 'installed widget started from the done dialog'
+    $widget = Wait-Until { Ours 'Binder.exe' | Select-Object -First 1 } 15 'installed widget started from the done dialog'
     Start-Sleep -Seconds 3
     Shot 'setup-3-opened'
     $metrics += 'Opened after install: yes'
 
     # --- 2. Update while the widget and a watcher (a game being tracked) are running. ---
-    $watcher = Start-Process (Join-Path $installDir 'GameShelf.Watcher.exe') -PassThru -ArgumentList '--game', 'manual:none', '--process', 'NoSuchGame', '--timeout', '300', '--return', '0'
+    $watcher = Start-Process (Join-Path $installDir 'Binder.Watcher.exe') -PassThru -ArgumentList '--game', 'manual:none', '--process', 'NoSuchGame', '--timeout', '300', '--return', '0'
     Start-Sleep -Seconds 1
     $sw.Restart()
     $update = Start-Process $Setup -ArgumentList '/S' -PassThru
@@ -201,11 +201,11 @@ try {
     if ($update.ExitCode -ne 0) { Fail "Update exit code $($update.ExitCode)" }
     $widget.Refresh()
     if (-not $widget.HasExited) { Fail 'The old widget is still running after the update' }
-    $restarted = Wait-Until { Ours 'GameShelf.exe' | Select-Object -First 1 } 15 'widget restarted after the update'
+    $restarted = Wait-Until { Ours 'Binder.exe' | Select-Object -First 1 } 15 'widget restarted after the update'
     $watcher.Refresh()
     if ($watcher.HasExited) { Fail 'The update stopped the running watcher' }
-    if (-not (Same-File 'GameShelf.Watcher.exe')) { Fail 'The watcher file was not replaced' }
-    if (-not ((Get-Content $log -Raw) -match 'GameShelf.Watcher.exe is in use; moving it aside')) { Fail 'The in-use watcher was not moved aside' }
+    if (-not (Same-File 'Binder.Watcher.exe')) { Fail 'The watcher file was not replaced' }
+    if (-not ((Get-Content $log -Raw) -match 'Binder.Watcher.exe is in use; moving it aside')) { Fail 'The in-use watcher was not moved aside' }
     $metrics += "Update: old widget quit and came back (pid $($widget.Id) -> $($restarted.Id)), watcher kept running on its old file, new file in place"
 
     # An imported shortcut, to check that uninstalling puts it back on the desktop.
@@ -215,7 +215,7 @@ try {
     $original = Join-Path $desktop 'Setup Test.url'
     ConvertTo-Json -InputObject @(@{ StoredPath = $stored; OriginalPath = $original; Copied = $false }) |
         Set-Content -Encoding UTF8 (Join-Path $dataDir 'imported-shortcuts.json')
-    Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' 'Game Shelf' ('"' + (Join-Path $installDir 'GameShelf.exe') + '" --background')
+    Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' 'Binder' ('"' + (Join-Path $installDir 'Binder.exe') + '" --background')
 
     # --- 3. Uninstall through the dialogs, deleting the data too. ---
     $proc = Start-Process (Join-Path $installDir 'Uninstall.exe') -ArgumentList '/uninstall' -PassThru
@@ -243,11 +243,11 @@ try {
     Wait-Until { -not (Test-Path $installDir) } 15 'install folder removed' | Out-Null
     if (Test-Path $uninstallKey) { Fail 'The Settings -> Apps entry is still there' }
     if (Test-Path $startMenuLink) { Fail 'The Start menu shortcut is still there' }
-    if ((Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -ErrorAction SilentlyContinue).'Game Shelf') { Fail 'Start with Windows is still set' }
+    if ((Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -ErrorAction SilentlyContinue).'Binder') { Fail 'Start with Windows is still set' }
     if (-not (Test-Path $original)) { Fail 'The imported shortcut did not go back on the desktop' }
     if ((Test-Path $dataDir) -or (Test-Path $cacheDir)) { Fail 'Binder data is still there after "delete my data"' }
-    if ((Ours 'GameShelf.exe').Count -or (Ours 'GameShelf.Watcher.exe').Count) { Fail 'Binder is still running' }
-    Wait-Until { -not (Get-ChildItem ([IO.Path]::GetTempPath()) -Directory -Filter 'GameShelf-uninstall-*') } 15 'temporary uninstaller removed' | Out-Null
+    if ((Ours 'Binder.exe').Count -or (Ours 'Binder.Watcher.exe').Count) { Fail 'Binder is still running' }
+    Wait-Until { -not (Get-ChildItem ([IO.Path]::GetTempPath()) -Directory -Filter 'Binder-uninstall-*') } 15 'temporary uninstaller removed' | Out-Null
     Wait-Until { -not (Test-Path $log) } 15 'setup log removed after the uninstall' | Out-Null
     Remove-Item $original -ErrorAction SilentlyContinue
     $metrics += 'Uninstall: files, Start menu, Settings -> Apps entry, Run key, data, cache and setup log gone; imported shortcut back on the desktop; temp copy removed'
@@ -257,5 +257,5 @@ finally {
     Copy-Item $log (Join-Path $art 'setup.log') -ErrorAction SilentlyContinue
     $metrics | ForEach-Object { Write-Host $_ }
     $metrics | Set-Content (Join-Path $art 'setup-metrics.txt')
-    Get-Process GameShelf, GameShelf.Watcher, GameShelfSetup, Uninstall -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Get-Process Binder, Binder.Watcher, BinderSetup, Uninstall -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 }

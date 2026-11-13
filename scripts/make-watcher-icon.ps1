@@ -1,8 +1,8 @@
-﻿# Draws the watcher's icon, src\GameShelf.Watcher\watcher.ico (Windows PowerShell 5.1, System.Drawing): the app's
+﻿# Draws the watcher's icon, src\Binder.Watcher\watcher.ico (Windows PowerShell 5.1, System.Drawing): the app's
 # logo (Assets\logo.svg, the fanned cover stack; Assets\logo-small.svg's two flat covers at 16-24 px) with an eye
 # on the front cover instead of the play mark, since the watcher watches the game. Each size is PNG-compressed.
 # Run again after changing the logo:  powershell -File scripts\make-watcher-icon.ps1
-param([string]$Out = (Join-Path $PSScriptRoot '..\src\GameShelf.Watcher\watcher.ico'))
+param([string]$Out = (Join-Path $PSScriptRoot '..\src\Binder.Watcher\watcher.ico'))
 
 Add-Type -AssemblyName System.Drawing
 $ErrorActionPreference = 'Stop'

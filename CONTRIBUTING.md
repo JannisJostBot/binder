@@ -17,11 +17,11 @@ There are two exceptions.
 
 ### 1. Translations and wording
 
-Better wording and translation fixes are welcome. The app's text is in `src/GameShelf/Strings/`:
+Better wording and translation fixes are welcome. The app's text is in `src/Binder/Strings/`:
 
 - `Strings.resx`: English. Each entry has a comment that says where the text appears and what `{0}`, `{1}` hold.
 - `Strings.de.resx`, `Strings.fr.resx`: German and French.
-- The installer's text is in `src/GameShelf.Setup/Text.cs`.
+- The installer's text is in `src/Binder.Setup/Text.cs`.
 
 When you change text:
 

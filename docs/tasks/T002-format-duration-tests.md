@@ -9,7 +9,7 @@ Add checks for `Format.Duration` (the length of one session) to the `FormatTests
 
 ## Files
 
-- `tests/GameShelf.Tests/Tests.cs`
+- `tests/Binder.Tests/Tests.cs`
 
 ## Steps
 
@@ -44,4 +44,4 @@ For example, the first row becomes:
 
 ## Don't
 
-- Don't change `src/GameShelf/Views/Format.cs` or any existing check.
+- Don't change `src/Binder/Views/Format.cs` or any existing check.

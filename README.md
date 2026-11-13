@@ -38,12 +38,12 @@ Dark and light mode, your Windows accent color, keyboard navigation, screen-read
 
 You need Windows 10 or 11 (x64). Nothing else: the app carries its own runtimes.
 
-1. Build `GameShelfSetup.exe` (see below), or use a copy someone built for you.
+1. Build `BinderSetup.exe` (see below), or use a copy someone built for you.
 2. Run it and click **Install**. It installs for your account only and never asks for administrator rights.
    (Only Game mode's service and network options do, once, if you choose to allow them in its settings.)
 3. Binder opens and walks you through a short first-time setup.
 
-To **update**, run a newer `GameShelfSetup.exe`. It works even while Binder or a game is running. To
+To **update**, run a newer `BinderSetup.exe`. It works even while Binder or a game is running. To
 **uninstall**, use Settings → Apps → Binder. It removes everything Binder put on your PC; it asks whether to
 put your imported shortcuts back on the desktop (the default) and whether to delete your game list too.
 
@@ -59,9 +59,9 @@ Requirements: the .NET 10 SDK, and the "Desktop development with C++" workload f
 Tools (for Native AOT). Then, in PowerShell:
 
 ```powershell
-./scripts/publish.ps1  # publish\GameShelfSetup.exe, plus the portable GameShelf.exe and GameShelf.Watcher.exe
+./scripts/publish.ps1  # publish\BinderSetup.exe, plus the portable Binder.exe and Binder.Watcher.exe
 dotnet build           # a normal development build into bin\
-dotnet run --project tests/GameShelf.Tests -c Release   # unit tests
+dotnet run --project tests/Binder.Tests -c Release   # unit tests
 ```
 
 CI (`.github/workflows/ci.yml`) builds and tests every push on a real Windows machine. That includes a UI smoke
@@ -76,18 +76,18 @@ Steam settings with test data, and are meant for CI only.
 - The only network traffic is downloading cover art over HTTPS from the store CDNs (Steam). The app never
   checks for updates or contacts anything else.
 - Everything stays on your PC:
-  - Settings, library, play history, crash notes and imported shortcuts: `%APPDATA%\GameShelf\`
-  - Cover cache and error log: `%LOCALAPPDATA%\GameShelf\`
-  - The app itself: `%LOCALAPPDATA%\Programs\GameShelf\`
+  - Settings, library, play history, crash notes and imported shortcuts: `%APPDATA%\Binder\`
+  - Cover cache and error log: `%LOCALAPPDATA%\Binder\`
+  - The app itself: `%LOCALAPPDATA%\Programs\Binder\`
 
 ## Project layout
 
 | Path | What's there |
 |---|---|
-| `src/GameShelf/` | The WinUI 3 app: shelf, details, settings, library sources, launcher. |
-| `src/GameShelf.Watcher/` | The tiny game watcher (Native AOT). |
-| `src/GameShelf.Setup/` | The installer, updater and uninstaller (Native AOT). |
-| `src/GameShelf.Elevated/` | Game mode's optional admin helper (Native AOT). |
+| `src/Binder/` | The WinUI 3 app: shelf, details, settings, library sources, launcher. |
+| `src/Binder.Watcher/` | The tiny game watcher (Native AOT). |
+| `src/Binder.Setup/` | The installer, updater and uninstaller (Native AOT). |
+| `src/Binder.Elevated/` | Game mode's optional admin helper (Native AOT). |
 | `scripts/` | Publish, the pre-commit check and the icon generators (PowerShell). |
 | `tests/` | Unit tests, the stand-in game and the CI UI tests. |
 | `docs/proposals.md` | Planned features. |

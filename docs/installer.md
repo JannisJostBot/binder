@@ -1,6 +1,6 @@
 # Building, installing and updating Binder
 
-Binder ships as one file, `GameShelfSetup.exe`. It installs the app for your Windows account (no
+Binder ships as one file, `BinderSetup.exe`. It installs the app for your Windows account (no
 administrator rights), updates an existing install, and is what Settings → Apps runs to uninstall it.
 
 > Binder is vibe-coded: the code was written by an AI (Claude) and is provided as is. Settings → Apps lists
@@ -27,8 +27,8 @@ This builds everything into `publish\`:
 
 | File | What it is |
 |---|---|
-| `GameShelfSetup.exe` | The installer and updater. This is the only file you need to share or keep. |
-| `app\` | What gets installed, laid out as in the install folder: the widget (`GameShelf.exe`, WinUI 3, Native AOT, with the .NET and Windows App SDK runtimes it needs, about 70 MB in about 220 files), the tiny game watcher (`GameShelf.Watcher.exe`, Native AOT) and Game mode's helper (`GameShelf.Elevated.exe`, Native AOT, only ever run elevated after Settings › Game mode › Allow…). Nothing else needs to be installed on the PC. |
+| `BinderSetup.exe` | The installer and updater. This is the only file you need to share or keep. |
+| `app\` | What gets installed, laid out as in the install folder: the widget (`Binder.exe`, WinUI 3, Native AOT, with the .NET and Windows App SDK runtimes it needs, about 70 MB in about 220 files), the tiny game watcher (`Binder.Watcher.exe`, Native AOT) and Game mode's helper (`Binder.Elevated.exe`, Native AOT, only ever run elevated after Settings › Game mode › Allow…). Nothing else needs to be installed on the PC. |
 
 The last lines of the output show the sizes and the setup's SHA-256 hash.
 
@@ -43,11 +43,11 @@ to use `publish.ps1`.
 
 ## Install
 
-Double-click `GameShelfSetup.exe`, read the disclaimer, tick **I've read and understood the disclaimer** and click
+Double-click `BinderSetup.exe`, read the disclaimer, tick **I've read and understood the disclaimer** and click
 **Install**. The window shows the README's full disclaimer in a scrollable box with the checkbox right under it; the
 button stays disabled until the box is ticked. Updates and reinstalls ask the same way.
 
-- It installs to `%LOCALAPPDATA%\Programs\GameShelf\` (your account only, no UAC prompt).
+- It installs to `%LOCALAPPDATA%\Programs\Binder\` (your account only, no UAC prompt).
 - It adds **Binder** to the Start menu and to **Settings → Apps → Installed apps**, with its icon, version
   and size.
 - At the end, "Open Binder now" starts it. The first time, it runs its own first-run setup (launchers,
@@ -61,14 +61,14 @@ where it came from. A file you built on the same PC doesn't get that warning.
 
 ### Moving from the portable copy
 
-If you've been running `GameShelf.exe` straight from `publish\` (or `publish\app\`), just run the setup. It closes the running
-copy and starts the installed one. Your games, play history and settings are in `%APPDATA%\GameShelf` and stay
+If you've been running `Binder.exe` straight from `publish\` (or `publish\app\`), just run the setup. It closes the running
+copy and starts the installed one. Your games, play history and settings are in `%APPDATA%\Binder` and stay
 as they are. If Start with Windows was on, the installed app points it at its new location the first time it
 starts. You can then delete the old `publish\` copy.
 
 ## Update
 
-Build the new version (raise `<Version>` in `Directory.Build.props` first) and run its `GameShelfSetup.exe`.
+Build the new version (raise `<Version>` in `Directory.Build.props` first) and run its `BinderSetup.exe`.
 It shows **Update Binder to x.y.z**. Updating:
 
 - keeps your games, play history, settings and imported shortcuts (they're not in the install folder);
@@ -88,39 +88,39 @@ update by running a newer setup.
 Settings → Apps → Binder → **Uninstall** (or Start menu → right-click → Uninstall).
 
 - **Removed:** everything Binder put on your PC: the app's files, the Start menu entry, the Settings → Apps entry,
-  Start with Windows, the cache in `%LOCALAPPDATA%\GameShelf` (covers, icons, logs, Game mode's files) and, after
+  Start with Windows, the cache in `%LOCALAPPDATA%\Binder` (covers, icons, logs, Game mode's files) and, after
   it's done, setup's own log in `%TEMP%`.
 - **Your choice, shortcuts:** when you have imported shortcuts, **Put my shortcuts back on the desktop** (the
   default) or **Don't put them back**. Shortcuts not put back stay with your game list, or are deleted with it.
   Shortcuts that couldn't go back (no desktop to put them on) are always kept, and the final dialog says where.
 - **Your choice, data:** "Also delete my game list, play history and settings" (off by default). Leave it off to
-  keep them (in `%APPDATA%\GameShelf`) for a later reinstall.
+  keep them (in `%APPDATA%\Binder`) for a later reinstall.
 - **Only with your OK:** Game mode's admin helper in Program Files needs a UAC prompt to remove. If you decline, it
   stays (it does nothing without Binder), and the final dialog says where.
 - If a game is still being tracked, it asks first, because that session's playtime would be lost.
 - **Game mode:** whatever it still has applied (a game was running, or a session didn't end normally) is put back
-  first, by the installed watcher (`GameShelf.Watcher.exe --restore --quiet`), then its admin part is removed.
+  first, by the installed watcher (`Binder.Watcher.exe --restore --quiet`), then its admin part is removed.
 
 ## Command line
 
 | Command | What it does |
 |---|---|
-| `GameShelfSetup.exe` | Install or update, with dialogs. |
-| `GameShelfSetup.exe /S` | Silent install or update. Doesn't open the app, except to restart one that was running. Running it silently counts as having read the disclaimer (README). |
-| `GameShelfSetup.exe /S /launch` | Silent, then start Binder. |
-| `GameShelfSetup.exe /S /allowdowngrade` | Silent, even over a newer version (refused otherwise). |
+| `BinderSetup.exe` | Install or update, with dialogs. |
+| `BinderSetup.exe /S` | Silent install or update. Doesn't open the app, except to restart one that was running. Running it silently counts as having read the disclaimer (README). |
+| `BinderSetup.exe /S /launch` | Silent, then start Binder. |
+| `BinderSetup.exe /S /allowdowngrade` | Silent, even over a newer version (refused otherwise). |
 | `Uninstall.exe /uninstall` | Uninstall, with dialogs. |
 | `Uninstall.exe /uninstall /S [/removedata] [/keepshortcuts]` | Silent uninstall, optionally deleting the data too; imported shortcuts go back on the desktop unless `/keepshortcuts`. |
 
 Exit codes: 0 done, 1 cancelled, 2 error, 4 silent downgrade refused, 5 unknown option, 6 another setup is still
 running (3 was "the .NET
-Desktop Runtime is missing", which the self-contained app no longer needs). Every run writes a few lines to `%TEMP%\GameShelfSetup.log`.
+Desktop Runtime is missing", which the self-contained app no longer needs). Every run writes a few lines to `%TEMP%\BinderSetup.log`.
 
 ---
 
 ## How it works inside
 
-The project is `src/GameShelf.Setup`: a Native AOT exe of about 30 MB (almost all of it the compressed app it
+The project is `src/Binder.Setup`: a Native AOT exe of about 30 MB (almost all of it the compressed app it
 carries), with no third-party code. The install / update screen is a classic setup window (`ConfirmWindow`: a Win32 dialog
 built from an in-memory template, standard controls only); the other prompts are Windows' own task dialogs
 (`TaskDialogIndirect` from Common Controls 6). If the window can't be created, the install screen falls back to a task dialog.
@@ -158,21 +158,21 @@ copied from the exact package versions the build used. `publish.ps1` stops if on
       uninstall.
    5. Then `installed-files.txt` in the install folder is rewritten with the new list, and the files the
       previous list had but the new version doesn't are deleted, along with folders they leave empty. (Setups
-      before the list existed installed only `GameShelf.exe`, `GameShelf.Watcher.exe` and `Uninstall.exe`.)
+      before the list existed installed only `Binder.exe`, `Binder.Watcher.exe` and `Uninstall.exe`.)
 6. Write the Start menu shortcut with the Shell's own `ShellLink` object (source-generated COM, which works with
    AOT).
-7. Write `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\GameShelf` (name, version, publisher, icon,
+7. Write `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\Binder` (name, version, publisher, icon,
    folder, quoted uninstall command, size, no modify or repair).
 8. Restart the widget with `--background` if it was running, or offer to open it.
 
 ### Uninstall steps (`Uninstaller.cs`)
 
 An exe can't delete itself while it runs. So `Uninstall.exe /uninstall` in the install folder only asks the
-questions, copies itself to a new `%TEMP%\GameShelf-uninstall-<random>\` folder, starts that copy with
+questions, copies itself to a new `%TEMP%\Binder-uninstall-<random>\` folder, starts that copy with
 `/continue` and the answers, and exits. The temp copy then:
 
 1. Ends the watcher if a game is being tracked (after asking), and quits the widget.
-2. Unless you chose not to, runs the installed `GameShelf.exe --restore-shortcuts`. With no UI, this moves every
+2. Unless you chose not to, runs the installed `Binder.exe --restore-shortcuts`. With no UI, this moves every
    imported shortcut back to where it came from and removes the games made from them. Shortcuts in its folder that
    no record names (an import an older version didn't finish) go back to your desktop too.
 3. Removes the Start with Windows entry, but only if it starts the installed exe.
@@ -181,14 +181,14 @@ questions, copies itself to a new `%TEMP%\GameShelf-uninstall-<random>\` folder,
    gone), retrying while the first `Uninstall.exe` is still exiting, and their `.old`/`.new` leftovers. Every
    listed path is checked again, and nothing is deleted through a link. Then the folders they leave empty and
    the install folder, but only if it's empty. Anything you put there yourself stays.
-6. Deletes the cache, `%LOCALAPPDATA%\GameShelf`, always. If you ticked "delete my data", also
-   `%APPDATA%\GameShelf`. It doesn't follow links inside them (a link is removed, not entered). If some imported
+6. Deletes the cache, `%LOCALAPPDATA%\Binder`, always. If you ticked "delete my data", also
+   `%APPDATA%\Binder`. It doesn't follow links inside them (a link is removed, not entered). If some imported
    shortcuts couldn't go back to the desktop, they and their list are kept, and the final dialog says where.
 7. After it exits, removes its own temp folder through `cmd.exe` from System32 a few seconds later, and after a
-   completed uninstall `%TEMP%\GameShelfSetup.log` too (kept after a failure or a cancel). This only happens for
+   completed uninstall `%TEMP%\BinderSetup.log` too (kept after a failure or a cancel). This only happens for
    paths of plain characters in the temp folder. Otherwise Windows' temp clean-up gets them.
 
-Only one setup or uninstaller runs at a time (the named mutex `Local\GameShelf.Setup`): a second one started by
+Only one setup or uninstaller runs at a time (the named mutex `Local\Binder.Setup`): a second one started by
 hand says so at once (exit code 6); a silent one (an updater) and the uninstaller's temp copy wait up to a minute.
 If an update fails part-way, the widget it closed is started again.
 
@@ -220,12 +220,12 @@ runs elevated, is installed to Program Files instead.
 
 Game mode's service and network items need admin rights. That's the one approved exception to "never
 elevate" (`docs/proposals.md` §11). The app, the watcher and this setup stay per-user and prompt-free. Setup
-only ships `GameShelf.Elevated.exe` in the app folder; nothing runs elevated until you allow it:
+only ships `Binder.Elevated.exe` in the app folder; nothing runs elevated until you allow it:
 
 1. **Allow (Settings › Game mode › Allow…):** one UAC prompt. The helper copies itself to
-   `%ProgramFiles%\GameShelf\` (writable by admins only, so a program running as you can't swap it), checks the
-   copy's SHA-256, creates `%ProgramData%\GameShelf\` with its own ACL (SYSTEM and Administrators write, Users
-   read) and registers two scheduled tasks for your account: `GameShelf Apply <SID>` and `GameShelf Restore <SID>`
+   `%ProgramFiles%\Binder\` (writable by admins only, so a program running as you can't swap it), checks the
+   copy's SHA-256, creates `%ProgramData%\Binder\` with its own ACL (SYSTEM and Administrators write, Users
+   read) and registers two scheduled tasks for your account: `Binder Apply <SID>` and `Binder Restore <SID>`
    (the second also at logon, to put back what a crash left). They run with highest privileges, only while
    you're signed in, and you may run them but not change them. Only accounts in the Administrators group can
    allow it; for a standard account the page says so.
@@ -233,7 +233,7 @@ only ships `GameShelf.Elevated.exe` in the app folder; nothing runs elevated unt
    shows **Update…**, which is the same one prompt. Until then the old helper keeps working.
 3. **Remove (Settings › Game mode › Remove it, or uninstall):** a UAC prompt for the installed copy's
    `--uninstall`. It first puts back whatever is still applied, then deletes your tasks, marker and result; when
-   no other account uses it, also `%ProgramData%\GameShelf\` and itself (a running exe is removed at the next
+   no other account uses it, also `%ProgramData%\Binder\` and itself (a running exe is removed at the next
    restart). Uninstall does this before deleting the app's files. If you decline, or uninstall silently (`/S`),
    the helper stays, and the final dialog says where and how to remove it later.
 4. **Several Windows accounts:** the helper is per PC, the tasks per account. Removing it for one account

@@ -2,7 +2,7 @@
 # UI Automation like a user would, takes screenshots, measures idle CPU and memory, and checks the
 # launch -> hide -> return loop end to end with a stand-in game exe.
 #
-# Writes to the current user's %APPDATA%\GameShelf, sets HKCU\Software\Valve\Steam\SteamPath to a fake
+# Writes to the current user's %APPDATA%\Binder, sets HKCU\Software\Valve\Steam\SteamPath to a fake
 # Steam install and toggles the Run key, so run it on a CI machine only, never on your own PC.
 param(
     [Parameter(Mandatory = $true)] [string] $Exe,
@@ -15,7 +15,7 @@ $Exe = (Resolve-Path $Exe).Path
 $FakeGame = (Resolve-Path $FakeGame).Path
 $art = Join-Path (Get-Location) 'artifacts'
 New-Item -ItemType Directory -Force $art | Out-Null
-$dataDir = Join-Path $env:APPDATA 'GameShelf'
+$dataDir = Join-Path $env:APPDATA 'Binder'
 New-Item -ItemType Directory -Force $dataDir | Out-Null
 $metrics = @()
 $testStart = Get-Date
@@ -195,7 +195,7 @@ function Open-Settings($root) {
 
 # Asks the running widget for its memory split (managed heap vs the rest) and adds it to the metrics.
 function Add-MemoryReport([string] $label) {
-    $report = Join-Path $env:LOCALAPPDATA 'GameShelf\memory.txt'
+    $report = Join-Path $env:LOCALAPPDATA 'Binder\memory.txt'
     Remove-Item $report -ErrorAction SilentlyContinue
     Start-Process $Exe -ArgumentList '--memory-report' -Wait
     if (Test-Path $report) { $script:metrics += "Memory report ($label): " + ((Get-Content $report | Select-Object -Skip 1) -join '; ') }
@@ -302,7 +302,7 @@ ConvertTo-Json -InputObject $sessions -Depth 3 | Set-Content -Encoding UTF8 (Joi
 # The first part tests the desktop-docked mode, with first-run setup already done; section 5 tests the flyout.
 ConvertTo-Json -InputObject @{ HideDelaySeconds = 10; DisplayMode = 'Desktop'; SetupDone = $true } | Set-Content -Encoding UTF8 (Join-Path $dataDir 'settings.json')
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
-Remove-ItemProperty $runKey 'Game Shelf' -ErrorAction SilentlyContinue
+Remove-ItemProperty $runKey 'Binder' -ErrorAction SilentlyContinue
 
 # Desktop-layer screenshots need a clear desktop: minimize the runner's console and anything else.
 (New-Object -ComObject Shell.Application).MinimizeAll()
@@ -360,7 +360,7 @@ try {
     if (-not ($badges -contains 'Steam')) { Fail 'No Steam launcher badge found on the covers' }
     if ($badges -contains 'Manual' -or $badges -contains 'Shortcut') { Fail 'A manually added game got a launcher badge' }
     # The file name carries a version suffix (manual_loop_icon2.png), so match any.
-    $iconCache = Join-Path $env:LOCALAPPDATA 'GameShelf\covers\manual_loop_icon*.png'
+    $iconCache = Join-Path $env:LOCALAPPDATA 'Binder\covers\manual_loop_icon*.png'
     Wait-Until { Test-Path $iconCache } 10 'generated icon cover cached for the manual game' | Out-Null
     $metrics += 'Generated cover: icon of the manual game cached'
 
@@ -425,12 +425,12 @@ try {
     $autostart = Find-Element $window 'Start with Windows' ([System.Windows.Automation.ControlType]::Button)
     $autostart.GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern).Toggle()
     $expected = '"' + $Exe + '" --background'
-    Wait-Until { (Get-ItemProperty $runKey -ErrorAction SilentlyContinue).'Game Shelf' -eq $expected } 5 "Run key set to $expected" | Out-Null
+    Wait-Until { (Get-ItemProperty $runKey -ErrorAction SilentlyContinue).'Binder' -eq $expected } 5 "Run key set to $expected" | Out-Null
     $autostart.SetFocus()   # scrolls the bottom of the page into view
     Start-Sleep -Milliseconds 500
     Shot '7-settings-bottom'
     $autostart.GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern).Toggle()
-    Wait-Until { -not (Get-ItemProperty $runKey -ErrorAction SilentlyContinue).'Game Shelf' } 5 'Run key removed' | Out-Null
+    Wait-Until { -not (Get-ItemProperty $runKey -ErrorAction SilentlyContinue).'Binder' } 5 'Run key removed' | Out-Null
     $metrics += 'Start with Windows: quoted Run entry added and removed'
 
     Invoke-Button $window 'Back to all games'
@@ -527,7 +527,7 @@ try {
     $metrics += 'Widget exited after launch: yes'
 
     $game = Wait-Until { Get-Process FakeGame -ErrorAction SilentlyContinue } 10 'stand-in game running'
-    $watcher = Wait-Until { Get-Process GameShelf.Watcher -ErrorAction SilentlyContinue } 10 'watcher running'
+    $watcher = Wait-Until { Get-Process Binder.Watcher -ErrorAction SilentlyContinue } 10 'watcher running'
     Start-Sleep -Seconds 4   # past detection: the watcher should now be blocked in a kernel wait
     $watcher.Refresh()
     $w0 = $watcher.TotalProcessorTime
@@ -541,7 +541,7 @@ try {
     Shot '4-during-game'
 
     # The game exits after 15 s; the watcher waits a 3 s restart grace, logs the session and relaunches the widget.
-    $returned = Wait-Until { Get-Process GameShelf -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $widget.Id } } 60 'widget to come back after the game closed'
+    $returned = Wait-Until { Get-Process Binder -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $widget.Id } } 60 'widget to come back after the game closed'
     $returned = $returned | Select-Object -First 1
     $script:returnedProcess = $returned
     Wait-Until { (Get-ChildItem $dataDir -Filter 'sessions-*.jsonl' | Get-Content -Raw) -match 'manual:loop' } 5 'session written by the watcher' | Out-Null
@@ -624,7 +624,7 @@ try {
     $second = Start-Process $Exe -PassThru
     Wait-Until { [Win]::VisibleWindowOf($pid9) -eq [IntPtr]::Zero } 10 'second start to close the flyout' | Out-Null
     $second.WaitForExit(5000) | Out-Null
-    if (@(Get-Process GameShelf -ErrorAction SilentlyContinue).Count -ne 1) { Fail 'More than one GameShelf process is running' }
+    if (@(Get-Process Binder -ErrorAction SilentlyContinue).Count -ne 1) { Fail 'More than one Binder process is running' }
     $metrics += 'Second start toggles the running instance: yes'
 
     # Started with Windows (--background): no window, waits in the tray at the lowest footprint.
@@ -650,7 +650,7 @@ try {
 finally {
     # Diagnostics for a failed run: the app's own error log, the returned widget's state, and Windows' crash
     # events (.NET Runtime 1026 has the stack trace, Application Error 1000 the faulting module).
-    Copy-Item (Join-Path $env:LOCALAPPDATA 'GameShelf\error.log') $art -ErrorAction SilentlyContinue
+    Copy-Item (Join-Path $env:LOCALAPPDATA 'Binder\error.log') $art -ErrorAction SilentlyContinue
     if ($script:returnedProcess) {
         $script:returnedProcess.Refresh()
         $metrics += "Returned widget: exited $($script:returnedProcess.HasExited)$(if ($script:returnedProcess.HasExited) { ", exit code $($script:returnedProcess.ExitCode)" })"
@@ -663,8 +663,8 @@ finally {
     $metrics | ForEach-Object { Write-Host $_ }
     $metrics | Set-Content (Join-Path $art 'metrics.txt')
     Copy-Item (Join-Path $dataDir '*.json') $art -ErrorAction SilentlyContinue
-    Get-Process GameShelf, GameShelf.Watcher, FakeGame -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-    Remove-ItemProperty $runKey 'Game Shelf' -ErrorAction SilentlyContinue
+    Get-Process Binder, Binder.Watcher, FakeGame -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Remove-ItemProperty $runKey 'Binder' -ErrorAction SilentlyContinue
     Remove-Item $gogKey -Recurse -ErrorAction SilentlyContinue
     try { [Win]::SetTaskbarAutoHide([Win]::FindByClass('Shell_TrayWnd'), $false) } catch { }
 }

@@ -10,7 +10,7 @@ text in the detail view). The checks describe what the code does today; don't ch
 
 ## Files
 
-- `tests/GameShelf.Tests/Tests.cs`
+- `tests/Binder.Tests/Tests.cs`
 
 ## Steps
 
@@ -56,5 +56,5 @@ text in the detail view). The checks describe what the code does today; don't ch
 
 ## Don't
 
-- Don't change `src/GameShelf/Views/Format.cs` or any existing check.
+- Don't change `src/Binder/Views/Format.cs` or any existing check.
 - Don't move the existing `Format.` checks in `Main()`.
