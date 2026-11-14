@@ -3037,4 +3037,152 @@ Calm: efficiency mode while you play</value>
     <value>Restarted twice already, so Binder stopped trying.</value>
     <comment>Extra line on the crash card when the game crashed a third time in a row with "Restart if it crashes" on. Keep "Binder" as is.</comment>
   </data>
+  <data name="GroupAbout" xml:space="preserve">
+    <value>About</value>
+    <comment>Settings group heading at the bottom of the page, for the version and updates (like &quot;About&quot; in Windows Settings).</comment>
+  </data>
+  <data name="AboutTitle" xml:space="preserve">
+    <value>Binder {0}</value>
+    <comment>Title of the About card in Settings. {0} = the installed version, e.g. &quot;0.1.4&quot;. Keep &quot;Binder&quot; as is.</comment>
+  </data>
+  <data name="UpdateNotChecked" xml:space="preserve">
+    <value>Not checked for updates yet</value>
+    <comment>Second line of the About card (state) before the first check for updates.</comment>
+  </data>
+  <data name="UpdateCheckOff" xml:space="preserve">
+    <value>Doesn&apos;t check for updates</value>
+    <comment>Second line of the About card (state) when Updates is set to &quot;Don&apos;t check&quot;.</comment>
+  </data>
+  <data name="UpdateChecking" xml:space="preserve">
+    <value>Checking for updates…</value>
+    <comment>Second line of the About card (state) while it asks GitHub for a new version.</comment>
+  </data>
+  <data name="UpdateCheckedToday" xml:space="preserve">
+    <value>Up to date · checked today at {0}</value>
+    <comment>Second line of the About card (state). {0} = the time of the last check, in the user&apos;s format, e.g. &quot;14:02&quot;.</comment>
+  </data>
+  <data name="UpdateChecked" xml:space="preserve">
+    <value>Up to date · checked {0}</value>
+    <comment>Second line of the About card (state). {0} = when it last checked, starting lower case: &quot;yesterday&quot;, &quot;3 days ago&quot; or a date.</comment>
+  </data>
+  <data name="UpdateNoConnection" xml:space="preserve">
+    <value>Couldn&apos;t check · no connection</value>
+    <comment>Second line of the About card (state) when GitHub couldn&apos;t be reached.</comment>
+  </data>
+  <data name="UpdateCheckFailed" xml:space="preserve">
+    <value>Couldn&apos;t check · the update couldn&apos;t be verified</value>
+    <comment>Second line of the About card (state) when what GitHub sent didn&apos;t pass the signature or version checks.</comment>
+  </data>
+  <data name="UpdateAvailable" xml:space="preserve">
+    <value>{0} is available</value>
+    <comment>Second line of the About card (state). {0} = the new version, e.g. &quot;0.2.0&quot;.</comment>
+  </data>
+  <data name="UpdateDownloading" xml:space="preserve">
+    <value>Downloading · {0} of {1} MB</value>
+    <comment>Second line of the About card (state) while the update downloads. {0} = megabytes received, {1} = megabytes in all.</comment>
+  </data>
+  <data name="UpdateReady" xml:space="preserve">
+    <value>Ready to install</value>
+    <comment>Second line of the About card (state) once the update is downloaded and checked.</comment>
+  </data>
+  <data name="UpdateDownloadFailed" xml:space="preserve">
+    <value>Couldn&apos;t download · no connection</value>
+    <comment>Second line of the About card (state) when the download stopped; a Try again button follows.</comment>
+  </data>
+  <data name="UpdateNotVerified" xml:space="preserve">
+    <value>The download couldn&apos;t be verified. It was deleted. Nothing was changed.</value>
+    <comment>Second line of the About card when the downloaded setup didn&apos;t match its signed size and hash; a Try again button follows.</comment>
+  </data>
+  <data name="UpdateInstallFailed" xml:space="preserve">
+    <value>The update couldn&apos;t be installed</value>
+    <comment>Second line of the About card (state) when the setup couldn&apos;t start or the old version is still installed.</comment>
+  </data>
+  <data name="UpdateInstallFailedToolTip" xml:space="preserve">
+    <value>Details in {0}</value>
+    <comment>Tooltip of the About card after UpdateInstallFailed. {0} = the full path of the setup&apos;s log file.</comment>
+  </data>
+  <data name="CheckForUpdates" xml:space="preserve">
+    <value>Check for updates</value>
+    <comment>Button on the About card in Settings: asks GitHub now.</comment>
+  </data>
+  <data name="UpdateButton" xml:space="preserve">
+    <value>Update</value>
+    <comment>Accent button on the About card (verb): downloads the new version. Short.</comment>
+  </data>
+  <data name="RestartNow" xml:space="preserve">
+    <value>Restart now</value>
+    <comment>Accent button on the About card once the update is downloaded: Binder closes, installs it and comes back. Short.</comment>
+  </data>
+  <data name="TryAgain" xml:space="preserve">
+    <value>Try again</value>
+    <comment>Accent button on the About card after a failed download. Short.</comment>
+  </data>
+  <data name="WhatsNew" xml:space="preserve">
+    <value>What&apos;s new</value>
+    <comment>Heading of the release notes under the About card, and the button on the &quot;Updated to …&quot; message that opens them.</comment>
+  </data>
+  <data name="DisclosureWhatsNew" xml:space="preserve">
+    <value>what&apos;s new</value>
+    <comment>{0} in DisclosureShow/DisclosureHide (the About card&apos;s chevron). Lower case unless your language capitalizes nouns.</comment>
+  </data>
+  <data name="SkipVersion" xml:space="preserve">
+    <value>Skip this version</value>
+    <comment>Link under the release notes: this version is not offered again.</comment>
+  </data>
+  <data name="Updates" xml:space="preserve">
+    <value>Updates</value>
+    <comment>Title of the Settings card with the update choice, and its screen-reader name (noun, plural).</comment>
+  </data>
+  <data name="UpdatesToolTip" xml:space="preserve">
+    <value>Checks GitHub once a day when Binder opens</value>
+    <comment>Tooltip of the Updates card. Keep &quot;GitHub&quot; and &quot;Binder&quot; as is.</comment>
+  </data>
+  <data name="UpdatesAutomatic" xml:space="preserve">
+    <value>Install automatically</value>
+    <comment>Choice in the Updates list: downloads at once and installs when the panel closes.</comment>
+  </data>
+  <data name="UpdatesAsk" xml:space="preserve">
+    <value>Ask before installing</value>
+    <comment>Choice in the Updates list (the default): shows that an update is there and waits for the user.</comment>
+  </data>
+  <data name="UpdatesAskToolTip" xml:space="preserve">
+    <value>Security fixes still install when you close Binder</value>
+    <comment>Tooltip of the &quot;Ask before installing&quot; choice. Keep &quot;Binder&quot; as is.</comment>
+  </data>
+  <data name="UpdatesOff" xml:space="preserve">
+    <value>Don&apos;t check</value>
+    <comment>Choice in the Updates list: Binder never contacts GitHub.</comment>
+  </data>
+  <data name="UpdateToMenu" xml:space="preserve">
+    <value>Update to {0}</value>
+    <comment>First item of the &quot;…&quot; menu and the tray menu while an update waits. {0} = the new version, e.g. &quot;0.2.0&quot;.</comment>
+  </data>
+  <data name="RestartToUpdateMenu" xml:space="preserve">
+    <value>Restart to update</value>
+    <comment>First item of the &quot;…&quot; menu and the tray menu once the update is downloaded.</comment>
+  </data>
+  <data name="MoreActionsUpdate" xml:space="preserve">
+    <value>More actions, update available</value>
+    <comment>Screen-reader name and tooltip of the shelf&apos;s &quot;…&quot; button while it shows the update dot.</comment>
+  </data>
+  <data name="Updated" xml:space="preserve">
+    <value>Updated to {0}</value>
+    <comment>Message in the panel once after an update. {0} = the version now installed, e.g. &quot;0.2.0&quot;.</comment>
+  </data>
+  <data name="SecurityUpdated" xml:space="preserve">
+    <value>Security update installed · {0}</value>
+    <comment>Message in the panel once after an urgent security update installed by itself. {0} = the version now installed.</comment>
+  </data>
+  <data name="HelperUpdateNote" xml:space="preserve">
+    <value>Game mode will ask for administrator rights once after this update.</value>
+    <comment>First line of the release notes when the update brings a new Game mode helper. &quot;Game mode&quot; as in GameMode.</comment>
+  </data>
+  <data name="UpdateWaits" xml:space="preserve">
+    <value>The update has to wait</value>
+    <comment>Title of a message in the panel after Restart now while a game runs or Game mode hasn&apos;t put Windows back yet.</comment>
+  </data>
+  <data name="UpdateWaitsDetail" xml:space="preserve">
+    <value>Try again once the game has closed and Game mode has put everything back.</value>
+    <comment>Text of the UpdateWaits message. &quot;Game mode&quot; as in GameMode.</comment>
+  </data>
 </root>

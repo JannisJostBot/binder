@@ -14,6 +14,8 @@ public enum SettingChange
     SourcePaths,
     /// <summary>Where Steam's pictures are found or downloaded from: they're looked for again.</summary>
     SourceArtwork,
+    /// <summary>The Updates choice (spec §25).</summary>
+    Updates,
 }
 
 /// <summary>What the Settings page asks its owner (the panel window) to do. An interface, so none can be left unwired.</summary>
@@ -32,6 +34,14 @@ public interface ISettingsActions
     void OpenGameMode();
     /// <summary>Settings › Advanced's "Check": scans that launcher once, off the UI thread, and says what it found.</summary>
     Task<string> CheckSourceAsync(GameSource launcher);
+    /// <summary>About's "Check for updates" (spec §25); the owner reports progress through <see cref="SettingsViewModel.SetUpdate"/>.</summary>
+    void CheckForUpdates();
+    /// <summary>"Update" or "Try again": downloads the known update.</summary>
+    void DownloadUpdate();
+    /// <summary>"Restart now": starts the downloaded setup; the panel closes and comes back updated.</summary>
+    void InstallUpdate();
+    /// <summary>"Skip this version".</summary>
+    void SkipUpdate();
 }
 
 /// <summary>
@@ -70,6 +80,9 @@ public sealed partial class SettingsViewModel : ObservableObject
         SetupCommand = new(actions.RunSetup);
         FreeSpaceCommand = new(actions.OpenFreeSpace);
         GameModeCommand = new(actions.OpenGameMode);
+        CheckUpdatesCommand = new(actions.CheckForUpdates);
+        UpdateActionCommand = new(UpdateAction);
+        SkipUpdateCommand = new(actions.SkipUpdate);
     }
 
     public RelayCommand BackCommand { get; }

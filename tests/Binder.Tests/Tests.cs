@@ -100,6 +100,7 @@ static partial class Tests
         FreeSpaceViewModelTests();
         SetupViewModelTests();
         ShelfViewModelTests();
+        ShelfUpdateTests();
         FormatTests();
         LocalizationTests();
         SourceDefaultsTests(dir);

@@ -483,6 +483,61 @@
                 </StackPanel>
             </Border>
 
+            <!-- About (spec §25, board 28): the version and the update's state, What's new, and the Updates choice. -->
+            <TextBlock Style="{StaticResource GroupLabel}" Text="{x:Bind s:Strings.GroupAbout}" />
+            <Border x:Name="AboutCard" Style="{StaticResource SettingCard}">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind ViewModel.AboutToolTip, Mode=OneWay}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE946;" />
+                    <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind ViewModel.AboutTitle, Mode=OneWay}" />
+                        <TextBlock x:Name="AboutDetail" Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.AboutText, Mode=OneWay}"
+                                   TextWrapping="Wrap" TextTrimming="None" AutomationProperties.LiveSetting="Polite" />
+                        <ProgressBar Margin="0,6,0,0" Maximum="100" Value="{x:Bind ViewModel.DownloadPercent, Mode=OneWay}"
+                                     Visibility="{x:Bind ViewModel.ShowDownloadProgress, Mode=OneWay}"
+                                     AutomationProperties.Name="{x:Bind ViewModel.AboutText, Mode=OneWay}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="{x:Bind s:Strings.CheckForUpdates}" Command="{x:Bind ViewModel.CheckUpdatesCommand}"
+                                IsEnabled="{x:Bind ViewModel.CanCheckUpdates, Mode=OneWay}" Visibility="{x:Bind ViewModel.ShowCheckButton, Mode=OneWay}" />
+                        <Button Style="{StaticResource AccentButtonStyle}" Content="{x:Bind ViewModel.UpdateActionText, Mode=OneWay}"
+                                Command="{x:Bind ViewModel.UpdateActionCommand}" Visibility="{x:Bind ViewModel.ShowUpdateAction, Mode=OneWay}" />
+                    </StackPanel>
+                    <Button x:Name="AboutChevron" Grid.Column="3" Style="{StaticResource DisclosureButton}"
+                            Visibility="{x:Bind ViewModel.HasNotes, Mode=OneWay}" />
+                </Grid>
+            </Border>
+            <Border x:Name="AboutBody" Style="{StaticResource SettingCardBody}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{x:Bind s:Strings.WhatsNew}" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock Text="{x:Bind ViewModel.NotesText, Mode=OneWay}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                    <HyperlinkButton Padding="0" Content="{x:Bind s:Strings.SkipVersion}" Command="{x:Bind ViewModel.SkipUpdateCommand}"
+                                     Visibility="{x:Bind ViewModel.CanSkipUpdate, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+            <Border Style="{StaticResource SettingCard}">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.UpdatesToolTip}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE895;" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.Updates}" />
+                    <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}" AutomationProperties.Name="{x:Bind s:Strings.Updates}"
+                              SelectedIndex="{x:Bind ViewModel.UpdateModeIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="{x:Bind s:Strings.UpdatesAutomatic}" Tag="Automatic" />
+                        <ComboBoxItem Content="{x:Bind s:Strings.UpdatesAsk}" Tag="Ask" ToolTipService.ToolTip="{x:Bind s:Strings.UpdatesAskToolTip}" />
+                        <ComboBoxItem Content="{x:Bind s:Strings.UpdatesOff}" Tag="Off" />
+                    </ComboBox>
+                </Grid>
+            </Border>
+
             <HyperlinkButton Margin="8,24,20,0" Content="{x:Bind s:Strings.RunSetupAgain}" Command="{x:Bind ViewModel.SetupCommand}" />
         </StackPanel>
     </ScrollViewer>

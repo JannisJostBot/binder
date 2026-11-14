@@ -56,6 +56,10 @@ public sealed partial class MainWindow
                 if (change == SettingChange.SourceArtwork) CoverCache.ForgetSteamLookups();
                 SaveSettings();
                 return; // nothing on the page or the shelf changes until then
+            case SettingChange.Updates:
+                SaveSettings();
+                App.Current.UpdateModeChanged(); // the card and the "…" dot follow through UpdateChanged
+                return;
             case SettingChange.Sources:
                 SaveSettings();
                 RefreshViews();

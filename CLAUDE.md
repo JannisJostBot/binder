@@ -63,7 +63,8 @@ src/Binder/            the WinUI widget
                           LaunchOptions, GameScan, GameFiles (installed or gone, removed games' settings), AntiCheat, PlaytimeStats, CrashAnalysis, SpacePlanner,
                           Moments ("Welcome back"), UpdateManifest (release signature and rules) (pure logic)
   Models/                 Game, Session, Settings, ImportedShortcut, CrashRecord
-  Services/               Launcher, CoverCache, Storage, UpdateKeys (release signing keys), Windows integration (DesktopLayer, Monitors, Placement,
+  Services/               Launcher, CoverCache, Storage, UpdateKeys (release signing keys), Updater (check, download,
+                          start the setup), Windows integration (DesktopLayer, Monitors, Placement,
                           Autostart, ShellNotify, PcChecks, …), Gamepad (XInput, polled only while the panel is
                           active and a pad is connected), GameModeService, WindowsGaming (Windows' Game Mode,
                           OneDrive; read when the Game mode page opens), Chime/Sound
@@ -78,7 +79,10 @@ src/Binder/            the WinUI widget
   MainWindow.xaml.cs      the panel: start, first frame, page navigation, rescan; partial files by area:
                           MainWindow.<Page>.cs (that page's actions), .Flyout (slide, placement), .Games (import,
                           add, game actions), .Input (Esc, controller, type-to-search), .Launch (play, countdown,
-                          return), .Notices (toast, errors, crash card)
+                          return), .Notices (toast, errors, crash card), .Updates (About's buttons, the "…" item,
+                          the pill after an update)
+  App.xaml.cs             the app's lifetime (panel, tray menu, countdown); App.Restart.cs, App.Updates.cs (when to
+                          check, download and install an update; spec §25)
   Program.cs, MessageWindow.cs   single instance, tray icon, hotkey
 src/Binder.Watcher/    windowless (one hidden window on its own thread, SystemEvents.cs: shutdown, sign-out and
                           sleep); Program.cs, GameMode.cs (apply/restore + journal), ElevatedClient.cs,
@@ -278,8 +282,16 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
   shortcuts go with the data, as its dialog says. Shortcuts that couldn't go back are never deleted. Never delete game files: Free up
   space hands each uninstall to the game's own launcher (or Settings › Apps).
 - **Network.** HTTPS to the store CDNs only, for artwork, or to an HTTPS address the user typed themselves in
-  Settings › Advanced (the page names its host). Downloads are size-capped and only ever decoded as images. No
-  telemetry, no other calls.
+  Settings › Advanced (the page names its host). Downloads are size-capped and only ever decoded as images. And
+  HTTPS GETs to `github.com` (and its release download hosts) for this repository's release manifest and setup,
+  signed with the owner's key; never anything about the user or the PC. No telemetry, no other calls.
+- **Updates** (spec §25, `Services/Updater`, `Library/UpdateManifest`). The signature is checked on the raw bytes
+  before anything parses them; the keys are compiled in (`Services/UpdateKeys.cs`, owner only); never a version at
+  or below the installed one, never a manifest issued before the last one accepted; redirects only through
+  `UpdateManifest.IsAllowedAddress`; the setup's size and SHA-256 checked while it streams and again through a handle
+  held without write or delete sharing until it has started; never elevates; never installs while a watcher runs or
+  a Game mode journal exists; "Don't check" means no request at all. Deletes only inside
+  `%LOCALAPPDATA%\Binder\updates\`, never through links.
 - **Installer.** `asInvoker`, fixed paths from known folders (never read back from the registry), deletes only
   files it wrote and never through links, hashes each file after writing, ends only processes from its own
   install folder. Uninstall puts back Game mode's changes first (`--restore --quiet`). Details: `docs/installer.md`.

@@ -158,6 +158,7 @@ public sealed partial class MainWindow
             _startSlide = null;
             slide();
         }
+        App.Current.PanelShown(); // the update check, at most once a day (spec §25)
     }
 
     private void OnClosed(object sender, WindowEventArgs args)

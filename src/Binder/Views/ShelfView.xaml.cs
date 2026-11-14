@@ -133,6 +133,11 @@ public sealed partial class ShelfView : UserControl
     {
         var vm = ViewModel!;
         ActionsMenu.Items.Clear();
+        if (vm.UpdateMenuText is { } update)
+        {
+            ActionsMenu.Items.Add(MenuItem(update, "", vm.StartUpdate));
+            ActionsMenu.Items.Add(new MenuFlyoutSeparator());
+        }
         if (vm.HelperNeedsUpdate)
         {
             ActionsMenu.Items.Add(MenuItem(Strings.GameModeNeedsUpdateMenu, "\uE7BA", vm.OpenGameMode, "Ctrl+G"));

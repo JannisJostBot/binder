@@ -24,6 +24,10 @@ static partial class Tests
         public void OpenFreeSpace() => Calls.Add("free space");
         public void OpenGameMode() => Calls.Add("game mode");
         public Task<string> CheckSourceAsync(GameSource launcher) { Calls.Add("check " + launcher); return Task.FromResult("Found 3 games"); }
+        public void CheckForUpdates() => Calls.Add("check updates");
+        public void DownloadUpdate() => Calls.Add("download update");
+        public void InstallUpdate() => Calls.Add("install update");
+        public void SkipUpdate() => Calls.Add("skip update");
     }
 
     static void SettingsViewModelTests()
@@ -133,6 +137,80 @@ static partial class Tests
         vm.CheckSourceAsync(GameSource.Epic).GetAwaiter().GetResult();
         Check(spy.Calls is ["check Epic"] && vm.SourceGroups[1].CheckResult == "Found 3 games" && !vm.SourceGroups[1].Checking,
             "settings: Check asks the owner and shows its answer");
+
+        SettingsAboutTests();
+    }
+
+    /// <summary>Settings › About (spec §25): what each update state shows and which button reaches the owner.</summary>
+    static void SettingsAboutTests()
+    {
+        var spy = new SettingsActionsSpy();
+        var vm = new SettingsViewModel(spy);
+        var settings = new Settings();
+        vm.Load(settings, [], false, false, 0, [], null, true);
+        var notified = new List<string?>();
+        vm.PropertyChanged += (_, e) => notified.Add(e.PropertyName);
+
+        Check(settings.Updates == UpdateMode.Ask && vm.UpdateModeIndex == 1, "about: the default is Ask before installing");
+        vm.SetUpdate(new(UpdatePhase.NotChecked, "0.1.4"));
+        Check(vm.AboutTitle == "Binder 0.1.4" && vm.AboutText == Strings.UpdateNotChecked && vm.ShowCheckButton && vm.CanCheckUpdates &&
+              !vm.ShowUpdateAction && !vm.HasNotes && !vm.CanSkipUpdate && spy.Changes.Count == 0,
+            "about: not checked yet shows the version and Check for updates, and reports no change");
+        Check(!notified.Contains(nameof(SettingsViewModel.LibraryText)), "about: a new update state refreshes only the About card");
+
+        vm.SetUpdate(new(UpdatePhase.Checking, "0.1.4"));
+        Check(vm.AboutText == Strings.UpdateChecking && vm.ShowCheckButton && !vm.CanCheckUpdates, "about: checking disables the button");
+
+        var today = DateTimeOffset.Now.Date.AddHours(14).AddMinutes(2);
+        vm.SetUpdate(new(UpdatePhase.UpToDate, "0.1.4", new DateTimeOffset(today)));
+        Check(vm.AboutText == Strings.Format(Strings.UpdateCheckedToday, today.ToString("t", System.Globalization.CultureInfo.CurrentCulture)),
+            "about: up to date says when it checked today");
+        vm.SetUpdate(new(UpdatePhase.UpToDate, "0.1.4", DateTimeOffset.Now.AddDays(-1)));
+        Check(vm.AboutText == Strings.Format(Strings.UpdateChecked, Strings.LowerFirst(Strings.Yesterday)), "about: or the day it last checked");
+
+        string[] notes = ["Faster start.", "Fixes the tray menu."];
+        vm.SetUpdate(new(UpdatePhase.Available, "0.1.4", null, "0.2.0", notes, 0, 31L << 20));
+        Check(vm.AboutText == "0.2.0 is available" && vm.UpdateActionText == Strings.UpdateButton && vm.ShowUpdateAction && !vm.ShowCheckButton &&
+              vm.HasNotes && vm.NotesText == "• Faster start." + Environment.NewLine + "• Fixes the tray menu." && vm.CanSkipUpdate,
+            "about: an update shows Update, its notes and Skip this version");
+        vm.UpdateActionCommand.Execute(null);
+        vm.SkipUpdateCommand.Execute(null);
+        Check(spy.Calls is ["download update", "skip update"], "about: Update downloads, Skip reaches the owner");
+
+        vm.SetUpdate(new(UpdatePhase.Downloading, "0.1.4", null, "0.2.0", notes, 12L << 20, 31L << 20));
+        Check(vm.AboutText == "Downloading · 12 of 31 MB" && vm.ShowDownloadProgress && Math.Abs(vm.DownloadPercent - 100.0 * 12 / 31) < 0.01 &&
+              !vm.ShowUpdateAction && !vm.ShowCheckButton, "about: downloading shows MB and the progress bar, no button");
+
+        vm.SetUpdate(new(UpdatePhase.Ready, "0.1.4", null, "0.2.0", notes, 0, 31L << 20));
+        Check(vm.AboutText == Strings.UpdateReady && vm.UpdateActionText == Strings.RestartNow && !vm.CanSkipUpdate, "about: ready shows Restart now");
+        spy.Calls.Clear();
+        vm.UpdateActionCommand.Execute(null);
+        Check(spy.Calls is ["install update"], "about: Restart now installs");
+
+        vm.SetUpdate(new(UpdatePhase.NotVerified, "0.1.4", null, "0.2.0", notes, 0, 31L << 20));
+        Check(vm.AboutText == Strings.UpdateNotVerified && vm.UpdateActionText == Strings.TryAgain, "about: a download that didn't verify offers Try again");
+        spy.Calls.Clear();
+        vm.UpdateActionCommand.Execute(null);
+        Check(spy.Calls is ["download update"], "about: Try again downloads again");
+
+        vm.SetUpdate(new(UpdatePhase.Available, "0.1.4", null, "0.2.1", notes, 0, 31L << 20, Urgent: true));
+        Check(!vm.CanSkipUpdate, "about: an urgent update can't be skipped");
+        vm.SetUpdate(new(UpdatePhase.InstallFailed, "0.1.4", null, "0.2.0", notes));
+        Check(vm.AboutText == Strings.UpdateInstallFailed && vm.AboutToolTip is { } tip && tip.Contains("BinderSetup.log") && vm.ShowCheckButton,
+            "about: an install that failed says where the log is");
+        vm.SetUpdate(new(UpdatePhase.NoConnection, "0.1.4"));
+        Check(vm.AboutText == Strings.UpdateNoConnection && vm.AboutToolTip is null, "about: no connection");
+
+        vm.UpdateModeIndex = 1; // the same choice
+        Check(spy.Changes.Count == 0, "about: the same Updates choice reports nothing");
+        vm.UpdateModeIndex = 2;
+        Check(settings.Updates == UpdateMode.Off && spy.Changes is [SettingChange.Updates], "about: Don't check writes Off and reports Updates");
+        vm.SetUpdate(new(UpdatePhase.NotChecked, "0.1.4"));
+        Check(vm.AboutText == Strings.UpdateCheckOff, "about: with Don't check the card says it doesn't check");
+        vm.UpdateModeIndex = 0;
+        Check(settings.Updates == UpdateMode.Automatic, "about: Install automatically");
+        vm.UpdateModeIndex = -1;
+        Check(settings.Updates == UpdateMode.Automatic && spy.Changes.Count == 2, "about: no selection changes nothing");
     }
 
     sealed class RestartActionsSpy : IRestartActions
@@ -601,6 +679,28 @@ static partial class Tests
         public HashSet<GameSource> Installed = [];
         public bool CanOpenLauncher(GameSource source) => Installed.Contains(source);
         public void OpenLauncher(GameSource source) => Calls.Add("open " + source);
+        public void StartUpdate() => Calls.Add("update");
+    }
+
+    /// <summary>The "…" button's update dot and first menu item (spec §25).</summary>
+    static void ShelfUpdateTests()
+    {
+        var spy = new ShelfActionsSpy();
+        var vm = new ShelfViewModel(spy);
+        var notified = new List<string?>();
+        vm.PropertyChanged += (_, e) => notified.Add(e.PropertyName);
+        Check(!vm.UpdateDot && vm.UpdateMenuText is null && vm.ActionsName == Strings.MoreActions, "shelf: no update, no dot");
+        vm.SetUpdate("Update to 0.2.0");
+        Check(vm.UpdateDot && vm.UpdateMenuText == "Update to 0.2.0" && vm.ActionsName == Strings.MoreActionsUpdate &&
+              notified.Contains(nameof(ShelfViewModel.UpdateDot)) && notified.Contains(nameof(ShelfViewModel.ActionsName)),
+            "shelf: an update waiting puts the dot on … and renames it");
+        notified.Clear();
+        vm.SetUpdate("Update to 0.2.0");
+        Check(notified.Count == 0, "shelf: the same update again reports nothing");
+        vm.StartUpdate();
+        Check(spy.Calls is ["update"], "shelf: the menu item reaches the owner");
+        vm.SetUpdate(null);
+        Check(!vm.UpdateDot && vm.ActionsName == Strings.MoreActions, "shelf: the dot goes with the update");
     }
 
     static void ShelfViewModelTests()

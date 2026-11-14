@@ -84,6 +84,10 @@ internal static unsafe partial class GameModeService
     /// <summary>"Allow…" was done for this user and the helper is installed.</summary>
     public static bool Allowed => ElevatedPart.AllowedVersion(Sid) is not null;
 
+    /// <summary>The installed helper's version number for this user, null if "Allow…" wasn't done (spec §25: What's new's helper line).</summary>
+    public static int? AllowedHelperVersion =>
+        int.TryParse(ElevatedPart.AllowedVersion(Sid), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : null;
+
     /// <summary>The installed helper is another helper version than this widget's (Settings offers "Update…").</summary>
     public static bool AllowedButOutdated => ElevatedPart.AllowedVersion(Sid) is { } v && ElevatedPart.IsOutdatedMarker(v);
 

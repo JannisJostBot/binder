@@ -80,8 +80,15 @@ It shows **Update Binder to x.y.z**. Updating:
 Running the same version again offers **Reinstall**, which repairs a damaged install. An older setup warns that a
 newer version is installed before replacing it.
 
-The app never checks for updates or contacts anything to do so (see the network rule in `CLAUDE.md`). You
-update by running a newer setup.
+The app also updates itself from this repository's GitHub releases (`docs/proposals.md` §25): once a day at most,
+when the panel opens, it fetches the latest release's `release.json` and `release.json.sig`, checks the signature
+against the keys compiled into `Services/UpdateKeys.cs`, and refuses anything not newer than what's installed. With
+**Ask before installing** (the default) the user presses Update and Restart now; with **Install automatically** it
+installs the next time the panel closes. It downloads `BinderSetup-<version>.exe` into
+`%LOCALAPPDATA%\Binder\updates\`, checks its size and SHA-256 against the signed manifest, keeps it open without
+write or delete sharing and starts it with `/S /update`. It waits while a game or Game mode is active and never
+elevates. **Don't check** in Settings › About › Updates turns all of it off; running a newer setup by hand works as
+before.
 
 ## Uninstall
 
