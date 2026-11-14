@@ -49,6 +49,8 @@
     <Compile Include="..\..\src\Binder\Library\SpacePlanner.cs" Link="Linked\Library\SpacePlanner.cs" />
     <Compile Include="..\..\src\Binder\Library\Moments.cs" Link="Linked\Library\Moments.cs" />
     <Compile Include="..\..\src\Binder\Library\RepeatGuard.cs" Link="Linked\Library\RepeatGuard.cs" />
+    <Compile Include="..\..\src\Binder\Library\UpdateManifest.cs" Link="Linked\Library\UpdateManifest.cs" />
+    <Compile Include="..\..\src\Binder\Services\UpdateKeys.cs" Link="Linked\Services\UpdateKeys.cs" />
     <Compile Include="..\..\src\Binder\Views\Format.cs" Link="Linked\Views\Format.cs" />
     <Compile Include="..\..\src\Binder\Views\GameModeText.cs" Link="Linked\Views\GameModeText.cs" />
     <Compile Include="..\..\src\Binder\Views\GameAction.cs" Link="Linked\Views\GameAction.cs" />

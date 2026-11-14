@@ -36,7 +36,7 @@ break the user's system.
 | 23 Faster than Start | §22 | To do |
 | 24 Lean speed-ups | §23 | To do |
 | 25 Weekly chart details | §24 | Proposed (2026-11-12), waiting for the owner's go; two choices open (§24 "To decide") |
-| 26 Updates from GitHub | §25 | Proposed (2026-11-12), waiting for the owner's go; boards 28 and 29; three choices open (§25 "To decide") |
+| 26 Updates from GitHub | §25 | **In progress** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; `Services/UpdateKeys.cs` (empty until the YubiKeys are set up, so nothing verifies yet); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier on Linux with software keys, not yet with a YubiKey or a real draft; notes format in `docs/releases/README.md`. Next: the owner sets up both YubiKeys and adds their keys, then `release.yml` with a dry run. Two choices still open (§25 "To decide" 1 and 3), needed only for the app's part |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
 
 The build order is at the end of this file. The ideas under "Not decided" at the bottom must **not** be built.
@@ -1720,10 +1720,10 @@ Detail's per-game charts (weeks, months): the tooltip adds the number of session
    totals look wrong). Today the "most played" line skips them.
 2. Games no longer in the library: the name from `removed-games.json` where kept, else "A removed game".
 
-## 25. Updates from GitHub (milestone 26, proposed, boards 28 and 29)
+## 25. Updates from GitHub (milestone 26, approved 2026-11-14, boards 28 and 29)
 
-Binder finds, downloads and installs its own updates from the public GitHub repository's releases. **Proposed,
-not approved yet:** build only after the owner's go. Today the app never contacts anything to update (README,
+Binder finds, downloads and installs its own updates from the public GitHub repository's releases. **Approved**
+(owner's go, 2026-11-14), being built in the order under "Build order" 26. Today the app never contacts anything to update (README,
 `docs/installer.md`, the website's FAQ); approving this changes that rule (see "Rules that change").
 
 ### Goals
@@ -1807,7 +1807,9 @@ A release can be marked `"urgent": true` for a security fix that shouldn't wait 
 ### Making a release
 
 1. **Prepare (owner):** raise `<Version>` in `Directory.Build.props` and write the notes in
-   `docs/releases/<version>.json` (`en`, `de`, `fr`, same rules as the app's text: short, plain, no selling).
+   `docs/releases/<version>.json` (`en`, `de`, `fr`, same rules as the app's text: short, plain, no selling; an
+   urgent release adds `"urgent": { "en": …, "de": …, "fr": … }`, the line the script puts first; see
+   `docs/releases/README.md`).
    Merge to `main` through a pull request with CI green.
 2. **Tag (owner):** `git tag v0.2.0` on that commit of `main`, push it. A tag ruleset lets only the owner create
    `v*` tags and forbids moving or deleting them.

@@ -61,9 +61,9 @@ src/Binder/            the WinUI widget
   Library/                sources (*Source.cs), SourceDefaults (where each source reads, user overrides),
                           InstallFolder (folder safety), Vdf, ShortcutFile/ShortcutImporter,
                           LaunchOptions, GameScan, GameFiles (installed or gone, removed games' settings), AntiCheat, PlaytimeStats, CrashAnalysis, SpacePlanner,
-                          Moments ("Welcome back") (pure logic)
+                          Moments ("Welcome back"), UpdateManifest (release signature and rules) (pure logic)
   Models/                 Game, Session, Settings, ImportedShortcut, CrashRecord
-  Services/               Launcher, CoverCache, Storage, Windows integration (DesktopLayer, Monitors, Placement,
+  Services/               Launcher, CoverCache, Storage, UpdateKeys (release signing keys), Windows integration (DesktopLayer, Monitors, Placement,
                           Autostart, ShellNotify, PcChecks, …), Gamepad (XInput, polled only while the panel is
                           active and a pad is connected), GameModeService, WindowsGaming (Windows' Game Mode,
                           OneDrive; read when the Game mode page opens), Chime/Sound
@@ -88,6 +88,7 @@ src/Binder.Setup/      BinderSetup.exe: per-user installer/updater/uninstaller (
 tests/Binder.Tests/    plain console unit tests (no test framework packages); smoke.ps1 / setup-test.ps1 are CI-only
 scripts/                  publish.ps1 (builds publish\app: widget folder + AOT watcher + helper, and BinderSetup.exe),
                           check.ps1 (the hard rules on a diff, then build + tests; -Task for agent cards),
+                          sign-release.ps1 (owner only: sign a release with the YubiKeys, spec §25),
                           make-tray-icons.ps1 / make-watcher-icon.ps1 (redraw icons after a logo change)
 site/                     one-page website: plain HTML + CSS, no scripts, nothing from other servers
 docs/proposals.md         approved feature specs, progress table (§0), decisions log, "Not decided"
