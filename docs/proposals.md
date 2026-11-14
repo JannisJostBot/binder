@@ -36,7 +36,7 @@ break the user's system.
 | 23 Faster than Start | §22 | To do |
 | 24 Lean speed-ups | §23 | To do |
 | 25 Weekly chart details | §24 | Proposed (2026-11-12), waiting for the owner's go; two choices open (§24 "To decide") |
-| 26 Updates from GitHub | §25 | **In progress** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; `Services/UpdateKeys.cs` (empty until the YubiKeys are set up, so nothing verifies yet); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier on Linux with software keys, not yet with a YubiKey or a real draft; notes format in `docs/releases/README.md`. Next: the owner sets up both YubiKeys and adds their keys, then `release.yml` with a dry run. Two choices still open (§25 "To decide" 1 and 3), needed only for the app's part |
+| 26 Updates from GitHub | §25 | **In progress** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; `Services/UpdateKeys.cs` (empty until the YubiKeys are set up, so nothing verifies yet); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier on Linux with software keys, not yet with a YubiKey or a real draft; notes format in `docs/releases/README.md`. Next: the owner sets up both YubiKeys and adds their keys, then `release.yml` with a dry run. Default decided: Ask before installing (2026-11-14). Still open: §25 "To decide" 3, needed only for the setup's `/update` |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
 
 The build order is at the end of this file. The ideas under "Not decided" at the bottom must **not** be built.
@@ -2002,7 +2002,7 @@ download's size and hash checks against a local file.
 
 ### To decide (owner)
 
-1. Default for "Updates": **Ask before installing** (proposed) or Install automatically.
+1. ~~Default for "Updates"~~: decided 2026-11-14, **Ask before installing**.
 2. ~~Main key~~: decided 2026-11-12, the owner's two YubiKeys (main and backup, see "The keys"). To check: both
    are YubiKey 5 series (`ykman info`), and their firmware version.
 3. While here, the setup could write and verify every file before swapping any (today it swaps file by file), so
