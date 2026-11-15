@@ -2279,4 +2279,115 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   <data name="RestartLimit" xml:space="preserve">
     <value>Schon zweimal neu gestartet, daher versucht Binder es nicht mehr.</value>
   </data>
+  <data name="GroupAbout" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="AboutTitle" xml:space="preserve">
+    <value>Binder {0}</value>
+  </data>
+  <data name="UpdateNotChecked" xml:space="preserve">
+    <value>Noch nicht nach Updates gesucht</value>
+  </data>
+  <data name="UpdateCheckOff" xml:space="preserve">
+    <value>Sucht nicht nach Updates</value>
+  </data>
+  <data name="UpdateChecking" xml:space="preserve">
+    <value>Nach Updates wird gesucht…</value>
+  </data>
+  <data name="UpdateCheckedToday" xml:space="preserve">
+    <value>Aktuell · heute um {0} geprüft</value>
+  </data>
+  <data name="UpdateChecked" xml:space="preserve">
+    <value>Aktuell · zuletzt geprüft: {0}</value>
+  </data>
+  <data name="UpdateNoConnection" xml:space="preserve">
+    <value>Suche nicht möglich · keine Verbindung</value>
+  </data>
+  <data name="UpdateCheckFailed" xml:space="preserve">
+    <value>Suche nicht möglich · das Update ließ sich nicht prüfen</value>
+  </data>
+  <data name="UpdateAvailable" xml:space="preserve">
+    <value>{0} ist verfügbar</value>
+  </data>
+  <data name="UpdateDownloading" xml:space="preserve">
+    <value>Wird heruntergeladen · {0} von {1} MB</value>
+  </data>
+  <data name="UpdateReady" xml:space="preserve">
+    <value>Bereit zur Installation</value>
+  </data>
+  <data name="UpdateDownloadFailed" xml:space="preserve">
+    <value>Download nicht möglich · keine Verbindung</value>
+  </data>
+  <data name="UpdateNotVerified" xml:space="preserve">
+    <value>Der Download ließ sich nicht prüfen. Er wurde gelöscht. Nichts wurde geändert.</value>
+  </data>
+  <data name="UpdateInstallFailed" xml:space="preserve">
+    <value>Das Update konnte nicht installiert werden</value>
+  </data>
+  <data name="UpdateInstallFailedToolTip" xml:space="preserve">
+    <value>Details in {0}</value>
+  </data>
+  <data name="CheckForUpdates" xml:space="preserve">
+    <value>Nach Updates suchen</value>
+  </data>
+  <data name="UpdateButton" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+  <data name="RestartNow" xml:space="preserve">
+    <value>Jetzt neu starten</value>
+  </data>
+  <data name="TryAgain" xml:space="preserve">
+    <value>Erneut versuchen</value>
+  </data>
+  <data name="WhatsNew" xml:space="preserve">
+    <value>Neuerungen</value>
+  </data>
+  <data name="DisclosureWhatsNew" xml:space="preserve">
+    <value>Neuerungen</value>
+  </data>
+  <data name="SkipVersion" xml:space="preserve">
+    <value>Diese Version überspringen</value>
+  </data>
+  <data name="Updates" xml:space="preserve">
+    <value>Updates</value>
+  </data>
+  <data name="UpdatesToolTip" xml:space="preserve">
+    <value>Sucht einmal am Tag auf GitHub, wenn Binder geöffnet wird</value>
+  </data>
+  <data name="UpdatesAutomatic" xml:space="preserve">
+    <value>Automatisch installieren</value>
+  </data>
+  <data name="UpdatesAsk" xml:space="preserve">
+    <value>Vor der Installation fragen</value>
+  </data>
+  <data name="UpdatesAskToolTip" xml:space="preserve">
+    <value>Sicherheitskorrekturen werden trotzdem beim Schließen von Binder installiert</value>
+  </data>
+  <data name="UpdatesOff" xml:space="preserve">
+    <value>Nicht suchen</value>
+  </data>
+  <data name="UpdateToMenu" xml:space="preserve">
+    <value>Auf {0} aktualisieren</value>
+  </data>
+  <data name="RestartToUpdateMenu" xml:space="preserve">
+    <value>Neu starten und aktualisieren</value>
+  </data>
+  <data name="MoreActionsUpdate" xml:space="preserve">
+    <value>Weitere Aktionen, Update verfügbar</value>
+  </data>
+  <data name="Updated" xml:space="preserve">
+    <value>Auf {0} aktualisiert</value>
+  </data>
+  <data name="SecurityUpdated" xml:space="preserve">
+    <value>Sicherheitsupdate installiert · {0}</value>
+  </data>
+  <data name="HelperUpdateNote" xml:space="preserve">
+    <value>Der Spielmodus fragt nach diesem Update einmal nach Administratorrechten.</value>
+  </data>
+  <data name="UpdateWaits" xml:space="preserve">
+    <value>Das Update muss warten</value>
+  </data>
+  <data name="UpdateWaitsDetail" xml:space="preserve">
+    <value>Versuchen Sie es erneut, wenn das Spiel geschlossen ist und der Spielmodus alles zurückgesetzt hat.</value>
+  </data>
 </root>

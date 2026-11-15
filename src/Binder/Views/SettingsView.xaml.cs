@@ -26,6 +26,20 @@ public sealed partial class SettingsView : UserControl
         _ = new Disclosure(ShortcutsChevron, ShortcutsCard, ShortcutsBody, Strings.DisclosureShortcuts);
         _ = new Disclosure(HiddenChevron, HiddenCard, HiddenBody, Strings.DisclosureHidden);
         _ = new Disclosure(SourcePathsChevron, SourcePathsCard, SourcePathsBody, Strings.DisclosureSourcePaths);
+        _whatsNew = new Disclosure(AboutChevron, AboutCard, AboutBody, Strings.DisclosureWhatsNew);
+    }
+
+    private readonly Disclosure _whatsNew;
+
+    /// <summary>
+    /// Shows Settings › About (the "…" menu's update item, the pill's What's new): scrolled into view, What's new
+    /// opened when there are notes and <paramref name="openNotes"/>, focus on the card's text for screen readers.
+    /// </summary>
+    public void ShowAbout(bool openNotes)
+    {
+        if (openNotes && ViewModel is { HasNotes: true }) _whatsNew.Set(true);
+        UpdateLayout();
+        AboutCard.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = false, VerticalAlignmentRatio = 0.3 });
     }
 
     /// <summary>Connects the page to its owner once, before it's first shown.</summary>
@@ -43,6 +57,11 @@ public sealed partial class SettingsView : UserControl
         // New data draws the launchers' entries again; a change to one updates them in place, so focus stays put.
         if (string.IsNullOrEmpty(e.PropertyName)) FillSourcePaths();
         else if (e.PropertyName == nameof(SettingsViewModel.SourceGroups)) UpdateSourcePaths();
+        if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == nameof(SettingsViewModel.HasNotes))
+        {
+            _whatsNew.Enabled = ViewModel?.HasNotes == true;
+            if (!_whatsNew.Enabled && _whatsNew.IsOpen) _whatsNew.Set(false);
+        }
     }
 
     public void FocusFirst() => BackButton.Focus(FocusState.Programmatic);

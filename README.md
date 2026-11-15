@@ -43,7 +43,9 @@ You need Windows 10 or 11 (x64). Nothing else: the app carries its own runtimes.
    (Only Game mode's service and network options do, once, if you choose to allow them in its settings.)
 3. Binder opens and walks you through a short first-time setup.
 
-To **update**, run a newer `BinderSetup.exe`. It works even while Binder or a game is running. To
+To **update**, Binder checks this repository's GitHub releases once a day when it opens and asks before installing
+(Settings › About › Updates: Install automatically, Ask before installing, or Don't check). You can also run a newer
+`BinderSetup.exe` yourself. Either way it works even while Binder or a game is running. To
 **uninstall**, use Settings → Apps → Binder. It removes everything Binder put on your PC; it asks whether to
 put your imported shortcuts back on the desktop (the default) and whether to delete your game list too.
 
@@ -73,8 +75,12 @@ Steam settings with test data, and are meant for CI only.
 ## Privacy
 
 - No account, no telemetry, no analytics.
-- The only network traffic is downloading cover art over HTTPS from the store CDNs (Steam). The app never
-  checks for updates or contacts anything else.
+- The only network traffic is downloading cover art over HTTPS from the store CDNs (Steam), and the update check:
+  once a day at most, when the panel opens, two small files from this repository's latest GitHub release
+  (`release.json` and its signature), plus the new setup when you choose to update. Nothing about you or your PC
+  is sent. Settings › About › Updates › **Don't check** turns it off completely.
+- An update installs only if it's signed with the owner's own key (kept on a hardware key, never on GitHub) and is
+  newer than what's installed; the setup's hash is checked before it starts. It never asks for administrator rights.
 - Everything stays on your PC:
   - Settings, library, play history, crash notes and imported shortcuts: `%APPDATA%\Binder\`
   - Cover cache and error log: `%LOCALAPPDATA%\Binder\`

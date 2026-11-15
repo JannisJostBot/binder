@@ -36,7 +36,7 @@ break the user's system.
 | 23 Faster than Start | §22 | To do |
 | 24 Lean speed-ups | §23 | To do |
 | 25 Weekly chart details | §24 | Proposed (2026-11-12), waiting for the owner's go; two choices open (§24 "To decide") |
-| 26 Updates from GitHub | §25 | Proposed (2026-11-12), waiting for the owner's go; boards 28 and 29; three choices open (§25 "To decide") |
+| 26 Updates from GitHub | §25 | **In progress** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; `Services/UpdateKeys.cs` (both YubiKeys' keys since 2026-11-15, made on the keys with PIN and touch always); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier on Linux with software keys, not yet with a YubiKey or a real draft; notes format in `docs/releases/README.md`. Default decided: Ask before installing (2026-11-14).<br>Built (2026-11-14), not yet tried on the real PC: `.github/workflows/release.yml` (v* tags only, actions pinned, a draft with the setup and its attestation; never run yet); `Services/Updater` (check with redirects only through `IsAllowedAddress`, 15 s, a client per check, no cookies; manifest kept in `%LOCALAPPDATA%\Binder\updates\` and verified again when read; the download hashed while it streams; the setup hashed again through a handle held with read sharing only and started with `/S /update`; waits for a watcher or a Game mode journal); `App.Updates` (check after a panel's first frame at most once a day, download at once with "Install automatically" or urgent, closing the panel cancels it, install when the flyout closes or at a `--background` start, the in-panel toast "Updated to …" with What's new after `--updated`, "couldn't be installed" when `--updated` comes back on the old version); Settings › About (version card with Check for updates / Update / Restart now, progress bar, What's new with Skip this version, the Updates combo); the "…" dot and first item, the tray item; three settings fields plus the mode; 37 strings in EN/DE/FR; view model tests. The pill is the panel's toast, not board 23's separate pill window. Not built: the Authenticode same-publisher check (Binder is unsigned today).<br>Next: Windows has to see the YubiKeys' certificates for `sign-release.ps1` (the inbox PIV driver says "Missing stored keyset"; next try Yubico's minidriver); then a dry run of `release.yml` + `sign-release.ps1 -DryRun`. Built 2026-11-15: the setup's `/update` (the widget comes back with `--updated --background` after a success, a failure or a busy setup) and the all-or-nothing swap (§25 "To decide" 3, owner: yes; `FileSwap`, unit-tested on real files); not yet run through `setup-test.ps1` in CI |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
 
 The build order is at the end of this file. The ideas under "Not decided" at the bottom must **not** be built.
@@ -1720,10 +1720,10 @@ Detail's per-game charts (weeks, months): the tooltip adds the number of session
    totals look wrong). Today the "most played" line skips them.
 2. Games no longer in the library: the name from `removed-games.json` where kept, else "A removed game".
 
-## 25. Updates from GitHub (milestone 26, proposed, boards 28 and 29)
+## 25. Updates from GitHub (milestone 26, approved 2026-11-14, boards 28 and 29)
 
-Binder finds, downloads and installs its own updates from the public GitHub repository's releases. **Proposed,
-not approved yet:** build only after the owner's go. Today the app never contacts anything to update (README,
+Binder finds, downloads and installs its own updates from the public GitHub repository's releases. **Approved**
+(owner's go, 2026-11-14), being built in the order under "Build order" 26. Today the app never contacts anything to update (README,
 `docs/installer.md`, the website's FAQ); approving this changes that rule (see "Rules that change").
 
 ### Goals
@@ -1807,7 +1807,9 @@ A release can be marked `"urgent": true` for a security fix that shouldn't wait 
 ### Making a release
 
 1. **Prepare (owner):** raise `<Version>` in `Directory.Build.props` and write the notes in
-   `docs/releases/<version>.json` (`en`, `de`, `fr`, same rules as the app's text: short, plain, no selling).
+   `docs/releases/<version>.json` (`en`, `de`, `fr`, same rules as the app's text: short, plain, no selling; an
+   urgent release adds `"urgent": { "en": …, "de": …, "fr": … }`, the line the script puts first; see
+   `docs/releases/README.md`).
    Merge to `main` through a pull request with CI green.
 2. **Tag (owner):** `git tag v0.2.0` on that commit of `main`, push it. A tag ruleset lets only the owner create
    `v*` tags and forbids moving or deleting them.
@@ -2000,11 +2002,11 @@ download's size and hash checks against a local file.
 
 ### To decide (owner)
 
-1. Default for "Updates": **Ask before installing** (proposed) or Install automatically.
+1. ~~Default for "Updates"~~: decided 2026-11-14, **Ask before installing**.
 2. ~~Main key~~: decided 2026-11-12, the owner's two YubiKeys (main and backup, see "The keys"). To check: both
    are YubiKey 5 series (`ykman info`), and their firmware version.
-3. While here, the setup could write and verify every file before swapping any (today it swaps file by file), so
-   a failure halfway never leaves a mix of versions. Proposed as part of this milestone.
+3. ~~Write and verify every file before swapping any~~: decided 2026-11-15, **yes** (`Binder.Setup/FileSwap.cs`): all
+   files are written and checked first, then swapped in; a failed swap puts back what was already swapped.
 
 ## Build order (after milestone 7)
 

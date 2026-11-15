@@ -115,6 +115,7 @@ public sealed partial class App : Application
         _dispatcher = DispatcherQueue.GetForCurrentThread();
         Settings = Storage.LoadSettings();
         Library.SourceDefaults.Use(Settings.SourceOverrides); // before any scan or cover lookup
+        InitUpdates(updated: StartArgs.Contains("--updated")); // a known update, or the pill after one (spec §25)
         Autostart.UpdatePathIfEnabled(); // the app may have been moved, or the entry predates --background
         State.Games = Storage.LoadLibrary();
         State.Sessions = Storage.LoadSessions();
@@ -190,7 +191,11 @@ public sealed partial class App : Application
         }
 
         if (Settings.DisplayMode == DisplayMode.Desktop || !Settings.SetupDone) OpenPanel();
-        else if (background && firstStart) Footprint.Shrink(); // started with Windows: wait in the tray
+        else if (background && firstStart)
+        {
+            if (TryInstallOnClose()) return; // "Install automatically": a downloaded update installs at sign-in
+            Footprint.Shrink(); // started with Windows: wait in the tray
+        }
         else if (firstStart) OpenPanel(); // started from the Start menu or a pin: show it
         else TogglePanel();
         if (firstStart) _ = CheckCrashesAsync(returnedGame: null); // sessions that ended while we weren't running
@@ -342,7 +347,11 @@ public sealed partial class App : Application
             {
                 _panel = new MainWindow();
                 _panel.Closed += OnPanelClosed;
-                _panel.Closing += () => _messages?.SetTrayActive(false);
+                _panel.Closing += () =>
+                {
+                    _messages?.SetTrayActive(false);
+                    CancelUpdateDownload(); // nothing downloads while the panel is closed
+                };
                 _panel.Open();
             }
             // The desktop panel is always there, so only the flyout lights the tray icon up.
@@ -360,9 +369,11 @@ public sealed partial class App : Application
     {
         if (_panel is null || _panel != panel || _panel.IsClosing || Settings.DisplayMode == DisplayMode.Desktop) return;
         if (byClickAway) _closedByClickAwayAt = DateTime.UtcNow;
-        if (Settings.StayReady && Settings.KeepPanelLoaded && _panel.HideKept())
+        // An update that installs by itself goes in when the panel closes: closed for real, not kept hidden.
+        if (Settings.StayReady && Settings.KeepPanelLoaded && !InstallDueOnClose && _panel.HideKept())
         {
             // Open faster: the panel stays loaded, hidden; only efficiency mode while it waits.
+            CancelUpdateDownload();
             _kept = _panel;
             _panel = null;
             Footprint.Rest();
@@ -397,6 +408,7 @@ public sealed partial class App : Application
             OpenPanel();
             return;
         }
+        if (Settings.DisplayMode == DisplayMode.Flyout && TryInstallOnClose()) return; // starts the setup and exits
         if (Settings.DisplayMode == DisplayMode.Flyout && Settings.StayReady)
         {
             // Stay ready at the lowest footprint: views and covers are gone with the window; compact and trim
@@ -466,7 +478,7 @@ public sealed partial class App : Application
     private void ShowTrayMenu()
     {
         if (_messages is null) return;
-        const int open = 1, settings = 2, quit = 3, gameMode = 4, freeSpace = 5;
+        const int open = 1, settings = 2, quit = 3, gameMode = 4, freeSpace = 5, update = 6;
         // Read when the menu opens (one small file), not kept up to date while it's closed.
         bool needsUpdate = GameModeService.HelperNeedsUpdate(Settings, State.Games);
         // The launchers that have games on the shelf and are installed, in chip order (spec §21 b). The game list
@@ -475,12 +487,14 @@ public sealed partial class App : Application
             .Where(GameActions.CanOpenLauncher)
             .ToArray();
         const int firstLauncher = 100;
-        List<(int Id, string Text, bool Checked)> items =
+        List<(int Id, string Text, bool Checked)> items = [];
+        if (UpdateMenuText is { } updateText) items.AddRange([(update, updateText, false), (0, "", false)]); // spec §25
+        items.AddRange(
         [
             (open, Strings.OpenBinder, false), (0, "", false),
             (gameMode, needsUpdate ? Strings.GameModeNeedsUpdateMenu : Strings.GameMode, Settings.GameModeEnabled),
             (freeSpace, Strings.FreeUpSpaceMenu, false), (0, "", false),
-        ];
+        ]);
         if (launchers.Length > 0)
         {
             for (int i = 0; i < launchers.Length; i++)
@@ -499,6 +513,10 @@ public sealed partial class App : Application
         {
             case open:
                 OpenPanel();
+                break;
+            case update:
+                OpenPanel();
+                _panel?.StartUpdateFromMenu();
                 break;
             case gameMode when needsUpdate:
                 OpenPanel();

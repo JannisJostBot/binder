@@ -35,8 +35,13 @@
                           Click="OnGameModeButtonClick"
                           ToolTipService.ToolTip="{x:Bind s:Strings.GameModeOnToolTip}" AutomationProperties.Name="{x:Bind s:Strings.GameMode}" />
             <!-- Quick actions (§16, board 18), with Settings last (Ctrl+,). The menu's items are made when it opens. -->
+            <!-- An update waiting (spec §25, Ask before installing): an 8 px accent dot at the button's top right, as
+                 browsers mark one; the button's name says so too. -->
+            <Ellipse Grid.Column="3" Width="8" Height="8" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,3,3,0"
+                     Canvas.ZIndex="1" IsHitTestVisible="False" Fill="{ThemeResource AccentFillColorDefaultBrush}"
+                     Visibility="{x:Bind ViewModel.UpdateDot, Mode=OneWay}" AutomationProperties.AccessibilityView="Raw" />
             <Button x:Name="ActionsButton" Grid.Column="3" Style="{StaticResource IconButton}" Content="&#xE712;"
-                    ToolTipService.ToolTip="{x:Bind s:Strings.MoreActions}" AutomationProperties.Name="{x:Bind s:Strings.MoreActions}"
+                    ToolTipService.ToolTip="{x:Bind ViewModel.ActionsName, Mode=OneWay}" AutomationProperties.Name="{x:Bind ViewModel.ActionsName, Mode=OneWay}"
                     KeyboardAcceleratorPlacementMode="Hidden">
                 <Button.Flyout>
                     <MenuFlyout x:Name="ActionsMenu" Placement="BottomEdgeAlignedRight" Opening="OnActionsMenuOpening" />

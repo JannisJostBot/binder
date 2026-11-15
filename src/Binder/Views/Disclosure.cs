@@ -52,8 +52,12 @@ internal sealed class Disclosure
             peer.RaisePropertyChangedEvent(AutomationElementIdentifiers.NameProperty, "", label);
     }
 
+    /// <summary>False while there's nothing to open (About without notes): clicks on the card do nothing.</summary>
+    public bool Enabled { get; set; } = true;
+
     private void Toggle()
     {
+        if (!Enabled && !IsOpen) return;
         Set(!IsOpen);
         Toggled?.Invoke(IsOpen);
         if (IsOpen) RevealBody();

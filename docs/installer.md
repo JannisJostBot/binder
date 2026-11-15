@@ -80,8 +80,15 @@ It shows **Update Binder to x.y.z**. Updating:
 Running the same version again offers **Reinstall**, which repairs a damaged install. An older setup warns that a
 newer version is installed before replacing it.
 
-The app never checks for updates or contacts anything to do so (see the network rule in `CLAUDE.md`). You
-update by running a newer setup.
+The app also updates itself from this repository's GitHub releases (`docs/proposals.md` §25): once a day at most,
+when the panel opens, it fetches the latest release's `release.json` and `release.json.sig`, checks the signature
+against the keys compiled into `Services/UpdateKeys.cs`, and refuses anything not newer than what's installed. With
+**Ask before installing** (the default) the user presses Update and Restart now; with **Install automatically** it
+installs the next time the panel closes. It downloads `BinderSetup-<version>.exe` into
+`%LOCALAPPDATA%\Binder\updates\`, checks its size and SHA-256 against the signed manifest, keeps it open without
+write or delete sharing and starts it with `/S /update`. It waits while a game or Game mode is active and never
+elevates. **Don't check** in Settings › About › Updates turns all of it off; running a newer setup by hand works as
+before.
 
 ## Uninstall
 
@@ -107,6 +114,7 @@ Settings → Apps → Binder → **Uninstall** (or Start menu → right-click �
 |---|---|
 | `BinderSetup.exe` | Install or update, with dialogs. |
 | `BinderSetup.exe /S` | Silent install or update. Doesn't open the app, except to restart one that was running. Running it silently counts as having read the disclaimer (README). |
+| `BinderSetup.exe /S /update` | What the app's updater runs: a silent update, then the app is started again with `--updated --background`, also when the update failed. |
 | `BinderSetup.exe /S /launch` | Silent, then start Binder. |
 | `BinderSetup.exe /S /allowdowngrade` | Silent, even over a newer version (refused otherwise). |
 | `Uninstall.exe /uninstall` | Uninstall, with dialogs. |
@@ -148,22 +156,30 @@ copied from the exact package versions the build used. `publish.ps1` stops if on
 3. Refuse if `%LOCALAPPDATA%\Programs` or the install folder is a link (junction or symlink) to somewhere else.
 4. If the widget is running, send it `--quit` (the same WM_COPYDATA message a second start uses) and wait up to
    10 s. If a copy of *our* installed exe still hangs after that, end it.
-5. For each file (every file of the app, and setup itself copied as `Uninstall.exe`):
-   1. Make sure no folder on its way inside the install folder is a link, create its folder, and write it as
-      `name.new` next to its final place, with write-through.
-   2. Re-read it and compare its SHA-256 with `payload.txt`.
-   3. Swap it in with a rename. If the old file is in use (a watcher tracking a game), rename the old one to
-      `name.old` first, which Windows allows for a running exe, then move the new one in.
-   4. Leftover `.old`/`.new` files of *our* file names are deleted at the start and end of every run, and on
+5. All or nothing (`FileSwap.cs`, owner's choice 2026-11-15), for every file of the app and setup itself copied as
+   `Uninstall.exe`:
+   1. **Write and check all of them first.** For each: make sure no folder on its way inside the install folder is
+      a link, create its folder, write it as `name.new` next to its final place (same volume) with write-through,
+      re-read it and compare its SHA-256 with `payload.txt`. Nothing installed is touched yet. If any write or
+      check fails (disk full, a damaged payload, a crash), the `.new` files are deleted and the old version is
+      still whole.
+   2. **Then swap them in**, one rename each: the old file goes to `name.old` first (Windows allows that even for
+      a running exe, e.g. a watcher tracking a game), then the new one takes its place. If a rename fails, the
+      files already swapped get their old file back from `.old` (a file that's new in this version is removed),
+      so a failure here also leaves the old version.
+   3. Leftover `.old`/`.new` files of *our* file names are deleted at the start and end of every run, and on
       uninstall.
-   5. Then `installed-files.txt` in the install folder is rewritten with the new list, and the files the
+   4. Then `installed-files.txt` in the install folder is rewritten with the new list, and the files the
       previous list had but the new version doesn't are deleted, along with folders they leave empty. (Setups
       before the list existed installed only `Binder.exe`, `Binder.Watcher.exe` and `Uninstall.exe`.)
 6. Write the Start menu shortcut with the Shell's own `ShellLink` object (source-generated COM, which works with
    AOT).
 7. Write `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\Binder` (name, version, publisher, icon,
    folder, quoted uninstall command, size, no modify or repair).
-8. Restart the widget with `--background` if it was running, or offer to open it.
+8. Restart the widget with `--background` if it was running, or offer to open it. With `/update` (the app's
+   updater started this setup and exited), the widget is always started again with `--updated --background`,
+   after a success or a failure, unless one is already running; it compares its own version with the update's
+   and shows "Updated to …" or "The update couldn't be installed".
 
 ### Uninstall steps (`Uninstaller.cs`)
 
@@ -190,7 +206,7 @@ questions, copies itself to a new `%TEMP%\Binder-uninstall-<random>\` folder, st
 
 Only one setup or uninstaller runs at a time (the named mutex `Local\Binder.Setup`): a second one started by
 hand says so at once (exit code 6); a silent one (an updater) and the uninstaller's temp copy wait up to a minute.
-If an update fails part-way, the widget it closed is started again.
+If an update fails part-way, the old version is still whole (step 5) and the widget it closed is started again on it.
 
 ### Security
 

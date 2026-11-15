@@ -57,6 +57,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         SetupPage.Initialize(this); // its actions: MainWindow.Setup.cs
         Shelf.ViewModel!.SetFlyout(IsFlyout, App.Pinned);
         Shelf.ViewModel!.SetData(_games, _sessions, App.Settings);
+        ListenForUpdates(); // its part: MainWindow.Updates.cs
         PickWelcome();
         Shelf.CrashPlayRequested += game =>
         {
@@ -163,6 +164,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
             CoverQueue.ReleaseHold();
         }
         if (App.State.ScanDue) _ = RescanAsync(); // the first open, then only after an hour (AppState.ScanDue)
+        App.Current.PanelShown(); // the update check, at most once a day (spec §25)
     }
 
     /// <summary>Scans the stores off the UI thread and merges the result. Runs at the first open, on Refresh, and on an open over an hour after the last scan.</summary>
@@ -263,6 +265,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         if (SettingsPage.Visibility != Visibility.Visible) return;
         var bounds = NativeWindow.GetBounds(_hwnd);
         var current = Monitors.FromPoint(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
+        SettingsPage.ViewModel!.SetUpdate(App.CurrentUpdate);
         SettingsPage.ViewModel!.Load(App.Settings, _games, Autostart.IsEnabled(), App.State.Scanning,
             Storage.LoadImportedShortcuts().Count, Monitors.All(), current.Device, App.HotkeyFree);
     }

@@ -30,6 +30,8 @@ public interface IShelfActions
     bool CanOpenLauncher(GameSource source);
     /// <summary>Opens the launcher itself (spec §21).</summary>
     void OpenLauncher(GameSource source);
+    /// <summary>"Update to 0.2.0" / "Restart to update" in the "…" menu (spec §25): downloads or installs, and shows Settings › About.</summary>
+    void StartUpdate();
 }
 
 /// <summary>
@@ -556,6 +558,28 @@ public sealed partial class ShelfViewModel : ObservableObject
     public void OpenFreeSpace() => _actions.OpenFreeSpace();
     public void AddGame() => _actions.AddGame();
     public void RefreshLibrary() => _actions.Refresh();
+
+    // ---- An update waiting (spec §25, board 28) ----------------------------------------------------------------
+
+    /// <summary>
+    /// The "…" menu's first item while an update waits for the user ("Update to 0.2.0", "Restart to update"), else
+    /// null. Also puts the dot on the "…" button. The owner decides (Ask before installing, not skipped, not urgent).
+    /// </summary>
+    public string? UpdateMenuText { get; private set; }
+    public bool UpdateDot => UpdateMenuText is not null;
+    /// <summary>The "…" button's screen-reader name and tooltip: says when an update is waiting.</summary>
+    public string ActionsName => UpdateDot ? Strings.MoreActionsUpdate : Strings.MoreActions;
+
+    public void SetUpdate(string? menuText)
+    {
+        if (menuText == UpdateMenuText) return;
+        UpdateMenuText = menuText;
+        OnPropertyChanged(nameof(UpdateMenuText));
+        OnPropertyChanged(nameof(UpdateDot));
+        OnPropertyChanged(nameof(ActionsName));
+    }
+
+    public void StartUpdate() => _actions.StartUpdate();
 
     // ---- Flyout pin, footer and controller hints ---------------------------------------------------------------
 

@@ -205,7 +205,9 @@ try {
     $watcher.Refresh()
     if ($watcher.HasExited) { Fail 'The update stopped the running watcher' }
     if (-not (Same-File 'Binder.Watcher.exe')) { Fail 'The watcher file was not replaced' }
-    if (-not ((Get-Content $log -Raw) -match 'Binder.Watcher.exe is in use; moving it aside')) { Fail 'The in-use watcher was not moved aside' }
+    # Every old file goes to name.old in the swap; the running watcher's can't be deleted afterwards, so it stays.
+    if (-not ((Get-Content $log -Raw) -match 'files written and checked; swapping them in')) { Fail 'The update did not write and check every file before swapping' }
+    if (-not (Test-Path (Join-Path $installDir 'Binder.Watcher.exe.old'))) { Fail 'The in-use watcher was not moved aside' }
     $metrics += "Update: old widget quit and came back (pid $($widget.Id) -> $($restarted.Id)), watcher kept running on its old file, new file in place"
 
     # An imported shortcut, to check that uninstalling puts it back on the desktop.

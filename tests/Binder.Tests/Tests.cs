@@ -100,11 +100,14 @@ static partial class Tests
         FreeSpaceViewModelTests();
         SetupViewModelTests();
         ShelfViewModelTests();
+        ShelfUpdateTests();
         FormatTests();
         LocalizationTests();
         SourceDefaultsTests(dir);
         SessionLogTests(dir);
         RobustnessTests(dir);
+        UpdateTests(dir);
+        FileSwapTests(dir);
 
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");

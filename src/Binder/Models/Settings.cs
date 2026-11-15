@@ -13,6 +13,9 @@ public enum SortBy { RecentlyPlayed, MostPlayed, Name, RecentlyAdded, Size }
 /// <summary>Cover size on the shelf: Small = 5 columns, Medium = 4, Large = 3, or a list.</summary>
 public enum GridDensity { Medium, Small, Large, List }
 
+/// <summary>Updates from GitHub (spec §25): Ask before installing (default), Install automatically, or Don't check (no network).</summary>
+public enum UpdateMode { Ask, Automatic, Off }
+
 public sealed class Settings
 {
     public int HideDelaySeconds { get; set; } = 10;
@@ -95,6 +98,15 @@ public sealed class Settings
     /// (<c>Library.SourceEntry</c>) → value. Only the changed ones; checked again on every use.
     /// </summary>
     public Dictionary<string, string> SourceOverrides { get; set; } = [];
+
+    /// <summary>Settings › About › Updates (spec §25). "Don't check" means no request at all.</summary>
+    public UpdateMode Updates { get; set; } = UpdateMode.Ask;
+    /// <summary>When the last check ran (also a failed one): the next is due 24 hours later, at a panel open.</summary>
+    public DateTimeOffset? UpdateCheckedAt { get; set; }
+    /// <summary>The highest <c>issued</c> of a verified manifest accepted so far: an older one is a replay.</summary>
+    public DateTimeOffset? UpdateIssued { get; set; }
+    /// <summary>"Skip this version": a normal update to it isn't offered again (an urgent one still is).</summary>
+    public string? UpdateSkipped { get; set; }
 
     /// <summary>Whether games from this source show on the shelf. Manually added games always do.</summary>
     public bool IsSourceEnabled(GameSource source) => source switch

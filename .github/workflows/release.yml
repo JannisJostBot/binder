@@ -1,0 +1,103 @@
+name: Release
+
+# Builds a release from a v* tag and leaves it as a DRAFT with the setup only (docs/proposals.md §25, "Making a
+# release", step 3). Nothing here can sign or publish: release.json and its signature are made on the owner's PC
+# with a YubiKey (scripts/sign-release.ps1), which also checks this run's attestation before signing.
+#
+# Rules for this file (protected, AGENTS.md "Don't touch"): v* tags only; every action pinned to a commit hash (its
+# version in the comment); no secrets beyond the run's own token; no pull_request_target; permissions only these.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write       # the draft release
+  id-token: write       # the Sigstore certificate for the attestation
+  attestations: write   # storing the attestation
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0          # to check that the tagged commit is on main
+          persist-credentials: false
+
+      # The tag must be v<Version> of Directory.Build.props, on main, with its release notes.
+      - name: Check the tag
+        id: tag
+        shell: pwsh
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:TAG -notmatch '^v((0|[1-9]\d{0,4})\.(0|[1-9]\d{0,4})\.(0|[1-9]\d{0,4}))$') { Write-Host "Not a release tag: $env:TAG"; exit 1 }
+          $version = $Matches[1]
+          $props = Get-Content -Raw Directory.Build.props
+          if ($props -notmatch "<Version>$([regex]::Escape($version))</Version>") { Write-Host "Directory.Build.props doesn't say $version"; exit 1 }
+          git fetch --quiet origin main
+          git merge-base --is-ancestor $env:GITHUB_SHA origin/main
+          if ($LASTEXITCODE -ne 0) { Write-Host "$env:TAG ($env:GITHUB_SHA) isn't on main"; exit 1 }
+          if (-not (Test-Path "docs/releases/$version.json")) { Write-Host "docs/releases/$version.json is missing"; exit 1 }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish
+        run: |
+          ./scripts/publish.ps1 -Output publish
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Unit tests
+        run: |
+          dotnet run --project tests/Binder.Tests -c Release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build stand-in game
+        run: dotnet build tests/FakeGame -c Release
+
+      - name: UI smoke test
+        shell: powershell
+        env:
+          WATCHER_BUILD: Native AOT
+        run: ./tests/smoke.ps1 -Exe publish/app/Binder.exe -FakeGame tests/FakeGame/out/FakeGame.exe
+
+      - name: Setup test
+        shell: powershell
+        run: ./tests/setup-test.ps1 -Setup publish/BinderSetup.exe -Published publish/app
+
+      - name: Name the setup
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          New-Item -ItemType Directory -Force release | Out-Null
+          Copy-Item publish/BinderSetup.exe "release/BinderSetup-$env:VERSION.exe"
+
+      # A Sigstore attestation naming this repository, this workflow and the tagged commit; sign-release.ps1
+      # checks it with `gh attestation verify` before the owner signs.
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: release/BinderSetup-${{ steps.tag.outputs.version }}.exe
+
+      # A draft with the setup only. Publishing is the sign script's job, after the owner's signature.
+      - name: Create the draft release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          gh release create $env:TAG "release/BinderSetup-$env:VERSION.exe" --repo $env:GITHUB_REPOSITORY `
+            --draft --verify-tag --title "Binder $env:VERSION" --notes "Draft: waiting for the owner's signature."
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

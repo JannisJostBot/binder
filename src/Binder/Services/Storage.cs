@@ -107,7 +107,18 @@ public static class Storage
     {
         var legacy = Path.Combine(dir, Shared.SessionLog.LegacyFile);
         if (!File.Exists(legacy)) return;
-        var old = Load(legacy, StorageJsonContext.Default.ListSession);
+        // Read directly, not through Load: that would move a damaged file to .bad and fall back to a .bak from an
+        // earlier move, and the old file must stay where it is instead.
+        List<Session>? old;
+        try
+        {
+            using var stream = File.OpenRead(legacy);
+            old = JsonSerializer.Deserialize(stream, StorageJsonContext.Default.ListSession);
+        }
+        catch (Exception e) when (e is JsonException or IOException or UnauthorizedAccessException)
+        {
+            return;
+        }
         if (old is null) return;
         try
         {

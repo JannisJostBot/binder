@@ -102,6 +102,7 @@ if ($Strict) {
         '^src/Binder/Services/(Launcher|Native\w*|DesktopLayer|Monitors|Footprint|ShellImage[\w.]*|ShellNotify|PcChecks|PcInfo|CrashLog|Autostart|CoverCache|Storage|RunningGames|GameLogs|GameModeService)\.cs$',
         '^src/Binder/Library/(\w+Source|SourceDefaults|InstallFolder|ShortcutFile|ShortcutImporter|Vdf|LibraryScanner)\.cs$',
         '^src/Binder/Views/PanelBackdrop\.cs$',
+        '^src/Binder/Library/UpdateManifest\.cs$', '^src/Binder/Services/(UpdateKeys|Updater)\.cs$', '^docs/releases/',
         '\.(csproj|sln|props|targets)$', '^scripts/', '^\.github/',
         '^tests/(smoke|setup-test)\.ps1$', '^tests/FakeGame/',
         '^(CLAUDE|AGENTS)\.md$', '^docs/(proposals|installer)\.md$', '^docs/tasks/'
