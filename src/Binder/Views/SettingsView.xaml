@@ -538,6 +538,23 @@
                 </Grid>
             </Border>
 
+            <Button Style="{StaticResource SettingLinkCard}" Command="{x:Bind ViewModel.RepositoryCommand}" AutomationProperties.Name="{x:Bind s:Strings.BinderOnGitHub}"
+                    ToolTipService.ToolTip="{x:Bind s:Strings.BinderOnGitHubToolTip}">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE943;" />
+                    <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.BinderOnGitHub}" />
+                        <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.RepositoryText}" />
+                    </StackPanel>
+                    <FontIcon Grid.Column="2" Glyph="&#xE8A7;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </Grid>
+            </Button>
+
             <HyperlinkButton Margin="8,24,20,0" Content="{x:Bind s:Strings.RunSetupAgain}" Command="{x:Bind ViewModel.SetupCommand}" />
         </StackPanel>
     </ScrollViewer>

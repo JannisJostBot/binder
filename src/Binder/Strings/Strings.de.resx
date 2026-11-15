@@ -116,7 +116,7 @@
     <value>Weitere Aktionen</value>
   </data>
   <data name="GameModeOnToolTip" xml:space="preserve">
-    <value>Der Spielmodus ist an. Zum Ausschalten auswählen.</value>
+    <value>Der Spielmodus wird beim Start eines Spiels aktiviert. Zum Ausschalten auswählen.</value>
   </data>
   <data name="Back" xml:space="preserve">
     <value>Zurück</value>
@@ -2389,5 +2389,23 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   </data>
   <data name="UpdateWaitsDetail" xml:space="preserve">
     <value>Versuchen Sie es erneut, wenn das Spiel geschlossen ist und der Spielmodus alles zurückgesetzt hat.</value>
+  </data>
+  <data name="GameModeRunningToolTip" xml:space="preserve">
+    <value>Der Spielmodus läuft: Windows ist bis zum Beenden des Spiels für Spiele eingestellt.</value>
+  </data>
+  <data name="GameModeTray" xml:space="preserve">
+    <value>Spielmodus beim Spielen</value>
+  </data>
+  <data name="GmReadyStatus" xml:space="preserve">
+    <value>Bereit für Ihr nächstes Spiel. Alles unten wird beim Beenden des Spiels rückgängig gemacht.</value>
+  </data>
+  <data name="GmRunningStatus" xml:space="preserve">
+    <value>Läuft gerade. Alles unten wird beim Beenden des Spiels rückgängig gemacht.</value>
+  </data>
+  <data name="BinderOnGitHub" xml:space="preserve">
+    <value>Binder auf GitHub</value>
+  </data>
+  <data name="BinderOnGitHubToolTip" xml:space="preserve">
+    <value>Quellcode und Versionen im Browser öffnen</value>
   </data>
 </root>

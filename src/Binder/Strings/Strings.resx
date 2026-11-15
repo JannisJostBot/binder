@@ -153,8 +153,8 @@
     <comment>Tooltip and screen-reader name of the "…" button with more actions.</comment>
   </data>
   <data name="GameModeOnToolTip" xml:space="preserve">
-    <value>Game mode is on. Select to turn it off.</value>
-    <comment>Tooltip of the shelf header's Game mode button, which is shown only while Game mode is on; selecting it turns Game mode off. "Game mode" is the feature's name.</comment>
+    <value>Game mode turns on when you start a game. Select to turn it off.</value>
+    <comment>Tooltip of the shelf header's Game mode button, which is shown only while Game mode is on (ready: it turns on when a game starts, not yet running); selecting it turns Game mode off. "Game mode" is the feature's name.</comment>
   </data>
   <data name="Back" xml:space="preserve">
     <value>Back</value>
@@ -3184,5 +3184,29 @@ Calm: efficiency mode while you play</value>
   <data name="UpdateWaitsDetail" xml:space="preserve">
     <value>Try again once the game has closed and Game mode has put everything back.</value>
     <comment>Text of the UpdateWaits message. &quot;Game mode&quot; as in GameMode.</comment>
+  </data>
+  <data name="GameModeRunningToolTip" xml:space="preserve">
+    <value>Game mode is running: Windows is set for gaming until the game closes.</value>
+    <comment>Tooltip of the shelf header's Game mode button while Game mode's changes are applied (a game is running). "Game mode" is the feature's name.</comment>
+  </data>
+  <data name="GameModeTray" xml:space="preserve">
+    <value>Game mode while playing</value>
+    <comment>Tray menu item with a check mark: Game mode turns on by itself whenever a game starts. "Game mode" is the feature's name. Short (menu item).</comment>
+  </data>
+  <data name="GmReadyStatus" xml:space="preserve">
+    <value>Ready for your next game. Everything below is undone when the game closes.</value>
+    <comment>Line under the Game mode page's main switch while it is on and no game runs: Game mode turns on when a game starts.</comment>
+  </data>
+  <data name="GmRunningStatus" xml:space="preserve">
+    <value>Running now. Everything below is undone when the game closes.</value>
+    <comment>Line under the Game mode page's main switch while a game runs and its changes are applied.</comment>
+  </data>
+  <data name="BinderOnGitHub" xml:space="preserve">
+    <value>Binder on GitHub</value>
+    <comment>Title of a link card in Settings › About that opens the app's source code page in the browser. "Binder" and "GitHub" are names; keep them.</comment>
+  </data>
+  <data name="BinderOnGitHubToolTip" xml:space="preserve">
+    <value>Open the source code and releases in your browser</value>
+    <comment>Tooltip of the "Binder on GitHub" card in Settings › About.</comment>
   </data>
 </root>

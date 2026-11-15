@@ -1,3 +1,5 @@
+using Binder.Library;
+using Binder.Services;
 using Binder.ViewModels;
 
 namespace Binder;
@@ -9,6 +11,7 @@ public sealed partial class MainWindow
     void ISettingsActions.DownloadUpdate() => App.Current.DownloadUpdate();
     void ISettingsActions.InstallUpdate() => App.Current.InstallUpdate();
     void ISettingsActions.SkipUpdate() => App.Current.SkipUpdate();
+    void ISettingsActions.OpenRepository() => GameActions.ShellOpen("https://github.com/" + UpdateManifest.Repository);
     void IShelfActions.StartUpdate() => StartUpdateFromMenu();
 
     /// <summary>Connected in the constructor; the window stops listening when it closes.</summary>

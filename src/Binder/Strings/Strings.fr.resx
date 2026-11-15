@@ -116,7 +116,7 @@
     <value>Plus d’actions</value>
   </data>
   <data name="GameModeOnToolTip" xml:space="preserve">
-    <value>Le mode jeu est activé. Sélectionnez pour le désactiver.</value>
+    <value>Le mode jeu s’active quand vous lancez un jeu. Sélectionnez pour le désactiver.</value>
   </data>
   <data name="Back" xml:space="preserve">
     <value>Retour</value>
@@ -2389,5 +2389,23 @@ Ralentir : mode efficacité pendant le jeu</value>
   </data>
   <data name="UpdateWaitsDetail" xml:space="preserve">
     <value>Réessayez une fois le jeu fermé et les réglages du mode jeu rétablis.</value>
+  </data>
+  <data name="GameModeRunningToolTip" xml:space="preserve">
+    <value>Le mode jeu est en cours : Windows est réglé pour le jeu jusqu’à la fermeture du jeu.</value>
+  </data>
+  <data name="GameModeTray" xml:space="preserve">
+    <value>Mode jeu pendant les parties</value>
+  </data>
+  <data name="GmReadyStatus" xml:space="preserve">
+    <value>Prêt pour votre prochain jeu. Tout ce qui suit est annulé à la fermeture du jeu.</value>
+  </data>
+  <data name="GmRunningStatus" xml:space="preserve">
+    <value>En cours. Tout ce qui suit est annulé à la fermeture du jeu.</value>
+  </data>
+  <data name="BinderOnGitHub" xml:space="preserve">
+    <value>Binder sur GitHub</value>
+  </data>
+  <data name="BinderOnGitHubToolTip" xml:space="preserve">
+    <value>Ouvrir le code source et les versions dans votre navigateur</value>
   </data>
 </root>

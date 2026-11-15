@@ -26,7 +26,7 @@
                     <StackPanel Style="{StaticResource RowText}">
                         <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind s:Strings.GmMaster}" />
                         <TextBlock Style="{StaticResource RowDetail}" TextWrapping="Wrap"
-                                   Text="{x:Bind s:Strings.GmMasterText}" />
+                                   Text="{x:Bind ViewModel.MasterDetail, Mode=OneWay}" AutomationProperties.LiveSetting="Polite" />
                     </StackPanel>
                     <ToggleSwitch x:Name="MasterSwitch" Grid.Column="1" Style="{StaticResource RowSwitch}"
                                   AutomationProperties.Name="{x:Bind s:Strings.GmMaster}" IsOn="{x:Bind ViewModel.MasterOn, Mode=TwoWay}" />

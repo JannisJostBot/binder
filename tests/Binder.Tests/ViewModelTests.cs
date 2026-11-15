@@ -28,6 +28,7 @@ static partial class Tests
         public void DownloadUpdate() => Calls.Add("download update");
         public void InstallUpdate() => Calls.Add("install update");
         public void SkipUpdate() => Calls.Add("skip update");
+        public void OpenRepository() => Calls.Add("repository");
     }
 
     static void SettingsViewModelTests()
@@ -176,6 +177,8 @@ static partial class Tests
         vm.UpdateActionCommand.Execute(null);
         vm.SkipUpdateCommand.Execute(null);
         Check(spy.Calls is ["download update", "skip update"], "about: Update downloads, Skip reaches the owner");
+        vm.RepositoryCommand.Execute(null);
+        Check(spy.Calls[^1] == "repository" && vm.RepositoryText == "github.com/JannisJostBot/binder", "about: Binder on GitHub opens the repository");
 
         vm.SetUpdate(new(UpdatePhase.Downloading, "0.1.4", null, "0.2.0", notes, 12L << 20, 31L << 20));
         Check(vm.AboutText == "Downloading · 12 of 31 MB" && vm.ShowDownloadProgress && Math.Abs(vm.DownloadPercent - 100.0 * 12 / 31) < 0.01 &&
@@ -536,6 +539,13 @@ static partial class Tests
         vm.PowerOn = !vm.PowerOn;
         vm.LimitIndex = 2;
         Check(settings.GameModeEnabled && settings.UploadLimitMbps == 20 && spy.Saves == 3, "game mode: switches and the limit write and save");
+        Check(vm.MasterDetail == Strings.GmReadyStatus, "game mode: on and no game: ready for the next one");
+        var restore = spy.Restore;
+        spy.Restore = restore with { Pending = true };
+        vm.UpdateLastRestore();
+        Check(vm.MasterDetail == Strings.GmRunningStatus, "game mode: applied: running now");
+        spy.Restore = restore;
+        vm.UpdateLastRestore();
         bool sysMain = vm.IsItemOn(Shared.GameModeInfo.SysMain);
         vm.SetItem(Shared.GameModeInfo.SysMain, !sysMain);
         Check(settings.GameModeItems.Contains(Shared.GameModeInfo.SysMain) != sysMain && spy.Saves == 4, "game mode: a service row writes its item");
@@ -636,8 +646,10 @@ static partial class Tests
         vm.SetSelection(picked);
         Check(vm.Shortcuts.Length == 2 && vm.MoveText == "Move 2" && vm.CanMove && vm.SelectionText == "2 selected", "setup: picked shortcuts");
         vm.MoveCommand.Execute(null);
-        vm.ImportDone();
+        vm.ImportDone("Imported 2 shortcuts", "Restore them any time.");
         Check(vm.IsStep3 && spy.Calls[^1] == "import 2", "setup: moving goes on to step 3");
+        Check(vm.HasImportResult && vm.ImportTitle == "Imported 2 shortcuts" && vm.ImportDetail == "Restore them any time.",
+            "setup: step 3 shows what the move did");
         vm.BackToStep2Command.Execute(null);
         vm.BackToStep1Command.Execute(null);
         vm.NextCommand.Execute(null);
@@ -675,6 +687,7 @@ static partial class Tests
         public void Refresh() => Calls.Add("refresh");
         public void ViewSettingsChanged() => Saves++;
         public bool HelperNeedsUpdate(IReadOnlyList<Game> games) => NeedsUpdate;
+        public bool GameModeRunning { get; set; }
         public Task UpdateHelperAsync() { Calls.Add("update helper"); return Task.CompletedTask; }
         public HashSet<GameSource> Installed = [];
         public bool CanOpenLauncher(GameSource source) => Installed.Contains(source);
@@ -817,6 +830,11 @@ static partial class Tests
         vm.GameModeChanged(games);
         Check(vm.GameModeOn && notified.Contains(nameof(ShelfViewModel.GameModeOn)) && !notified.Contains(nameof(ShelfViewModel.Visible)) &&
               !notified.Contains(""), "shelf: switching Game mode updates only the Game mode button");
+        Check(!vm.GameModeRunning && vm.GameModeToolTip == Strings.GameModeOnToolTip, "shelf: Game mode on but no game: ready, not running");
+        spy.GameModeRunning = true;
+        vm.GameModeChanged(games);
+        Check(vm.GameModeRunning && vm.GameModeToolTip == Strings.GameModeRunningToolTip, "shelf: Game mode applied: the button shows it running");
+        spy.GameModeRunning = false;
         settings.GameModeEnabled = false;
         vm.GameModeChanged(games);
 

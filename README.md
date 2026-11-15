@@ -1,10 +1,12 @@
+<img src="docs/banner.svg" alt="Binder: your installed games in one grid, out of the way while you play" width="100%">
+
 # Binder
 
 A small Windows 10/11 app that replaces the game shortcuts on your desktop. It shows the games you have
 installed as a clean cover grid, starts them with one click, gets completely out of the way while you play, and
 comes back when the game closes.
 
-> **Vibe-coded, use at your own risk.** See the [disclaimer](#disclaimer) below.
+> **AI-generated code, provided as is.** See the [disclaimer](#disclaimer) below.
 
 ## What it does
 
@@ -135,8 +137,8 @@ SDK's license terms. All the licenses are in the `licenses` folder of the instal
 
 ## Disclaimer
 
-**Binder is vibe-coded.** Its code was written by an AI (Anthropic's Claude), directed and tested by
-Jannis Jost, but not written or reviewed line by line by a human developer.
+Binder was built with Claude, Anthropic's AI. Its author designed and directed it and tests every version on
+real PCs; the code itself was written by the AI and isn't reviewed line by line by a human developer.
 
 The software is provided **"as is", without warranty of any kind**, express or implied. That includes, but isn't
 limited to, the warranties of merchantability, fitness for a particular purpose and non-infringement. In no
