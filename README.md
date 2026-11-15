@@ -1,3 +1,5 @@
+<img src="docs/banner.svg" alt="Binder: your installed games in one grid, out of the way while you play" width="100%">
+
 # Binder
 
 A small Windows 10/11 app that replaces the game shortcuts on your desktop. It shows the games you have

@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" width="1280" height="400" role="img" aria-label="Binder: your installed games in one grid, out of the way while you play">
+  <!-- README banner: the logo, the name and a small picture of the panel (made-up covers, no game art). -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#18181C"/><stop offset="1" stop-color="#1D2530"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.45" r="0.55">
+      <stop offset="0" stop-color="#2B7FD0" stop-opacity="0.30"/><stop offset="1" stop-color="#2B7FD0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7BD8FF"/><stop offset="1" stop-color="#0C78D2"/></linearGradient>
+    <linearGradient id="mid" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B4E6FF"/><stop offset="1" stop-color="#4AA6E6"/></linearGradient>
+    <linearGradient id="soft" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E3F5FF"/><stop offset="1" stop-color="#9CCDEF"/></linearGradient>
+    <linearGradient id="c1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5B6E8C"/><stop offset="1" stop-color="#34405A"/></linearGradient>
+    <linearGradient id="c2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8C6A52"/><stop offset="1" stop-color="#553D2F"/></linearGradient>
+    <linearGradient id="c3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4F7F6A"/><stop offset="1" stop-color="#2E4C40"/></linearGradient>
+    <linearGradient id="c4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7A5C86"/><stop offset="1" stop-color="#46354F"/></linearGradient>
+    <linearGradient id="c5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86804E"/><stop offset="1" stop-color="#4E4A2D"/></linearGradient>
+    <linearGradient id="c6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4E7C8A"/><stop offset="1" stop-color="#2C4A54"/></linearGradient>
+    <linearGradient id="c7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8A5A62"/><stop offset="1" stop-color="#52353A"/></linearGradient>
+    <linearGradient id="c8" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5E6470"/><stop offset="1" stop-color="#363A42"/></linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.45"/></linearGradient>
+    <clipPath id="panelClip"><rect x="760" y="44" width="440" height="312" rx="8"/></clipPath>
+    <clipPath id="banner"><rect width="1280" height="400" rx="16"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#banner)">
+    <rect width="1280" height="400" fill="url(#bg)"/>
+    <rect width="1280" height="400" fill="url(#glow)"/>
+
+    <!-- Logo and name -->
+    <g transform="translate(76 116) scale(2.6)">
+      <rect x="11" y="8" width="20" height="28" rx="3" fill="url(#soft)" transform="rotate(-14 21 40)"/>
+      <rect x="17" y="8" width="20" height="28" rx="3" fill="url(#mid)" transform="rotate(10 27 40)"/>
+      <rect x="14" y="10" width="20" height="28" rx="3" fill="url(#accent)"/>
+      <path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1.2" stroke-linejoin="round"/>
+    </g>
+    <g font-family="'Segoe UI Variable Display', 'Segoe UI', system-ui, -apple-system, sans-serif">
+      <text x="222" y="208" font-size="80" font-weight="600" fill="#F3F3F5" letter-spacing="-1">Binder</text>
+      <text x="84" y="284" font-size="26" fill="#D6D6DC">Your installed games in one grid.</text>
+      <text x="84" y="320" font-size="26" fill="#A9A9B2">Out of the way while you play.</text>
+      <text x="84" y="362" font-size="15" fill="#7E7E88" letter-spacing="0.3">Steam · Epic Games · GOG · EA app · Ubisoft Connect · Xbox · Rockstar · shortcuts</text>
+    </g>
+
+    <!-- The panel -->
+    <rect x="760" y="44" width="440" height="312" rx="8" fill="#202024"/>
+    <g clip-path="url(#panelClip)" font-family="'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif">
+      <text x="780" y="78" font-size="17" font-weight="600" fill="#F3F3F5">Good evening</text>
+      <!-- the "…" menu -->
+      <circle cx="1162" cy="74" r="1.6" fill="#A9A9B2"/><circle cx="1169" cy="74" r="1.6" fill="#A9A9B2"/><circle cx="1176" cy="74" r="1.6" fill="#A9A9B2"/>
+      <!-- search -->
+      <rect x="780" y="96" width="400" height="30" rx="4" fill="#2A2A2F" stroke="#34343A"/>
+      <rect x="780" y="125" width="400" height="1.5" fill="#4CC2FF"/>
+      <circle cx="796" cy="110" r="5" fill="none" stroke="#A9A9B2" stroke-width="1.4"/>
+      <path d="M800 114l4 4" stroke="#A9A9B2" stroke-width="1.4" stroke-linecap="round"/>
+      <text x="812" y="116" font-size="13" fill="#7E7E88">Search games</text>
+      <!-- filter chips -->
+      <rect x="780" y="138" width="38" height="24" rx="12" fill="#4CC2FF"/>
+      <text x="799" y="154" font-size="12" fill="#0A1A24" text-anchor="middle" font-weight="600">All</text>
+      <rect x="824" y="138" width="74" height="24" rx="12" fill="#2A2A2F" stroke="#34343A"/>
+      <text x="861" y="154" font-size="12" fill="#D6D6DC" text-anchor="middle">Favorites</text>
+      <rect x="904" y="138" width="62" height="24" rx="12" fill="#2A2A2F" stroke="#34343A"/>
+      <text x="935" y="154" font-size="12" fill="#D6D6DC" text-anchor="middle">Recent</text>
+      <rect x="972" y="138" width="56" height="24" rx="12" fill="#2A2A2F" stroke="#34343A"/>
+      <text x="1000" y="154" font-size="12" fill="#D6D6DC" text-anchor="middle">Steam</text>
+      <rect x="1034" y="138" width="46" height="24" rx="12" fill="#2A2A2F" stroke="#34343A"/>
+      <text x="1057" y="154" font-size="12" fill="#D6D6DC" text-anchor="middle">Epic</text>
+
+      <!-- covers: 4 columns, 3:4 -->
+      <g font-family="'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif" font-size="30" font-weight="600" fill="#FFFFFF" fill-opacity="0.55" text-anchor="middle">
+        <rect x="780" y="176" width="91" height="121" rx="8" fill="url(#c1)"/><text x="825.5" y="246">N</text>
+        <rect x="883" y="176" width="91" height="121" rx="8" fill="url(#c2)"/><text x="928.5" y="246">D</text>
+        <rect x="986" y="176" width="91" height="121" rx="8" fill="url(#c3)"/><text x="1031.5" y="246">H</text>
+        <rect x="1089" y="176" width="91" height="121" rx="8" fill="url(#c4)"/><text x="1134.5" y="246">S</text>
+        <rect x="780" y="309" width="91" height="121" rx="8" fill="url(#c5)"/><text x="825.5" y="379">R</text>
+        <rect x="883" y="309" width="91" height="121" rx="8" fill="url(#c6)"/><text x="928.5" y="379">A</text>
+        <rect x="986" y="309" width="91" height="121" rx="8" fill="url(#c7)"/><text x="1031.5" y="379">T</text>
+        <rect x="1089" y="309" width="91" height="121" rx="8" fill="url(#c8)"/><text x="1134.5" y="379">K</text>
+      </g>
+      <!-- shading and launcher badges -->
+      <g fill="url(#shade)">
+        <rect x="780" y="176" width="91" height="121" rx="8"/><rect x="883" y="176" width="91" height="121" rx="8"/>
+        <rect x="986" y="176" width="91" height="121" rx="8"/><rect x="1089" y="176" width="91" height="121" rx="8"/>
+      </g>
+      <g fill="#202024" fill-opacity="0.85">
+        <circle cx="860" cy="286" r="7"/><circle cx="963" cy="286" r="7"/><circle cx="1066" cy="286" r="7"/><circle cx="1169" cy="286" r="7"/>
+      </g>
+      <g fill="#D6D6DC"><circle cx="860" cy="286" r="2.5"/><circle cx="963" cy="286" r="2.5"/><circle cx="1066" cy="286" r="2.5"/><circle cx="1169" cy="286" r="2.5"/></g>
+      <!-- the hovered cover: accent ring and play -->
+      <rect x="883" y="176" width="91" height="121" rx="8" fill="none" stroke="#4CC2FF" stroke-width="2"/>
+      <circle cx="928.5" cy="236.5" r="18" fill="#4CC2FF"/>
+      <path d="M923 228v17l13.5-8.5z" fill="#0A1A24" stroke="#0A1A24" stroke-width="1.2" stroke-linejoin="round"/>
+      <!-- a favorite's star -->
+      <path d="M1170 186l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4-3.9-3.8 5.4-.8z" fill="#F3F3F5"/>
+    </g>
+    <rect x="760.5" y="44.5" width="439" height="311" rx="8" fill="none" stroke="#34343A"/>
+  </g>
+</svg>
