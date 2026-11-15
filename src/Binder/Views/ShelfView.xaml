@@ -31,9 +31,9 @@
             <!-- While Game mode is on: a checked toggle (accent fill, like a Quick Settings tile) that turns it off.
                  A state, not a badge, so it doesn't read as a notification. -->
             <ToggleButton x:Name="GameModeButton" Grid.Column="2" Style="{StaticResource IconToggleButton}" Content="&#xE7FC;"
-                          IsChecked="{x:Bind ViewModel.GameModeOn, Mode=OneWay}" Visibility="{x:Bind ViewModel.GameModeOn, Mode=OneWay}"
+                          IsChecked="{x:Bind ViewModel.GameModeRunning, Mode=OneWay}" Visibility="{x:Bind ViewModel.GameModeOn, Mode=OneWay}"
                           Click="OnGameModeButtonClick"
-                          ToolTipService.ToolTip="{x:Bind s:Strings.GameModeOnToolTip}" AutomationProperties.Name="{x:Bind s:Strings.GameMode}" />
+                          ToolTipService.ToolTip="{x:Bind ViewModel.GameModeToolTip, Mode=OneWay}" AutomationProperties.Name="{x:Bind s:Strings.GameMode}" />
             <!-- Quick actions (§16, board 18), with Settings last (Ctrl+,). The menu's items are made when it opens. -->
             <!-- An update waiting (spec §25, Ask before installing): an 8 px accent dot at the button's top right, as
                  browsers mark one; the button's name says so too. -->

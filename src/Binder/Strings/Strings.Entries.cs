@@ -42,6 +42,12 @@ public sealed partial class Strings
     public static string More => Get(nameof(More));
     public static string MoreActions => Get(nameof(MoreActions));
     public static string GameModeOnToolTip => Get(nameof(GameModeOnToolTip));
+    public static string GameModeRunningToolTip => Get(nameof(GameModeRunningToolTip));
+    public static string GameModeTray => Get(nameof(GameModeTray));
+    public static string GmReadyStatus => Get(nameof(GmReadyStatus));
+    public static string GmRunningStatus => Get(nameof(GmRunningStatus));
+    public static string BinderOnGitHub => Get(nameof(BinderOnGitHub));
+    public static string BinderOnGitHubToolTip => Get(nameof(BinderOnGitHubToolTip));
     public static string Back => Get(nameof(Back));
     public static string WithEsc => Get(nameof(WithEsc));
     public static string BackToGames => Get(nameof(BackToGames));

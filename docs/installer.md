@@ -3,8 +3,8 @@
 Binder ships as one file, `BinderSetup.exe`. It installs the app for your Windows account (no
 administrator rights), updates an existing install, and is what Settings → Apps runs to uninstall it.
 
-> Binder is vibe-coded: the code was written by an AI (Claude) and is provided as is. Settings → Apps lists
-> its publisher as "Vibe-coded with Claude (AI-generated) · Jannis Jost". That text comes from `<Company>` in
+> Binder is AI-generated code (Claude), provided as is. Settings → Apps lists its publisher as
+> "Jannis Jost (built with Claude)". That text comes from `<Company>` in
 > `Directory.Build.props`.
 
 ## Build it

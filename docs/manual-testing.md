@@ -35,8 +35,8 @@ Tick boxes here on GitHub (edit the file), in a copy, or on paper. Whatever is e
 - [x] **I2** *(Dropped: the WinUI app is self-contained, so there's no runtime to be missing.)*
 - [x] **I3** Install → "Binder is installed" → Close with "Open Binder now" ticked opens the app.
 - [x] **I4** Start menu has **Binder** with its icon. Typing "Binder" in Start finds it.
-- [x] **I5** Settings → Apps → Installed apps lists **Binder 0.1.0**, publisher "Vibe-coded with Claude
-  (AI-generated) · Jannis Jost", with icon and size.
+- [x] **I5** Settings → Apps → Installed apps lists **Binder 0.1.0**, publisher "Jannis Jost (built
+  with Claude)", with icon and size.
 
 ## S · First-time setup (milestone 9)
 

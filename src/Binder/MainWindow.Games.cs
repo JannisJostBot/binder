@@ -62,12 +62,19 @@ public sealed partial class MainWindow
 
     private void ShowImportResult(ImportResult result)
     {
+        var (title, detail) = ImportResultText(result);
+        ShowToast(title, detail, Strings.Ok);
+    }
+
+    /// <summary>"Imported 5 shortcuts" and what to know about them: the notice, or setup's step 3.</summary>
+    private static (string Title, string Detail) ImportResultText(ImportResult result)
+    {
         var (imported, copied, failed) = result;
         var detail = copied > 0
             ? Strings.Plural(copied, Strings.ImportCopiedOne, Strings.ImportCopied)
             : Strings.ImportRestoreHint;
         if (failed > 0) detail += " " + Strings.Plural(failed, Strings.ImportFailedOne, Strings.ImportFailed);
-        ShowToast(Strings.Plural(imported, Strings.ImportDoneOne, Strings.ImportDone), detail, Strings.Ok);
+        return (Strings.Plural(imported, Strings.ImportDoneOne, Strings.ImportDone), detail);
     }
 
     /// <summary>Puts every imported shortcut back on the desktop and removes the games made from them.</summary>

@@ -1,4 +1,5 @@
 using System.Globalization;
+using Binder.Library;
 using Binder.Models;
 using Binder.Services;
 using Binder.Views;
@@ -42,6 +43,8 @@ public interface ISettingsActions
     void InstallUpdate();
     /// <summary>"Skip this version".</summary>
     void SkipUpdate();
+    /// <summary>"Binder on GitHub": opens the repository's page in the browser.</summary>
+    void OpenRepository();
 }
 
 /// <summary>
@@ -83,6 +86,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         CheckUpdatesCommand = new(actions.CheckForUpdates);
         UpdateActionCommand = new(UpdateAction);
         SkipUpdateCommand = new(actions.SkipUpdate);
+        RepositoryCommand = new(actions.OpenRepository);
     }
 
     public RelayCommand BackCommand { get; }
@@ -92,6 +96,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     public RelayCommand AddGameCommand { get; }
     public RelayCommand SetupCommand { get; }
     public RelayCommand FreeSpaceCommand { get; }
+    public RelayCommand RepositoryCommand { get; }
+    /// <summary>The second line of "Binder on GitHub": where it goes.</summary>
+    public string RepositoryText => "github.com/" + UpdateManifest.Repository;
     public RelayCommand GameModeCommand { get; }
 
     public void Unhide(Game game) => _actions.Unhide(game);

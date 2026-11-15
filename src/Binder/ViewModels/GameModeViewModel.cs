@@ -118,7 +118,7 @@ public sealed partial class GameModeViewModel : ObservableObject
         OnAllPropertiesChanged();
     }
 
-    /// <summary>A restore just finished (the toast is up): show its result and whether anything is still pending.</summary>
+    /// <summary>Game mode was applied, or a restore just finished (the toast is up): show its result and whether anything is still pending.</summary>
     public void UpdateLastRestore()
     {
         _restoring = false;
@@ -147,9 +147,14 @@ public sealed partial class GameModeViewModel : ObservableObject
             if (_settings.GameModeEnabled == value) return;
             _settings.GameModeEnabled = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(MasterDetail));
             Save();
         }
     }
+
+    /// <summary>The line under the main switch: ready for the next game, or running now.</summary>
+    public string MasterDetail => !_settings.GameModeEnabled ? Strings.GmMasterText
+        : _restore.Pending ? Strings.GmRunningStatus : Strings.GmReadyStatus;
 
     public bool IsItemOn(string id) => _settings.GameModeItems.Contains(id);
 
@@ -415,7 +420,7 @@ public sealed partial class GameModeViewModel : ObservableObject
     // ---- The last restore ---------------------------------------------------------------------------------
 
     private static readonly string[] RestoreNames =
-        [nameof(LastTitle), nameof(LastDetail), nameof(LastOk), nameof(HasLog), nameof(CanRestore), nameof(RestoreText)];
+        [nameof(LastTitle), nameof(LastDetail), nameof(LastOk), nameof(HasLog), nameof(CanRestore), nameof(RestoreText), nameof(MasterDetail)];
 
     public string LastTitle => _restore.Last is { } last ? Strings.Format(Strings.GmLastRestore, Format.SessionStart(last.When)) : Strings.GmNothingRestored;
 

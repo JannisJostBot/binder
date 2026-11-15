@@ -24,6 +24,8 @@ public interface IShelfActions
     void ViewSettingsChanged();
     /// <summary>Whether Game mode's admin helper is from an older version.</summary>
     bool HelperNeedsUpdate(IReadOnlyList<Game> games);
+    /// <summary>Whether Game mode's changes are applied now (a game runs), not only switched on for the next one.</summary>
+    bool GameModeRunning { get; }
     /// <summary>Updates the helper (UAC); the owner gives the shelf its data again afterwards.</summary>
     Task UpdateHelperAsync();
     /// <summary>Whether the launcher is installed, so its chip offers "Open …" (a few registry reads).</summary>
@@ -507,21 +509,30 @@ public sealed partial class ShelfViewModel : ObservableObject
     public bool HelperUpdating { get; private set; }
     public bool HelperUpdateEnabled => !HelperUpdating;
     public bool GameModeOn => _settings.GameModeEnabled;
+    /// <summary>
+    /// The header button: outlined while Game mode is ready (it turns on when a game starts), filled only while
+    /// it's applied, so "on" doesn't read as "running all the time".
+    /// </summary>
+    public bool GameModeRunning { get; private set; }
+    public string GameModeToolTip => GameModeRunning ? Strings.GameModeRunningToolTip : Strings.GameModeOnToolTip;
 
     private void UpdateHelper(IReadOnlyList<Game> games)
     {
         HelperNeedsUpdate = _actions.HelperNeedsUpdate(games);
         HelperUpdating = false;
+        GameModeRunning = _settings.GameModeEnabled && _actions.GameModeRunning;
     }
 
     /// <summary>
-    /// Game mode was switched on or off: only the header's Game mode button and the helper notice change, so only
+    /// Game mode was switched on or off, applied or restored: only the header's Game mode button and the helper notice change, so only
     /// those are reported (a full <see cref="SetData"/> would lay the whole shelf out again).
     /// </summary>
     public void GameModeChanged(IReadOnlyList<Game> games)
     {
         UpdateHelper(games);
         OnPropertyChanged(nameof(GameModeOn));
+        OnPropertyChanged(nameof(GameModeRunning));
+        OnPropertyChanged(nameof(GameModeToolTip));
         OnPropertyChanged(nameof(HelperNeedsUpdate));
         OnPropertyChanged(nameof(HelperBarOpen));
         OnPropertyChanged(nameof(HelperUpdateEnabled));

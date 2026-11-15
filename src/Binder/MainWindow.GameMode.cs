@@ -107,8 +107,10 @@ public sealed partial class MainWindow
     }
 
     /// <summary>Game mode put Windows back (the toast is showing): update its page if it's open.</summary>
-    public void GameModeRestored()
+    /// <summary>Game mode was applied (a game started) or put back: the shelf's button and the page's status follow.</summary>
+    public void GameModeStateChanged()
     {
+        Shelf.ViewModel!.GameModeChanged(_games);
         if (GameModePage.Visibility == Visibility.Visible) GameModePage.ViewModel!.UpdateLastRestore();
     }
 

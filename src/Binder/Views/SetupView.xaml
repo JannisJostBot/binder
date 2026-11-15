@@ -86,6 +86,9 @@
             </StackPanel>
             <ScrollViewer Grid.Row="1">
                 <StackPanel Spacing="14">
+                    <!-- What step 2's move did (in the page, so nothing covers Done). -->
+                    <InfoBar IsOpen="True" IsClosable="False" Severity="Success" Visibility="{x:Bind ViewModel.HasImportResult, Mode=OneWay}"
+                             Title="{x:Bind ViewModel.ImportTitle, Mode=OneWay}" Message="{x:Bind ViewModel.ImportDetail, Mode=OneWay}" />
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />

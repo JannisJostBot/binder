@@ -166,6 +166,7 @@ public sealed partial class App : Application
         {
             // Game mode is on (from the watcher, while the countdown runs or the panel was kept open). Program
             // doesn't start the widget for this alone, so this is always a forwarded start: no panel toggle.
+            _panel?.GameModeStateChanged(); // the shelf's button shows it running
             if (Shared.RestoreResult.Parse(applied) is { } result) ShowGameModeToast(Views.GameModeToast.Kind.Applied, result);
             return;
         }
@@ -206,7 +207,7 @@ public sealed partial class App : Application
     /// <summary>Game mode's "Restored" toast (board 4), and the Game mode page's last result if it's open.</summary>
     private void ShowRestored(string encoded, bool exitWhenClosed)
     {
-        _panel?.GameModeRestored();
+        _panel?.GameModeStateChanged();
         if (Shared.RestoreResult.Parse(encoded) is not { } result)
         {
             if (exitWhenClosed) Quit();
@@ -492,7 +493,7 @@ public sealed partial class App : Application
         items.AddRange(
         [
             (open, Strings.OpenBinder, false), (0, "", false),
-            (gameMode, needsUpdate ? Strings.GameModeNeedsUpdateMenu : Strings.GameMode, Settings.GameModeEnabled),
+            (gameMode, needsUpdate ? Strings.GameModeNeedsUpdateMenu : Strings.GameModeTray, Settings.GameModeEnabled),
             (freeSpace, Strings.FreeUpSpaceMenu, false), (0, "", false),
         ]);
         if (launchers.Length > 0)

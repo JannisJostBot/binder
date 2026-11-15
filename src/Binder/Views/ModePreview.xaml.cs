@@ -16,8 +16,9 @@ public sealed partial class ModePreview : UserControl
         {
             DesktopScene.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
             FlyoutScene.Visibility = value ? Visibility.Collapsed : Visibility.Visible;
-            // The tray icon is how the flyout opens; on the desktop it's just one more icon.
+            // The tray icon is how the flyout opens (ringed); on the desktop it's just one more icon.
             TrayIcon.Opacity = value ? 0.4 : 1;
+            TrayRing.BorderThickness = new Thickness(value ? 0 : 0.75);
         }
     }
 }

@@ -70,6 +70,7 @@ public sealed partial class SetupViewModel : ObservableObject
         _foundCounts = null;
         Shortcuts = [];
         _selected = [];
+        ImportTitle = ImportDetail = "";
         UpdateLibrary(games);
         Flyout = settings.DisplayMode == DisplayMode.Flyout;
         Desktop = settings.DisplayMode == DisplayMode.Desktop;
@@ -194,8 +195,21 @@ public sealed partial class SetupViewModel : ObservableObject
         if (_selected.Count > 0) _actions.Import(_selected);
     }
 
-    /// <summary>After the picked shortcuts were moved: on to the last step.</summary>
-    public void ImportDone() => ShowStep(3);
+    private static readonly string[] ImportNames = [nameof(ImportTitle), nameof(ImportDetail), nameof(HasImportResult)];
+
+    /// <summary>What the move did, shown at the top of step 3 (not as the panel's notice, which would cover Done).</summary>
+    public string ImportTitle { get; private set; } = "";
+    public string ImportDetail { get; private set; } = "";
+    public bool HasImportResult => ImportTitle.Length > 0;
+
+    /// <summary>After the picked shortcuts were moved: on to the last step, which shows the result.</summary>
+    public void ImportDone(string title, string detail)
+    {
+        ImportTitle = title;
+        ImportDetail = detail;
+        foreach (var name in ImportNames) OnPropertyChanged(name);
+        ShowStep(3);
+    }
 
     // ---- Step 3: how it opens --------------------------------------------------------------------------------
 
