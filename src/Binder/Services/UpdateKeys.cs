@@ -11,9 +11,10 @@ public static class UpdateKeys
 {
     public static readonly string[] All =
     [
-        // YubiKey 1 (main), slot 9c, CN=Binder release key 1, certificate E5910D503B9E2D84D7232191517A143EF68AD21A
-        // (added 2026-11-15 from the certificate exported in Yubico Authenticator).
-        "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEHtcHPsCNnuwJBBfQM+68/vF+ZaDMeEAOQb0wRIOODl3wv8mp7Nce767Mjy0s7/U04l94zRoMEJYGUJVXEwerPp/VzqFByWnPO7yAr1Kk2YU4rl6bFIXd4gHAnr2QpsHT",
+        // YubiKey 1 (main), slot 9c, PIN and touch always, CN=Binder release key 1, certificate
+        // 424ADAC3045F6870BA4F035E531A5BACE5123C89 (made 2026-11-15 with ykman; replaces that day's first key, which
+        // didn't need a touch and never signed anything).
+        "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE/Oid10BJh+z4UQbDqElyf9kTCHnI2j1ftyjOeuZ6iPz5zJIttQHms3NSbmMZJq0ti3EOUjw3i5jDhDOz2zhpkgq3XDgbv+DaxjL9rEICDlFx7V6zVhSY89hwmzYpYUcQ",
         // YubiKey 2 (backup), slot 9c: not set up yet.
     ];
 }
