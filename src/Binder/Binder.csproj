@@ -43,6 +43,9 @@
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="2.6.4" />
   </ItemGroup>
 
+  <!-- Where updates come from, compiled in (build/Updates.targets): none unless the build names them. -->
+  <Import Project="..\..\build\Updates.targets" />
+
   <ItemGroup>
     <!-- Game mode's ids, files and restore result, shared with the watcher that applies and restores it. -->
     <Compile Include="..\Binder.Watcher\GameModeShared.cs" Link="Shared\GameModeShared.cs" />

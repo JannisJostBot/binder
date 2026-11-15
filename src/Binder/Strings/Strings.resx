@@ -3053,6 +3053,14 @@ Calm: efficiency mode while you play</value>
     <value>Doesn&apos;t check for updates</value>
     <comment>Second line of the About card (state) when Updates is set to &quot;Don&apos;t check&quot;.</comment>
   </data>
+  <data name="UpdatesUnavailable" xml:space="preserve">
+    <value>This build doesn&apos;t check for updates</value>
+    <comment>Second line of the About card (state) in a build made without release keys (a local build or a fork): it never checks for updates and the Updates setting is hidden.</comment>
+  </data>
+  <data name="UpdatesUnavailableToolTip" xml:space="preserve">
+    <value>Built without release keys. Get updates from where you got this build.</value>
+    <comment>Tooltip of the About card when the build doesn&apos;t check for updates (UpdatesUnavailable). One short line.</comment>
+  </data>
   <data name="UpdateChecking" xml:space="preserve">
     <value>Checking for updates…</value>
     <comment>Second line of the About card (state) while it asks GitHub for a new version.</comment>

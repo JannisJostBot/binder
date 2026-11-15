@@ -2291,6 +2291,12 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   <data name="UpdateCheckOff" xml:space="preserve">
     <value>Sucht nicht nach Updates</value>
   </data>
+  <data name="UpdatesUnavailable" xml:space="preserve">
+    <value>Dieser Build sucht nicht nach Updates</value>
+  </data>
+  <data name="UpdatesUnavailableToolTip" xml:space="preserve">
+    <value>Ohne Release-Schlüssel erstellt. Updates erhalten Sie dort, wo Sie diesen Build erhalten haben.</value>
+  </data>
   <data name="UpdateChecking" xml:space="preserve">
     <value>Nach Updates wird gesucht…</value>
   </data>

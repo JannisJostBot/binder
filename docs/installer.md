@@ -82,13 +82,29 @@ newer version is installed before replacing it.
 
 The app also updates itself from this repository's GitHub releases (`docs/proposals.md` §25): once a day at most,
 when the panel opens, it fetches the latest release's `release.json` and `release.json.sig`, checks the signature
-against the keys compiled into `Services/UpdateKeys.cs`, and refuses anything not newer than what's installed. With
+against the keys compiled into the build, and refuses anything not newer than what's installed. With
 **Ask before installing** (the default) the user presses Update and Restart now; with **Install automatically** it
 installs the next time the panel closes. It downloads `BinderSetup-<version>.exe` into
 `%LOCALAPPDATA%\Binder\updates\`, checks its size and SHA-256 against the signed manifest, keeps it open without
 write or delete sharing and starts it with `/S /update`. It waits while a game or Game mode is active and never
 elevates. **Don't check** in Settings › About › Updates turns all of it off; running a newer setup by hand works as
 before.
+
+### Forks
+
+Where updates come from is set when building, not at run time (`build/Updates.targets`): the GitHub repository
+whose releases the app checks, and the one or two public keys their `release.json` must be signed with. Only
+`publish.ps1 -Official` (what `release.yml` runs) uses the official values in `build/OfficialRelease.props`; every
+other build has none and never checks for updates (Settings › About says so). A fork that ships its own releases
+either builds with its own values:
+
+```powershell
+./scripts/publish.ps1 -Repository you/binder -UpdateKeys <main key>, <backup key>
+```
+
+or puts them in its copy of `build/OfficialRelease.props` and uses `release.yml` and `sign-release.ps1` as they are
+(`-Official` refuses to build in GitHub Actions for a repository that file doesn't name). The keys are ECDSA P-384
+public keys in base64 (`scripts/sign-release.ps1 -ExportPublicKey`); the build fails on a malformed one.
 
 ## Uninstall
 

@@ -30,6 +30,11 @@ public sealed partial class App
     /// <summary>At start: the update known from an earlier check (verified again), or after <c>--updated</c> the pill.</summary>
     private void InitUpdates(bool updated)
     {
+        if (!UpdateKeys.Enabled)
+        {
+            CurrentUpdate = new(UpdatePhase.Unavailable, Installed); // a build without release keys never checks
+            return;
+        }
         if (updated)
         {
             var saved = Updater.LoadSaved(newerOnly: false);
@@ -126,7 +131,7 @@ public sealed partial class App
     /// <summary>Settings' "Check for updates", or the daily check. One at a time.</summary>
     public async Task CheckForUpdatesAsync()
     {
-        if (_checking is not null || _download is not null) return;
+        if (!UpdateKeys.Enabled || _checking is not null || _download is not null) return;
         var cancel = _checking = new CancellationTokenSource();
         var before = CurrentUpdate;
         SetUpdate(before with { Phase = UpdatePhase.Checking });

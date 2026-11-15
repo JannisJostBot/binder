@@ -63,7 +63,8 @@ src/Binder/            the WinUI widget
                           LaunchOptions, GameScan, GameFiles (installed or gone, removed games' settings), AntiCheat, PlaytimeStats, CrashAnalysis, SpacePlanner,
                           Moments ("Welcome back"), UpdateManifest (release signature and rules) (pure logic)
   Models/                 Game, Session, Settings, ImportedShortcut, CrashRecord
-  Services/               Launcher, CoverCache, Storage, UpdateKeys (release signing keys), Updater (check, download,
+  Services/               Launcher, CoverCache, Storage, UpdateKeys (where updates come from, generated at build
+                          time), Updater (check, download,
                           start the setup), Windows integration (DesktopLayer, Monitors, Placement,
                           Autostart, ShellNotify, PcChecks, …), Gamepad (XInput, polled only while the panel is
                           active and a pad is connected), GameModeService, WindowsGaming (Windows' Game Mode,
@@ -90,7 +91,10 @@ src/Binder.Watcher/    windowless (one hidden window on its own thread, SystemEv
 src/Binder.Elevated/   Game mode's admin helper (Native AOT, windowless, run by scheduled tasks)
 src/Binder.Setup/      BinderSetup.exe: per-user installer/updater/uninstaller (docs/installer.md)
 tests/Binder.Tests/    plain console unit tests (no test framework packages); smoke.ps1 / setup-test.ps1 are CI-only
-scripts/                  publish.ps1 (builds publish\app: widget folder + AOT watcher + helper, and BinderSetup.exe),
+build/                    Updates.targets (where updates come from: repository and keys, checked and compiled in),
+                          OfficialRelease.props (the official releases' values, owner only)
+scripts/                  publish.ps1 (builds publish\app: widget folder + AOT watcher + helper, and BinderSetup.exe;
+                          -Official for a release, -Repository/-UpdateKeys for a fork's),
                           check.ps1 (the hard rules on a diff, then build + tests; -Task for agent cards),
                           sign-release.ps1 (owner only: sign a release with the YubiKeys, spec §25),
                           make-tray-icons.ps1 / make-watcher-icon.ps1 (redraw icons after a logo change)
@@ -283,10 +287,12 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
   space hands each uninstall to the game's own launcher (or Settings › Apps).
 - **Network.** HTTPS to the store CDNs only, for artwork, or to an HTTPS address the user typed themselves in
   Settings › Advanced (the page names its host). Downloads are size-capped and only ever decoded as images. And
-  HTTPS GETs to `github.com` (and its release download hosts) for this repository's release manifest and setup,
-  signed with the owner's key; never anything about the user or the PC. No telemetry, no other calls.
+  HTTPS GETs to `github.com` (and its release download hosts) for the build's repository's release manifest and
+  setup (this repository in an official build, none in others), signed with a compiled-in key; never anything about the user or the PC. No telemetry, no other calls.
 - **Updates** (spec §25, `Services/Updater`, `Library/UpdateManifest`). The signature is checked on the raw bytes
-  before anything parses them; the keys are compiled in (`Services/UpdateKeys.cs`, owner only); never a version at
+  before anything parses them; the keys and the repository are compiled in, set at build time, never read at run
+  time (`build/Updates.targets`; the official ones in `build/OfficialRelease.props`, owner only, used only by
+  `publish.ps1 -Official`; any other build has none and never checks); never a version at
   or below the installed one, never a manifest issued before the last one accepted; redirects only through
   `UpdateManifest.IsAllowedAddress`; the setup's size and SHA-256 checked while it streams and again through a handle
   held without write or delete sharing until it has started; never elevates; never installs while a watcher runs or

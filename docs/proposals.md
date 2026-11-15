@@ -36,7 +36,7 @@ break the user's system.
 | 23 Faster than Start | §22 | To do |
 | 24 Lean speed-ups | §23 | To do |
 | 25 Weekly chart details | §24 | Proposed (2026-11-12), waiting for the owner's go; two choices open (§24 "To decide") |
-| 26 Updates from GitHub | §25 | **In progress** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; `Services/UpdateKeys.cs` (both YubiKeys' keys since 2026-11-15, made on the keys with PIN and touch always); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier on Linux with software keys, not yet with a YubiKey or a real draft; notes format in `docs/releases/README.md`. Default decided: Ask before installing (2026-11-14).<br>Built (2026-11-14), not yet tried on the real PC: `.github/workflows/release.yml` (v* tags only, actions pinned, a draft with the setup and its attestation; never run yet); `Services/Updater` (check with redirects only through `IsAllowedAddress`, 15 s, a client per check, no cookies; manifest kept in `%LOCALAPPDATA%\Binder\updates\` and verified again when read; the download hashed while it streams; the setup hashed again through a handle held with read sharing only and started with `/S /update`; waits for a watcher or a Game mode journal); `App.Updates` (check after a panel's first frame at most once a day, download at once with "Install automatically" or urgent, closing the panel cancels it, install when the flyout closes or at a `--background` start, the in-panel toast "Updated to …" with What's new after `--updated`, "couldn't be installed" when `--updated` comes back on the old version); Settings › About (version card with Check for updates / Update / Restart now, progress bar, What's new with Skip this version, the Updates combo); the "…" dot and first item, the tray item; three settings fields plus the mode; 37 strings in EN/DE/FR; view model tests. The pill is the panel's toast, not board 23's separate pill window. Not built: the Authenticode same-publisher check (Binder is unsigned today).<br>Next: Windows has to see the YubiKeys' certificates for `sign-release.ps1` (the inbox PIV driver says "Missing stored keyset"; next try Yubico's minidriver); then a dry run of `release.yml` + `sign-release.ps1 -DryRun`. Built 2026-11-15: the setup's `/update` (the widget comes back with `--updated --background` after a success, a failure or a busy setup) and the all-or-nothing swap (§25 "To decide" 3, owner: yes; `FileSwap`, unit-tested on real files); not yet run through `setup-test.ps1` in CI |
+| 26 Updates from GitHub | §25 | **In progress** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; the keys (both YubiKeys' since 2026-11-15, made on the keys with PIN and touch always) and the repository set at build time since 2026-11-15: `build/OfficialRelease.props` for `publish.ps1 -Official` (release.yml), `build/Updates.targets` checks them and generates `Services.UpdateKeys`; other builds and forks without their own keys never check (About says so); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier on Linux with software keys, not yet with a YubiKey or a real draft; notes format in `docs/releases/README.md`. Default decided: Ask before installing (2026-11-14).<br>Built (2026-11-14), not yet tried on the real PC: `.github/workflows/release.yml` (v* tags only, actions pinned, a draft with the setup and its attestation; never run yet); `Services/Updater` (check with redirects only through `IsAllowedAddress`, 15 s, a client per check, no cookies; manifest kept in `%LOCALAPPDATA%\Binder\updates\` and verified again when read; the download hashed while it streams; the setup hashed again through a handle held with read sharing only and started with `/S /update`; waits for a watcher or a Game mode journal); `App.Updates` (check after a panel's first frame at most once a day, download at once with "Install automatically" or urgent, closing the panel cancels it, install when the flyout closes or at a `--background` start, the in-panel toast "Updated to …" with What's new after `--updated`, "couldn't be installed" when `--updated` comes back on the old version); Settings › About (version card with Check for updates / Update / Restart now, progress bar, What's new with Skip this version, the Updates combo); the "…" dot and first item, the tray item; three settings fields plus the mode; 37 strings in EN/DE/FR; view model tests. The pill is the panel's toast, not board 23's separate pill window. Not built: the Authenticode same-publisher check (Binder is unsigned today).<br>Next: Windows has to see the YubiKeys' certificates for `sign-release.ps1` (the inbox PIV driver says "Missing stored keyset"; next try Yubico's minidriver); then a dry run of `release.yml` + `sign-release.ps1 -DryRun`. Built 2026-11-15: the setup's `/update` (the widget comes back with `--updated --background` after a success, a failure or a busy setup) and the all-or-nothing swap (§25 "To decide" 3, owner: yes; `FileSwap`, unit-tested on real files); not yet run through `setup-test.ps1` in CI |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
 
 The build order is at the end of this file. The ideas under "Not decided" at the bottom must **not** be built.
@@ -1771,9 +1771,16 @@ Every release carries three files: `BinderSetup-<version>.exe`, `release.json` a
   over the exact bytes of `release.json` prefixed with the fixed text `Binder release manifest v1` and a zero byte
   (so the key can't be tricked into signing anything else that verifies). `release.json.sig` holds the 96-byte
   signature (IEEE P1363) in base64, one per line: one line normally, two (one per YubiKey) for an urgent update. Ed25519 isn't in .NET 10 or CNG, and writing our own crypto is out.
-- **Keys in the app:** two public keys compiled in (`Services/UpdateKeys.cs`): the owner's main key and the
-  offline backup key. Either one verifies. The file is on `AGENTS.md`'s "Don't touch" list and `check.ps1`'s protected
-  list.
+- **Keys in the app:** two public keys compiled in: the owner's main key and the offline backup key. Either one
+  verifies. They and the repository the app checks are set at build time (owner's go, 2026-11-15), never read at
+  run time: `build/OfficialRelease.props` holds the official values, which only an official build uses
+  (`publish.ps1 -Official`, run by `release.yml`); `build/Updates.targets` checks them (owner/name, one or two P-384
+  keys) and writes them into the widget as `Services.UpdateKeys`. Any other build (a local build, CI's test build,
+  a fork) has no keys and never checks: Settings › About says "This build doesn't check for updates", without the
+  Updates choice or the GitHub link. A fork either builds with its own `-Repository` and `-UpdateKeys`, or puts its
+  own values in `OfficialRelease.props` to run `release.yml` and `sign-release.ps1` for itself; `publish.ps1
+  -Official` refuses to build in another repository's GitHub Actions with values that aren't its own. The props
+  and targets files are on `AGENTS.md`'s "Don't touch" list and `check.ps1`'s protected list.
 - **Verify first, then parse:** the signature is checked on the raw bytes before anything reads the JSON.
   `release.json` is capped at 64 KB, the signature file at 1 KB.
 - **Then, strictly** (`Library/UpdateManifest`, pure logic, unit-tested): `format` 1, `product` and `channel` exactly
@@ -1782,7 +1789,8 @@ Every release carries three files: `BinderSetup-<version>.exe`, `release.json` a
   language, plain text (shown in a TextBlock, never as markup or links). Anything else is rejected; unknown fields
   are ignored.
 - **The download address isn't in the manifest:** the app builds it from the version alone,
-  `https://github.com/JannisJostBot/binder/releases/download/v<version>/BinderSetup-<version>.exe`.
+  `https://github.com/<repository>/releases/download/v<version>/BinderSetup-<version>.exe` (the build's
+  repository, `JannisJostBot/binder` for the official releases).
 
 ### Urgent security updates (owner's request, 2026-11-12)
 
@@ -1827,7 +1835,8 @@ A release can be marked `"urgent": true` for a security fix that shouldn't wait 
    - Writes `release.json` itself from what it checked plus the notes file at the tagged commit; nothing from CI's
      side goes into the manifest unchecked.
    - Shows version, commit, size, hash and the English notes and asks to confirm.
-   - Signs with the main key and checks the signature with the public key from `UpdateKeys.cs` before uploading.
+   - Signs with the main key and checks the signature with the public keys in `build/OfficialRelease.props` at the
+     tagged commit before uploading (it reads the repository from there too).
    - Uploads `release.json` and `release.json.sig` to the draft and publishes it as the latest release.
 5. **Published:** with "immutable releases" on, the release's files and tag can't change any more. A bad release is
    fixed by the next version, never by replacing files (the app never downgrades).
@@ -1844,14 +1853,14 @@ private key never exists anywhere else and can't be copied off it.
   - change the PIV PIN, PUK and management key from the defaults;
   - generate an ECC P-384 key in slot 9c (Digital Signature) with PIN policy "always" and touch policy "always", and
     a self-signed certificate for it (Windows finds the key through the certificate);
-  - `scripts/sign-release.ps1 -ExportPublicKey` writes its public key for `Services/UpdateKeys.cs`.
+  - `scripts/sign-release.ps1 -ExportPublicKey` writes its public key for `build/OfficialRelease.props`.
 - **Main key (YubiKey 1):** kept by the owner, used for every release. Signing goes through Windows' own smart card
   support (the certificate in CurrentUser\My, `ECDsa` from it, no Yubico software needed at signing time): the
   script asks for the PIN and the YubiKey blinks for a touch, for each release.
 - **Backup key (YubiKey 2):** set up the same way, then stored apart from the PC and YubiKey 1 (another room or
   place). Used only if YubiKey 1 is lost, broken or stolen. Its PIN and PUK written down and kept apart from it.
 - **Lost or stolen YubiKey:** without its PIN it locks after 3 wrong tries; still, the next release is signed with
-  the other YubiKey and drops the lost key from `UpdateKeys.cs`, then a new key is set up on a replacement. Both lost
+  the other YubiKey and drops the lost key from `OfficialRelease.props`, then a new key is set up on a replacement. Both lost
   at once: users would have to install a new setup by hand once (the app can't be told to trust a new key).
 - **Rotation:** a release signed with the old key ships the new public key; the release after that drops the old
   one.
@@ -1865,7 +1874,7 @@ private key never exists anywhere else and can't be copied off it.
 - **When it checks:** when the panel opens, after the first frame (like the rescan), if the last check was over
   24 hours ago; and from Settings' **Check for updates**. Never on a timer, never in `--background` start-up before
   the panel has been opened, never while a watcher is tracking a game.
-- **What it fetches:** `https://github.com/JannisJostBot/binder/releases/latest/download/release.json` and
+- **What it fetches:** `https://github.com/<repository>/releases/latest/download/release.json` and
   `.sig` (about 2 KB). Redirects are followed only over HTTPS and only to `github.com`,
   `objects.githubusercontent.com` and `release-assets.githubusercontent.com`. 15 s timeout. No GitHub API, no
   account, no cookies, a plain `User-Agent: Binder/<version>`.
