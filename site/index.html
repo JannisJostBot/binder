@@ -22,14 +22,14 @@
         <svg aria-hidden="true" width="28" height="28" viewBox="0 0 48 48"><defs><linearGradient id="la" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7BD8FF"></stop><stop offset="1" stop-color="#0C78D2"></stop></linearGradient><linearGradient id="lm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B4E6FF"></stop><stop offset="1" stop-color="#4AA6E6"></stop></linearGradient><linearGradient id="ls" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E3F5FF"></stop><stop offset="1" stop-color="#9CCDEF"></stop></linearGradient></defs><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
         <span style="font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; font-weight: 600; font-size: 19px">Binder</span>
       </a>
-      <nav aria-label="Sections" style="display: flex; flex-wrap: wrap; gap: 0 4px; font-size: 14px; flex-grow: 1">
+      <nav aria-label="Sections" class="header-nav" style="display: flex; flex-wrap: wrap; gap: 0 4px; font-size: 14px; flex-grow: 1">
         <a href="#how" style="color: var(--text); text-decoration: none; padding: 12px 10px">How it works</a>
         <a href="#features" style="color: var(--text); text-decoration: none; padding: 12px 10px">Features</a>
         <a href="#privacy" style="color: var(--text); text-decoration: none; padding: 12px 10px">Privacy</a>
         <a href="#faq" style="color: var(--text); text-decoration: none; padding: 12px 10px">FAQ</a>
       </nav>
-      <a href="https://github.com/JannisJostBot/binder" style="color: var(--text); text-decoration: none; padding: 12px 10px; font-size: 14px; display: flex; align-items: center; gap: 6px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"></path><path d="M16 7l5 5-5 5"></path></svg>GitHub</a>
-      <a href="#download" style="min-height: 36px; padding: 0 16px; border-radius: 4px; background: var(--accent); color: var(--on-accent); font-size: 14px; font-weight: 600; text-decoration: none; display: flex; align-items: center; border: 1px solid var(--accent-edge)">Download</a>
+      <a href="https://github.com/JannisJostBot/binder" class="header-github" style="color: var(--text); text-decoration: none; padding: 12px 10px; font-size: 14px; align-items: center; gap: 6px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"></path><path d="M16 7l5 5-5 5"></path></svg>GitHub</a>
+      <a href="#download" class="header-download" style="min-height: 36px; padding: 0 16px; border-radius: 4px; background: var(--accent); color: var(--on-accent); font-size: 14px; font-weight: 600; text-decoration: none; display: flex; align-items: center; border: 1px solid var(--accent-edge)">Download</a>
     </div>
   </header>
 
@@ -50,7 +50,7 @@
       <figure aria-label="Binder's shelf open above the notification area on a Windows desktop" style="margin: 40px 0 0; width: 100%; max-width: 1080px; height: 560px; position: relative; border-radius: 8px 8px 0 0; overflow: hidden; background: #7FA6C9; border: 1px solid #D6D6D6; border-bottom: 0; box-shadow: 0 8px 32px rgba(0,0,0,0.14); text-align: left">
         <div aria-hidden="true" style="position: absolute; inset: 0; background: radial-gradient(ellipse at 18% 20%, #CFE3F5 0%, rgba(207,227,245,0) 55%), radial-gradient(ellipse at 70% 85%, #3E6E9C 0%, rgba(62,110,156,0) 60%), linear-gradient(160deg, #9BBCDA, #5B87B3)"></div>
 
-        <div style="position: absolute; right: 12px; bottom: 60px; width: 330px; height: 470px; box-sizing: border-box; padding: 16px; background: #202024; border: 1px solid #34343A; border-radius: 8px; box-shadow: 0 16px 40px rgba(0,0,0,0.35); display: flex; flex-direction: column; gap: 10px; color: #F3F3F5; overflow: hidden">
+        <div style="position: absolute; right: 12px; bottom: 60px; width: 330px; max-width: calc(100% - 24px); height: 470px; box-sizing: border-box; padding: 16px; background: #202024; border: 1px solid #34343A; border-radius: 8px; box-shadow: 0 16px 40px rgba(0,0,0,0.35); display: flex; flex-direction: column; gap: 10px; color: #F3F3F5; overflow: hidden">
           <div style="font-size: 19px; font-weight: 600; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif">Good evening</div>
           <div style="height: 30px; border-radius: 4px; background: #2A2A2F; border: 1px solid #34343A; border-bottom: 2px solid #4CC2FF; display: flex; align-items: center; gap: 8px; padding: 0 10px; font-size: 12px; color: #A9A9B2">
             <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A9A9B2" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>Search 72 games

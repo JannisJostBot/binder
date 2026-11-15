@@ -91,3 +91,17 @@ summary::-webkit-details-marker { display: none; }
   text-decoration: none;
 }
 .skip-link:focus { top: 16px; }
+
+/* Header below 750 px: logo and Download on the first row, the section links on the second. The header's
+   GitHub link shows only from 750 px, where everything fits on one row; the download section, FAQ and footer
+   link to the code too. */
+.header-github { display: flex; }
+@media (max-width: 749px) {
+  .header-github { display: none; }
+  .header-download { order: 1; margin-left: auto; }
+  .header-nav { order: 2; flex-basis: 100%; margin: 0 -10px; }
+}
+@media (max-width: 379px) {
+  .header-nav a { padding-left: 6px !important; padding-right: 6px !important; }
+  .header-nav { margin: 0 -6px; }
+}
