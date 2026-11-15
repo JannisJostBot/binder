@@ -4,10 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Binder for Windows</title>
+  <meta name="description" content="Binder lists the games you've installed with Steam, Epic, GOG and other launchers, and starts them with one click. For Windows 10 and 11.">
+  <meta property="og:title" content="Binder for Windows">
+  <meta property="og:description" content="Binder lists the games you've installed with Steam, Epic, GOG and other launchers, and starts them with one click. For Windows 10 and 11.">
+  <meta property="og:type" content="website">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<a class="skip-link" href="#top">Skip to content</a>
 <div class="page">
 
   <!-- Header -->
@@ -281,6 +286,10 @@
           <p style="margin: 0; padding: 16px 20px 20px; border-top: 1px solid var(--divider); color: var(--text-2); font-size: 15px">Battle.net, Riot, Amazon Games, itch.io, Humble and Meta are planned but not there yet. Until then, add those games yourself or import their desktop shortcuts. Controller support is also planned.</p>
         </details>
         <details style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px">
+          <summary style="min-height: 64px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 16px; font-weight: 600">Where does Binder keep my data?<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></summary>
+          <p style="margin: 0; padding: 16px 20px 20px; border-top: 1px solid var(--divider); color: var(--text-2); font-size: 15px">On your PC, in your user folder: your library, playtime, settings and imported shortcuts in %APPDATA%\Binder, and the cover pictures in %LOCALAPPDATA%\Binder. When you uninstall Binder, it asks whether to delete them.</p>
+        </details>
+        <details style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px">
           <summary style="min-height: 64px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 16px; font-weight: 600">What does it cost?<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></summary>
           <p style="margin: 0; padding: 16px 20px 20px; border-top: 1px solid var(--divider); color: var(--text-2); font-size: 15px">[PRICE]. Binder is open source under the GNU GPL, version 3: anyone can read, change and share the code, and changed versions stay open too.</p>
         </details>
@@ -312,21 +321,21 @@
   <section id="download" style="max-width: 1240px; margin: 0 auto; padding: 72px 24px 88px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px">
     <svg aria-hidden="true" width="72" height="72" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
     <h2 style="margin: 0; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-weight: 600; font-size: clamp(30px, 3.8vw, 44px); line-height: 1.2">Download Binder</h2>
-    <a href="[DOWNLOAD LINK]" style="min-height: 44px; padding: 0 28px; border-radius: 4px; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 15px; text-decoration: none; display: flex; align-items: center; gap: 8px; border: 1px solid var(--accent-edge); margin-top: 6px">
+    <a href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe" style="min-height: 44px; padding: 0 28px; border-radius: 4px; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 15px; text-decoration: none; display: flex; align-items: center; gap: 8px; border: 1px solid var(--accent-edge); margin-top: 6px">
       <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download for Windows
     </a>
-    <p style="margin: 0; font-size: 13px; color: var(--text-2)">Version [VERSION] · [SIZE] MB · Windows 10 and 11, 64-bit</p>
+    <p style="margin: 0; font-size: 13px; color: var(--text-2)">Version 0.2.1 · 34 MB · Windows 10 and 11, 64-bit · <a href="https://github.com/JannisJostBot/binder/releases">Release notes and earlier versions</a></p>
     <p style="margin: 0; max-width: 520px; font-size: 15px; color: var(--text-2)">Run the installer and follow the short setup: pick your launchers and, if you like, which desktop shortcuts to tidy away. Binder tells you when there's an update, or you can run a newer installer yourself, even while a game is running.</p>
   </section>
 
   <!-- Footer -->
   <footer style="background: var(--bg-alt); border-top: 1px solid var(--border)">
     <div style="max-width: 1240px; margin: 0 auto; padding: 24px; display: flex; flex-wrap: wrap; gap: 8px 28px; align-items: center; font-size: 13px; color: var(--text-2)">
-      <span style="flex-grow: 1">© [YEAR] Jannis Jost</span>
+      <span style="flex-grow: 1">© 2026 Jannis Jost</span>
       <nav aria-label="Footer" style="display: flex; flex-wrap: wrap; gap: 0 4px">
         <a href="#disclaimer" style="color: var(--text); padding: 12px 10px">Disclaimer</a>
         <a href="#privacy" style="color: var(--text); padding: 12px 10px">Privacy</a>
-        <a href="[SOURCE LINK]" style="color: var(--text); padding: 12px 10px">Source code</a>
+        <a href="https://github.com/JannisJostBot/binder" style="color: var(--text); padding: 12px 10px">Source code</a>
       </nav>
     </div>
   </footer>

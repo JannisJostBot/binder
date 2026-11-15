@@ -1,5 +1,5 @@
 # T010 · Site: FAQ answer "Where does Binder keep my data?"
-Status: ready
+Status: done
 Depends on: none
 Branch: agent/T010
 
