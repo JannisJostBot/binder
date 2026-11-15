@@ -88,13 +88,28 @@ internal static class Installer
             Directory.CreateDirectory(Locations.InstallDir);
             var previous = InstalledFiles.Read();
             RemoveOldFiles(previous);
-            foreach (var file in payload.Files)
-                Place(file.Path, stream =>
-                {
-                    using var source = payload.Open(file);
-                    source.CopyTo(stream);
-                }, file.Sha256);
-            Place(Locations.UninstallerExe, CopySelf, null);
+
+            // All or nothing (spec §25, "To decide" 3): every new file is written and checked first, then they're
+            // swapped in together; a failure while writing leaves the old version untouched, one while swapping
+            // puts back what was already swapped.
+            var swap = new FileSwap(Locations.Log);
+            try
+            {
+                foreach (var file in payload.Files)
+                    Stage(swap, file.Path, stream =>
+                    {
+                        using var source = payload.Open(file);
+                        source.CopyTo(stream);
+                    }, file.Sha256);
+                Stage(swap, Locations.UninstallerExe, CopySelf, null);
+            }
+            catch
+            {
+                swap.Discard();
+                throw;
+            }
+            Locations.Log($"{swap.Count} files written and checked; swapping them in");
+            swap.Commit();
 
             // Files of the previous version this one no longer has. The list is written first, so a failure
             // after it still leaves every file we wrote listed for the next setup or the uninstaller.
@@ -110,7 +125,8 @@ internal static class Installer
             Locations.Log("done");
 
             // A widget that was running comes back as it was: waiting in the tray, or on the desktop in desktop mode.
-            if (widgetWasRunning) StartWidget("--background");
+            // From the app's updater (/update), Program starts it with --updated instead, whatever the outcome.
+            if (widgetWasRunning && !options.Update) StartWidget("--background");
             if (!options.Silent)
             {
                 var done = Dialogs.Show(update ? Text.UpToDate : Text.Installed,
@@ -119,7 +135,7 @@ internal static class Installer
                     verification: widgetWasRunning ? null : Text.OpenNow, verified: !update && !widgetWasRunning);
                 if (done.Verified && !widgetWasRunning) StartWidget(); // a second start would just toggle it
             }
-            else if (options.Launch && !widgetWasRunning)
+            else if (options.Launch && !widgetWasRunning && !options.Update)
             {
                 StartWidget();
             }
@@ -128,8 +144,10 @@ internal static class Installer
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SetupException or CryptographicException)
         {
             Locations.Log("failed: " + ex);
-            // The widget it closed comes back, on whatever is in place (each file is swapped whole, never half).
-            if (widgetWasRunning && widgetQuit && File.Exists(Locations.Widget)) StartWidget("--background");
+            // The widget it closed comes back on the old version (nothing is replaced unless every new file checked
+            // out, and a failed swap is put back). From the updater, Program starts it with --updated: it finds its
+            // old version and says the update couldn't be installed.
+            if (widgetWasRunning && widgetQuit && !options.Update && File.Exists(Locations.Widget)) StartWidget("--background");
             if (!options.Silent)
                 Dialogs.Error(update ? Text.UpdateFailed : Text.InstallFailed,
                     ex.Message + "\n\n" + Text.NothingLost);
@@ -146,39 +164,22 @@ internal static class Installer
     }
 
     /// <summary>
-    /// Writes one file next to its final place, checks it, then swaps it in. A file in use (a watcher tracking a
-    /// game, or a widget that didn't quit) can't be replaced but can be renamed, so it's moved to .old first.
+    /// Writes one file as name.new next to its final place and checks it (<see cref="FileSwap.Stage"/>); swapped in
+    /// later with the others. The old file then goes to name.old first, which works even for one in use (a watcher
+    /// tracking a game, or a widget that didn't quit).
     /// </summary>
-    private static void Place(string name, Action<Stream> write, string? sha256)
+    private static void Stage(FileSwap swap, string name, Action<Stream> write, string? sha256)
     {
         var target = InstalledFiles.FullPath(name) ?? throw new SetupException(Text.LinkOnTheWay(name));
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
         if (InstalledFiles.FullPath(name) is null) throw new SetupException(Text.LinkOnTheWay(name));
-        var temp = target + ".new";
-        File.Delete(temp);
-        using (var stream = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, FileOptions.WriteThrough))
-            write(stream);
-
-        if (sha256 is not null)
-        {
-            using var check = File.OpenRead(temp);
-            var actual = Convert.ToHexString(SHA256.HashData(check));
-            if (!actual.Equals(sha256, StringComparison.OrdinalIgnoreCase))
-            {
-                File.Delete(temp);
-                throw new SetupException(Text.CheckFailed(name));
-            }
-        }
-
         try
         {
-            File.Move(temp, target, overwrite: true);
+            swap.Stage(name, target, write, sha256);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (FileCheckException)
         {
-            Locations.Log($"{name} is in use; moving it aside");
-            File.Move(target, target + ".old", overwrite: true);
-            File.Move(temp, target);
+            throw new SetupException(Text.CheckFailed(name));
         }
     }
 
@@ -219,6 +220,17 @@ internal static class Installer
         key.SetValue("EstimatedSize", (int)Math.Max(1, (payload.TotalBytes + new FileInfo(uninstaller).Length) / 1024), RegistryValueKind.DWord);
         key.SetValue("NoModify", 1, RegistryValueKind.DWord);
         key.SetValue("NoRepair", 1, RegistryValueKind.DWord);
+    }
+
+    /// <summary>
+    /// After <c>/update</c>, whatever happened (installed, failed, refused, another setup busy): the app exited to let
+    /// the setup in, so it's started again with <c>--updated --background</c>, in the tray or on the desktop as before.
+    /// It compares its version with the update's itself. Not if a widget is already up (that start would toggle it).
+    /// </summary>
+    public static void RestartAfterUpdate()
+    {
+        if (Native.FindWindow("Binder.MessageWindow", null) != IntPtr.Zero || !File.Exists(Locations.Widget)) return;
+        StartWidget("--updated", "--background");
     }
 
     private static void StartWidget(params string[] args)

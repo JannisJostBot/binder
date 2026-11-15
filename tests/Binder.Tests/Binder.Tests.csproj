@@ -69,6 +69,7 @@
     <Compile Include="..\..\src\Binder.Elevated\Install.cs" Link="Linked\Elevated\Install.cs" />
     <Compile Include="..\..\src\Binder.Elevated\Native.cs" Link="Linked\Elevated\Native.cs" />
     <Compile Include="..\..\src\Binder.Setup\PayloadList.cs" Link="Linked\Setup\PayloadList.cs" />
+    <Compile Include="..\..\src\Binder.Setup\FileSwap.cs" Link="Linked\Setup\FileSwap.cs" />
   </ItemGroup>
 
 </Project>

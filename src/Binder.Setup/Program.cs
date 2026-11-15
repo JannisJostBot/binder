@@ -12,10 +12,13 @@ internal static class ExitCode
 ///   BinderSetup.exe                       install or update, with dialogs
 ///   BinderSetup.exe /S [/launch]          silent; /launch starts the app afterwards
 ///   BinderSetup.exe /S /allowdowngrade    silent, even over a newer version
+///   BinderSetup.exe /S /update            from the app's updater (spec §25): afterwards the widget is started again
+///                                         with --updated --background, also after a failure (it then sees the old
+///                                         version and says the update couldn't be installed)
 ///   Uninstall.exe /uninstall [/S] [/removedata] [/keepshortcuts]
 /// </summary>
 internal sealed record Options(bool Uninstall, bool Silent, bool RemoveData, bool Launch, bool AllowDowngrade, bool Continue,
-    bool KeepShortcuts = false)
+    bool KeepShortcuts = false, bool Update = false)
 {
     public static Options? Parse(string[] args)
     {
@@ -30,6 +33,7 @@ internal sealed record Options(bool Uninstall, bool Silent, bool RemoveData, boo
                 "/keepshortcuts" => o with { KeepShortcuts = true }, // uninstall: don't put imported shortcuts back
                 "/launch" => o with { Launch = true },
                 "/allowdowngrade" => o with { AllowDowngrade = true },
+                "/update" => o with { Update = true }, // the app started us and has exited: start it again with --updated
                 "/continue" => o with { Uninstall = true, Continue = true }, // internal: the temp copy
                 _ => null!,
             };
@@ -96,6 +100,7 @@ internal static class Program
         {
             Locations.Log("another setup is running");
             if (!options.Silent) Dialogs.Show(Text.AlreadyRunning, Text.AlreadyRunningDetail, [], Dialogs.CommonClose, Dialogs.IdClose);
+            if (options.Update && !options.Uninstall) Installer.RestartAfterUpdate();
             return ExitCode.Busy;
         }
         try
@@ -111,6 +116,7 @@ internal static class Program
         finally
         {
             running.ReleaseMutex(); // the next one (the uninstaller's temp copy) goes on at once
+            if (options.Update && !options.Uninstall) Installer.RestartAfterUpdate(); // the app is back, updated or not
         }
     }
 }
