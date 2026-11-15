@@ -1,0 +1,5 @@
+{
+  "en": ["Binder can now update itself: Settings › About shows new versions and what's new.", "Choose in Settings › About whether updates install automatically, after asking, or not at all.", "An update replaces all files together, or none if something goes wrong."],
+  "de": ["Binder kann sich jetzt selbst aktualisieren: Einstellungen › Info zeigt neue Versionen und die Neuerungen.", "Wählen Sie unter Einstellungen › Info, ob Updates automatisch, nach Rückfrage oder gar nicht installiert werden.", "Ein Update ersetzt alle Dateien zusammen oder keine, wenn etwas schiefgeht."],
+  "fr": ["Binder peut maintenant se mettre à jour : Paramètres › À propos affiche les nouvelles versions et leurs nouveautés.", "Choisissez dans Paramètres › À propos si les mises à jour s'installent automatiquement, après confirmation ou jamais.", "Une mise à jour remplace tous les fichiers ensemble, ou aucun en cas de problème."]
+}
