@@ -81,6 +81,10 @@ from this repo (for example with GitHub Pages) once the repo is public.
   product shot in the hero (`<figure>`) is a picture of the app and keeps its own fixed colours.
 - Layout and spacing are inline `style="…"` attributes, section by section. Copy the style of a neighbouring
   element instead of inventing new values.
+- Sizes that change on phones (section padding, heading and lead sizes, the usage table, the hero's buttons) are
+  classes in `styles.css` with their phone values under `@media (max-width: 600px)`; don't put those properties
+  back inline, or phones lose them. The "Binder is an app for Windows PCs" note (`touch-hint`) shows only on
+  touch screens.
 - The text is factual and plain: only what the app really does, numbers only from the card, no marketing words
   ("amazing", "seamless", "blazing fast"). Placeholders in square brackets (`[DOWNLOAD LINK]`) stay until a card
   gives the real value.

@@ -17,7 +17,7 @@
 
   <!-- Header -->
   <header style="border-bottom: 1px solid var(--divider); background: var(--bg)">
-    <div style="max-width: 1240px; margin: 0 auto; padding: 0 24px; min-height: 60px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px">
+    <div class="header-bar" style="max-width: 1240px; margin: 0 auto; min-height: 60px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px">
       <a href="#top" aria-label="Binder home" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); padding: 10px 0">
         <svg aria-hidden="true" width="28" height="28" viewBox="0 0 48 48"><defs><linearGradient id="la" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7BD8FF"></stop><stop offset="1" stop-color="#0C78D2"></stop></linearGradient><linearGradient id="lm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B4E6FF"></stop><stop offset="1" stop-color="#4AA6E6"></stop></linearGradient><linearGradient id="ls" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E3F5FF"></stop><stop offset="1" stop-color="#9CCDEF"></stop></linearGradient></defs><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
         <span style="font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; font-weight: 600; font-size: 19px">Binder</span>
@@ -35,22 +35,23 @@
 
   <!-- Hero -->
   <section id="top" style="background: var(--bg-alt)">
-    <div style="max-width: 1240px; margin: 0 auto; padding: 72px 24px 0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px">
-      <h1 style="margin: 0; max-width: 820px; font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; font-weight: 600; font-size: clamp(38px, 5vw, 60px); line-height: 1.12; text-wrap: balance">All your PC games in one window</h1>
-      <p style="margin: 0; max-width: 640px; font-size: 20px; line-height: 1.5; color: var(--text-2); text-wrap: pretty">Binder lists the games you've installed with Steam, Epic, GOG and other launchers, and starts them with one click. While you play, Binder closes, and it opens again when you quit the game.</p>
-      <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 8px">
+    <div class="hero" style="max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px">
+      <h1 class="h1" style="margin: 0; max-width: 820px; font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif; font-weight: 600; line-height: 1.12; text-wrap: balance">All your PC games in one window</h1>
+      <p class="hero-lead" style="margin: 0; max-width: 640px; line-height: 1.5; color: var(--text-2); text-wrap: pretty">Binder lists the games you've installed with Steam, Epic, GOG and other launchers, and starts them with one click. While you play, Binder closes, and it opens again when you quit the game.</p>
+      <div class="hero-actions" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 8px">
         <a href="#download" style="min-height: 44px; padding: 0 24px; border-radius: 4px; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 15px; text-decoration: none; display: flex; align-items: center; gap: 8px; border: 1px solid var(--accent-edge)">
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download for Windows
         </a>
         <a href="#how" style="min-height: 44px; padding: 0 24px; border-radius: 4px; background: var(--bg); color: var(--text); font-size: 15px; text-decoration: none; display: flex; align-items: center; border: 1px solid var(--border); border-bottom-color: var(--border-strong)">See how it works</a>
       </div>
+      <p class="touch-hint" role="note"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5"></rect><path d="M8 20h8M12 16v4"></path></svg><span>Binder is an app for Windows PCs. To install it, open this page on your PC.</span></p>
       <p style="margin: 0; font-size: 13px; color: var(--text-2)">For Windows 10 and 11 (64-bit) · No account needed · Installs without admin rights</p>
 
       <!-- Product shot -->
-      <figure aria-label="Binder's shelf open above the notification area on a Windows desktop" style="margin: 40px 0 0; width: 100%; max-width: 1080px; height: 560px; position: relative; border-radius: 8px 8px 0 0; overflow: hidden; background: #7FA6C9; border: 1px solid #D6D6D6; border-bottom: 0; box-shadow: 0 8px 32px rgba(0,0,0,0.14); text-align: left">
+      <figure aria-label="Binder's shelf open above the notification area on a Windows desktop" class="shot" style="margin: 40px 0 0; width: 100%; max-width: 1080px; position: relative; border-radius: 8px 8px 0 0; overflow: hidden; background: #7FA6C9; border: 1px solid #D6D6D6; border-bottom: 0; box-shadow: 0 8px 32px rgba(0,0,0,0.14); text-align: left">
         <div aria-hidden="true" style="position: absolute; inset: 0; background: radial-gradient(ellipse at 18% 20%, #CFE3F5 0%, rgba(207,227,245,0) 55%), radial-gradient(ellipse at 70% 85%, #3E6E9C 0%, rgba(62,110,156,0) 60%), linear-gradient(160deg, #9BBCDA, #5B87B3)"></div>
 
-        <div style="position: absolute; right: 12px; bottom: 60px; width: 330px; max-width: calc(100% - 24px); height: 470px; box-sizing: border-box; padding: 16px; background: #202024; border: 1px solid #34343A; border-radius: 8px; box-shadow: 0 16px 40px rgba(0,0,0,0.35); display: flex; flex-direction: column; gap: 10px; color: #F3F3F5; overflow: hidden">
+        <div class="shot-panel" style="position: absolute; right: 12px; bottom: 60px; width: 330px; max-width: calc(100% - 24px); box-sizing: border-box; padding: 16px; background: #202024; border: 1px solid #34343A; border-radius: 8px; box-shadow: 0 16px 40px rgba(0,0,0,0.35); display: flex; flex-direction: column; gap: 10px; color: #F3F3F5; overflow: hidden">
           <div style="font-size: 19px; font-weight: 600; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif">Good evening</div>
           <div style="height: 30px; border-radius: 4px; background: #2A2A2F; border: 1px solid #34343A; border-bottom: 2px solid #4CC2FF; display: flex; align-items: center; gap: 8px; padding: 0 10px; font-size: 12px; color: #A9A9B2">
             <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A9A9B2" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>Search 72 games
@@ -99,9 +100,9 @@
 
   <!-- Works with -->
   <section aria-label="Supported launchers" style="border-bottom: 1px solid var(--divider)">
-    <div style="max-width: 1240px; margin: 0 auto; padding: 36px 24px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center">
+    <div class="launchers" style="max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center">
       <span style="font-size: 14px; color: var(--text-2)">Finds games installed with</span>
-      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 32px; font-size: 17px; font-weight: 600; color: var(--text)">
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; font-weight: 600; color: var(--text)">
         <li>Steam</li><li>Epic Games</li><li>GOG</li><li>EA app</li><li>Ubisoft Connect</li><li>Xbox app</li><li>Rockstar Games Launcher</li>
       </ul>
       <span style="font-size: 14px; color: var(--text-2)">You can also import your desktop game shortcuts, or add any game yourself.</span>
@@ -109,14 +110,14 @@
   </section>
 
   <!-- How it works -->
-  <section id="how" style="max-width: 1240px; margin: 0 auto; padding: 96px 24px; display: flex; flex-direction: column; gap: 40px">
+  <section id="how" class="sec" style="max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px">
     <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px">
-      <h2 style="margin: 0; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-weight: 600; font-size: clamp(30px, 3.4vw, 40px); line-height: 1.2; text-wrap: balance">What happens when you play a game</h2>
-      <p style="margin: 0; max-width: 620px; font-size: 18px; color: var(--text-2); text-wrap: pretty">Binder doesn't stay open next to your game. It closes, so it doesn't use memory or processor time your game could use.</p>
+      <h2 class="h2" style="margin: 0; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-weight: 600; line-height: 1.2; text-wrap: balance">What happens when you play a game</h2>
+      <p class="lead" style="margin: 0; max-width: 620px; color: var(--text-2); text-wrap: pretty">Binder doesn't stay open next to your game. It closes, so it doesn't use memory or processor time your game could use.</p>
     </div>
     <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 16px">
-      <li style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); padding: 24px; display: flex; flex-direction: column; gap: 14px">
-        <div style="height: 128px; border-radius: 4px; background: var(--surface-2); border: 1px solid var(--divider); padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 8px">
+      <li class="step" style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); display: flex; flex-direction: column">
+        <div class="step-picture" style="border-radius: 4px; background: var(--surface-2); border: 1px solid var(--divider); padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 8px">
           <span style="font-size: 15px; font-weight: 600">Starting [Game title]</span>
           <span style="font-size: 13px; color: var(--text-2)">Binder closes in 10 s</span>
           <div style="display: flex; align-items: center; gap: 10px">
@@ -130,8 +131,8 @@
         </div>
         <p style="margin: 0; color: var(--text-2); font-size: 15px">The game starts through its own launcher, as it would from a shortcut. Binder closes 10 seconds later. You can change the delay, or press Keep open.</p>
       </li>
-      <li style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); padding: 24px; display: flex; flex-direction: column; gap: 14px">
-        <div style="height: 128px; border-radius: 4px; background: var(--surface-2); border: 1px solid var(--divider); padding: 8px 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; font-size: 14px">
+      <li class="step" style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); display: flex; flex-direction: column">
+        <div class="step-picture" style="border-radius: 4px; background: var(--surface-2); border: 1px solid var(--divider); padding: 8px 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; font-size: 14px">
           <div style="display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border)"><span>Binder</span><span style="color: var(--text-2)">Not running</span></div>
           <div style="display: flex; justify-content: space-between; gap: 12px; padding: 8px 0"><span>Helper</span><span style="color: var(--text-2)">About 3 MB, waiting</span></div>
         </div>
@@ -141,8 +142,8 @@
         </div>
         <p style="margin: 0; color: var(--text-2); font-size: 15px">A small helper stays to notice when the game ends. While the game starts it looks for it every couple of seconds; once found, it just waits and uses no processor time.</p>
       </li>
-      <li style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); padding: 24px; display: flex; flex-direction: column; gap: 14px">
-        <div style="height: 128px; border-radius: 4px; background: var(--surface-2); border: 1px solid var(--divider); padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 8px">
+      <li class="step" style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); display: flex; flex-direction: column">
+        <div class="step-picture" style="border-radius: 4px; background: var(--surface-2); border: 1px solid var(--divider); padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 8px">
           <span style="font-size: 13px; color: var(--text-2)">Welcome back</span>
           <span style="font-size: 15px; font-weight: 600">[Game title] · 1 h 42 min</span>
           <div style="display: flex; align-items: flex-end; gap: 6px; height: 28px">
@@ -159,19 +160,15 @@
 
     <div style="display: flex; flex-direction: column; gap: 12px; max-width: 860px; width: 100%; align-self: center">
       <h3 style="margin: 0; font-size: 20px; font-weight: 600">How much it uses</h3>
-      <div style="overflow-x: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 8px">
-        <table style="width: 100%; border-collapse: collapse; font-size: 15px; text-align: left; min-width: 520px">
+      <div class="usage">
+        <table>
           <thead>
-            <tr style="background: var(--surface-2)">
-              <th scope="col" style="padding: 12px 20px; font-weight: 600; border-bottom: 1px solid var(--border)">When</th>
-              <th scope="col" style="padding: 12px 20px; font-weight: 600; border-bottom: 1px solid var(--border)">Memory</th>
-              <th scope="col" style="padding: 12px 20px; font-weight: 600; border-bottom: 1px solid var(--border)">Processor</th>
-            </tr>
+            <tr><th scope="col">When</th><th scope="col">Memory</th><th scope="col">Processor</th></tr>
           </thead>
           <tbody>
-            <tr><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider)">Binder is open</td><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider); color: var(--text-2)">About 130–230 MB, more with many covers</td><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider); color: var(--text-2)">Only while you use it</td></tr>
-            <tr><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider)">Closed, waiting in the notification area</td><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider); color: var(--text-2)">About 12 MB</td><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider); color: var(--text-2)">None</td></tr>
-            <tr><td style="padding: 12px 20px">A game is running</td><td style="padding: 12px 20px; color: var(--text-2)">Binder: none (it's closed). Helper: about 3 MB</td><td style="padding: 12px 20px; color: var(--text-2)">None once the game is found</td></tr>
+            <tr><th scope="row">Binder is open</th><td data-label="Memory">About 130–230 MB, more with many covers</td><td data-label="Processor">Only while you use it</td></tr>
+            <tr><th scope="row">Closed, waiting in the notification area</th><td data-label="Memory">About 12 MB</td><td data-label="Processor">None</td></tr>
+            <tr><th scope="row">A game is running</th><td data-label="Memory">Binder: none (it's closed). Helper: about 3 MB</td><td data-label="Processor">None once the game is found</td></tr>
           </tbody>
         </table>
       </div>
@@ -181,28 +178,28 @@
 
   <!-- Features -->
   <section id="features" style="background: var(--bg-alt)">
-    <div style="max-width: 1240px; margin: 0 auto; padding: 96px 24px; display: flex; flex-direction: column; gap: 40px">
+    <div class="sec" style="max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px">
       <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px">
-        <h2 style="margin: 0; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-weight: 600; font-size: clamp(30px, 3.4vw, 40px); line-height: 1.2">What else it does</h2>
-        <p style="margin: 0; max-width: 620px; font-size: 18px; color: var(--text-2)">Everything here helps you start, find or manage your games. Binder doesn't add overlays or change your games.</p>
+        <h2 class="h2" style="margin: 0; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-weight: 600; line-height: 1.2">What else it does</h2>
+        <p class="lead" style="margin: 0; max-width: 620px; color: var(--text-2)">Everything here helps you start, find or manage your games. Binder doesn't add overlays or change your games.</p>
       </div>
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(520px, 100%), 1fr)); gap: 16px">
         <article style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); overflow: hidden; display: flex; flex-direction: column">
-          <div aria-hidden="true" style="height: 220px; background: var(--accent-tint); padding: 28px 40px; box-sizing: border-box; display: grid; grid-template-columns: 5fr 3fr 2fr; grid-template-rows: 3fr 2fr; gap: 6px">
+          <div aria-hidden="true" class="feature-picture" style="background: var(--accent-tint); box-sizing: border-box; display: grid; grid-template-columns: 5fr 3fr 2fr; grid-template-rows: 3fr 2fr; gap: 6px">
             <span style="grid-row: 1 / 3; border-radius: 4px; background: var(--accent)"></span>
             <span style="border-radius: 4px; background: var(--accent)"></span>
             <span style="border-radius: 4px; background: var(--accent-tint-strong)"></span>
             <span style="border-radius: 4px; background: var(--accent-tint-strong)"></span>
             <span style="border-radius: 4px; background: var(--accent-tint-mid)"></span>
           </div>
-          <div style="padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 10px">
+          <div class="feature-text" style="display: flex; flex-direction: column; gap: 10px">
             <h3 style="margin: 0; font-size: 22px; font-weight: 600">Free up space for a new game</h3>
             <p style="margin: 0; color: var(--text-2); text-wrap: pretty">Enter the size of the game you want to install. Binder shows, for each drive, which games you could remove to make room, starting with the ones you play least. You choose; each game is then uninstalled by its own launcher. Binder never deletes game files itself.</p>
           </div>
         </article>
         <article style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); overflow: hidden; display: flex; flex-direction: column">
-          <div aria-hidden="true" style="height: 220px; background: var(--accent-tint); padding: 28px 40px; box-sizing: border-box; display: flex; align-items: center">
+          <div aria-hidden="true" class="feature-picture" style="background: var(--accent-tint); box-sizing: border-box; display: flex; align-items: center">
             <div style="flex-grow: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 18px; display: flex; flex-direction: column; gap: 6px">
               <span style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px">
                 <svg width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#C42B1C"></circle><path d="M12 7v6M12 16.5v.5" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"></path></svg>[Game title] crashed
@@ -211,7 +208,7 @@
               <span style="font-size: 13px">Try updating the driver, then lower the graphics preset.</span>
             </div>
           </div>
-          <div style="padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 10px">
+          <div class="feature-text" style="display: flex; flex-direction: column; gap: 10px">
             <h3 style="margin: 0; font-size: 22px; font-weight: 600">See why a game crashed</h3>
             <p style="margin: 0; color: var(--text-2); text-wrap: pretty">If a game crashes, Binder shows what Windows recorded about it, with a likely cause and things to try. It's a best guess from Windows' event log, not a guaranteed diagnosis.</p>
           </div>
@@ -219,22 +216,22 @@
       </div>
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 16px">
-        <article style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px; display: flex; flex-direction: column; gap: 10px">
+        <article class="feature-small" style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px">
           <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" class="accent-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M8.5 10.5l2 2 4-4"></path></svg>
           <h3 style="margin: 0; font-size: 17px; font-weight: 600">A tidy desktop</h3>
           <p style="margin: 0; color: var(--text-2); font-size: 15px">Choose which game shortcuts to move off your desktop. Binder keeps them in its own folder and can put them back anytime.</p>
         </article>
-        <article style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px; display: flex; flex-direction: column; gap: 10px">
+        <article class="feature-small" style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px">
           <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" class="accent-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M14 15h4"></path><path d="M3 15h18" stroke-opacity="0"></path><rect x="13" y="8" width="5" height="9" rx="1"></rect></svg>
           <h3 style="margin: 0; font-size: 17px; font-weight: 600">Works like Windows</h3>
           <p style="margin: 0; color: var(--text-2); font-size: 15px">Open it from the notification area or with Win + Shift + G (you can change this). It uses your accent colour, light or dark mode and display scaling.</p>
         </article>
-        <article style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px; display: flex; flex-direction: column; gap: 10px">
+        <article class="feature-small" style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px">
           <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" class="accent-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V11"></path><path d="M10 20V5"></path><path d="M15 20v-6"></path><path d="M20 20V9"></path></svg>
           <h3 style="margin: 0; font-size: 17px; font-weight: 600">Your playtime</h3>
           <p style="margin: 0; color: var(--text-2); font-size: 15px">See how long you've played each game, by week and month. Binder counts the sessions you start from Binder.</p>
         </article>
-        <article style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px; display: flex; flex-direction: column; gap: 10px">
+        <article class="feature-small" style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px">
           <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" class="accent-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"></path></svg>
           <h3 style="margin: 0; font-size: 17px; font-weight: 600">Keyboard and screen readers</h3>
           <p style="margin: 0; color: var(--text-2); font-size: 15px">Type to search, use the arrow keys to move and Enter to play. Every control is labelled for screen readers.</p>
@@ -244,10 +241,10 @@
   </section>
 
   <!-- Privacy -->
-  <section id="privacy" style="max-width: 1240px; margin: 0 auto; padding: 96px 24px; display: flex; flex-wrap: wrap; gap: 40px 64px; align-items: center">
+  <section id="privacy" class="sec" style="max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 40px 64px; align-items: center">
     <div style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 12px">
-      <h2 style="margin: 0; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-weight: 600; font-size: clamp(30px, 3.4vw, 40px); line-height: 1.2">Your data stays on your PC</h2>
-      <p style="margin: 0; font-size: 18px; color: var(--text-2); text-wrap: pretty">Binder only connects to the internet to download cover art for Steam games, from Steam's servers, and once a day to look for a new version on GitHub (you can turn that off). It sends nothing about you or your PC, and installs only updates signed by its maker.</p>
+      <h2 class="h2" style="margin: 0; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-weight: 600; line-height: 1.2">Your data stays on your PC</h2>
+      <p class="lead" style="margin: 0; color: var(--text-2); text-wrap: pretty">Binder only connects to the internet to download cover art for Steam games, from Steam's servers, and once a day to look for a new version on GitHub (you can turn that off). It sends nothing about you or your PC, and installs only updates signed by its maker.</p>
     </div>
     <ul style="flex: 1 1 420px; min-width: 0; list-style: none; margin: 0; padding: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); overflow: hidden">
       <li style="display: flex; align-items: center; gap: 16px; padding: 16px 20px; border-bottom: 1px solid var(--divider); font-size: 15px"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" class="accent-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>No account, no telemetry, no analytics</li>
@@ -259,8 +256,8 @@
 
   <!-- FAQ -->
   <section id="faq" style="background: var(--bg-alt)">
-    <div style="max-width: 860px; margin: 0 auto; padding: 96px 24px; display: flex; flex-direction: column; gap: 28px">
-      <h2 style="margin: 0; text-align: center; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-weight: 600; font-size: clamp(30px, 3.4vw, 40px); line-height: 1.2">Frequently asked questions</h2>
+    <div class="sec" style="max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px">
+      <h2 class="h2" style="margin: 0; text-align: center; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-weight: 600; line-height: 1.2">Frequently asked questions</h2>
       <div style="display: flex; flex-direction: column; gap: 4px">
         <details open style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px">
           <summary style="min-height: 64px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 16px; font-weight: 600">Will it slow down my games?<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"></path></svg></summary>
@@ -299,8 +296,8 @@
   </section>
 
   <!-- Disclaimer: Fluent InfoBars -->
-  <section id="disclaimer" aria-labelledby="disclaimer-title" style="max-width: 860px; margin: 0 auto; padding: 96px 24px 0; display: flex; flex-direction: column; gap: 8px">
-    <h2 id="disclaimer-title" style="margin: 0 0 12px; text-align: center; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-weight: 600; font-size: clamp(26px, 3vw, 32px); line-height: 1.2">Before you download</h2>
+  <section id="disclaimer" aria-labelledby="disclaimer-title" class="sec-top" style="max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px">
+    <h2 id="disclaimer-title" class="h2-small" style="margin: 0 0 12px; text-align: center; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-weight: 600; line-height: 1.2">Before you download</h2>
     <div role="note" style="display: flex; gap: 14px; padding: 16px 18px; background: var(--caution-bg); border: 1px solid var(--caution-border); border-radius: 4px">
       <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="10" class="caution-fill"></circle><path d="M12 7v6.5M12 16.5v.5" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"></path></svg>
       <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.5">
@@ -319,10 +316,11 @@
   </section>
 
   <!-- Download -->
-  <section id="download" style="max-width: 1240px; margin: 0 auto; padding: 72px 24px 88px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px">
+  <section id="download" class="sec-download" style="max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px">
     <svg aria-hidden="true" width="72" height="72" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
-    <h2 style="margin: 0; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-weight: 600; font-size: clamp(30px, 3.8vw, 44px); line-height: 1.2">Download Binder</h2>
-    <a href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe" style="min-height: 44px; padding: 0 28px; border-radius: 4px; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 15px; text-decoration: none; display: flex; align-items: center; gap: 8px; border: 1px solid var(--accent-edge); margin-top: 6px">
+    <h2 class="h2-large" style="margin: 0; font-family: 'Segoe UI Variable Display', 'Segoe UI', sans-serif; font-weight: 600; line-height: 1.2">Download Binder</h2>
+    <p class="touch-hint touch-hint-download" role="note"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5"></rect><path d="M8 20h8M12 16v4"></path></svg><span>Binder is an app for Windows PCs. To install it, open this page on your PC.</span></p>
+    <a class="download-button" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe" style="min-height: 44px; padding: 0 28px; border-radius: 4px; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 15px; text-decoration: none; display: flex; align-items: center; gap: 8px; border: 1px solid var(--accent-edge); margin-top: 6px">
       <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download for Windows
     </a>
     <p style="margin: 0; font-size: 13px; color: var(--text-2)">Version 0.2.1 · 34 MB · Windows 10 and 11, 64-bit · <a href="https://github.com/JannisJostBot/binder/releases">Release notes and earlier versions</a> · <a href="https://github.com/JannisJostBot/binder">Source code</a></p>
