@@ -1,0 +1,5 @@
+{
+  "en": ["Game mode shows whether it's ready for your next game or running now.", "First-time setup: the imported shortcuts message no longer covers the Done button.", "New pictures for the Flyout and On the desktop choices.", "Settings › About links to Binder on GitHub."],
+  "de": ["Der Spielmodus zeigt, ob er für Ihr nächstes Spiel bereit ist oder gerade läuft.", "Ersteinrichtung: Die Meldung zu den importierten Verknüpfungen verdeckt nicht mehr die Schaltfläche „Fertig“.", "Neue Bilder für die Auswahl „Flyout“ und „Auf dem Desktop“.", "Einstellungen › Info enthält einen Link zu Binder auf GitHub."],
+  "fr": ["Le mode jeu indique s'il est prêt pour votre prochain jeu ou en cours.", "Première configuration : le message sur les raccourcis importés ne masque plus le bouton Terminé.", "Nouvelles images pour les choix Volet et Sur le bureau.", "Paramètres › À propos contient un lien vers Binder sur GitHub."]
+}
