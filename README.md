@@ -137,7 +137,7 @@ SDK's license terms. All the licenses are in the `licenses` folder of the instal
 
 ## Disclaimer
 
-Binder was built with Claude, Anthropic's AI. Jannis Jost designed and directed it and tests every version on
+Binder was built with Claude, Anthropic's AI. Its author designed and directed it and tests every version on
 real PCs; the code itself was written by the AI and isn't reviewed line by line by a human developer.
 
 The software is provided **"as is", without warranty of any kind**, express or implied. That includes, but isn't

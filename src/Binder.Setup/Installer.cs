@@ -12,7 +12,7 @@ internal static class Installer
 
     /// <summary>The full disclaimer, as in the README.</summary>
     private const string Disclaimer =
-        "Binder was built with Claude, Anthropic's AI. Jannis Jost designed and directed it and tests every version on " +
+        "Binder was built with Claude, Anthropic's AI. Its author designed and directed it and tests every version on " +
         "real PCs; the code itself was written by the AI and isn't reviewed line by line by a human developer.\n\n" +
         "The software is provided \"as is\", without warranty of any kind, express or implied. That includes, but isn't " +
         "limited to, the warranties of merchantability, fitness for a particular purpose and non-infringement. In no event " +
