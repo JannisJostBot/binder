@@ -78,14 +78,18 @@ from this repo (for example with GitHub Pages) once the repo is public.
 - Plain HTML and CSS only. No JavaScript, no frameworks, no build step.
 - Nothing loaded from other servers: no web fonts, CDNs, analytics, embeds or tracking pixels. The page promises
   privacy, so it must keep it. Links to other sites (`<a href="https://…">`) are fine. `check.ps1` enforces this.
-- Colours only through the variables at the top of `styles.css` (`var(--text)`, `var(--accent)`, …). The
-  product shot in the hero (`<figure>`) is a picture of the app and keeps its own fixed colours.
-- Layout and spacing are inline `style="…"` attributes, section by section. Copy the style of a neighbouring
-  element instead of inventing new values.
-- Sizes that change on phones (section padding, heading and lead sizes, the usage table, the hero's buttons) are
-  classes in `styles.css` with their phone values under `@media (max-width: 600px)`; don't put those properties
-  back inline, or phones lose them. The "Binder is an app for Windows PCs" note (`touch-hint`) shows only on
-  touch screens.
+- Colours only through the variables at the top of `styles.css` (`var(--text)`, `var(--accent)`, …), which
+  have light and dark values. The product shot in the hero (`.stage`, `.mock-*`), the step and feature pictures
+  and the Game mode pill are pictures of the app and keep its own fixed colours.
+- Layout is in classes in `styles.css`, grouped by section, with each section's phone values (up to 600 px)
+  right after it. Reuse the existing pieces (`.section`, `.section-head`, `.eyebrow`, `.h2`, `.lead`, `.button`,
+  `.tile`, `.stat`, `.faq-item`, `.note`) instead of new styles; no inline `style="…"` except a `--c`/`--h`
+  value on a picture's parts.
+- The look: Windows-native type and colours, plus Binder's own touches: pill buttons, the bloom in the logo's
+  blues, the logo's fanned cover stack (hero, download panel), launcher chips like the app's filter chips, the
+  deep blue privacy and download panels. Keep them; don't add stock illustrations, emoji or other fonts.
+- The header and footer are the same on both pages (`docs.html` links back with `index.html#…`). The "Binder is
+  an app for Windows PCs" note (`touch-hint`) shows only on touch screens.
 - The text is factual and plain: only what the app really does, numbers only from the card, no marketing words
   ("amazing", "seamless", "blazing fast"). Placeholders in square brackets (`[DOWNLOAD LINK]`) stay until a card
   gives the real value.
