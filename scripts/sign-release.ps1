@@ -16,10 +16,12 @@
          (this repository, release.yml, the tag's commit, GitHub-hosted runners);
       3. writes release.json itself from what it checked plus docs/releases/<Version>.json at the tagged commit;
       4. shows it and asks to confirm;
-      5. signs it (the YubiKey asks for its PIN and a touch), with -Urgent with both YubiKeys in turn;
+      5. signs it (the YubiKey asks for its PIN and a touch), with -Urgent with both YubiKeys in turn; with both
+         keys' certificates in Windows, it asks which one signs (or pass -Thumbprint);
       6. verifies the signature file with the keys in UpdateKeys.cs at the tagged commit, as the app will;
       7. uploads release.json and release.json.sig to the draft and publishes it as the latest release.
-    -DryRun stops after uploading: the draft stays a draft, nobody gets it. Delete it afterwards.
+    -DryRun stops after uploading: the draft stays a draft, nobody gets it. Run again without -DryRun to publish it
+    (the dry run's release.json and .sig are replaced), or delete it.
 
   The signature: ECDSA P-384 / SHA-384, IEEE P1363 (96 bytes), base64, one line per key, over the fixed text
   "Binder release manifest v1", a zero byte, then release.json's exact bytes.
@@ -40,9 +42,10 @@ param(
     [Parameter(ParameterSetName = 'Sign', Mandatory)] [ValidatePattern('^(0|[1-9]\d{0,4})\.(0|[1-9]\d{0,4})\.(0|[1-9]\d{0,4})$')] [string]$Version,
     [Parameter(ParameterSetName = 'Sign')] [switch]$Urgent,
     [Parameter(ParameterSetName = 'Sign')] [switch]$DryRun,
-    # Which certificate to use when more than one P-384 smart card certificate is present (YubiKey 1 for -Urgent).
+    # Which certificate signs, skipping the question; without it and with more than one P-384 smart card
+    # certificate present, the script lists them and asks.
     [string]$Thumbprint,
-    # -Urgent: YubiKey 2's certificate.
+    # -Urgent: the second key's certificate, skipping the second question.
     [Parameter(ParameterSetName = 'Sign')] [string]$SecondThumbprint
 )
 
@@ -66,18 +69,23 @@ function Run([string]$exe, [string[]]$arguments) {
 }
 
 # --- The YubiKey's certificate ---------------------------------------------------------------------------
-function Get-SigningCertificate([string]$thumb, [string]$which) {
+# Windows keeps a smart card's certificate after the card is taken out, so both YubiKeys are usually listed: with
+# more than one, the owner picks from a numbered list (or passes -Thumbprint / -SecondThumbprint). $exclude leaves
+# out the key that already signed (-Urgent's second signature).
+function Get-SigningCertificate([string]$thumb, [string]$which, [string]$exclude) {
     $all = @(Get-ChildItem Cert:\CurrentUser\My | Where-Object {
         $_.HasPrivateKey -and $_.PublicKey.Oid.Value -eq '1.2.840.10045.2.1' -and
-        $_.PublicKey.GetECDsaPublicKey().KeySize -eq 384
-    })
+        $_.PublicKey.GetECDsaPublicKey().KeySize -eq 384 -and $_.Thumbprint -ne $exclude
+    } | Sort-Object Subject)
     if ($thumb) { $all = @($all | Where-Object Thumbprint -eq $thumb.ToUpperInvariant()) }
     if ($all.Count -eq 0) { Fail "No ECC P-384 certificate with a private key in CurrentUser\My$(if ($thumb) { " with thumbprint $thumb" }). Is $which plugged in?" }
-    if ($all.Count -gt 1) {
-        $all | ForEach-Object { Write-Host "  $($_.Thumbprint)  $($_.Subject)" }
-        Fail "More than one candidate: pass -Thumbprint$(if ($which -like '*2*') { ' / -SecondThumbprint' })."
-    }
-    return $all[0]
+    if ($all.Count -eq 1) { return $all[0] }
+    Write-Host "Which key signs ($which)?"
+    for ($i = 0; $i -lt $all.Count; $i++) { Write-Host "  [$($i + 1)] $($all[$i].Subject)  $($all[$i].Thumbprint)" }
+    $answer = Read-Host "Number (1-$($all.Count))"
+    $n = 0
+    if (-not [int]::TryParse($answer, [ref]$n) -or $n -lt 1 -or $n -gt $all.Count) { Fail "Not one of the numbers: $answer" }
+    return $all[$n - 1]
 }
 
 function Get-PublicKeyText($cert) { [Convert]::ToBase64String($cert.PublicKey.ExportSubjectPublicKeyInfo()) }
@@ -140,7 +148,12 @@ $release = (Run gh @('release', 'view', $tag, '--repo', $Repo, '--json', 'isDraf
 if (-not $release.isDraft) { Fail "$tag isn't a draft: a published release is never changed." }
 $setupName = "BinderSetup-$Version.exe"
 $assetNames = @($release.assets | ForEach-Object name)
-if ($assetNames.Count -ne 1 -or $assetNames[0] -ne $setupName) { Fail "The draft should hold only $setupName, it holds: $($assetNames -join ', ')" }
+# The setup, plus at most the release.json and its signature an earlier dry run left: those are replaced below.
+$fromDryRun = @($assetNames | Where-Object { $_ -in 'release.json', 'release.json.sig' })
+if ($setupName -notin $assetNames -or ($assetNames.Count - $fromDryRun.Count) -ne 1) {
+    Fail "The draft should hold only $setupName (and an earlier dry run's release.json and .sig), it holds: $($assetNames -join ', ')"
+}
+if ($fromDryRun.Count -gt 0) { Write-Host "The draft has $($fromDryRun -join ' and ') from an earlier dry run: they're replaced." }
 
 $work = Join-Path ([IO.Path]::GetTempPath()) "binder-release-$Version-$([guid]::NewGuid().ToString('N'))"
 New-Item -ItemType Directory -Path $work | Out-Null
@@ -195,10 +208,11 @@ function Sign-With($cert) {
         return [Convert]::ToBase64String($key.SignData($payload, $SHA384, $P1363))
     } finally { $key.Dispose() }
 }
-$signatures = @(Sign-With (Get-SigningCertificate $Thumbprint 'YubiKey 1'))
+$first = Get-SigningCertificate $Thumbprint $(if ($Urgent) { 'the first of two' } else { 'normally YubiKey 1' })
+$signatures = @(Sign-With $first)
 if ($Urgent) {
-    Read-Host 'Now take out YubiKey 1, plug in YubiKey 2 and press Enter' | Out-Null
-    $second = Get-SigningCertificate $SecondThumbprint 'YubiKey 2'
+    Read-Host 'Now take out that YubiKey, plug in the other one and press Enter' | Out-Null
+    $second = Get-SigningCertificate $SecondThumbprint 'the second key' $first.Thumbprint
     $signatures += Sign-With $second
 }
 $sigBytes = [System.Text.Encoding]::ASCII.GetBytes(($signatures -join "`n") + "`n")
@@ -222,9 +236,9 @@ $sigPath = Join-Path $work 'release.json.sig'
 Write-Host "Signed and verified ($signers key(s))." -ForegroundColor Green
 
 # --- 7. Upload and publish -------------------------------------------------------------------------------
-Run gh @('release', 'upload', $tag, $manifestPath, $sigPath, '--repo', $Repo) | Out-Host
+Run gh @('release', 'upload', $tag, $manifestPath, $sigPath, '--repo', $Repo, '--clobber') | Out-Host
 if ($DryRun) {
-    Write-Host "Dry run: $tag stays a draft. Files in $work. Delete the draft when done: gh release delete $tag --repo $Repo" -ForegroundColor Yellow
+    Write-Host "Dry run: $tag stays a draft. Files in $work. To publish it, run again without -DryRun (it replaces these two files); otherwise delete the draft: gh release delete $tag --repo $Repo" -ForegroundColor Yellow
     exit 0
 }
 Run gh @('release', 'edit', $tag, '--repo', $Repo, '--draft=false', '--latest') | Out-Host
