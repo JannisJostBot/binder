@@ -94,7 +94,8 @@ scripts/                  publish.ps1 (builds publish\app: widget folder + AOT w
                           check.ps1 (the hard rules on a diff, then build + tests; -Task for agent cards),
                           sign-release.ps1 (owner only: sign a release with the YubiKeys, spec §25),
                           make-tray-icons.ps1 / make-watcher-icon.ps1 (redraw icons after a logo change)
-site/                     one-page website: plain HTML + CSS, no scripts, nothing from other servers
+site/                     the website: plain HTML + CSS, no scripts, nothing from other servers; index.html,
+                          docs.html (what Binder changes on the PC: every Game mode item, autostart, updates, …)
 docs/proposals.md         approved feature specs, progress table (§0), decisions log, "Not decided"
 docs/tasks/, AGENTS.md    task cards and rules for cheaper coding agents
 ```
@@ -325,6 +326,11 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
 
 - What to build next: `docs/proposals.md` §0 progress table, then the section it names. Items under "Not decided"
   there must not be built. Keep that table and this brief current when something changes.
+- `site/docs.html` must stay true. A change to what it describes (Game mode's items, the helper, Start with
+  Windows, updates, shortcut import, uninstall) updates it in the same commit. The unit tests (`DocsTests.cs`)
+  compare its Game mode cards with `GameModeInfo`/`ElevatedPart` (items, order, defaults, admin, services, apps,
+  limits); `check.ps1` fails when a documented file changes without `docs.html`. When every sentence still
+  holds, pass `-DocsUnchanged`, or (for CI) add a `Docs-Unchanged: <why>` line to one of the branch's commits.
 - After each change run `./scripts/check.ps1` (or `dotnet build` + the unit tests). This repo builds on Windows only;
   on Linux only the unit tests run. Test new behaviour on the real PC's launchers where possible.
 - Commit at each milestone with a short message.

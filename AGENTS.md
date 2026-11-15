@@ -67,11 +67,12 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
 | `src/Binder/Services/` | Launching, storage, Windows integration |
 | `src/Binder/Views/` | The UI (XAML + code-behind); `Format.cs` has the text formatting |
 | `tests/Binder.Tests/Tests.cs` | All unit tests: one console program, `Check(condition, "description")` per check |
-| `site/` | The website: `index.html`, `styles.css`, `logo.svg` (see "The website" below) |
+| `site/` | The website: `index.html`, `docs.html`, `styles.css`, `logo.svg` (see "The website" below) |
 
 ## The website (`site/`)
 
-The project's one-page website: `site/index.html`, `site/styles.css` and `site/logo.svg`. It will be published
+The project's website: `site/index.html` (the home page), `site/docs.html` (the documentation: what Binder
+changes on the PC), `site/styles.css` and `site/logo.svg`. It will be published
 from this repo (for example with GitHub Pages) once the repo is public.
 
 - Plain HTML and CSS only. No JavaScript, no frameworks, no build step.
@@ -89,8 +90,11 @@ from this repo (for example with GitHub Pages) once the repo is public.
   ("amazing", "seamless", "blazing fast"). Placeholders in square brackets (`[DOWNLOAD LINK]`) stay until a card
   gives the real value.
 - Keep the "Before you download" section (the AI disclaimer and "Not affiliated") as it is.
-- Check your change by opening `site/index.html` in a browser, at full width and at about 390 px wide (phone):
-  nothing may overflow sideways. Say in your report that you did.
+- `docs.html` is long text, so its parts are `docs-*` / `doc-*` classes in `styles.css`, not inline styles. Every
+  sentence must be true of the code. Each Game mode item is one `doc-item` card with `data-item`, `data-default`
+  and `data-admin` in that order; `tests/Binder.Tests/DocsTests.cs` checks them against the code.
+- Check your change by opening the page you changed (`site/index.html` or `site/docs.html`) in a browser, at
+  full width and at about 390 px wide (phone): nothing may overflow sideways. Say in your report that you did.
 
 ## Commands
 
