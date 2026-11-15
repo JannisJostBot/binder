@@ -11,7 +11,9 @@ public static class UpdateKeys
 {
     public static readonly string[] All =
     [
-        // YubiKey 1 (main), slot 9c: not set up yet.
+        // YubiKey 1 (main), slot 9c, CN=Binder release key 1, certificate E5910D503B9E2D84D7232191517A143EF68AD21A
+        // (added 2026-11-15 from the certificate exported in Yubico Authenticator).
+        "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEHtcHPsCNnuwJBBfQM+68/vF+ZaDMeEAOQb0wRIOODl3wv8mp7Nce767Mjy0s7/U04l94zRoMEJYGUJVXEwerPp/VzqFByWnPO7yAr1Kk2YU4rl6bFIXd4gHAnr2QpsHT",
         // YubiKey 2 (backup), slot 9c: not set up yet.
     ];
 }

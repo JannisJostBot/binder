@@ -18,6 +18,21 @@ static partial class Tests
         using var stranger = ECDsa.Create(ECCurve.NamedCurves.nistP384);
         string[] keys = [Pub(main), Pub(backup)];
 
+        // The compiled-in keys (the owner's YubiKeys): each one a P-384 public key, all different, nothing else.
+        var compiled = Services.UpdateKeys.All;
+        bool allP384 = compiled.All(k =>
+        {
+            try
+            {
+                using var e = ECDsa.Create();
+                e.ImportSubjectPublicKeyInfo(Convert.FromBase64String(k), out var read);
+                return e.KeySize == 384 && read == Convert.FromBase64String(k).Length;
+            }
+            catch (Exception ex) when (ex is FormatException or CryptographicException) { return false; }
+        });
+        Check(compiled.Length is >= 1 and <= 2 && allP384 && compiled.Distinct().Count() == compiled.Length,
+            "update keys: one or two different ECDSA P-384 public keys compiled in");
+
         var commit = new string('a', 40);
         var sha = new string('0', 64);
         string Json(string version = "0.2.0", string issued = "2026-11-20T18:04:00Z", string urgent = "false",
