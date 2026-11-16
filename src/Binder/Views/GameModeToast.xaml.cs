@@ -254,7 +254,7 @@ public sealed partial class GameModeToast : Window
         if (animate)
         {
             Body.Opacity = 0;
-            Mark.StrokeDashOffset = 8;
+            Mark.StrokeDashOffset = 8.5;
             OnGlyph.Glyph = ""; // the gauge starts at "off"
         }
         if (animate) PopDot();
@@ -341,7 +341,7 @@ public sealed partial class GameModeToast : Window
             needle.CenterPoint = new Vector3(12, 17, 0);
             needle.RotationAngleInDegrees = -90;
         }
-        else Mark.StrokeDashOffset = 8;
+        else Mark.StrokeDashOffset = 8.5;
 
         NativeWindow.Cloak(_hwnd, false);
         FrameworkElementAutomationPeer.CreatePeerForElement(_announce)?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
@@ -403,7 +403,7 @@ public sealed partial class GameModeToast : Window
         {
             var draw = new DoubleAnimation
             {
-                From = 8, To = 0, EnableDependentAnimation = true,
+                From = 8.5, To = 0, EnableDependentAnimation = true,
                 Duration = TimeSpan.FromMilliseconds(Ms(400)),
                 BeginTime = TimeSpan.FromMilliseconds(last),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut },

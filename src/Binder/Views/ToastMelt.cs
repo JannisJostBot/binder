@@ -36,7 +36,7 @@ internal sealed class ToastMelt
     // The board's defaults: stagger 130 ms, spring 0.6, variation 0.5, stickiness 0.5.
     private const float Radius = 14, FallHeight = 96, SinkDepth = 24, Stagger = 130, Variation = 0.5f, Stickiness = 0.5f;
     private const float MeltMs = 320, FirstDropMs = 380;
-    private const float EmergeMs = 440, RiseMs = 720, RowWaitMs = 350, PopGapMs = 110, PopMs = 190, RingMs = 800;
+    private const float EmergeMs = 440, RiseMs = 720, RowWaitMs = 350, PopGapMs = 110, PopMs = 190, RingMs = 450;
     private const float Pad = 24, Top = FallHeight + Radius + 26; // room around the pill for the drops and the blur
 
     /// <summary>
@@ -95,7 +95,7 @@ internal sealed class ToastMelt
         if (back)
         {
             float lastPop = _drops.Max(d => d.Pop);
-            Settled = (lastPop + 300) * _k;
+            Settled = (lastPop + PopMs) * _k; // the check draws as the last change finishes popping
             Done = (lastPop + 100 + RingMs + 60) * _k;
         }
         else
@@ -676,13 +676,12 @@ internal sealed class ToastMelt
             var brush = _compositor.CreateRadialGradientBrush();
             brush.EllipseCenter = new Vector2(0.5f);
             brush.EllipseRadius = new Vector2(0.5f);
-            var inner = _compositor.CreateColorGradientStop(0.40f, clear);
-            var line = _compositor.CreateColorGradientStop(0.47f, _glow);
-            var outer = _compositor.CreateColorGradientStop(0.52f, clear);
+            // A thin, crisp line: no soft edges, and it stays sharp while it grows.
             brush.ColorStops.Add(_compositor.CreateColorGradientStop(0, clear));
-            brush.ColorStops.Add(inner);
-            brush.ColorStops.Add(line);
-            brush.ColorStops.Add(outer);
+            brush.ColorStops.Add(_compositor.CreateColorGradientStop(0.455f, clear));
+            brush.ColorStops.Add(_compositor.CreateColorGradientStop(0.465f, _glow));
+            brush.ColorStops.Add(_compositor.CreateColorGradientStop(0.49f, _glow));
+            brush.ColorStops.Add(_compositor.CreateColorGradientStop(0.50f, clear));
             var ring = _compositor.CreateSpriteVisual();
             ring.Brush = brush;
             ring.Size = new Vector2(size);
@@ -693,18 +692,14 @@ internal sealed class ToastMelt
 
             float at = d.Pop + 100;
             var grow = _compositor.CreateVector3KeyFrameAnimation();
-            grow.InsertKeyFrame(0, new Vector3(1.05f, 1.05f, 1));
-            grow.InsertKeyFrame(1, new Vector3(2.1f, 2.1f, 1), Ease(RingOut));
+            grow.InsertKeyFrame(0, new Vector3(0.9f, 0.9f, 1));
+            grow.InsertKeyFrame(1, new Vector3(1.5f, 1.5f, 1), Ease(RingOut));
             var fade = _compositor.CreateScalarKeyFrameAnimation();
             fade.InsertKeyFrame(0, 0);
-            fade.InsertKeyFrame(0.08f, 0.85f);
-            fade.InsertKeyFrame(0.45f, 0.5f);
-            fade.InsertKeyFrame(1, 0, Ease(RingOut));
-            var soften = _compositor.CreateScalarKeyFrameAnimation();
-            soften.InsertKeyFrame(1, 0.18f, Ease(RingOut));
-            var widen = _compositor.CreateScalarKeyFrameAnimation();
-            widen.InsertKeyFrame(1, 0.8f, Ease(RingOut));
-            foreach (var a in new KeyFrameAnimation[] { grow, fade, soften, widen })
+            fade.InsertKeyFrame(0.12f, 0.7f);
+            fade.InsertKeyFrame(0.75f, 0); // gone before it slows down, so no faint ring lingers
+            fade.InsertKeyFrame(1, 0);
+            foreach (var a in new KeyFrameAnimation[] { grow, fade })
             {
                 a.Duration = Ms(RingMs);
                 a.DelayTime = Ms(at);
@@ -713,8 +708,6 @@ internal sealed class ToastMelt
             {
                 ring.StartAnimation("Scale", grow);
                 ring.StartAnimation("Opacity", fade);
-                inner.StartAnimation("Offset", soften);
-                outer.StartAnimation("Offset", widen);
             });
         }
     }

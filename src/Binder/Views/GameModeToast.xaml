@@ -16,7 +16,7 @@
                 <!-- The pill fades in first; then the dot pops in (a compositor scale, PopDot, so it stays sharp),
                      and then its icon moves: the check draws itself, or the gauge's needle sweeps up from off to
                      high (Windows' own speed glyphs). -->
-                <DoubleAnimation Storyboard.TargetName="Mark" Storyboard.TargetProperty="StrokeDashOffset" From="8" To="0"
+                <DoubleAnimation Storyboard.TargetName="Mark" Storyboard.TargetProperty="StrokeDashOffset" From="8.5" To="0"
                                  BeginTime="0:0:0.35" Duration="0:0:0.45" EnableDependentAnimation="True">
                     <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
@@ -65,7 +65,7 @@
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
                         </Canvas>
                     </Viewbox>
-                    <Path x:Name="Mark" Data="M 9,14.5 L 12.5,18 L 19.5,10.5" StrokeThickness="2" StrokeDashArray="8 8"
+                    <Path x:Name="Mark" Data="M 9,14.5 L 12.5,18 L 19.5,10.5" StrokeThickness="2" StrokeDashArray="8 10"
                           StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Visibility="Collapsed" />
                 </Grid>
                 <TextBlock x:Name="LineText" Grid.Column="1" VerticalAlignment="Center" MaxWidth="420" TextTrimming="CharacterEllipsis"
