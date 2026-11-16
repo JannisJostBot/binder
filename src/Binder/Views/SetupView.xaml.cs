@@ -22,6 +22,22 @@ public sealed partial class SetupView : UserControl
         Picker.SelectionChanged += () => ViewModel?.SetSelection(Picker.Selected);
     }
 
+    /// <summary>
+    /// After step 2's move: the rows of the shortcuts that went fly into Binder's logo (<see cref="LogoMerge"/>), then
+    /// <paramref name="then"/> goes on to step 3. The page takes no clicks meanwhile; with animations off it goes on at once.
+    /// </summary>
+    public void PlayMerge(IReadOnlyList<Library.ShortcutFile> moved, Action then)
+    {
+        var rows = Picker.RowsFor(moved);
+        IsHitTestVisible = false;
+        LogoMerge.Play(MergeLayer, Picker.ListArea, rows, () =>
+        {
+            IsHitTestVisible = true;
+            then();
+            LogoMerge.Clear(MergeLayer, rows);
+        });
+    }
+
     /// <summary>Connects the page to its owner once, before it's first shown.</summary>
     public void Initialize(ISetupActions actions)
     {

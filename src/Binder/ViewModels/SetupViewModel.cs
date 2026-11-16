@@ -64,6 +64,7 @@ public sealed partial class SetupViewModel : ObservableObject
     /// <summary>Starts at step 1 with the library as found so far (the scan may still be running).</summary>
     public void Start(Settings settings, IReadOnlyList<Game> games, bool startWithWindows)
     {
+        _moving = false;
         _settings = settings;
         _shortcutsLoaded = false;
         Launchers = []; // a new run starts from the settings' ticks
@@ -190,9 +191,15 @@ public sealed partial class SetupViewModel : ObservableObject
         SelectionText = selected == 0 ? Strings.NothingSelected : Strings.Plural(selected, Strings.SelectedCountOne, Strings.SelectedCount);
     }
 
+    // A move runs until ImportDone (step 2's merge animation plays in between): a second Move (Enter on the still
+    // focused button) mustn't move the same shortcuts again.
+    private bool _moving;
+
     private void Move()
     {
-        if (_selected.Count > 0) _actions.Import(_selected);
+        if (_moving || _selected.Count == 0) return;
+        _moving = true;
+        _actions.Import(_selected);
     }
 
     private static readonly string[] ImportNames = [nameof(ImportTitle), nameof(ImportDetail), nameof(HasImportResult)];
@@ -205,6 +212,7 @@ public sealed partial class SetupViewModel : ObservableObject
     /// <summary>After the picked shortcuts were moved: on to the last step, which shows the result.</summary>
     public void ImportDone(string title, string detail)
     {
+        _moving = false;
         ImportTitle = title;
         ImportDetail = detail;
         foreach (var name in ImportNames) OnPropertyChanged(name);

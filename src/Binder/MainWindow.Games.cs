@@ -30,12 +30,14 @@ public sealed partial class MainWindow
         ShowImportResult(result);
     }
 
-    private readonly record struct ImportResult(int Imported, int Copied, int Failed);
+    /// <summary>What an import did; <paramref name="Stored"/> are the shortcuts that went (setup's merge animation).</summary>
+    private readonly record struct ImportResult(int Imported, int Copied, int Failed, IReadOnlyList<ShortcutFile> Stored);
 
     private ImportResult StoreShortcuts(IReadOnlyList<ShortcutFile> picked)
     {
         var records = Storage.LoadImportedShortcuts();
         int imported = 0, copied = 0, failed = 0;
+        var stored = new List<ShortcutFile>();
         foreach (var shortcut in picked)
         {
             var existing = ShortcutImporter.ExistingFor(shortcut, _games);
@@ -46,6 +48,7 @@ public sealed partial class MainWindow
                 continue;
             }
             imported++;
+            stored.Add(shortcut);
             if (record.Copied) copied++;
             if (existing is not null) continue; // already on the shelf: the shortcut is only tidied away
 
@@ -57,7 +60,7 @@ public sealed partial class MainWindow
         SaveLibrary();
         RefreshViews();
         ShellNotify.DesktopsChanged();
-        return new ImportResult(imported, copied, failed);
+        return new ImportResult(imported, copied, failed, stored);
     }
 
     private void ShowImportResult(ImportResult result)
@@ -69,7 +72,7 @@ public sealed partial class MainWindow
     /// <summary>"Imported 5 shortcuts" and what to know about them: the notice, or setup's step 3.</summary>
     private static (string Title, string Detail) ImportResultText(ImportResult result)
     {
-        var (imported, copied, failed) = result;
+        var (imported, copied, failed, _) = result;
         var detail = copied > 0
             ? Strings.Plural(copied, Strings.ImportCopiedOne, Strings.ImportCopied)
             : Strings.ImportRestoreHint;

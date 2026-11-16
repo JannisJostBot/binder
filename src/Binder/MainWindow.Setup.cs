@@ -16,9 +16,11 @@ public sealed partial class MainWindow
 
     void ISetupActions.Import(IReadOnlyList<ShortcutFile> picked)
     {
-        // Shown in step 3 itself: the panel's notice would sit over its Done button.
-        var (title, detail) = ImportResultText(StoreShortcuts(picked));
-        SetupPage.ViewModel!.ImportDone(title, detail);
+        // Shown in step 3 itself: the panel's notice would sit over its Done button. First the shortcuts that went
+        // fly into Binder's logo (skipped with animations off), then step 3.
+        var result = StoreShortcuts(picked);
+        var (title, detail) = ImportResultText(result);
+        SetupPage.PlayMerge(result.Stored, () => SetupPage.ViewModel!.ImportDone(title, detail));
     }
 
     /// <summary>First-run setup (board 10). Also reachable from Settings → "Run first-time setup again".</summary>

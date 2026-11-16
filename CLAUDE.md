@@ -71,7 +71,8 @@ src/Binder/            the WinUI widget
   ViewModels/             MVVM: ObservableObject, RelayCommand, one <Page>ViewModel + I<Page>Actions per page (Shelf,
                           Detail, Settings, Setup, FreeSpace, GameMode)
   Views/                  ShelfView, DetailView, SettingsView, SetupView, ImportView, FreeSpaceView, GameModeView,
-                          GameModeToast, BannerLogo, Sheen (shiny favorites); Format.cs the text formatting,
+                          GameModeToast, BannerLogo, Sheen (shiny favorites), LogoMerge (setup step 2's moved
+                          shortcuts fly into the logo, as on the website); Format.cs the text formatting,
                           GameAction.cs (menu actions, chart bars)
   Themes/Theme.xaml        shared styles and brushes
   Strings/                the app's text: Strings.resx (English), Strings.de.resx, Strings.fr.resx, one property per

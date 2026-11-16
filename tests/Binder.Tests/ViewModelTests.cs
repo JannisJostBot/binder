@@ -646,6 +646,8 @@ static partial class Tests
         vm.SetSelection(picked);
         Check(vm.Shortcuts.Length == 2 && vm.MoveText == "Move 2" && vm.CanMove && vm.SelectionText == "2 selected", "setup: picked shortcuts");
         vm.MoveCommand.Execute(null);
+        vm.MoveCommand.Execute(null); // Enter again while the shortcuts fly into the logo
+        Check(spy.Calls.Count(c => c == "import 2") == 1, "setup: a second Move while one runs does nothing");
         vm.ImportDone("Imported 2 shortcuts", "Restore them any time.");
         Check(vm.IsStep3 && spy.Calls[^1] == "import 2", "setup: moving goes on to step 3");
         Check(vm.HasImportResult && vm.ImportTitle == "Imported 2 shortcuts" && vm.ImportDetail == "Restore them any time.",
