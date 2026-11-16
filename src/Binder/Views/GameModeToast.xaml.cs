@@ -477,10 +477,15 @@ public sealed partial class GameModeToast : Window
         var body = VisualOf(Body);
         var c = body.Compositor;
         var batch = c.CreateScopedBatch(CompositionBatchTypes.Animation);
+        // A short drop while it fades: gone before it reaches the window's bottom edge, so it's never cut off there.
         var down = c.CreateVector3KeyFrameAnimation();
-        down.InsertKeyFrame(1, new Vector3(0, 96, 0), Ease(c, .7f, 0, 1, .5f));
+        down.InsertKeyFrame(1, new Vector3(0, 16, 0), Ease(c, .7f, 0, 1, .5f));
         down.Duration = TimeSpan.FromMilliseconds(Ms(200));
+        var fade = c.CreateScalarKeyFrameAnimation();
+        fade.InsertKeyFrame(1, 0, Ease(c, .4f, 0, 1, 1));
+        fade.Duration = down.Duration;
         body.StartAnimation("Translation", down);
+        body.StartAnimation("Opacity", fade);
         batch.End();
         batch.Completed += (_, _) => Close();
     }

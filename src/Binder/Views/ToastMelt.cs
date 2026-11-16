@@ -530,6 +530,7 @@ internal sealed class ToastMelt
         layer.Size = _size;
         layer.Clip = _compositor.CreateGeometricClip(clipGeometry);
         _root!.Children.InsertAtTop(layer);
+        // Going back: what's above the pill's top edge (the bubbles' part of the glow; inside, the pill's own shows).
         ContainerVisual? above = null;
         if (_back)
         {
@@ -567,25 +568,47 @@ internal sealed class ToastMelt
                 a.Duration = Ms(_back ? 700 : 650);
                 a.DelayTime = Ms(_back ? d.Start : d.Land + 30);
             }
-            // Going back, the light also spreads out above the pill, around the change leaving it: the same glow
-            // in a layer that holds only what's above the pill's top edge, so the two halves meet along it.
-            SpriteVisual? outside = null;
+            // Going back, the light also fills the change while it's still joined to the pill, so it doesn't stop
+            // at the pill's edge: the same glow, clipped to the bubble as it moves, gone as the bubble lets go.
+            SpriteVisual? inBubble = null;
+            ContainerVisual? bubble = null;
+            CompositionGeometricClip? bubbleClip = null;
+            ScalarKeyFrameAnimation? letGo = null;
             if (above is not null)
             {
-                outside = _compositor.CreateSpriteVisual();
-                outside.Brush = brush;
-                outside.Size = glow.Size;
-                outside.CenterPoint = glow.CenterPoint;
-                outside.Offset = new Vector3(d.X - 44 + Pad, Top - 44, 0);
-                outside.Opacity = 0;
-                above.Children.InsertAtTop(outside);
+                var circle = _compositor.CreateEllipseGeometry();
+                circle.Radius = new Vector2(Radius);
+                bubbleClip = _compositor.CreateGeometricClip(circle);
+                bubbleClip.Offset = new Vector2(d.X, SinkDepth);
+                bubble = _compositor.CreateContainerVisual();
+                bubble.Offset = new Vector3(Pad, Top, 0); // back to the pill's coordinates
+                bubble.Size = _size;
+                bubble.Clip = bubbleClip;
+                above.Children.InsertAtTop(bubble);
+                inBubble = _compositor.CreateSpriteVisual();
+                inBubble.Brush = brush;
+                inBubble.Size = glow.Size;
+                inBubble.CenterPoint = glow.CenterPoint;
+                inBubble.Offset = glow.Offset;
+                inBubble.Opacity = 0;
+                bubble.Children.InsertAtTop(inBubble);
+                float span = EmergeMs + 60;
+                letGo = _compositor.CreateScalarKeyFrameAnimation();
+                letGo.InsertKeyFrame(0, 1);
+                letGo.InsertKeyFrame((EmergeMs - 120) / span, 1);
+                letGo.InsertKeyFrame(1, 0);
+                letGo.Duration = Ms(span);
+                letGo.DelayTime = Ms(d.Start);
             }
             _start.Add(() =>
             {
                 glow.StartAnimation("Scale", scale);
                 glow.StartAnimation("Opacity", fade);
-                outside?.StartAnimation("Scale", scale);
-                outside?.StartAnimation("Opacity", fade);
+                if (inBubble is null) return;
+                inBubble.StartAnimation("Scale", scale);
+                inBubble.StartAnimation("Opacity", fade);
+                bubbleClip!.StartAnimation("Offset", FallAndSink(d));
+                bubble!.StartAnimation("Opacity", letGo!);
             });
         }
     }
