@@ -522,29 +522,44 @@ summary::-webkit-details-marker { display: none; }
 .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .chips li { padding: 7px 16px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface); font-size: 15px; font-weight: 600; box-shadow: var(--shadow-1); }
 
-/* Hovering the chips (with a mouse, motion allowed, chips.js on): each chip slides to the middle (--dx, --dy, set
-   by chips.js), shrinks and turns Binder blue, one after another (--i); then the logo appears there and its two
-   back covers fan out as in the logo. Leaving reverses it: the logo goes first, then the chips come back. */
+/* Hovering the chips (with a mouse, motion allowed, chips.js on) turns them into Binder's logo: each chip flies to
+   one of the logo's three covers (chips.js sets where: --dx/--dy, the cover's angle --r, the scale that makes the
+   pill a cover's size --sx/--sy, its corner radius --rx/--ry, its blue --tint and stacking --z), one after another
+   (--i), and turns into that cover on the way. As the last one lands the real logo fades in exactly on top and the
+   play mark appears. Leaving runs it backwards. */
 .chips-merge { position: relative; }
 .chips li {
+  position: relative;
   transition:
-    transform 0.45s cubic-bezier(0.4, 0, 0.2, 1) calc(0.12s + var(--i, 0) * 0.02s),
-    opacity 0.25s ease calc(0.12s + var(--i, 0) * 0.02s),
-    background-color 0.3s, border-color 0.3s, color 0.2s;
+    transform 0.55s cubic-bezier(0.65, 0, 0.35, 1) calc((6 - var(--i, 0)) * 0.025s),
+    border-radius 0.55s cubic-bezier(0.65, 0, 0.35, 1) calc((6 - var(--i, 0)) * 0.025s),
+    background-color 0.4s calc((6 - var(--i, 0)) * 0.025s),
+    border-color 0.4s calc((6 - var(--i, 0)) * 0.025s),
+    box-shadow 0.4s,
+    color 0.2s 0.4s,
+    opacity 0.12s;
 }
 .chips-merge.is-merged .chips li {
-  transform: translate(var(--dx, 0), var(--dy, 0)) scale(0.35);
-  opacity: 0;
-  background-color: var(--brand);
-  border-color: var(--brand);
+  z-index: var(--z, 1);
+  transform: translate(var(--dx, 0), var(--dy, 0)) rotate(var(--r, 0deg)) scale(var(--sx, 0.4), var(--sy, 0.4));
+  border-radius: var(--rx, 4px) / var(--ry, 4px);
+  background-color: var(--tint, #1E8BDB);
+  border-color: transparent;
+  box-shadow: none;
   color: transparent;
+  opacity: 0;
   transition:
-    transform 0.5s cubic-bezier(0.6, 0, 0.3, 1) calc(var(--i, 0) * 0.03s),
-    opacity 0.2s ease calc(0.32s + var(--i, 0) * 0.03s),
-    background-color 0.3s calc(var(--i, 0) * 0.03s), border-color 0.3s calc(var(--i, 0) * 0.03s), color 0.15s;
+    transform 0.6s cubic-bezier(0.65, 0, 0.35, 1) calc(var(--i, 0) * 0.03s),
+    border-radius 0.6s cubic-bezier(0.65, 0, 0.35, 1) calc(var(--i, 0) * 0.03s),
+    background-color 0.45s ease calc(0.1s + var(--i, 0) * 0.03s),
+    border-color 0.3s calc(var(--i, 0) * 0.03s),
+    box-shadow 0.3s,
+    color 0.12s,
+    opacity 0.2s 0.95s;
 }
 .chips-logo {
   position: absolute;
+  z-index: 10;
   left: 50%;
   top: 50%;
   width: 64px;
@@ -552,23 +567,22 @@ summary::-webkit-details-marker { display: none; }
   margin: -32px 0 0 -32px;
   line-height: 0;
   opacity: 0;
-  transform: scale(0.4);
   pointer-events: none;
-  filter: drop-shadow(0 10px 18px rgba(12, 120, 210, 0.35));
-  transition: opacity 0.15s, transform 0.2s ease-in;
+  transition: opacity 0.15s, filter 0.2s;
 }
 .chips-merge.is-merged .chips-logo {
   opacity: 1;
-  transform: none;
-  transition: opacity 0.2s 0.42s, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.42s;
+  filter: drop-shadow(0 10px 18px rgba(12, 120, 210, 0.35));
+  transition: opacity 0.3s ease 0.72s, filter 0.5s ease 0.8s;
 }
-.chips-logo .logo-back, .chips-logo .logo-middle { transform-box: view-box; transition: transform 0.15s; }
-.chips-logo .logo-back { transform-origin: 21px 40px; }
-.chips-logo .logo-middle { transform-origin: 27px 40px; }
-.chips-merge.is-merged .logo-back { transform: rotate(-14deg); transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.55s; }
-.chips-merge.is-merged .logo-middle { transform: rotate(10deg); transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s; }
+.chips-logo .logo-play { transform-box: view-box; transform-origin: 25px 24px; transform: scale(0); opacity: 0; transition: transform 0.12s, opacity 0.1s; }
+.chips-merge.is-merged .logo-play {
+  transform: none;
+  opacity: 1;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.95s, opacity 0.2s 0.95s;
+}
 @media (prefers-reduced-motion: reduce) {
-  .chips li, .chips-logo, .chips-logo rect { transition: none; }
+  .chips li, .chips-logo, .chips-logo .logo-play { transition: none; }
 }
 @media (max-width: 600px) {
   .launchers-inner { padding-top: 24px; padding-bottom: 24px; gap: 12px; }
