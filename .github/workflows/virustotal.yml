@@ -22,12 +22,16 @@ on:
       tag:
         description: 'Release tag to scan, e.g. v0.2.1'
         required: true
+  # TEMPORARY, remove before merging: a test run on this branch, scanning v0.2.1 (manual runs need the file on main).
+  push:
+    branches: ['ccr-2ba96309-leu3nq']
+    paths: ['.github/workflows/virustotal.yml']
 
 permissions:
   contents: write   # editing the release notes
 
 concurrency:
-  group: virustotal-${{ github.event.release.tag_name || inputs.tag }}
+  group: virustotal-${{ github.event.release.tag_name || inputs.tag || 'v0.2.1' }}
   cancel-in-progress: false
 
 jobs:
@@ -41,7 +45,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag || 'v0.2.1' }}
           VT_API_KEY: ${{ secrets.VT_API_KEY }}
         run: |
           $ErrorActionPreference = 'Stop'
