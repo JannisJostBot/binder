@@ -1833,7 +1833,7 @@ A release can be marked `"urgent": true` for a security fix that shouldn't wait 
    fixed by the next version, never by replacing files (the app never downgrades).
 6. **VirusTotal (automatic, `.github/workflows/virustotal.yml`):** publishing starts a separate job that downloads
    the setup, checks its SHA-256 against `release.json`, uploads it to VirusTotal, waits for the result and adds a
-   "VirusTotal" section to the release notes (scan date, report link, hash; no verdict, the report shows it). A
+   "VirusTotal" section to the release notes (scan date, how many engines flagged it, report link, hash; not which engines). A
    finding is a warning on the run, naming the engines, not a failure: look at which and why before telling anyone
    (0.2.1: Bkav alone, a generic name, likely a false positive). It runs only with the repository
    secret `VT_API_KEY` (a free VirusTotal account's key); `release.yml` itself stays without secrets. Earlier tags:

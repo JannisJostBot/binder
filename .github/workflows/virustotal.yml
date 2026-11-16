@@ -8,9 +8,9 @@ name: VirusTotal
 # the VirusTotal key and nothing else. It checks out no code, builds nothing and uses no third-party actions: it
 # downloads the published BinderSetup-<version>.exe, checks its SHA-256 against the signed release.json, uploads it to
 # VirusTotal (https://docs.virustotal.com/reference/overview), waits for the result and writes it between the markers
-# below: the scan date, the report link and the hash. The notes don't repeat the verdict (the report shows it);
-# a finding doesn't fail the job (new unsigned installers are sometimes flagged) but shows as a warning on the run,
-# with the engines that flagged it.
+# below: the scan date, how many engines flagged it, the report link and the hash, but not which engines (one false
+# positive named there reads worse than it is; the report lists them). A finding doesn't fail the job (new unsigned
+# installers are sometimes flagged); it shows as a warning on the run, with the engines' names.
 #
 # Setup (owner, once): a free VirusTotal account's API key as the repository secret VT_API_KEY (Settings › Secrets
 # and variables › Actions). The public API allows 4 requests a minute, so the job waits 30 s between checks.
@@ -100,7 +100,7 @@ jobs:
           $section = @(
               '<!-- virustotal -->'
               '### VirusTotal'
-              "``$setupName`` was scanned with VirusTotal on ${date}: [full report]($report)."
+              "``$setupName`` was scanned with VirusTotal on ${date}: $flagged of $engines engines flagged it. [Full report]($report)"
               ''
               "SHA-256 ``$sha256``, the same as in the signed ``release.json``."
           )
