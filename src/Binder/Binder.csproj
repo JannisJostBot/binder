@@ -43,6 +43,9 @@
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="2.6.4" />
   </ItemGroup>
 
+  <!-- Where updates come from, compiled in (build/Updates.targets): none unless the build names them. -->
+  <Import Project="..\..\build\Updates.targets" />
+
   <!-- The debug panel (Dev\, started with the dev switch) is for Debug builds only: Release builds don't compile it at all, so none of it
        ships. publish.ps1 checks the published files for its marker and stops if it's there. -->
   <ItemGroup Condition="'$(Configuration)' == 'Release'">

@@ -99,6 +99,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     public RelayCommand RepositoryCommand { get; }
     /// <summary>The second line of "Binder on GitHub": where it goes.</summary>
     public string RepositoryText => "github.com/" + UpdateManifest.Repository;
+    /// <summary>"Binder on GitHub" shows only in a build that names its repository (build/Updates.targets).</summary>
+    public bool ShowRepository => UpdateManifest.Repository.Length > 0;
     public RelayCommand GameModeCommand { get; }
 
     public void Unhide(Game game) => _actions.Unhide(game);

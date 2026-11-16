@@ -179,6 +179,7 @@ static partial class Tests
         Check(spy.Calls is ["download update", "skip update"], "about: Update downloads, Skip reaches the owner");
         vm.RepositoryCommand.Execute(null);
         Check(spy.Calls[^1] == "repository" && vm.RepositoryText == "github.com/JannisJostBot/binder", "about: Binder on GitHub opens the repository");
+        Check(vm.ShowRepository && vm.ShowUpdatesChoice, "about: an official build shows the GitHub link and the Updates choice");
 
         vm.SetUpdate(new(UpdatePhase.Downloading, "0.1.4", null, "0.2.0", notes, 12L << 20, 31L << 20));
         Check(vm.AboutText == "Downloading · 12 of 31 MB" && vm.ShowDownloadProgress && Math.Abs(vm.DownloadPercent - 100.0 * 12 / 31) < 0.01 &&
@@ -203,6 +204,11 @@ static partial class Tests
             "about: an install that failed says where the log is");
         vm.SetUpdate(new(UpdatePhase.NoConnection, "0.1.4"));
         Check(vm.AboutText == Strings.UpdateNoConnection && vm.AboutToolTip is null, "about: no connection");
+        vm.SetUpdate(new(UpdatePhase.Unavailable, "0.1.4"));
+        Check(vm.AboutText == Strings.UpdatesUnavailable && vm.AboutToolTip == Strings.UpdatesUnavailableToolTip &&
+              !vm.ShowCheckButton && !vm.ShowUpdateAction && !vm.ShowUpdatesChoice,
+            "about: a build without release keys says so, with no check button and no Updates choice");
+        vm.SetUpdate(new(UpdatePhase.NoConnection, "0.1.4"));
 
         vm.UpdateModeIndex = 1; // the same choice
         Check(spy.Changes.Count == 0, "about: the same Updates choice reports nothing");
