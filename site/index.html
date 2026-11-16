@@ -103,6 +103,7 @@
         <h2 class="h2">What happens when you play a game</h2>
         <p class="lead">Binder doesn't stay open next to your game. It closes, so it doesn't use memory or processor time your game could use.</p>
       </div>
+      <div class="how-scroll">
       <ol class="steps">
         <li class="step">
           <div class="step-picture" aria-hidden="true">
@@ -110,16 +111,20 @@
             <span class="muted">Binder closes in 10 s</span>
             <div class="countdown"><span class="track"><span></span></span><span class="mini-button">Keep open</span></div>
           </div>
-          <div class="step-title"><span class="step-number">1</span><h3>You click Play</h3></div>
-          <p>The game starts through its own launcher, as it would from a shortcut. Binder closes 10 seconds later. You can change the delay, or press Keep open.</p>
+          <div class="step-text">
+            <div class="step-title"><span class="step-number">1</span><h3>You click Play</h3></div>
+            <p>The game starts through its own launcher, as it would from a shortcut. Binder closes 10 seconds later. You can change the delay, or press Keep open.</p>
+          </div>
         </li>
         <li class="step">
           <div class="step-picture step-picture-rows" aria-hidden="true">
             <div><span>Binder</span><span class="muted">Not running</span></div>
             <div><span>Helper</span><span class="muted">About 3 MB, waiting</span></div>
           </div>
-          <div class="step-title"><span class="step-number">2</span><h3>Binder closes</h3></div>
-          <p>A small helper stays to notice when the game ends. While the game starts it looks for it every couple of seconds; once found, it just waits and uses no processor time.</p>
+          <div class="step-text">
+            <div class="step-title"><span class="step-number">2</span><h3>Binder closes</h3></div>
+            <p>A small helper stays to notice when the game ends. While the game starts it looks for it every couple of seconds; once found, it just waits and uses no processor time.</p>
+          </div>
         </li>
         <li class="step">
           <div class="step-picture" aria-hidden="true">
@@ -127,15 +132,18 @@
             <strong>[Game title] · 1 h 42 min</strong>
             <div class="bars"><span style="--h: 30%"></span><span style="--h: 55%"></span><span style="--h: 20%"></span><span style="--h: 70%"></span><span style="--h: 40%"></span><span class="now" style="--h: 100%"></span></div>
           </div>
-          <div class="step-title"><span class="step-number">3</span><h3>You close the game</h3></div>
-          <p>Binder opens again and adds the session to the game's playtime. If you'd rather it stayed closed, turn this off in Settings.</p>
+          <div class="step-text">
+            <div class="step-title"><span class="step-number">3</span><h3>You close the game</h3></div>
+            <p>Binder opens again and adds the session to the game's playtime. If you'd rather it stayed closed, turn this off in Settings.</p>
+          </div>
         </li>
       </ol>
+      </div>
 
       <div class="usage">
         <div class="usage-head">
           <h3 class="h3">How much it uses</h3>
-          <p class="footnote">Approximate, measured on [TEST PC]. Your numbers will vary with the size of your library. The bars share one scale, up to 230 MB.</p>
+          <p class="footnote">Approximate, measured on [TEST PC]. Your numbers will vary with the size of your library.</p>
         </div>
         <ul class="stats">
           <li class="stat">
@@ -143,7 +151,6 @@
             <div class="stat-row">
               <span class="stat-label">Memory</span>
               <span class="stat-value">130–230<span class="stat-unit">MB</span></span>
-              <span class="stat-meter" aria-hidden="true"><span class="stat-fill" style="--w: 56.5%"></span><span class="stat-fill stat-fill-range" style="--w: 43.5%"></span></span>
               <span class="stat-note">More with many covers</span>
             </div>
             <div class="stat-row stat-row-cpu">
@@ -156,7 +163,6 @@
             <div class="stat-row">
               <span class="stat-label">Memory</span>
               <span class="stat-value">12<span class="stat-unit">MB</span></span>
-              <span class="stat-meter" aria-hidden="true"><span class="stat-fill" style="--w: 5.2%"></span></span>
               <span class="stat-note">Binder's window is closed</span>
             </div>
             <div class="stat-row stat-row-cpu">
@@ -169,7 +175,6 @@
             <div class="stat-row">
               <span class="stat-label">Memory</span>
               <span class="stat-value">3<span class="stat-unit">MB</span></span>
-              <span class="stat-meter" aria-hidden="true"><span class="stat-fill" style="--w: 1.3%"></span></span>
               <span class="stat-note">Only the helper; Binder itself is closed</span>
             </div>
             <div class="stat-row stat-row-cpu">

@@ -389,7 +389,8 @@ summary::-webkit-details-marker { display: none; }
 /* How it works */
 .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; counter-reset: none; }
 .step { display: flex; flex-direction: column; gap: 16px; padding: 20px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-1); }
-.step > p { margin: 0; color: var(--text-2); font-size: 15px; }
+.step-text { display: flex; flex-direction: column; gap: 10px; }
+.step-text p { margin: 0; color: var(--text-2); font-size: 15px; }
 .step-picture { height: 132px; box-sizing: border-box; padding: 16px 18px; display: flex; flex-direction: column; justify-content: center; gap: 8px; border-radius: 8px; background: var(--surface-2); font-size: 15px; }
 .step-picture strong { font-weight: 600; }
 .step-picture .muted { font-size: 13px; }
@@ -407,8 +408,112 @@ summary::-webkit-details-marker { display: none; }
 .step-title h3 { margin: 0; font-family: var(--display); font-size: 20px; font-weight: 600; }
 .step-number { width: 28px; height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: linear-gradient(135deg, var(--brand-light), var(--brand)); color: #FFFFFF; font-size: 14px; font-weight: 700; }
 
-/* How much it uses: three spec cards. Their rows line up across the cards (subgrid), and the memory meters share
-   one scale (0–230 MB), so the small figures read as small. */
+/* "What happens when you play a game" as a scroll story: the steps stay pinned below the header while the page
+   scrolls through .how-scroll, and the picture changes from step to step. Pure CSS (scroll-driven animations);
+   without support, or with reduced motion, the three cards above stay as they are. */
+:root { --header-h: 65px; }
+@media (max-width: 799px) { :root { --header-h: 105px; } }
+@keyframes how-show-1 { 0%, 27% { opacity: 1; transform: none; } 33%, 100% { opacity: 0; transform: translateY(-18px) scale(0.97); } }
+@keyframes how-show-2 { 0%, 27% { opacity: 0; transform: translateY(18px) scale(0.97); } 33%, 60% { opacity: 1; transform: none; } 66%, 100% { opacity: 0; transform: translateY(-18px) scale(0.97); } }
+@keyframes how-show-3 { 0%, 60% { opacity: 0; transform: translateY(18px) scale(0.97); } 66%, 100% { opacity: 1; transform: none; } }
+@keyframes how-lit-1 { 0%, 27% { opacity: 1; } 33%, 100% { opacity: 0.38; } }
+@keyframes how-lit-2 { 0%, 27% { opacity: 0.38; } 33%, 60% { opacity: 1; } 66%, 100% { opacity: 0.38; } }
+@keyframes how-lit-3 { 0%, 60% { opacity: 0.38; } 66%, 100% { opacity: 1; } }
+@keyframes how-rail-1 { 0%, 27% { transform: scaleY(1); } 33%, 100% { transform: scaleY(0); } }
+@keyframes how-rail-2 { 0%, 27% { transform: scaleY(0); } 33%, 60% { transform: scaleY(1); } 66%, 100% { transform: scaleY(0); } }
+@keyframes how-rail-3 { 0%, 60% { transform: scaleY(0); } 66%, 100% { transform: scaleY(1); } }
+@keyframes how-count { 0% { transform: scaleX(0.04); } 27%, 100% { transform: scaleX(1); } }
+@keyframes how-grow { 0%, 62% { transform: scaleY(0.15); } 72%, 100% { transform: scaleY(1); } }
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .how-scroll { height: 300vh; view-timeline: --how block; }
+    .how-scroll .steps {
+      position: sticky;
+      top: var(--header-h);
+      height: calc(100vh - var(--header-h));
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      grid-template-rows: 1fr auto auto auto 1fr;
+      gap: 6px 64px;
+      align-items: center;
+    }
+    .how-scroll .step { display: contents; }
+    .how-scroll .steps::before {
+      content: "";
+      grid-column: 2;
+      grid-row: 2 / 5;
+      align-self: stretch;
+      min-height: min(560px, 70vh);
+      border-radius: var(--radius-large);
+      background:
+        radial-gradient(60% 60% at 25% 20%, var(--bloom-1), transparent 70%),
+        radial-gradient(60% 70% at 85% 90%, var(--bloom-2), transparent 70%),
+        var(--bg-alt);
+      border: 1px solid var(--border);
+    }
+    .how-scroll .step-picture {
+      grid-column: 2;
+      grid-row: 2 / 5;
+      justify-self: center;
+      width: min(460px, calc(100% - 64px));
+      height: auto;
+      min-height: 220px;
+      padding: 30px 32px;
+      gap: 14px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-2);
+      font-size: 20px;
+    }
+    .how-scroll .step-picture .muted { font-size: 16px; }
+    .how-scroll .step-picture-rows { font-size: 16px; }
+    .how-scroll .step-picture-rows div { padding: 14px 0; }
+    .how-scroll .bars { height: 56px; }
+    .how-scroll .step-text { grid-column: 1; position: relative; padding: 18px 0 18px 26px; }
+    .how-scroll .step-text::before, .how-scroll .step-text::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 2px; background: var(--border); }
+    .how-scroll .step-text::after { background: var(--accent); transform-origin: top; }
+    .how-scroll .step-text p { font-size: 16px; }
+    .how-scroll .step:nth-child(1) .step-text { grid-row: 2; }
+    .how-scroll .step:nth-child(2) .step-text { grid-row: 3; }
+    .how-scroll .step:nth-child(3) .step-text { grid-row: 4; }
+
+    .how-scroll .step-picture, .how-scroll .step-text, .how-scroll .step-text::after,
+    .how-scroll .countdown .track span, .how-scroll .bars span.now {
+      animation-duration: 1ms;  /* ignored by the scroll timeline; some browsers need a value */
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --how;
+      animation-range: contain 0% contain 100%;
+    }
+    .how-scroll .step:nth-child(1) .step-picture { animation-name: how-show-1; }
+    .how-scroll .step:nth-child(2) .step-picture { animation-name: how-show-2; }
+    .how-scroll .step:nth-child(3) .step-picture { animation-name: how-show-3; }
+    .how-scroll .step:nth-child(1) .step-text { animation-name: how-lit-1; }
+    .how-scroll .step:nth-child(2) .step-text { animation-name: how-lit-2; }
+    .how-scroll .step:nth-child(3) .step-text { animation-name: how-lit-3; }
+    .how-scroll .step:nth-child(1) .step-text::after { animation-name: how-rail-1; }
+    .how-scroll .step:nth-child(2) .step-text::after { animation-name: how-rail-2; }
+    .how-scroll .step:nth-child(3) .step-text::after { animation-name: how-rail-3; }
+    .how-scroll .countdown .track span { inset: 0; transform-origin: left; animation-name: how-count; }
+    .how-scroll .bars span.now { transform-origin: bottom; animation-name: how-grow; }
+
+    /* Phones and narrow windows: the picture on top, one step's text at a time below it. */
+    @media (max-width: 900px) {
+      .how-scroll { height: 280vh; }
+      .how-scroll .steps { grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto auto 1fr; gap: 20px; }
+      .how-scroll .steps::before { grid-column: 1; grid-row: 2; min-height: 250px; border-radius: 18px; }
+      .how-scroll .step-picture { grid-column: 1; grid-row: 2; width: min(360px, calc(100% - 40px)); min-height: 160px; padding: 20px 22px; font-size: 16px; }
+      .how-scroll .step:nth-child(n) .step-text { grid-row: 3; align-self: start; padding: 0; }
+      .how-scroll .step-text::before, .how-scroll .step-text::after { display: none; }
+      .how-scroll .step:nth-child(1) .step-text { animation-name: how-show-1; }
+      .how-scroll .step:nth-child(2) .step-text { animation-name: how-show-2; }
+      .how-scroll .step:nth-child(3) .step-text { animation-name: how-show-3; }
+    }
+  }
+}
+
+/* How much it uses: three spec cards whose rows line up across the cards (subgrid). */
 .usage { margin-top: 72px; display: flex; flex-direction: column; gap: 20px; }
 .usage-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 32px; }
 .usage-head .footnote { max-width: 560px; }
@@ -431,9 +536,6 @@ summary::-webkit-details-marker { display: none; }
 .stat-label { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); }
 .stat-value { display: flex; align-items: baseline; gap: 6px; font-size: 40px; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; }
 .stat-unit { font-size: 18px; font-weight: 600; letter-spacing: 0; color: var(--text-2); }
-.stat-meter { display: flex; gap: 2px; height: 8px; margin: 6px 0 2px; border-radius: 999px; background: var(--accent-tint); overflow: hidden; }
-.stat-fill { width: max(var(--w), 6px); flex-shrink: 0; background: var(--accent); border-radius: 999px; }
-.stat-fill-range { background: var(--accent-tint-strong); }
 .stat-note { font-size: 14px; color: var(--text-2); }
 .stat-row-cpu { gap: 4px; }
 .stat-cpu { font-size: 15px; font-weight: 600; }

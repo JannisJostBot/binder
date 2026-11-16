@@ -88,6 +88,9 @@ from this repo (for example with GitHub Pages) once the repo is public.
 - The look: Windows-native type and colours, plus Binder's own touches: pill buttons, the bloom in the logo's
   blues, the logo's fanned cover stack (hero, download panel), launcher chips like the app's filter chips, the
   deep blue privacy and download panels. Keep them; don't add stock illustrations, emoji or other fonts.
+- "What happens when you play a game" is a scroll story in pure CSS (scroll-driven animations on `.how-scroll`,
+  keyframes `how-*`): the three steps stay pinned and the picture changes as the page scrolls. Without support or
+  with reduced motion it's three cards; check both after changing a step.
 - The header and footer are the same on both pages (`docs.html` links back with `index.html#…`). The "Binder is
   an app for Windows PCs" note (`touch-hint`) shows only on touch screens.
 - The text is factual and plain: only what the app really does, numbers only from the card, no marketing words
