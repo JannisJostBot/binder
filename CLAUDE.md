@@ -334,7 +334,9 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
 - Release notes: a change people using Binder will notice adds its line to `docs/releases/next.md` in the same
   commit, in plain words for them (no code names). Only big bugs get a line of their own; small fixes only set
   "Small fixes" to `yes` (the standard line "Stability improvements and small fixes."); internal work, tests, CI
-  and the website get nothing. Rules: `docs/releases/README.md`, "Collecting changes".
+  and the website get nothing. Rules: `docs/releases/README.md`, "Collecting changes". `check.ps1` fails when
+  something under `src/` changes without `next.md`; for a change nobody will notice, pass `-NoReleaseNote`, or
+  (for CI) add a `Release-Notes: none <why>` line to one of the branch's commits.
 - After each change run `./scripts/check.ps1` (or `dotnet build` + the unit tests). This repo builds on Windows only;
   on Linux only the unit tests run. Test new behaviour on the real PC's launchers where possible.
 - Commit at each milestone with a short message.

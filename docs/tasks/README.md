@@ -18,7 +18,9 @@ Small, exactly specified tasks for coding agents (see `AGENTS.md`). One card = o
 - Say how to know it's done: the check command and what the output must contain.
 - List what's out of scope under `## Don't`.
 - When the change is something people using Binder will notice, list `docs/releases/next.md` under `## Files`
-  and give the line to add (or "Small fixes: `yes`"), worded as `docs/releases/README.md` says.
+  and give the line to add (or "Small fixes: `yes`"), worded as `docs/releases/README.md` says. A card that
+  changes `src/` without anything people will notice says so, adds `-NoReleaseNote` to its check command and
+  gives the commit message's `Release-Notes: none <why>` line (for CI), or the check fails.
 
 Template:
 

@@ -38,7 +38,9 @@ this folder they may change). The owner turns it into `<version>.json` at releas
   wrong tooltip): no line of its own; set "Small fixes" to `yes`. It becomes one standard line at the end of the
   notes.
 - **No line at all** for work nobody using the app sees: refactoring, tests, CI, the website, docs, task cards,
-  build scripts.
+  build scripts. `scripts/check.ps1` (and CI) fails when a file under `src/` changes without `next.md`: for such a
+  change, add a `Release-Notes: none <why>` line to one of the branch's commit messages (or pass
+  `-NoReleaseNote` locally).
 - One line, one change; edit an existing line instead of adding a second one about the same thing. The same
   wording rules as the app's text: short, plain, no selling, no exclamation marks.
 

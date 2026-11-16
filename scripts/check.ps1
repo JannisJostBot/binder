@@ -14,6 +14,8 @@
     - a change to what site/docs.html documents (Game mode and its helper, Start with Windows, updates, shortcut
       import, the installer) also changes site/docs.html, unless -DocsUnchanged or a commit on the branch has a
       'Docs-Unchanged: <why>' line (what the page says still holds)
+    - a change under src/ also changes docs/releases/next.md (the next release's notes), unless -NoReleaseNote or
+      a commit on the branch has a 'Release-Notes: none <why>' line (nobody using Binder will notice it)
 
   Also checked with -Strict or -Task (work by agents from docs/tasks):
     - no changes to protected files (the watcher, the launcher, security checks, native code, the installer,
@@ -33,7 +35,8 @@ param(
     [switch]$Strict,
     [switch]$SkipBuild,
     [switch]$AllowPackages,
-    [switch]$DocsUnchanged
+    [switch]$DocsUnchanged,
+    [switch]$NoReleaseNote
 )
 
 $ErrorActionPreference = 'Stop'
@@ -112,6 +115,17 @@ if (-not $DocsUnchanged -and -not ($changed -contains 'site/docs.html')) {
         foreach ($p in $documented) {
             if ($f -match $p) { Problem "${f}: site/docs.html documents what this does; update it in the same change, or if every sentence there still holds, pass -DocsUnchanged or add a 'Docs-Unchanged: <why>' line to a commit message"; break }
         }
+    }
+}
+
+# The next release's notes collect every change people using Binder will notice (docs/releases/README.md,
+# "Collecting changes"). A change under src/ that nobody will notice (refactoring, comments, logging) passes with
+# -NoReleaseNote, or in CI with a 'Release-Notes: none <why>' line in one of the branch's commit messages.
+if (-not $NoReleaseNote) { $NoReleaseNote = [bool](git log --format=%B "$mergeBase..HEAD" | Select-String -Pattern '^Release-Notes:\s*none\b') }
+if (-not $NoReleaseNote -and -not ($changed -contains 'docs/releases/next.md')) {
+    $code = @($changed | Where-Object { $_ -match '^src/' })
+    if ($code.Count -gt 0) {
+        Problem "$($code[0])$(if ($code.Count -gt 1) { " (and $($code.Count - 1) more)" }): add the change to docs/releases/next.md for the next release's notes (a small fix only sets 'Small fixes' to yes), or if nobody using Binder will notice it, pass -NoReleaseNote or add a 'Release-Notes: none <why>' line to a commit message"
     }
 }
 

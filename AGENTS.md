@@ -64,6 +64,9 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
 When the card changes something people using Binder will notice, add a line to `docs/releases/next.md` (the
 card lists it under `## Files` then). Plain words for the user, no code names; a small bug fix gets no line of its
 own, only "Small fixes" set to `yes`. Tests, the website and other work nobody sees in the app get nothing. The
+check fails when a file under `src/` changes without `next.md`; when the card says the change gets no line, its
+check command has `-NoReleaseNote` and you add the card's `Release-Notes: none <why>` line to the commit message
+(CI looks for it). The
 rules are in `docs/releases/README.md`, "Collecting changes".
 
 ## Where things are
