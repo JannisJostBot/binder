@@ -30,11 +30,11 @@ public sealed partial class SetupView : UserControl
     {
         var rows = Picker.RowsFor(moved);
         IsHitTestVisible = false;
-        LogoMerge.Play(MergeLayer, Picker.ListArea, rows, async () =>
+        LogoMerge.Play(MergeLayer, Step2, Picker.ListArea, rows, async () =>
         {
             await then();
             IsHitTestVisible = true;
-            LogoMerge.Clear(MergeLayer, Picker.ListArea, rows);
+            LogoMerge.Clear(MergeLayer, Step2, rows);
         });
     }
 

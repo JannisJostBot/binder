@@ -14,8 +14,8 @@ namespace Binder.Views;
 /// Setup step 2, as on the website's launcher list (site/chips.js): the shortcuts that were just moved onto the
 /// shelf fly into Binder's logo. Each visible row becomes a stand-in that flies, one after another, to one of the
 /// logo's three covers and turns into it on the way (size, corners, angle, blue); as the last one lands the logo
-/// itself shows on top and its play mark pops in. The list's card fades as the pills form, with the rows that stay,
-/// those beyond the first seven and those scrolled out of view.
+/// itself shows on top and its play mark pops in. The rest of the page (title, list, the rows that stay, those beyond
+/// the first seven or scrolled out of view, buttons) fades as the pills form, so the window shows only the animation.
 /// Everything is started at once and runs on the compositor; a scoped batch calls back when it's over (about
 /// 1.5 s), no timer. Animation effects off or high contrast: no animation, the callback runs at once.
 /// </summary>
@@ -49,7 +49,7 @@ internal static class LogoMerge
         return new Cover(new Vector2((float)(rx - 24) * Unit, (float)(ry - 24) * Unit), degrees, tint);
     }
 
-    public static void Play(Canvas layer, FrameworkElement area, IReadOnlyList<FrameworkElement> rows, Action then)
+    public static void Play(Canvas layer, FrameworkElement page, FrameworkElement area, IReadOnlyList<FrameworkElement> rows, Action then)
     {
         if (rows.Count == 0 || layer.ActualWidth <= 0 || !new Windows.UI.ViewManagement.UISettings().AnimationsEnabled ||
             new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast)
@@ -61,15 +61,17 @@ internal static class LogoMerge
         var compositor = ElementCompositionPreview.GetElementVisual(layer).Compositor;
         var ease = compositor.CreateCubicBezierEasingFunction(new Vector2(.65f, 0), new Vector2(.35f, 1));
 
-        // Which rows fly: those in view, in list order, at most seven. The rest go with the list's card.
-        var view = Bounds(area, layer);
+        // Which rows fly: those in view in the list, in list order, at most seven. The rest go with the page.
+        var list = Bounds(area, layer);
         var flying = new List<(FrameworkElement Row, Rect Box)>();
         foreach (var row in rows)
         {
             if (flying.Count == MaxFlying) break;
             var box = Bounds(row, layer);
-            if (box.Height > 0 && box.Top >= view.Top - 1 && box.Bottom <= view.Bottom + 1) flying.Add((row, box));
+            if (box.Height > 0 && box.Top >= list.Top - 1 && box.Bottom <= list.Bottom + 1) flying.Add((row, box));
         }
+        // Everything else on the page goes, so the window shows only the animation; the logo forms in its middle.
+        var view = new Rect(0, 0, layer.ActualWidth, layer.ActualHeight);
         if (flying.Count == 0)
         {
             then();
@@ -100,8 +102,8 @@ internal static class LogoMerge
         logoVisual.Brush = compositor.CreateSurfaceBrush(surface);
         ElementCompositionPreview.SetElementChildVisual(logoHost, logoVisual);
 
-        // The list's card goes with the rows, so the pills fly over the page's own background.
-        ElementCompositionPreview.GetElementVisual(area).StartAnimation("Opacity", Scalar(compositor, 0, PillMs, 0, null));
+        // The page goes (title, list and its card, buttons), so the pills fly over nothing but the window's background.
+        ElementCompositionPreview.GetElementVisual(page).StartAnimation("Opacity", Scalar(compositor, 0, PillMs, 0, null));
 
         var shapes = compositor.CreateShapeVisual();
         shapes.Size = new Vector2((float)layer.ActualWidth, (float)layer.ActualHeight);
@@ -215,12 +217,12 @@ internal static class LogoMerge
     }
 
     /// <summary>Takes the overlay away and gives the rows back their opacity (step 2 can be shown again).</summary>
-    public static void Clear(Canvas layer, FrameworkElement area, IReadOnlyList<FrameworkElement> rows)
+    public static void Clear(Canvas layer, FrameworkElement page, IReadOnlyList<FrameworkElement> rows)
     {
         foreach (var child in layer.Children)
             if (child is Canvas host) ElementCompositionPreview.SetElementChildVisual(host, null);
         layer.Children.Clear();
-        foreach (var row in rows.Append(area))
+        foreach (var row in rows.Append(page))
         {
             var visual = ElementCompositionPreview.GetElementVisual(row);
             visual.StopAnimation("Opacity");
