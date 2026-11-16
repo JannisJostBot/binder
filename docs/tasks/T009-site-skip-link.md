@@ -1,5 +1,5 @@
 # T009 · Site: "Skip to content" link for keyboard users
-Status: ready
+Status: done
 Depends on: none
 Branch: agent/T009
 

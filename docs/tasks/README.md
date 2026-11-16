@@ -44,11 +44,11 @@ Branch: agent/T000
 | T004 | Tests for `Format.RelativeDay` | T001 | ready |
 | T005 | Tests for the playtime chart labels and `WeekStart` | none | ready |
 | T006 | Tests for `CoverColors.Initials` edge cases | none | ready |
-| T007 | Site: fill in the placeholders whose values are known | none | ready |
-| T008 | Site: description for search engines and link previews | none | ready |
-| T009 | Site: "Skip to content" link for keyboard users | none | ready |
-| T010 | Site: FAQ answer "Where does Binder keep my data?" | none | ready |
-| T011 | Site: dark mode that follows the visitor's system setting | none | ready |
+| T007 | Site: fill in the placeholders whose values are known | none | done |
+| T008 | Site: description for search engines and link previews | none | done |
+| T009 | Site: "Skip to content" link for keyboard users | none | done |
+| T010 | Site: FAQ answer "Where does Binder keep my data?" | none | done |
+| T011 | Site: dark mode that follows the visitor's system setting | none | done |
 
 Do the cards one at a time, in this order: T002–T004 add to the method T001 creates, and T007–T011 all change the
 website, so parallel branches would conflict.

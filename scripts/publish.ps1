@@ -82,6 +82,19 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 # Metadata for compilers and debug symbols: not needed to run.
 Get-ChildItem $app -Recurse -File -Include *.winmd, *.pdb | Remove-Item
 
+# The debug panel (src/Binder/Dev, "--dev") is for Debug builds only and Release builds leave it out. Make sure none
+# of it got into what ships: its marker text (Dev/DevPanel.cs) must be in none of the published files, in either
+# of the encodings a compiled string can have.
+$devMarker = 'BINDER-DEBUG-PANEL-' + 'NOT-FOR-RELEASE' # split, so this script never matches itself
+$latin1 = [Text.Encoding]::GetEncoding(28591)
+$needles = @([Text.Encoding]::Unicode, [Text.Encoding]::UTF8) | ForEach-Object { $latin1.GetString($_.GetBytes($devMarker)) }
+foreach ($file in Get-ChildItem $app -Recurse -File) {
+    $bytes = $latin1.GetString([IO.File]::ReadAllBytes($file.FullName))
+    foreach ($needle in $needles) {
+        if ($bytes.Contains($needle)) { throw "Debug code got into the release: $($file.Name) contains the debug panel's marker" }
+    }
+}
+
 # The app's translations (de\, fr\ Binder.resources.dll): Native AOT compiles them into Binder.exe.
 foreach ($satellite in Get-ChildItem $app -Recurse -File -Filter 'Binder.resources.dll') {
     $folder = $satellite.Directory

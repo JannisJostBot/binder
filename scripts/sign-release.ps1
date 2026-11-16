@@ -246,3 +246,6 @@ if ($DryRun) {
 Run gh @('release', 'edit', $tag, '--repo', $Repo, '--draft=false', '--latest') | Out-Host
 Remove-Item -LiteralPath $work -Recurse -Force
 Write-Host "Published $tag." -ForegroundColor Green
+# The website links to this exact file (docs/proposals.md §25, "Making a release", step 7).
+$siteMB = [Math]::Round($size / 1MB)
+Write-Host "Website: in site/index.html set the download link to https://github.com/$Repo/releases/download/$tag/$setupName and the line under it to ""Version $Version · $siteMB MB""." -ForegroundColor Yellow

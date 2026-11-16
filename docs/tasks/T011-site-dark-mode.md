@@ -1,5 +1,5 @@
 # T011 · Site: dark mode that follows the visitor's system setting
-Status: ready
+Status: done
 Depends on: none
 Branch: agent/T011
 

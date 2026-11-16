@@ -1,5 +1,5 @@
 # T007 · Site: fill in the placeholders whose values are known
-Status: ready
+Status: done (2026-11-15, with version 0.2.1, 34 MB and the release download link instead of 0.1.0 and 31 MB)
 Depends on: none
 Branch: agent/T007
 
