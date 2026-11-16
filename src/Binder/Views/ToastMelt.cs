@@ -36,7 +36,7 @@ internal sealed class ToastMelt
     // The board's defaults: stagger 130 ms, spring 0.6, variation 0.5, stickiness 0.5.
     private const float Radius = 14, FallHeight = 96, SinkDepth = 24, Stagger = 130, Variation = 0.5f, Stickiness = 0.5f;
     private const float MeltMs = 320, FirstDropMs = 380;
-    private const float EmergeMs = 440, RiseMs = 720, RowWaitMs = 350, PopGapMs = 110, PopMs = 190, RingMs = 450;
+    private const float EmergeMs = 440, RiseMs = 720, RowWaitMs = 350, PopGapMs = 110, PopMs = 190, RingMs = 800;
     private const float Pad = 24, Top = FallHeight + Radius + 26; // room around the pill for the drops and the blur
 
     /// <summary>
@@ -664,50 +664,72 @@ internal sealed class ToastMelt
     }
     /// <summary>
     /// The ring each bubble leaves when it pops: thin and sharp, then wider and softer as it spreads and fades.
-    /// A ring-shaped radial gradient whose inner and outer edges move apart (no blur needed, so it's the same in
-    /// both modes).
+    /// A ring-shaped radial gradient with a Gaussian cross-section that widens (no blur needed, so it's the same
+    /// in both modes).
     /// </summary>
     private void BuildRings()
     {
-        const float size = 64;
+        // Drawn at twice the size it starts at, so growing it never stretches the gradient.
+        const float size = 128, line = 0.47f;
+        // The line's cross-section is a Gaussian, sampled finely: a few straight-line stops show as bands.
+        const int steps = 8;
         foreach (var d in _drops)
         {
-            var clear = Color.FromArgb(0, _glow.R, _glow.G, _glow.B);
             var brush = _compositor.CreateRadialGradientBrush();
             brush.EllipseCenter = new Vector2(0.5f);
             brush.EllipseRadius = new Vector2(0.5f);
-            // A thin, crisp line: no soft edges, and it stays sharp while it grows.
-            brush.ColorStops.Add(_compositor.CreateColorGradientStop(0, clear));
-            brush.ColorStops.Add(_compositor.CreateColorGradientStop(0.455f, clear));
-            brush.ColorStops.Add(_compositor.CreateColorGradientStop(0.465f, _glow));
-            brush.ColorStops.Add(_compositor.CreateColorGradientStop(0.49f, _glow));
-            brush.ColorStops.Add(_compositor.CreateColorGradientStop(0.50f, clear));
+            var stops = new List<(CompositionColorGradientStop Stop, float U)>();
+            for (int i = -steps; i <= steps; i++)
+            {
+                float u = (float)i / steps; // -1 inside .. 1 outside, in half-widths
+                float alpha = i == -steps || i == steps ? 0 : MathF.Exp(-4.5f * u * u);
+                var stop = _compositor.CreateColorGradientStop(0,
+                    Color.FromArgb((byte)MathF.Round(alpha * _glow.A), _glow.R, _glow.G, _glow.B));
+                brush.ColorStops.Add(stop);
+                stops.Add((stop, u));
+            }
             var ring = _compositor.CreateSpriteVisual();
             ring.Brush = brush;
             ring.Size = new Vector2(size);
             ring.CenterPoint = new Vector3(size / 2, size / 2, 0);
             ring.Offset = new Vector3(d.X - size / 2, -FallHeight - size / 2, 0);
             ring.Opacity = 0;
+            ring.Scale = new Vector3(0.525f, 0.525f, 1);
             _root!.Children.InsertAtTop(ring);
 
             float at = d.Pop + 100;
             var grow = _compositor.CreateVector3KeyFrameAnimation();
-            grow.InsertKeyFrame(0, new Vector3(0.9f, 0.9f, 1));
-            grow.InsertKeyFrame(1, new Vector3(1.5f, 1.5f, 1), Ease(RingOut));
+            grow.InsertKeyFrame(0, new Vector3(0.525f, 0.525f, 1));
+            grow.InsertKeyFrame(1, new Vector3(1.05f, 1.05f, 1), Ease(RingOut));
             var fade = _compositor.CreateScalarKeyFrameAnimation();
             fade.InsertKeyFrame(0, 0);
-            fade.InsertKeyFrame(0.12f, 0.7f);
-            fade.InsertKeyFrame(0.75f, 0); // gone before it slows down, so no faint ring lingers
-            fade.InsertKeyFrame(1, 0);
-            foreach (var a in new KeyFrameAnimation[] { grow, fade })
+            fade.InsertKeyFrame(0.08f, 0.85f);
+            fade.InsertKeyFrame(0.45f, 0.5f);
+            fade.InsertKeyFrame(1, 0, Ease(RingOut));
+            var animations = new List<(CompositionObject Target, string Property, KeyFrameAnimation Animation)>
+            {
+                (ring, "Scale", grow),
+                (ring, "Opacity", fade),
+            };
+            // Softening: every stop moves out from the line together, so the profile stays a smooth bell as it
+            // widens (more inward than outward is the old look: 0.07 → 0.29 inside, 0.05 → 0.33 outside).
+            foreach (var (stop, u) in stops)
+            {
+                float from = line + u * (u < 0 ? 0.07f : 0.05f), to = line + u * (u < 0 ? 0.29f : 0.33f);
+                stop.Offset = from;
+                var soften = _compositor.CreateScalarKeyFrameAnimation();
+                soften.InsertKeyFrame(0, from);
+                soften.InsertKeyFrame(1, to, Ease(RingOut));
+                animations.Add((stop, "Offset", soften));
+            }
+            foreach (var (_, _, a) in animations)
             {
                 a.Duration = Ms(RingMs);
                 a.DelayTime = Ms(at);
             }
             _start.Add(() =>
             {
-                ring.StartAnimation("Scale", grow);
-                ring.StartAnimation("Opacity", fade);
+                foreach (var (target, property, a) in animations) target.StartAnimation(property, a);
             });
         }
     }

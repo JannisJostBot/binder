@@ -26,6 +26,15 @@ public sealed partial class App
     /// <summary>"Back to normal", as the watcher reports it with "--restored" (with its sound, if that's on).</summary>
     internal void DevRestored(Shared.RestoreResult result) => ShowRestored(result.Encode(), exitWhenClosed: false);
 
+    /// <summary>Test branch (ToastMelt): shows a toast with the melt, as "--melt" would; later toasts are today's.</summary>
+    internal void DevMelt(Views.MeltMode mode, bool slow, Action show)
+    {
+        var before = _melt;
+        _melt = (mode, slow ? 4 : 1);
+        try { show(); }
+        finally { _melt = before; }
+    }
+
     /// <summary>The restart pill after a crash; its countdown and Cancel only close it, nothing is started.</summary>
     internal void DevRestartPill()
     {
