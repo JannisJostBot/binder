@@ -659,10 +659,24 @@ summary::-webkit-details-marker { display: none; }
 .faq-item { border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); }
 .faq-item[open] { box-shadow: var(--shadow-1); }
 .faq-item summary { min-height: 64px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-size: 16px; font-weight: 600; list-style: none; }
-.faq-icon { flex-shrink: 0; color: var(--accent); transition: transform 0.15s; }
+.faq-icon { flex-shrink: 0; color: var(--accent); transition: transform 0.25s ease; }
 .faq-item[open] .faq-icon { transform: rotate(45deg); }
 @media (prefers-reduced-motion: reduce) { .faq-icon { transition: none; } }
 .faq-item p { margin: 0; padding: 0 20px 20px; color: var(--text-2); font-size: 15px; }
+/* Opening and closing slide the answer in and out: CSS only, where the browser can animate <details> (its
+   ::details-content and interpolate-size). Elsewhere, or with reduced motion, it opens at once. */
+@supports selector(::details-content) {
+  @media (prefers-reduced-motion: no-preference) {
+    .faq-item { interpolate-size: allow-keywords; transition: box-shadow 0.25s ease; }
+    .faq-item::details-content {
+      height: 0;
+      overflow: clip;
+      opacity: 0;
+      transition: height 0.28s ease, opacity 0.2s ease, content-visibility 0.28s allow-discrete;
+    }
+    .faq-item[open]::details-content { height: auto; opacity: 1; }
+  }
+}
 @media (max-width: 900px) {
   .faq-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
   .faq-head { position: static; }
