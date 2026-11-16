@@ -102,6 +102,8 @@ Pages whenever a change to `site/` reaches `main`, so what's merged is live with
 - The text is factual and plain: only what the app really does, numbers only from the card, no marketing words
   ("amazing", "seamless", "blazing fast"). Placeholders in square brackets (`[DOWNLOAD LINK]`) stay until a card
   gives the real value.
+  The product shot's shelf shows made-up games (Starfall Drift, Ember Keep, …) with covers drawn in CSS
+  (`.mock-grid .g1`–`.g12`); they stay made up: never a real game's name or look.
 - Keep the "Before you download" section (the AI disclaimer and "Not affiliated") as it is.
 - `docs.html` is long text, so its parts are `docs-*` / `doc-*` classes in `styles.css`, not inline styles. Every
   sentence must be true of the code. Each Game mode item is one `doc-item` card with `data-item`, `data-default`
