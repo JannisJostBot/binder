@@ -69,7 +69,15 @@ jobs:
           # Upload (files over 32 MB need their own upload address) and wait for the analysis.
           $headers = @{ 'x-apikey' = $env:VT_API_KEY; 'accept' = 'application/json' }
           $uploadUrl = (Invoke-RestMethod -Headers $headers -Uri 'https://www.virustotal.com/api/v3/files/upload_url').data
-          $analysisId = (Invoke-RestMethod -Method Post -Headers $headers -Uri $uploadUrl -Form @{ file = Get-Item -LiteralPath $setup }).data.id
+          # curl for the upload: VirusTotal's upload server rejects PowerShell's -Form body ("Malformed multipart body").
+          # The key goes in through a header file, so it isn't on the command line.
+          $headerFile = Join-Path ([IO.Path]::GetTempPath()) 'vt-headers.txt'
+          Set-Content -LiteralPath $headerFile -Value "x-apikey: $env:VT_API_KEY" -NoNewline
+          $upload = curl --silent --show-error --fail-with-body --max-time 600 -H "@$headerFile" -F "file=@$setup" $uploadUrl
+          $curlExit = $LASTEXITCODE
+          Remove-Item -LiteralPath $headerFile
+          if ($curlExit -ne 0) { Write-Host "::error::The upload to VirusTotal failed: $upload"; exit 1 }
+          $analysisId = ($upload | ConvertFrom-Json).data.id
           Write-Host "Uploaded; analysis $analysisId"
           $analysis = $null
           for ($i = 0; $i -lt 70; $i++) {
