@@ -530,16 +530,12 @@ internal sealed class ToastMelt
         layer.Size = _size;
         layer.Clip = _compositor.CreateGeometricClip(clipGeometry);
         _root!.Children.InsertAtTop(layer);
-        // Going back: what's above the pill's top edge (the bubbles' part of the glow; inside, the pill's own shows).
-        ContainerVisual? above = null;
-        if (_back)
-        {
-            above = _compositor.CreateContainerVisual();
-            above.Offset = new Vector3(-Pad, -Top, 0);
-            above.Size = new Vector2(_size.X + 2 * Pad, Top);
-            above.Clip = _compositor.CreateInsetClip();
-            _root.Children.InsertAtTop(above);
-        }
+        // What's above the pill's top edge: the bubbles' part of the glow (inside the pill, the pill's own shows).
+        var above = _compositor.CreateContainerVisual();
+        above.Offset = new Vector3(-Pad, -Top, 0);
+        above.Size = new Vector2(_size.X + 2 * Pad, Top);
+        above.Clip = _compositor.CreateInsetClip();
+        _root.Children.InsertAtTop(above);
 
         foreach (var d in _drops)
         {
@@ -568,30 +564,29 @@ internal sealed class ToastMelt
                 a.Duration = Ms(_back ? 700 : 650);
                 a.DelayTime = Ms(_back ? d.Start : d.Land + 30);
             }
-            // Going back, the light also fills the change while it's still joined to the pill, so it doesn't stop
-            // at the pill's edge: the same glow, clipped to the bubble as it moves, gone as the bubble lets go.
-            SpriteVisual? inBubble = null;
-            ContainerVisual? bubble = null;
-            CompositionGeometricClip? bubbleClip = null;
+            // The light also fills the part of the change that's outside the pill while it's joined to it, so it
+            // doesn't stop at the pill's edge: the same glow, clipped to the bubble as it moves and grows or shrinks
+            // (going back, gone as the bubble lets go).
+            var circle = _compositor.CreateEllipseGeometry();
+            circle.Radius = new Vector2(Radius);
+            var bubbleClip = _compositor.CreateGeometricClip(circle);
+            bubbleClip.Offset = new Vector2(d.X, _back ? SinkDepth : -FallHeight);
+            bubbleClip.Scale = Vector2.Zero;
+            var bubble = _compositor.CreateContainerVisual();
+            bubble.Offset = new Vector3(Pad, Top, 0); // back to the pill's coordinates
+            bubble.Size = _size;
+            bubble.Clip = bubbleClip;
+            above.Children.InsertAtTop(bubble);
+            var inBubble = _compositor.CreateSpriteVisual();
+            inBubble.Brush = brush;
+            inBubble.Size = glow.Size;
+            inBubble.CenterPoint = glow.CenterPoint;
+            inBubble.Offset = glow.Offset;
+            inBubble.Opacity = 0;
+            bubble.Children.InsertAtTop(inBubble);
             ScalarKeyFrameAnimation? letGo = null;
-            if (above is not null)
+            if (_back)
             {
-                var circle = _compositor.CreateEllipseGeometry();
-                circle.Radius = new Vector2(Radius);
-                bubbleClip = _compositor.CreateGeometricClip(circle);
-                bubbleClip.Offset = new Vector2(d.X, SinkDepth);
-                bubble = _compositor.CreateContainerVisual();
-                bubble.Offset = new Vector3(Pad, Top, 0); // back to the pill's coordinates
-                bubble.Size = _size;
-                bubble.Clip = bubbleClip;
-                above.Children.InsertAtTop(bubble);
-                inBubble = _compositor.CreateSpriteVisual();
-                inBubble.Brush = brush;
-                inBubble.Size = glow.Size;
-                inBubble.CenterPoint = glow.CenterPoint;
-                inBubble.Offset = glow.Offset;
-                inBubble.Opacity = 0;
-                bubble.Children.InsertAtTop(inBubble);
                 float span = EmergeMs + 60;
                 letGo = _compositor.CreateScalarKeyFrameAnimation();
                 letGo.InsertKeyFrame(0, 1);
@@ -604,11 +599,11 @@ internal sealed class ToastMelt
             {
                 glow.StartAnimation("Scale", scale);
                 glow.StartAnimation("Opacity", fade);
-                if (inBubble is null) return;
                 inBubble.StartAnimation("Scale", scale);
                 inBubble.StartAnimation("Opacity", fade);
-                bubbleClip!.StartAnimation("Offset", FallAndSink(d));
-                bubble!.StartAnimation("Opacity", letGo!);
+                bubbleClip.StartAnimation("Offset", FallAndSink(d));
+                bubbleClip.StartAnimation("Scale", GrowAndMelt(d));
+                if (letGo is not null) bubble.StartAnimation("Opacity", letGo);
             });
         }
     }
