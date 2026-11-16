@@ -82,12 +82,12 @@ Pages whenever a change to `site/` reaches `main`, so what's merged is live with
   have light and dark values. The product shot in the hero (`.stage`, `.mock-*`), the step and feature pictures
   and the Game mode pill are pictures of the app and keep its own fixed colours.
 - Layout is in classes in `styles.css`, grouped by section, with each section's phone values (up to 600 px)
-  right after it. Reuse the existing pieces (`.section`, `.section-head`, `.eyebrow`, `.h2`, `.lead`, `.button`,
+  right after it. Reuse the existing pieces (`.section`, `.section-head`, `.h2`, `.lead`, `.button`,
   `.tile`, `.stat`, `.faq-item`, `.note`) instead of new styles; no inline `style="…"` except a `--c`/`--h`
   value on a picture's parts.
 - The look: Windows-native type and colours, plus Binder's own touches: pill buttons, the bloom in the logo's
   blues, the logo's fanned cover stack (hero, download panel), launcher chips like the app's filter chips, the
-  deep blue privacy and download panels. Keep them; don't add stock illustrations, emoji or other fonts.
+  deep blue privacy and download panels. Keep them; no small labels above headings, and don't add stock illustrations, emoji or other fonts.
 - "What happens when you play a game" is a scroll story in pure CSS (scroll-driven animations on `.how-scroll`,
   keyframes `how-*`): the three steps stay pinned and the picture changes as the page scrolls. Without support or
   with reduced motion it's three cards; check both after changing a step.
