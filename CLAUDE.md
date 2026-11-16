@@ -84,6 +84,8 @@ src/Binder/            the WinUI widget
   App.xaml.cs             the app's lifetime (panel, tray menu, countdown); App.Restart.cs, App.Updates.cs (when to
                           check, download and install an update; spec §25)
   Program.cs, MessageWindow.cs   single instance, tray icon, hotkey
+  Dev/                    the debug panel, Debug builds only ("Binder.exe --dev"): buttons that show every toast, card
+                          and message through the real code with made-up data; left out of Release builds
 src/Binder.Watcher/    windowless (one hidden window on its own thread, SystemEvents.cs: shutdown, sign-out and
                           sleep); Program.cs, GameMode.cs (apply/restore + journal), ElevatedClient.cs,
                           GameModeShared.cs (also compiled into the widget, helper and setup)
@@ -237,6 +239,7 @@ times follow the user's regional format.
   contents, and the setup's disclaimer (English only, as in the README). The watcher and the helper record Game
   mode items by English name (journal, result, log); the widget translates them (`Views/GameModeText.cs`).
 - `BinderSetup.exe` keeps its few strings in `Text.cs` (invariant globalization, no resource files).
+- The debug panel (`src/Binder/Dev`) is English only and outside these rules: it is never in a release.
 - The CI tests (`tests/smoke.ps1`, `setup-test.ps1`) find controls by their English names: renaming an English
   label means updating them.
 - **Wording:** short and plain, in the words Windows uses. Say what something does or what happened, not why it's
@@ -334,6 +337,11 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
 - After each change run `./scripts/check.ps1` (or `dotnet build` + the unit tests). This repo builds on Windows only;
   on Linux only the unit tests run. Test new behaviour on the real PC's launchers where possible.
 - Commit at each milestone with a short message.
+- Debug-only code goes only in `src/Binder/Dev`, which `Binder.csproj` leaves out of Release builds. Other code reaches
+  it only through a partial method that has no body in Release (`App.DevCommand`, removed by the compiler with its
+  call); never reference a Dev type from anywhere else. `publish.ps1` stops if the panel's marker
+  (`DevPanel.Marker`) is in any published file, so a slip fails CI instead of shipping. The panel never writes the
+  user's data.
 - Routine work can go to cheaper agents as task cards (`docs/tasks/README.md`, `AGENTS.md`): one goal per card,
   exact files, insertion points and expected values checked against the code, and a `./scripts/check.ps1 -Task` line under
   "Done when". Review agent branches before merging and set the card to `done`. Keep `AGENTS.md`'s "Don't touch"
