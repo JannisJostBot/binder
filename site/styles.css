@@ -422,7 +422,7 @@ summary::-webkit-details-marker { display: none; }
 @keyframes how-rail-1 { 0%, 27% { transform: scaleY(1); } 33%, 100% { transform: scaleY(0); } }
 @keyframes how-rail-2 { 0%, 27% { transform: scaleY(0); } 33%, 60% { transform: scaleY(1); } 66%, 100% { transform: scaleY(0); } }
 @keyframes how-rail-3 { 0%, 60% { transform: scaleY(0); } 66%, 100% { transform: scaleY(1); } }
-@keyframes how-count { 0% { transform: scaleX(0.04); } 27%, 100% { transform: scaleX(1); } }
+@keyframes how-count { 0% { transform: scaleX(1); } 27%, 100% { transform: scaleX(0.04); } }
 @keyframes how-grow { 0%, 62% { transform: scaleY(0.15); } 72%, 100% { transform: scaleY(1); } }
 
 @supports (animation-timeline: view()) {
