@@ -32,8 +32,10 @@
         <a href="#faq">FAQ</a>
         <a href="docs.html">Docs</a>
       </nav>
-      <a href="https://github.com/JannisJostBot/binder" class="header-github"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"></path><path d="M16 7l5 5-5 5"></path></svg>GitHub</a>
-      <a href="#download" class="button button-small header-download">Download</a>
+      <div class="header-actions">
+        <a href="https://github.com/JannisJostBot/binder" class="header-github" title="Source code on GitHub"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"></path><path d="M16 7l5 5-5 5"></path></svg><span>GitHub</span></a>
+        <a href="#download" class="button button-small header-download"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download</a>
+      </div>
     </div>
   </header>
 
@@ -59,9 +61,12 @@
         <p class="hero-footnote" id="fn-admin"><sup>1</sup> Binder and its installer run with your account's normal rights. Only Game mode's optional admin helper asks for administrator rights: once when you choose <strong>Allow…</strong> to let Game mode pause background services and set network priority, again if a Binder update changes the helper, and when you remove it or uninstall Binder. <a href="docs.html#gm-helper">What the helper does</a></p>
       </div>
 
-      <!-- Product shot: a picture of the app, so it keeps the app's own dark colours. -->
-      <figure class="stage" aria-label="Binder's shelf open above the notification area on a Windows desktop">
+      <!-- Product shot: a picture of the app, so it keeps the app's own dark colours. The tray icon opens and closes
+           the shelf, as in Windows, without scripts: the switch is a checkbox on the icon, and clicking the desktop
+           (the label behind the shelf) closes it, like the real flyout. -->
+      <figure class="stage" aria-label="Binder's shelf above the notification area on a Windows desktop">
         <div class="stage-cards" aria-hidden="true"><span></span><span></span><span></span></div>
+        <label for="shelf-toggle" class="stage-desktop" aria-hidden="true"></label>
         <div class="mock-panel">
           <div class="mock-greeting">Good evening</div>
           <div class="mock-search"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A9A9B2" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>Search 72 games</div>
@@ -76,9 +81,10 @@
             <span style="--c: #4E3A5C"></span><span style="--c: #2C4A5E"></span><span style="--c: #5A3B33"></span><span style="--c: #3A4258"></span>
           </div>
         </div>
-        <div class="mock-taskbar" aria-hidden="true">
-          <span class="mock-tray"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
-          <span class="mock-clock">21:14<br>05/11/2026</span>
+        <div class="mock-taskbar">
+          <span class="mock-hint" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9l10 4-4 1.5L13.5 19z"></path><path d="M5 3.5l1.2 1.8M3.5 7.5l2 .5M9.5 2.5l-.3 2.1"></path></svg><span class="mock-hint-open">Click the icon to close Binder</span><span class="mock-hint-closed">Click the icon to open Binder</span></span>
+          <span class="mock-tray"><input type="checkbox" id="shelf-toggle" class="shelf-toggle" role="switch" checked aria-label="Show Binder's shelf" title="Binder"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
+          <span class="mock-clock" aria-hidden="true">21:14<br>05/11/2026</span>
         </div>
       </figure>
     </div>
@@ -347,6 +353,16 @@
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download for Windows
         </a>
         <p class="download-meta">Version 0.2.1 · 34 MB · Windows 10 and 11, 64-bit · <a href="https://github.com/JannisJostBot/binder/releases">Release notes and earlier versions</a> · <a href="https://github.com/JannisJostBot/binder">Source code</a></p>
+        <!-- VirusTotal: copied from the release notes' "VirusTotal" section (.github/workflows/virustotal.yml), with each
+             release. Like the notes, it says how many engines flagged the setup, not which; the report lists them. -->
+        <div class="scan">
+          <span class="scan-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg></span>
+          <div class="scan-text">
+            <p class="scan-title">VirusTotal: 1 of 69 antivirus engines flagged this installer</p>
+            <p>Installers that aren't code-signed yet are sometimes flagged. Scanned on <time datetime="2026-11-16">16 November 2026</time> · <a href="https://www.virustotal.com/gui/file/e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5">Full report</a></p>
+            <p class="scan-hash">SHA-256 <code>e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5</code></p>
+          </div>
+        </div>
         <p class="download-text">Run the installer and follow the short setup: pick your launchers and, if you like, which desktop shortcuts to tidy away. Binder tells you when there's an update, or you can run a newer installer yourself, even while a game is running.</p>
       </div>
     </div>

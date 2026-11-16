@@ -1842,6 +1842,8 @@ A release can be marked `"urgent": true` for a security fix that shouldn't wait 
    `https://github.com/JannisJostBot/binder/releases/download/v<version>/BinderSetup-<version>.exe`, and the line
    under it says `Version <version> · <size> MB` (size in MiB, rounded; the sign script prints both at the end).
    Change both in one commit to `main` once the release is out, never before: until then the link would be a 404.
+   Once step 6 has finished, copy its result into the "VirusTotal" box under that line (engines flagged out of how
+   many, scan date, report link, SHA-256; not which engines), so the box never describes an older installer.
    Merging it publishes the site (`.github/workflows/pages.yml`).
    An older link keeps working (releases are immutable) and the app updates itself from there. There's no
    `releases/latest/download/BinderSetup.exe`: the setup's file name carries its version.

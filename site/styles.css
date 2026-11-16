@@ -92,7 +92,7 @@
 
 /* ---- Base ------------------------------------------------------------------------------------------------- */
 
-html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 12px); }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body { margin: 0; background: var(--bg); }
 .page {
@@ -176,57 +176,129 @@ summary::-webkit-details-marker { display: none; }
 }
 .skip-link:focus { top: 12px; }
 
-/* ---- Header: sticky and translucent -------------------------------------------------------------------------- */
+/* ---- Header: a floating bar --------------------------------------------------------------------------------- */
+
+/* The bar floats 12 px below the top of the window, over the page (the hero's bloom shows around it), with the
+   section links in a track in the middle like the app's segmented controls. --header-h is the space it takes:
+   the hero and the docs start below it, anchors scroll clear of it and the "How it works" story pins under it.
+   Below 880 px the links move to a second row, which scrolls sideways if they don't fit. */
+:root { --header-top: 12px; --header-bar-h: 60px; --header-h: calc(var(--header-top) + var(--header-bar-h)); }
+@media (max-width: 879px) { :root { --header-bar-h: 104px; } }
 
 .site-header {
   position: sticky;
   top: 0;
   z-index: 20;
+  height: var(--header-h);
+  margin-bottom: calc(-1 * var(--header-h));
+  padding: var(--header-top) var(--gutter) 0;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+.header-bar {
+  pointer-events: auto;
+  max-width: calc(var(--wrap) - 2 * 24px);
+  height: var(--header-bar-h);
+  margin: 0 auto;
+  padding: 0 8px 0 18px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
   background: var(--header-bg);
   -webkit-backdrop-filter: saturate(1.6) blur(18px);
   backdrop-filter: saturate(1.6) blur(18px);
-  border-bottom: 1px solid var(--divider);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow-2);
 }
-.header-bar {
-  max-width: var(--wrap);
-  margin: 0 auto;
-  padding: 0 var(--gutter);
-  min-height: 64px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 24px;
-  box-sizing: border-box;
-}
-.brand { display: flex; align-items: center; gap: 10px; padding: 10px 0; color: var(--text); text-decoration: none; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 10px 0; color: var(--text); text-decoration: none; justify-self: start; }
 .brand span { font-family: var(--display); font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
 .brand:hover { color: var(--text); }
 .brand-small span { font-size: 16px; }
-.header-nav { display: flex; flex-grow: 1; gap: 2px; font-size: 14px; }
-.header-nav a { padding: 8px 12px; border-radius: 999px; color: var(--text); text-decoration: none; }
-.header-nav a:hover { background: var(--surface-2); color: var(--text); }
-.header-nav a[aria-current="page"] { background: var(--accent-tint); font-weight: 600; }
-.header-github { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; color: var(--text); text-decoration: none; font-size: 14px; }
-.header-github:hover { background: var(--surface-2); color: var(--text); }
+.header-bar .brand:focus-visible { outline-offset: 4px; }
 
-/* Below 800 px: logo and Download on the first row, the section links on the second (they scroll sideways if
-   they don't fit). The header's GitHub link shows only from 800 px; the download panel, FAQ and footer link to
-   the code too. */
-@media (max-width: 799px) {
-  .header-github { display: none; }
-  .header-download { order: 1; margin-left: auto; }
-  .header-nav { order: 2; flex-basis: 100%; margin: 0 -12px 6px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.header-nav {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--divider);
+  font-size: 14px;
+}
+.header-nav a {
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--text-2);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s;
+}
+.header-nav a:hover { background: var(--surface); color: var(--text); }
+.header-nav a[aria-current="page"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow-1), inset 0 0 0 1px var(--border); }
+
+.header-actions { justify-self: end; display: flex; align-items: center; gap: 4px; }
+.header-github {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.15s;
+}
+.header-github:hover { background: var(--surface-2); color: var(--text); }
+.header-download { min-height: 42px; gap: 6px; padding: 0 18px 0 16px; }
+@media (prefers-reduced-motion: reduce) { .header-nav a, .header-github { transition: none; } }
+
+/* No backdrop blur: an opaque bar, so text behind it can't show through. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .header-bar { background: var(--bg); }
+}
+
+@media (max-width: 879px) {
+  .header-bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 52px 40px;
+    row-gap: 2px;
+    padding: 4px 6px 6px 14px;
+    border-radius: 22px;
+  }
+  .header-github { padding: 0 11px; }
+  .header-github span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .header-nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-left: -8px;
+    overflow-x: auto;
+    padding: 3px;
+    scrollbar-width: none;
+  }
   .header-nav::-webkit-scrollbar { display: none; }
-  .header-nav a { flex-shrink: 0; white-space: nowrap; }
+  .header-nav a { flex: 1 0 auto; text-align: center; padding: 5px 12px; }
+}
+@media (max-width: 600px) {
+  .site-header { --gutter: 10px; }
+  :root { --header-top: 8px; }
+  .header-nav { font-size: 13px; }
+  .header-nav a { padding: 5px 8px; }
 }
 @media (max-width: 379px) {
-  .header-nav a { padding: 8px 8px; }
-  .header-nav { margin: 0 -8px 6px; }
+  .header-nav a { padding: 5px 6px; }
+  .header-download svg { display: none; }
 }
 
 /* ---- Hero ------------------------------------------------------------------------------------------------------ */
 
-.hero { position: relative; isolation: isolate; padding: 72px 0 88px; overflow: hidden; }
+.hero { position: relative; isolation: isolate; padding: calc(var(--header-h) + 64px) 0 88px; overflow: hidden; }
 .hero-bloom {
   position: absolute;
   inset: -20% -10% 0;
@@ -319,13 +391,67 @@ summary::-webkit-details-marker { display: none; }
 .mock-tray { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: rgba(0, 0, 0, 0.06); }
 .mock-clock { font-size: 12px; line-height: 1.25; color: #1B1B1B; text-align: right; }
 
+/* Opening and closing the shelf: the tray icon is a switch (a checkbox laid over it), and the desktop behind the
+   open shelf is a label for it, so clicking the desktop closes the shelf like the real flyout. No script: the
+   closed look needs :has(), and without it the shelf simply stays open. It slides up from the taskbar the way
+   Windows' own flyouts do, at once with reduced motion. */
+.mock-taskbar { z-index: 2; }
+.mock-tray { position: relative; transition: background-color 0.15s; }
+.shelf-toggle {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.mock-tray:hover { background: rgba(0, 0, 0, 0.1); }
+.mock-tray:has(.shelf-toggle:checked) { background: rgba(0, 0, 0, 0.1); box-shadow: inset 0 -3px 0 -1px #005FB8; }
+.mock-tray:has(.shelf-toggle:focus-visible) { outline: 2px solid #1B1B1B; outline-offset: 2px; }
+.stage-desktop { position: absolute; inset: 0 0 48px; z-index: 0; cursor: default; }
+.mock-panel {
+  z-index: 1;
+  transform-origin: 100% 100%;
+  transition: transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.18s, visibility 0s;
+}
+.stage:has(.shelf-toggle:not(:checked)) .mock-panel {
+  transform: translateY(40px);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.18s ease-in, opacity 0.15s, visibility 0s 0.18s;
+}
+.stage:has(.shelf-toggle:not(:checked)) .stage-desktop { pointer-events: none; }
+.mock-hint {
+  margin-right: auto;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  color: #3B3F45;
+}
+.mock-hint svg { flex-shrink: 0; }
+.mock-hint span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mock-hint-closed { display: none; }
+.stage:has(.shelf-toggle) .mock-hint { display: flex; }
+.stage:has(.shelf-toggle:not(:checked)) .mock-hint-open { display: none; }
+.stage:has(.shelf-toggle:not(:checked)) .mock-hint-closed { display: inline; }
+@media (prefers-reduced-motion: reduce) {
+  .mock-panel, .stage:has(.shelf-toggle:not(:checked)) .mock-panel, .mock-tray { transition: none; }
+  .stage:has(.shelf-toggle:not(:checked)) .mock-panel { transform: none; }
+}
+@media (forced-colors: active) {
+  .mock-tray:has(.shelf-toggle:checked) { outline: 2px solid Highlight; }
+}
+
 @media (max-width: 960px) {
-  .hero { padding: 48px 0 64px; }
+  .hero { padding: calc(var(--header-h) + 40px) 0 64px; }
   .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .stage { height: 520px; }
 }
 @media (max-width: 600px) {
-  .hero { padding: 32px 0 48px; }
+  .hero { padding: calc(var(--header-h) + 24px) 0 48px; }
   .hero-text { gap: 16px; }
   .h1 { font-size: 38px; }
   .hero-lead { font-size: 17px; }
@@ -334,6 +460,8 @@ summary::-webkit-details-marker { display: none; }
   .stage-cards span { width: 150px; border-radius: 14px; }
   .stage-cards span:nth-child(3)::after { border-width: 18px 0 18px 30px; }
   .mock-panel { right: 12px; bottom: 56px; height: 344px; max-width: calc(100% - 24px); }
+  .mock-taskbar { gap: 8px; padding: 0 10px 0 12px; }
+  .mock-hint { font-size: 11px; gap: 4px; }
 }
 
 /* On phones and tablets: Binder installs on a Windows PC, so say so next to the download buttons. */
@@ -384,7 +512,6 @@ summary::-webkit-details-marker { display: none; }
 .section-head { display: flex; flex-direction: column; gap: 12px; max-width: 720px; margin-bottom: 48px; }
 @media (max-width: 600px) {
   .wrap { --gutter: 16px; }
-  .header-bar { padding: 0 16px; }
   .section { padding: 64px 0; }
   .section-tight { padding-bottom: 0; }
   .section-head { margin-bottom: 32px; }
@@ -418,8 +545,6 @@ summary::-webkit-details-marker { display: none; }
 /* "What happens when you play a game" as a scroll story: the steps stay pinned below the header while the page
    scrolls through .how-scroll, and the picture changes from step to step. Pure CSS (scroll-driven animations);
    without support, or with reduced motion, the three cards above stay as they are. */
-:root { --header-h: 65px; }
-@media (max-width: 799px) { :root { --header-h: 105px; } }
 @keyframes how-show-1 { 0%, 27% { opacity: 1; transform: none; } 33%, 100% { opacity: 0; transform: translateY(-18px) scale(0.97); } }
 @keyframes how-show-2 { 0%, 27% { opacity: 0; transform: translateY(18px) scale(0.97); } 33%, 60% { opacity: 1; transform: none; } 66%, 100% { opacity: 0; transform: translateY(-18px) scale(0.97); } }
 @keyframes how-show-3 { 0%, 60% { opacity: 0; transform: translateY(18px) scale(0.97); } 66%, 100% { opacity: 1; transform: none; } }
@@ -725,10 +850,32 @@ summary::-webkit-details-marker { display: none; }
 .download-meta { margin: 0; font-size: 13px; color: rgba(255, 255, 255, 0.78); }
 .download-meta a, .download-meta a:hover { color: #FFFFFF; }
 .download-text { margin: 0; max-width: 560px; font-size: 15px; color: rgba(255, 255, 255, 0.82); }
+
+/* The VirusTotal result for the current installer, under the version line. */
+.scan {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  max-width: 560px;
+  box-sizing: border-box;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  text-align: left;
+}
+.scan-icon { width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255, 255, 255, 0.14); }
+.scan-text { min-width: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13px; line-height: 1.5; color: rgba(255, 255, 255, 0.82); }
+.scan-text p { margin: 0; }
+.scan-text a, .scan-text a:hover { color: #FFFFFF; }
+.scan-title { font-size: 15px; font-weight: 600; color: #FFFFFF; }
+.scan-hash code { font-family: 'Cascadia Mono', Consolas, ui-monospace, monospace; font-size: 12px; overflow-wrap: anywhere; color: rgba(255, 255, 255, 0.92); }
 @media (max-width: 600px) {
   .download-panel { padding: 40px 20px; gap: 14px; border-radius: 18px; }
   .download-logo svg { width: 64px; height: 64px; }
   .download-button { align-self: stretch; }
+  .scan { padding: 12px 14px; gap: 12px; }
+  .scan-icon { width: 32px; height: 32px; }
 }
 
 /* Footer */
@@ -743,10 +890,10 @@ summary::-webkit-details-marker { display: none; }
 
 /* ---- Documentation (docs.html) ------------------------------------------------------------------------------- */
 
-.docs { max-width: var(--wrap); margin: 0 auto; padding: 56px var(--gutter) 96px; box-sizing: border-box; }
+.docs { max-width: var(--wrap); margin: 0 auto; padding: calc(var(--header-h) + 56px) var(--gutter) 96px; box-sizing: border-box; }
 .docs-intro { max-width: 760px; display: flex; flex-direction: column; gap: 12px; margin: 0 0 48px calc(220px + 56px); }
 .docs-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 56px; align-items: start; }
-.docs-toc { position: sticky; top: 88px; font-size: 14px; }
+.docs-toc { position: sticky; top: calc(var(--header-h) + 24px); font-size: 14px; }
 .docs-toc-title { margin: 0 0 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-2); }
 .docs-toc ol { list-style: none; margin: 0; padding: 0; }
 .docs-toc ol ol { margin: 2px 0 12px; padding-left: 12px; border-left: 1px solid var(--border); }
@@ -758,7 +905,7 @@ summary::-webkit-details-marker { display: none; }
 .docs-part + .docs-part { margin-top: 72px; padding-top: 56px; border-top: 1px solid var(--divider); }
 .docs-h2 { margin: 0 0 16px; font-family: var(--display); font-size: 32px; font-weight: 600; line-height: 1.2; letter-spacing: -0.015em; }
 .docs-h3 { margin: 44px 0 12px; font-family: var(--display); font-size: 22px; font-weight: 600; line-height: 1.3; }
-.docs h2, .docs h3, .doc-item { scroll-margin-top: 88px; }
+.docs h2, .docs h3, .doc-item { scroll-margin-top: calc(var(--header-h) + 16px); }
 .docs-list { margin: 0 0 14px; padding-left: 22px; }
 .docs-list li { margin-bottom: 8px; }
 .docs code {
@@ -788,7 +935,7 @@ summary::-webkit-details-marker { display: none; }
   .docs-toc > ol { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 0 24px; }
 }
 @media (max-width: 600px) {
-  .docs { padding: 32px 16px 64px; }
+  .docs { padding: calc(var(--header-h) + 32px) 16px 64px; }
   .docs-intro { margin-bottom: 28px; }
   .docs-toc ol ol { columns: 2; column-gap: 16px; }
   .docs-toc ol ol a { padding: 4px 0; }
