@@ -10,7 +10,12 @@
   <meta property="og:type" content="website">
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://api.github.com; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
   <link rel="stylesheet" href="styles.css">
+  <script src="release.js" defer></script>
+  <script src="clock.js" defer></script>
+  <script src="chips.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#top">Skip to content</a>
@@ -32,8 +37,10 @@
         <a href="#faq">FAQ</a>
         <a href="docs.html">Docs</a>
       </nav>
-      <a href="https://github.com/JannisJostBot/binder" class="header-github"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"></path><path d="M16 7l5 5-5 5"></path></svg>GitHub</a>
-      <a href="#download" class="button button-small header-download">Download</a>
+      <div class="header-actions">
+        <a href="https://github.com/JannisJostBot/binder" class="header-github" title="Source code on GitHub"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"></path><path d="M16 7l5 5-5 5"></path></svg><span>GitHub</span></a>
+        <a href="#download" class="button button-small header-download"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download</a>
+      </div>
     </div>
   </header>
 
@@ -42,7 +49,7 @@
     <div class="hero-bloom" aria-hidden="true"></div>
     <div class="wrap hero-grid">
       <div class="hero-text">
-        <h1 class="h1">All your PC games in one window</h1>
+        <h1 class="h1">All your PC games in one place</h1>
         <p class="hero-lead">Binder lists the games you've installed with Steam, Epic, GOG and other launchers, and starts them with one click. While you play, Binder closes, and it opens again when you quit the game.</p>
         <div class="hero-actions">
           <a href="#download" class="button button-primary">
@@ -59,26 +66,31 @@
         <p class="hero-footnote" id="fn-admin"><sup>1</sup> Binder and its installer run with your account's normal rights. Only Game mode's optional admin helper asks for administrator rights: once when you choose <strong>Allow…</strong> to let Game mode pause background services and set network priority, again if a Binder update changes the helper, and when you remove it or uninstall Binder. <a href="docs.html#gm-helper">What the helper does</a></p>
       </div>
 
-      <!-- Product shot: a picture of the app, so it keeps the app's own dark colours. -->
-      <figure class="stage" aria-label="Binder's shelf open above the notification area on a Windows desktop">
-        <div class="stage-cards" aria-hidden="true"><span></span><span></span><span></span></div>
+      <!-- Product shot: a picture of the app, so it keeps the app's own dark colours. The tray icon opens and closes
+           the shelf, as in Windows, without scripts: the switch is a checkbox on the icon, and clicking the desktop
+           (the label behind the shelf) closes it, like the real flyout. -->
+      <figure class="stage" aria-label="Binder's shelf above the notification area on a Windows desktop">
+        <div class="stage-wallpaper" aria-hidden="true"></div>
+        <label for="shelf-toggle" class="stage-desktop" aria-hidden="true"></label>
         <div class="mock-panel">
-          <div class="mock-greeting">Good evening</div>
+          <div class="mock-greeting" id="mock-greeting">Good evening</div>
           <div class="mock-search"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A9A9B2" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>Search 72 games</div>
           <div class="mock-continue">
-            <div class="mock-continue-text"><span>Continue playing</span><strong>[Game title]</strong></div>
+            <div class="mock-continue-text"><span>Continue playing</span><strong>Starfall Drift</strong></div>
             <span class="mock-play">Play</span>
           </div>
           <div class="mock-chips"><span class="on">All</span><span>Favorites</span><span>Recent</span><span>Steam</span></div>
+          <!-- Made-up games with drawn covers (styles.css, .g1 to .g12): not real games. -->
           <div class="mock-grid" aria-hidden="true">
-            <span style="--c: #6B3B3B"></span><span class="focus" style="--c: #2F5A4A"></span><span style="--c: #5A4A2F"></span><span style="--c: #4A3B6B"></span>
-            <span style="--c: #2F4F5A"></span><span style="--c: #5A2F4A"></span><span style="--c: #44484F"></span><span style="--c: #3B5A33"></span>
-            <span style="--c: #4E3A5C"></span><span style="--c: #2C4A5E"></span><span style="--c: #5A3B33"></span><span style="--c: #3A4258"></span>
+            <span class="g1"><b>Starfall Drift</b></span><span class="g2 focus"><b>Ember Keep</b></span><span class="g3"><b>Tidebreak</b></span><span class="g4"><b>Neon Circuit</b></span>
+            <span class="g5"><b>Frostline</b></span><span class="g6"><b>Hollow Pines</b></span><span class="g7"><b>Iron Courier</b></span><span class="g8"><b>Glowmoth</b></span>
+            <span class="g9"><b>Dune Runners</b></span><span class="g10"><b>Skyward Isles</b></span><span class="g11"><b>Rift Tactics</b></span><span class="g12"><b>Little Lantern</b></span>
           </div>
         </div>
-        <div class="mock-taskbar" aria-hidden="true">
-          <span class="mock-tray"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
-          <span class="mock-clock">21:14<br>05/11/2026</span>
+        <div class="mock-taskbar">
+          <span class="mock-hint" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9l10 4-4 1.5L13.5 19z"></path><path d="M5 3.5l1.2 1.8M3.5 7.5l2 .5M9.5 2.5l-.3 2.1"></path></svg><span class="mock-hint-open">Click the icon to close Binder</span><span class="mock-hint-closed">Click the icon to open Binder</span></span>
+          <span class="mock-tray"><input type="checkbox" id="shelf-toggle" class="shelf-toggle" role="switch" checked aria-label="Show Binder's shelf" title="Binder"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
+          <span class="mock-clock" id="mock-clock" aria-hidden="true">21:14<br>05/11/2026</span>
         </div>
       </figure>
     </div>
@@ -88,9 +100,13 @@
   <section class="launchers" aria-label="Supported launchers">
     <div class="wrap launchers-inner">
       <p class="launchers-label">Finds games installed with</p>
-      <ul class="chips">
-        <li>Steam</li><li>Epic Games</li><li>GOG</li><li>EA app</li><li>Ubisoft Connect</li><li>Xbox app</li><li>Rockstar Games Launcher</li>
-      </ul>
+      <!-- On hover the chips gather in the middle and become Binder's logo (chips.js measures, styles.css moves). -->
+      <div class="chips-merge">
+        <ul class="chips">
+          <li>Steam</li><li>Epic Games</li><li>GOG</li><li>EA app</li><li>Ubisoft Connect</li><li>Xbox app</li><li>Rockstar Games Launcher</li>
+        </ul>
+        <span class="chips-logo" aria-hidden="true"><svg width="64" height="64" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path class="logo-play" d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
+      </div>
       <p class="launchers-note">You can also import your desktop game shortcuts, or add any game yourself.</p>
     </div>
   </section>
@@ -106,7 +122,7 @@
       <ol class="steps">
         <li class="step">
           <div class="step-picture" aria-hidden="true">
-            <strong>Starting [Game title]</strong>
+            <strong>Starting Starfall Drift</strong>
             <span class="muted">Binder closes in 10 s</span>
             <div class="countdown"><span class="track"><span></span></span><span class="mini-button">Keep open</span></div>
           </div>
@@ -128,7 +144,7 @@
         <li class="step">
           <div class="step-picture" aria-hidden="true">
             <span class="muted">Welcome back</span>
-            <strong>[Game title] · 1 h 42 min</strong>
+            <strong>Starfall Drift · 1 h 42 min</strong>
             <div class="bars"><span style="--h: 30%"></span><span style="--h: 55%"></span><span style="--h: 20%"></span><span style="--h: 70%"></span><span style="--h: 40%"></span><span class="now" style="--h: 100%"></span></div>
           </div>
           <div class="step-text">
@@ -204,7 +220,7 @@
         <article class="tile tile-narrow">
           <div class="tile-picture" aria-hidden="true">
             <div class="crash-card">
-              <strong><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#C42B1C"></circle><path d="M12 7v6.5M12 16.5v.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"></path></svg>[Game title] crashed</strong>
+              <strong><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#C42B1C"></circle><path d="M12 7v6.5M12 16.5v.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"></path></svg>Neon Circuit crashed</strong>
               <span>Likely cause: the graphics driver stopped responding.</span>
               <span>Try updating the driver, then lower the graphics preset.</span>
             </div>
@@ -343,10 +359,22 @@
         <span class="download-logo"><svg aria-hidden="true" width="80" height="80" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
         <h2 class="h2">Download Binder</h2>
         <p class="touch-hint touch-hint-download" role="note"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5"></rect><path d="M8 20h8M12 16v4"></path></svg><span>Binder is an app for Windows PCs. To install it, open this page on your PC.</span></p>
-        <a class="button button-light download-button" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe">
+        <a class="button button-light download-button" id="download-link" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe">
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download for Windows
         </a>
-        <p class="download-meta">Version 0.2.1 · 34 MB · Windows 10 and 11, 64-bit · <a href="https://github.com/JannisJostBot/binder/releases">Release notes and earlier versions</a> · <a href="https://github.com/JannisJostBot/binder">Source code</a></p>
+        <p class="download-meta"><span id="download-version">Version 0.2.1 · 34 MB</span> · Windows 10 and 11, 64-bit · <a href="https://github.com/JannisJostBot/binder/releases">Release notes and earlier versions</a> · <a href="https://github.com/JannisJostBot/binder">Source code</a></p>
+        <!-- The link, the version line and the VirusTotal box hold the last release's values; release.js replaces them
+             with the latest release on GitHub when the page opens (the box from the release notes' "VirusTotal"
+             section, .github/workflows/virustotal.yml). Like the notes, the box says how many engines flagged the
+             setup, not which; the report lists them. -->
+        <div class="scan" id="scan">
+          <span class="scan-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg></span>
+          <div class="scan-text">
+            <p class="scan-title" id="scan-title">VirusTotal: 1 of 69 antivirus engines flagged this installer</p>
+            <p id="scan-detail">Installers that aren't code-signed yet are sometimes flagged. Scanned on <time id="scan-date" datetime="2026-11-16">16 November 2026</time> · <a id="scan-report" href="https://www.virustotal.com/gui/file/e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5">Full report</a></p>
+            <p class="scan-hash">SHA-256 <code id="scan-hash">e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5</code></p>
+          </div>
+        </div>
         <p class="download-text">Run the installer and follow the short setup: pick your launchers and, if you like, which desktop shortcuts to tidy away. Binder tells you when there's an update, or you can run a newer installer yourself, even while a game is running.</p>
       </div>
     </div>
