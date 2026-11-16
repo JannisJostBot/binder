@@ -479,18 +479,25 @@ internal sealed class ToastMelt
         // the fill from 0.5 (on them). Steep cuts keep the outline crisp; the blur makes drop and pill flow together.
         float sigma = 3.5f + 5 * Stickiness;
         float AlphaBias(float level) => 0.5f - 26 * level;
+        // Two steps: the effect premultiplies before it clamps, so a color set in the same matrix as the steep alpha
+        // would come out multiplied by up to 26 (white). First the alpha alone, clamped; then the color on it.
         IGraphicsEffectSource Cut(Color color, float level) => new ColorMatrixEffect
         {
-            Source = new GaussianBlurEffect
+            Source = new ColorMatrixEffect
             {
-                Source = new CompositionEffectSourceParameter("src"),
-                BlurAmount = sigma,
-                BorderMode = EffectBorderMode.Hard,
+                Source = new GaussianBlurEffect
+                {
+                    Source = new CompositionEffectSourceParameter("src"),
+                    BlurAmount = sigma,
+                    BorderMode = EffectBorderMode.Hard,
+                },
+                ColorMatrix = new Matrix5x4 { M44 = 26, M54 = AlphaBias(level) },
+                ClampOutput = true,
             },
             ColorMatrix = new Matrix5x4
             {
-                M44 = 26,
-                M51 = color.R / 255f, M52 = color.G / 255f, M53 = color.B / 255f, M54 = AlphaBias(level),
+                M44 = 1,
+                M51 = color.R / 255f, M52 = color.G / 255f, M53 = color.B / 255f,
             },
             ClampOutput = true,
         };
