@@ -1,0 +1,3 @@
+BinderSetup.exe: 34678 KB
+Setup dialog shown after 115 ms
+Disclaimer: Install disabled until confirmed
