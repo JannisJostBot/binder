@@ -14,6 +14,7 @@
   <meta name="referrer" content="no-referrer">
   <link rel="stylesheet" href="styles.css">
   <script src="release.js" defer></script>
+  <script src="clock.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#top">Skip to content</a>
@@ -71,7 +72,7 @@
         <div class="stage-cards" aria-hidden="true"><span></span><span></span><span></span></div>
         <label for="shelf-toggle" class="stage-desktop" aria-hidden="true"></label>
         <div class="mock-panel">
-          <div class="mock-greeting">Good evening</div>
+          <div class="mock-greeting" id="mock-greeting">Good evening</div>
           <div class="mock-search"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A9A9B2" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>Search 72 games</div>
           <div class="mock-continue">
             <div class="mock-continue-text"><span>Continue playing</span><strong>[Game title]</strong></div>
@@ -87,7 +88,7 @@
         <div class="mock-taskbar">
           <span class="mock-hint" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9l10 4-4 1.5L13.5 19z"></path><path d="M5 3.5l1.2 1.8M3.5 7.5l2 .5M9.5 2.5l-.3 2.1"></path></svg><span class="mock-hint-open">Click the icon to close Binder</span><span class="mock-hint-closed">Click the icon to open Binder</span></span>
           <span class="mock-tray"><input type="checkbox" id="shelf-toggle" class="shelf-toggle" role="switch" checked aria-label="Show Binder's shelf" title="Binder"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
-          <span class="mock-clock" aria-hidden="true">21:14<br>05/11/2026</span>
+          <span class="mock-clock" id="mock-clock" aria-hidden="true">21:14<br>05/11/2026</span>
         </div>
       </figure>
     </div>
