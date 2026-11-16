@@ -915,6 +915,9 @@ smooth scrolling through the grid, and the published size. Report the numbers in
   bodies folded, no stack trace data (its logs keep `e.Message` only), no EventSource, metrics or debugger support,
   non-concurrent GC (no background GC thread), and its working set emptied (`SetProcessWorkingSetSize(-1, -1)`)
   right before it blocks on the game.
+  CI's smoke test (Native AOT, 5 s into the fake game), main → this change: working set 9.2 → 3.1 MB, private
+  3.1 → 3.2 MB (unchanged within noise: emptying the working set frees RAM but not committed memory, and the GC
+  switch made no measurable difference); installed size 114,622 → 114,115 KB, `BinderSetup.exe` 34,678 → 34,558 KB.
 - Don't raise the instruction set (`IlcInstructionSet`, e.g. AVX2): Binder would crash on older processors.
 
 ### e. CsWinRT 3.0, once it's stable
