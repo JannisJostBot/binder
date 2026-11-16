@@ -114,7 +114,11 @@ internal static class Program
         while (true)
         {
             // Block until every matched process has exited. No polling while the game runs.
-            Native.WaitForMultipleObjects((uint)handles.Count, handles.ToArray(), true, Native.INFINITE);
+            var waitOn = handles.ToArray();
+            // Hand the pages detection used back to Windows now, for the game, rather than whenever it trims us:
+            // nothing touches them until the game exits (a few page faults then).
+            Native.SetProcessWorkingSetSize(Native.CurrentProcess, -1, -1);
+            Native.WaitForMultipleObjects((uint)waitOn.Length, waitOn, true, Native.INFINITE);
             end = DateTimeOffset.Now;
             exit = matcher.ExitOf(handles);
             CloseAll(handles);
@@ -495,6 +499,14 @@ internal static partial class Native
     [LibraryImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool CloseHandle(IntPtr handle);
+
+    /// <summary>GetCurrentProcess()'s pseudo handle.</summary>
+    public const nint CurrentProcess = -1;
+
+    /// <summary>With -1, -1: empties the process's working set (its pages go to the standby list).</summary>
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool SetProcessWorkingSetSize(IntPtr process, nint min, nint max);
 
     [LibraryImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]

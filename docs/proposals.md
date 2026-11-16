@@ -910,6 +910,11 @@ smooth scrolling through the grid, and the published size. Report the numbers in
 - Try `OptimizationPreference` `Speed` and `Size` against the default, for the widget and the watcher, and keep
   whichever is best on the measurements above. Add `IlcGenerateStackTraceData=false` only if the error log stays
   readable without it.
+- Watcher, done 2026-11-16 (to measure on the real PC: exe size, and private working set and commit size in
+  Task Manager › Details about 10 s into a game, against 0.2.1): `OptimizationPreference` `Size`, identical method
+  bodies folded, no stack trace data (its logs keep `e.Message` only), no EventSource, metrics or debugger support,
+  non-concurrent GC (no background GC thread), and its working set emptied (`SetProcessWorkingSetSize(-1, -1)`)
+  right before it blocks on the game.
 - Don't raise the instruction set (`IlcInstructionSet`, e.g. AVX2): Binder would crash on older processors.
 
 ### e. CsWinRT 3.0, once it's stable
