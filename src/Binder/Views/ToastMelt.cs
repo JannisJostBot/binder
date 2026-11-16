@@ -28,6 +28,10 @@ internal sealed class ToastMelt
     private const float Radius = 14, FallHeight = 96, SinkDepth = 24, Stagger = 130, Variation = 0.5f, Stickiness = 0.5f;
     private const float MeltMs = 320, FirstDropMs = 380;
     private const float EmergeMs = 440, RiseMs = 720, RowWaitMs = 350, PopGapMs = 110, PopMs = 190, RingMs = 800;
+    private const float GlowDelayMs = 30, GlowMs = 650, BackGlowMs = 700;
+    // At the end the toast's own surface shows under the melt, which fades out over it: the blurred outline is a
+    // little fainter around the pill's ends than XAML's border, so a hard swap would show them jump.
+    private const float HandoverMs = 150, CapTrim = 2;
     private const float Pad = 24, Top = FallHeight + Radius + 26; // room around the pill for the drops and the blur
 
     /// <summary>
@@ -42,6 +46,7 @@ internal sealed class ToastMelt
     private readonly bool _back; // "Back to normal": the changes go back out
     private readonly float _k; // 1, or 4 for slow motion
     private readonly Vector2 _size;
+    private readonly float _scale; // screen pixels per DIP
     private readonly Color _fill, _stroke, _glow;
     private readonly Brush _glyphBrush;
     private readonly Drop[] _drops;
@@ -52,7 +57,7 @@ internal sealed class ToastMelt
     /// <summary>Landing times in ms from <see cref="Start"/>, earliest first (slow motion included).</summary>
     public float[] Lands { get; }
 
-    /// <summary>When everything is over and the visuals go (ms from <see cref="Start"/>).</summary>
+    /// <summary>When everything is over and the toast's surface takes over (ms from <see cref="Start"/>).</summary>
     public float Done { get; }
 
     /// <summary>When the needle or the check should move: the last change is in, or the last bubble has popped.</summary>
@@ -65,8 +70,9 @@ internal sealed class ToastMelt
     /// <summary>A drop landed: its number (0 = first to land) and how many drops there are.</summary>
     public event Action<int, int>? Landed;
 
-    /// <summary>All drops have merged and the visuals are gone: the XAML surface can show again.</summary>
+    /// <summary>All drops have merged: the XAML surface shows again (under the melt, which then fades out and goes).</summary>
     public event Action? Finished;
+    private bool _finished;
 
     private static readonly string[] Glyphs = ["", "", "", "", ""]; // quiet hours, power, pause, close, cloud
 
@@ -79,6 +85,7 @@ internal sealed class ToastMelt
         _back = back;
         _k = slow;
         _size = pillSize;
+        _scale = (float)(host.XamlRoot?.RasterizationScale ?? 1);
         _fill = fill;
         _stroke = stroke;
         _glow = glow;
@@ -95,7 +102,8 @@ internal sealed class ToastMelt
         else
         {
             Settled = (_drops.Max(d => d.Land) + 80) * _k;
-            Done = (_drops.Max(d => d.Land) + MeltMs + 160) * _k;
+            // Once the last drop has melted in and its light has faded (the light must be gone at the handover).
+            Done = (_drops.Max(d => d.Land) + Math.Max(MeltMs + 160, GlowDelayMs + GlowMs)) * _k;
         }
     }
 
@@ -170,7 +178,6 @@ internal sealed class ToastMelt
         ElementCompositionPreview.SetElementChildVisual(_host, _root);
 
         BuildWin2D();
-        BuildGlows();
         BuildGlyphs();
         if (_back) BuildRings();
     }
@@ -185,7 +192,26 @@ internal sealed class ToastMelt
             int index = i;
             After(Lands[i], () => Landed?.Invoke(index, Lands.Length));
         }
-        After(Done, Remove);
+        After(Done, HandOver);
+    }
+
+    /// <summary>The surface shows under the melt; the melt fades out over it, then goes.</summary>
+    private void HandOver()
+    {
+        if (_root is null) return;
+        Finish();
+        var fade = _compositor.CreateScalarKeyFrameAnimation();
+        fade.InsertKeyFrame(1, 0);
+        fade.Duration = Ms(HandoverMs);
+        _root.StartAnimation("Opacity", fade);
+        After(HandoverMs * _k, Remove);
+    }
+
+    private void Finish()
+    {
+        if (_finished) return;
+        _finished = true;
+        Finished?.Invoke();
     }
 
     /// <summary>Runs <paramref name="action"/> on the UI thread after <paramref name="ms"/> (a scoped batch, no timer).</summary>
@@ -216,7 +242,7 @@ internal sealed class ToastMelt
         _effect = null;
         _root.Dispose();
         _root = null;
-        Finished?.Invoke();
+        Finish();
     }
 
     /// <summary>The drop's fall, then its sink into the pill (Offset of a shape).</summary>
@@ -298,101 +324,146 @@ internal sealed class ToastMelt
         return shape;
     }
 
-    /// <summary>A shape visual covering the pill and the room above it, with its shapes in pill coordinates.</summary>
-    private (ShapeVisual Visual, CompositionContainerShape Shapes) Area()
+    /// <summary>The room around the pill the melt draws in (DIPs): the pill and the space above it for the drops.</summary>
+    private Vector2 AreaSize => new(_size.X + 2 * Pad, _size.Y + Top + Pad);
+
+    /// <summary>
+    /// A source for the effect: a visual covering the area at the screen's pixel size (<see cref="_scale"/>), with
+    /// its content in pill coordinates. A visual surface captures in pixels 1:1, so drawing it scaled up and the
+    /// result scaled back down keeps the outline as sharp as XAML's own border (captured at DIP size and stretched
+    /// to 150%, it came out soft).
+    /// </summary>
+    private (ContainerVisual Visual, ContainerVisual Content) Source(ContainerVisual parent)
     {
-        var visual = _compositor.CreateShapeVisual();
-        visual.Size = new Vector2(_size.X + 2 * Pad, _size.Y + Top + Pad);
-        visual.Offset = new Vector3(-Pad, -Top, 0);
-        var shapes = _compositor.CreateContainerShape();
-        shapes.Offset = new Vector2(Pad, Top);
-        visual.Shapes.Add(shapes);
-        return (visual, shapes);
+        // The scale is on a child: a capture draws its source visual without the source's own transform.
+        var visual = _compositor.CreateContainerVisual();
+        visual.Size = AreaSize * _scale;
+        var content = _compositor.CreateContainerVisual();
+        content.Size = AreaSize;
+        content.Scale = new Vector3(_scale, _scale, 1);
+        visual.Children.InsertAtTop(content);
+        parent.Children.InsertAtTop(visual);
+        return (visual, content);
     }
 
-    // ---- Win2D: blur and two alpha cuts --------------------------------------------------------------------
+    private CompositionSurfaceBrush Capture(Visual source)
+    {
+        var surface = _compositor.CreateVisualSurface();
+        surface.SourceVisual = source;
+        surface.SourceSize = AreaSize * _scale;
+        var brush = _compositor.CreateSurfaceBrush(surface);
+        brush.Stretch = CompositionStretch.None;
+        brush.HorizontalAlignmentRatio = 0;
+        brush.VerticalAlignmentRatio = 0;
+        return brush;
+    }
+
+    /// <summary>The share of a straight edge's blur that reaches <paramref name="x"/> outside it (Gaussian tail).</summary>
+    private static float Tail(float x, float sigma)
+    {
+        // erfc by Abramowitz and Stegun 7.1.26 (error under 1.5e-7): plenty for a cut level.
+        double z = x / (sigma * Math.Sqrt(2));
+        double t = 1 / (1 + 0.3275911 * Math.Abs(z));
+        double erfc = t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429))))
+            * Math.Exp(-z * z);
+        return (float)(0.5 * (z >= 0 ? erfc : 2 - erfc));
+    }
+
+    // ---- Win2D: blur, two alpha cuts, and the light inside the fill ----------------------------------------
 
     private void BuildWin2D()
     {
-        // The source: the pill and the drops as solid shapes, 1 px inside their final edge. It stays in the tree
-        // under the effect (a visual surface captures a live visual), drawn in the fill color, where the effect
-        // covers it exactly.
-        var (source, shapes) = Area();
+        // The sources (the pill and drops as solid shapes; the light) are captured by visual surfaces, which need
+        // them in the tree; a hidden parent keeps them off screen (a capture draws its visual as if it were a root).
+        var hidden = _compositor.CreateContainerVisual();
+        hidden.Opacity = 0;
+        _root!.Children.InsertAtTop(hidden);
+
+        // The outline is as thick as XAML draws the toast's 1 px border on this screen (whole pixels: 2 at 150%).
+        // The shapes sit that far inside their final edge: the fill is cut on them, the edge that far outside.
+        float border = MathF.Max(1, MathF.Round(_scale));
+        float inset = border / _scale; // in DIPs
+        var shapes = _compositor.CreateShapeVisual();
+        shapes.Size = AreaSize;
+        var content = _compositor.CreateContainerShape();
+        content.Offset = new Vector2(Pad, Top);
+        shapes.Shapes.Add(content);
         var fill = _compositor.CreateColorBrush(_fill);
         var pill = _compositor.CreateRoundedRectangleGeometry();
-        pill.Offset = new Vector2(1);
-        pill.Size = _size - new Vector2(2);
-        pill.CornerRadius = new Vector2(_size.Y / 2 - 1);
+        pill.Offset = new Vector2(inset);
+        pill.Size = _size - new Vector2(2 * inset);
+        // A little squarer than the outline: the blur rounds the ends tighter, and this brings them back to XAML's
+        // shape (2 DIPs was the closest match to the plain toast at 150%).
+        pill.CornerRadius = new Vector2(_size.Y / 2 - inset - CapTrim);
         var pillShape = _compositor.CreateSpriteShape(pill);
         pillShape.FillBrush = fill;
-        shapes.Shapes.Add(pillShape);
-        foreach (var d in _drops) shapes.Shapes.Add(DropShape(d, Radius - 1, fill, null));
-        _root!.Children.InsertAtTop(source);
+        content.Shapes.Add(pillShape);
+        foreach (var d in _drops) content.Shapes.Add(DropShape(d, Radius - inset, fill, null));
+        var shapeSource = Source(hidden);
+        shapeSource.Content.Children.InsertAtTop(shapes);
 
-        var surface = _compositor.CreateVisualSurface();
-        surface.SourceVisual = source;
-        surface.SourceSize = source.Size;
-        var surfaceBrush = _compositor.CreateSurfaceBrush(surface);
-        surfaceBrush.Stretch = CompositionStretch.None;
-        surfaceBrush.HorizontalAlignmentRatio = 0;
-        surfaceBrush.VerticalAlignmentRatio = 0;
+        var glowSource = Source(hidden);
+        BuildGlows(glowSource.Content);
 
-        // Blur, then cut: the edge where the blurred alpha passes 0.434 (1 px outside the source's straight edges),
-        // the fill from 0.5 (on them). Steep cuts keep the outline crisp; the blur makes drop and pill flow together.
-        float sigma = 3.5f + 5 * Stickiness;
+        // Blur (in pixels), then cut: the edge where the blurred alpha passes the tail at the border's width
+        // outside the shapes' straight edges, the fill from 0.5 (on them). Steep cuts keep the outline crisp; the
+        // blur makes drop and pill flow together.
+        float sigma = (3.5f + 5 * Stickiness) * _scale;
         float AlphaBias(float level) => 0.5f - 26 * level;
         // Two steps: the effect premultiplies before it clamps, so a color set in the same matrix as the steep alpha
         // would come out multiplied by up to 26 (white). First the alpha alone, clamped; then the color on it.
-        IGraphicsEffectSource Cut(Color color, float level) => new ColorMatrixEffect
+        // Each cut has its own blur: a composition effect graph must be a tree (no shared nodes).
+        IGraphicsEffectSource Alpha(float level) => new ColorMatrixEffect
         {
-            Source = new ColorMatrixEffect
+            Source = new GaussianBlurEffect
             {
-                Source = new GaussianBlurEffect
-                {
-                    Source = new CompositionEffectSourceParameter("src"),
-                    BlurAmount = sigma,
-                    BorderMode = EffectBorderMode.Hard,
-                },
-                ColorMatrix = new Matrix5x4 { M44 = 26, M54 = AlphaBias(level) },
-                ClampOutput = true,
+                Source = new CompositionEffectSourceParameter("shapes"),
+                BlurAmount = sigma,
+                BorderMode = EffectBorderMode.Hard,
             },
-            ColorMatrix = new Matrix5x4
-            {
-                M44 = 1,
-                M51 = color.R / 255f, M52 = color.G / 255f, M53 = color.B / 255f,
-            },
+            ColorMatrix = new Matrix5x4 { M44 = 26, M54 = AlphaBias(level) },
             ClampOutput = true,
         };
+        IGraphicsEffectSource Cut(IGraphicsEffectSource paint, IGraphicsEffectSource mask)
+        {
+            var cut = new CompositeEffect { Mode = CanvasComposite.DestinationIn };
+            cut.Sources.Add(paint);
+            cut.Sources.Add(mask);
+            return cut;
+        }
+        // The fill: its color with the light over it, cut out together, so the light shows only inside the pill and
+        // the drops as they're seen, never past their outline or over it (two blurs; a third is too much for one
+        // effect).
+        var lit = new CompositeEffect { Mode = CanvasComposite.SourceOver };
+        lit.Sources.Add(new ColorSourceEffect { Color = _fill });
+        lit.Sources.Add(new CompositionEffectSourceParameter("light"));
         var graph = new CompositeEffect { Mode = CanvasComposite.SourceOver };
-        graph.Sources.Add(Cut(_stroke, 0.434f));
-        graph.Sources.Add(Cut(_fill, 0.5f));
+        graph.Sources.Add(Cut(new ColorSourceEffect { Color = _stroke }, Alpha(Tail(border, sigma))));
+        graph.Sources.Add(Cut(lit, Alpha(0.5f)));
         _effect = _compositor.CreateEffectFactory(graph).CreateBrush();
-        _effect.SetSourceParameter("src", surfaceBrush);
+        _effect.SetSourceParameter("shapes", Capture(shapeSource.Visual));
+        _effect.SetSourceParameter("light", Capture(glowSource.Visual));
 
+        // Drawn in pixels, scaled back to DIPs: one effect pixel on one screen pixel.
         var sprite = _compositor.CreateSpriteVisual();
         sprite.Brush = _effect;
-        sprite.Size = source.Size;
-        sprite.Offset = source.Offset;
+        sprite.Size = AreaSize * _scale;
+        sprite.Scale = new Vector3(1 / _scale, 1 / _scale, 1);
+        sprite.Offset = new Vector3(-Pad, -Top, 0);
         _root.Children.InsertAtTop(sprite);
     }
 
     // ---- The light that spreads inside, and the icons that ride on the drops --------------------------------
 
-    private void BuildGlows()
+    /// <summary>
+    /// The light from where each change went in (or comes out), in the effect's light source: the effect shows it
+    /// only inside the fill, so it follows the drops as they're seen, joined to the pill or not.
+    /// </summary>
+    private void BuildGlows(ContainerVisual parent)
     {
-        var clipGeometry = _compositor.CreateRoundedRectangleGeometry();
-        clipGeometry.Size = _size;
-        clipGeometry.CornerRadius = new Vector2(_size.Y / 2);
         var layer = _compositor.CreateContainerVisual();
-        layer.Size = _size;
-        layer.Clip = _compositor.CreateGeometricClip(clipGeometry);
-        _root!.Children.InsertAtTop(layer);
-        // What's above the pill's top edge: the bubbles' part of the glow (inside the pill, the pill's own shows).
-        var above = _compositor.CreateContainerVisual();
-        above.Offset = new Vector3(-Pad, -Top, 0);
-        above.Size = new Vector2(_size.X + 2 * Pad, Top);
-        above.Clip = _compositor.CreateInsetClip();
-        _root.Children.InsertAtTop(above);
+        layer.Offset = new Vector3(Pad, Top, 0); // pill coordinates
+        parent.Children.InsertAtTop(layer);
 
         foreach (var d in _drops)
         {
@@ -418,49 +489,13 @@ internal sealed class ToastMelt
             fade.InsertKeyFrame(1, 0, Ease(GlowOut));
             foreach (var a in new KeyFrameAnimation[] { scale, fade })
             {
-                a.Duration = Ms(_back ? 700 : 650);
-                a.DelayTime = Ms(_back ? d.Start : d.Land + 30);
-            }
-            // The light also fills the part of the change that's outside the pill while it's joined to it, so it
-            // doesn't stop at the pill's edge: the same glow, clipped to the bubble as it moves and grows or shrinks
-            // (going back, gone as the bubble lets go).
-            var circle = _compositor.CreateEllipseGeometry();
-            circle.Radius = new Vector2(Radius);
-            var bubbleClip = _compositor.CreateGeometricClip(circle);
-            bubbleClip.Offset = new Vector2(d.X, _back ? SinkDepth : -FallHeight);
-            bubbleClip.Scale = Vector2.Zero;
-            var bubble = _compositor.CreateContainerVisual();
-            bubble.Offset = new Vector3(Pad, Top, 0); // back to the pill's coordinates
-            bubble.Size = _size;
-            bubble.Clip = bubbleClip;
-            above.Children.InsertAtTop(bubble);
-            var inBubble = _compositor.CreateSpriteVisual();
-            inBubble.Brush = brush;
-            inBubble.Size = glow.Size;
-            inBubble.CenterPoint = glow.CenterPoint;
-            inBubble.Offset = glow.Offset;
-            inBubble.Opacity = 0;
-            bubble.Children.InsertAtTop(inBubble);
-            ScalarKeyFrameAnimation? letGo = null;
-            if (_back)
-            {
-                float span = EmergeMs + 60;
-                letGo = _compositor.CreateScalarKeyFrameAnimation();
-                letGo.InsertKeyFrame(0, 1);
-                letGo.InsertKeyFrame((EmergeMs - 120) / span, 1);
-                letGo.InsertKeyFrame(1, 0);
-                letGo.Duration = Ms(span);
-                letGo.DelayTime = Ms(d.Start);
+                a.Duration = Ms(_back ? BackGlowMs : GlowMs);
+                a.DelayTime = Ms(_back ? d.Start : d.Land + GlowDelayMs);
             }
             _start.Add(() =>
             {
                 glow.StartAnimation("Scale", scale);
                 glow.StartAnimation("Opacity", fade);
-                inBubble.StartAnimation("Scale", scale);
-                inBubble.StartAnimation("Opacity", fade);
-                bubbleClip.StartAnimation("Offset", FallAndSink(d));
-                bubbleClip.StartAnimation("Scale", GrowAndMelt(d));
-                if (letGo is not null) bubble.StartAnimation("Opacity", letGo);
             });
         }
     }
