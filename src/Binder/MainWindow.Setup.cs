@@ -18,9 +18,15 @@ public sealed partial class MainWindow
     {
         // Shown in step 3 itself: the panel's notice would sit over its Done button. First the shortcuts that went
         // fly into Binder's logo (skipped with animations off), then step 3.
-        var result = StoreShortcuts(picked);
-        var (title, detail) = ImportResultText(result);
-        SetupPage.PlayMerge(result.Stored, () => SetupPage.ViewModel!.ImportDone(title, detail));
+        // The moves run in the background (with many shortcuts they take a moment) while the picked rows fly, so the
+        // animation starts at once; step 3 waits for both and says what actually went.
+        var moving = Task.Run(() => MoveShortcuts(picked));
+        SetupPage.PlayMerge(picked, async () =>
+        {
+            var result = AddStored(await moving);
+            var (title, detail) = ImportResultText(result);
+            SetupPage.ViewModel!.ImportDone(title, detail);
+        });
     }
 
     /// <summary>First-run setup (board 10). Also reachable from Settings → "Run first-time setup again".</summary>

@@ -33,15 +33,26 @@ public sealed partial class MainWindow
     /// <summary>What an import did; <paramref name="Stored"/> are the shortcuts that went (setup's merge animation).</summary>
     private readonly record struct ImportResult(int Imported, int Copied, int Failed, IReadOnlyList<ShortcutFile> Stored);
 
-    private ImportResult StoreShortcuts(IReadOnlyList<ShortcutFile> picked)
+    private ImportResult StoreShortcuts(IReadOnlyList<ShortcutFile> picked) => AddStored(MoveShortcuts(picked));
+
+    /// <summary>
+    /// Moves the picked shortcuts into our folder, each recorded and saved before it moves. Only files, nothing of the
+    /// panel's, so setup runs it in the background while its animation plays (with many shortcuts it takes a moment).
+    /// </summary>
+    private static List<(ShortcutFile Shortcut, ImportedShortcut? Record)> MoveShortcuts(IReadOnlyList<ShortcutFile> picked)
     {
         var records = Storage.LoadImportedShortcuts();
+        return picked.Select(s => (s, ShortcutImporter.Store(s, move: true, records))).ToList();
+    }
+
+    /// <summary>Puts the shortcuts that went onto the shelf (on the UI thread).</summary>
+    private ImportResult AddStored(List<(ShortcutFile Shortcut, ImportedShortcut? Record)> moved)
+    {
         int imported = 0, copied = 0, failed = 0;
         var stored = new List<ShortcutFile>();
-        foreach (var shortcut in picked)
+        foreach (var (shortcut, record) in moved)
         {
             var existing = ShortcutImporter.ExistingFor(shortcut, _games);
-            var record = ShortcutImporter.Store(shortcut, move: true, records); // recorded and saved before it moves
             if (record is null)
             {
                 failed++;

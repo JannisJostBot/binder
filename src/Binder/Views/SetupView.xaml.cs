@@ -23,18 +23,18 @@ public sealed partial class SetupView : UserControl
     }
 
     /// <summary>
-    /// After step 2's move: the rows of the shortcuts that went fly into Binder's logo (<see cref="LogoMerge"/>), then
-    /// <paramref name="then"/> goes on to step 3. The page takes no clicks meanwhile; with animations off it goes on at once.
+    /// After step 2's Move: the rows of the picked shortcuts fly into Binder's logo (<see cref="LogoMerge"/>) while
+    /// they're moved, then <paramref name="then"/> goes on to step 3. The page takes no clicks meanwhile; with animations off it goes on at once.
     /// </summary>
-    public void PlayMerge(IReadOnlyList<Library.ShortcutFile> moved, Action then)
+    public void PlayMerge(IReadOnlyList<Library.ShortcutFile> moved, Func<Task> then)
     {
         var rows = Picker.RowsFor(moved);
         var others = Picker.RowsExcept(rows);
         IsHitTestVisible = false;
-        LogoMerge.Play(MergeLayer, Picker.ListArea, rows, others, () =>
+        LogoMerge.Play(MergeLayer, Picker.ListArea, rows, others, async () =>
         {
+            await then();
             IsHitTestVisible = true;
-            then();
             LogoMerge.Clear(MergeLayer, [.. rows, .. others]);
         });
     }
