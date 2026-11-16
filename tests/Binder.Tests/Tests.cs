@@ -103,6 +103,7 @@ static partial class Tests
         ShelfUpdateTests();
         FormatTests();
         LocalizationTests();
+        DocsTests();
         SourceDefaultsTests(dir);
         SessionLogTests(dir);
         RobustnessTests(dir);

@@ -47,6 +47,12 @@
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
   </ItemGroup>
 
+  <!-- The debug panel (Dev\, started with the dev switch) is for Debug builds only: Release builds don't compile it at all, so none of it
+       ships. publish.ps1 checks the published files for its marker and stops if it's there. -->
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <Compile Remove="Dev\**" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- Game mode's ids, files and restore result, shared with the watcher that applies and restores it. -->
     <Compile Include="..\Binder.Watcher\GameModeShared.cs" Link="Shared\GameModeShared.cs" />
