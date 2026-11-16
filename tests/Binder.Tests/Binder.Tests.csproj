@@ -56,6 +56,7 @@
     <Compile Include="..\..\src\Binder\Views\GameAction.cs" Link="Linked\Views\GameAction.cs" />
     <Compile Include="..\..\src\Binder\ViewModels\*.cs" Link="Linked\ViewModels\%(Filename)%(Extension)" />
     <Compile Include="..\..\src\Binder\Services\Chime.cs" Link="Linked\Services\Chime.cs" />
+    <Compile Include="..\..\src\Binder\Services\Autostart.cs" Link="Linked\Services\Autostart.cs" />
     <Compile Include="..\..\src\Binder.Watcher\Program.cs" Link="Linked\Watcher\Program.cs" />
     <Compile Include="..\..\src\Binder.Watcher\GameMode.cs" Link="Linked\Watcher\GameMode.cs" />
     <Compile Include="..\..\src\Binder.Watcher\GameModeShared.cs" Link="Linked\Watcher\GameModeShared.cs" />

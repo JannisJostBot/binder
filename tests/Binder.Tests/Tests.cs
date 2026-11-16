@@ -85,6 +85,7 @@ static partial class Tests
         ShelfTests();
         PayloadTests();
         ChimeTests();
+        AutostartTests();
         MomentTests();
         RemovedGameTests();
         ShortcutRestoreTests();
@@ -1042,6 +1043,18 @@ static partial class Tests
         Check(seeded == sessions[2].Start && games[0].MilestoneShownHours == 10 && games[1].MilestoneShownHours == 0,
             "first run: old sessions and milestones count as shown");
         Check(Binder.Library.Moments.Seed([], games) == DateTimeOffset.MinValue, "first run without sessions: the first session gets its welcome");
+    }
+
+    /// <summary>"Start with Windows" turned off in Task Manager or Settings › Apps › Startup reads as off.</summary>
+    static void AutostartTests()
+    {
+        byte[] Approved(byte state) => [state, 0, 0, 0, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x01];
+        Check(!Autostart.IsTurnedOff(null), "autostart: no StartupApproved value means on");
+        Check(!Autostart.IsTurnedOff([]), "autostart: an empty StartupApproved value means on");
+        Check(!Autostart.IsTurnedOff(Approved(0x02)), "autostart: state 0x02 means on");
+        Check(!Autostart.IsTurnedOff(Approved(0x06)), "autostart: state 0x06 means on");
+        Check(Autostart.IsTurnedOff(Approved(0x03)), "autostart: state 0x03 (turned off in Windows) means off");
+        Check(Autostart.IsTurnedOff(Approved(0x07)), "autostart: state 0x07 (turned off in Windows) means off");
     }
 
     static void ChimeTests()
