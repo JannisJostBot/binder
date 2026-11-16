@@ -25,22 +25,31 @@ public enum MeltMode { Off, Outline, Win2D }
 /// are plain composition shapes; all their 2 px strokes are drawn first and all their fills over them, so the
 /// shapes join into one outline with a 1 px edge. The join has small corners where the board's is smooth.</item>
 /// </list>
-/// Everything is started once, with its delays worked out up front, and runs on the compositor. Landings are
-/// reported through scoped batches (no timer). The visuals are removed once the last drop has merged.
+/// "Back to normal" plays the other way, in order: left to right on an even beat, each change swells gently out
+/// of the pill where it went in and floats back up to where it fell from; when all are back in their row they
+/// pop one after another, each leaving a thin ring that softens as it spreads.
+/// Everything is started once, with its delays worked out up front, and runs on the compositor. Landings (or
+/// arrivals) are reported through scoped batches (no timer). The visuals are removed once all is done.
 /// </summary>
 internal sealed class ToastMelt
 {
     // The board's defaults: stagger 130 ms, spring 0.6, variation 0.5, stickiness 0.5.
     private const float Radius = 14, FallHeight = 96, SinkDepth = 24, Stagger = 130, Variation = 0.5f, Stickiness = 0.5f;
     private const float MeltMs = 320, FirstDropMs = 380;
+    private const float EmergeMs = 440, RiseMs = 720, RowWaitMs = 350, PopGapMs = 110, PopMs = 190, RingMs = 800;
     private const float Pad = 24, Top = FallHeight + Radius + 26; // room around the pill for the drops and the blur
 
-    private readonly record struct Drop(float X, float Start, float FallMs, float Land);
+    /// <summary>
+    /// One change. Coming in: it starts falling at Start and lands at Land. Going back: it starts to swell out at
+    /// Start, lets go at Free, is back in its place at Land, and pops at Pop.
+    /// </summary>
+    private readonly record struct Drop(float X, float Start, float FallMs, float Land, float Free = 0, float Pop = 0);
 
     private readonly Compositor _compositor;
     private readonly UIElement _host;
     private readonly Canvas _glyphHost;
     private readonly MeltMode _mode;
+    private readonly bool _back; // "Back to normal": the changes go back out
     private readonly float _k; // 1, or 4 for slow motion
     private readonly Vector2 _size;
     private readonly Color _fill, _stroke, _glow;
@@ -53,8 +62,11 @@ internal sealed class ToastMelt
     /// <summary>Landing times in ms from <see cref="Start"/>, earliest first (slow motion included).</summary>
     public float[] Lands { get; }
 
-    /// <summary>When the last drop has merged (ms from <see cref="Start"/>).</summary>
+    /// <summary>When everything is over and the visuals go (ms from <see cref="Start"/>).</summary>
     public float Done { get; }
+
+    /// <summary>When the needle or the check should move: the last change is in, or the last bubble has popped.</summary>
+    public float Settled { get; }
 
     /// <summary>A drop landed: its number (0 = first to land) and how many drops there are.</summary>
     public event Action<int, int>? Landed;
@@ -64,22 +76,33 @@ internal sealed class ToastMelt
 
     private static readonly string[] Glyphs = ["", "", "", "", ""]; // quiet hours, power, pause, close, cloud
 
-    public ToastMelt(UIElement host, Canvas glyphHost, MeltMode mode, float slow, int drops, Vector2 pillSize,
+    public ToastMelt(UIElement host, Canvas glyphHost, MeltMode mode, bool back, float slow, int drops, Vector2 pillSize,
         Color fill, Color stroke, Color glow, Brush glyphBrush)
     {
         _host = host;
         _glyphHost = glyphHost;
         _compositor = ElementCompositionPreview.GetElementVisual(host).Compositor;
         _mode = mode;
+        _back = back;
         _k = slow;
         _size = pillSize;
         _fill = fill;
         _stroke = stroke;
         _glow = glow;
         _glyphBrush = glyphBrush;
-        _drops = Plan(Math.Clamp(drops, 1, 5), pillSize.X);
+        _drops = back ? PlanBack(Math.Clamp(drops, 1, 5), pillSize.X) : Plan(Math.Clamp(drops, 1, 5), pillSize.X);
         Lands = [.. _drops.Select(d => d.Land * _k).Order()];
-        Done = (_drops.Max(d => d.Land) + MeltMs + 160) * _k;
+        if (back)
+        {
+            float lastPop = _drops.Max(d => d.Pop);
+            Settled = (lastPop + 300) * _k;
+            Done = (lastPop + 100 + RingMs + 60) * _k;
+        }
+        else
+        {
+            Settled = (_drops.Max(d => d.Land) + 80) * _k;
+            Done = (_drops.Max(d => d.Land) + MeltMs + 160) * _k;
+        }
     }
 
     // ---- The plan: where and when each drop falls (board 33's numbers) ------------------------------------
@@ -114,12 +137,30 @@ internal sealed class ToastMelt
         return drops;
     }
 
+    /// <summary>Going back: in order, left to right, on an even beat; all wait in their row, then pop in turn.</summary>
+    private static Drop[] PlanBack(int count, float width)
+    {
+        var drops = new Drop[count];
+        float allBack = 300 + (count - 1) * Stagger + EmergeMs + RiseMs + RowWaitMs;
+        for (int i = 0; i < count; i++)
+        {
+            double frac = count == 1 ? 0.5 : 0.2 + 0.64 * i / (count - 1) + Variation * 0.035 * Spread(i, 2);
+            float start = 300 + i * Stagger;
+            float free = start + EmergeMs;
+            drops[i] = new Drop((float)(frac * width), start, 0, free + RiseMs, free, allBack + i * PopGapMs);
+        }
+        return drops;
+    }
+
     // ---- Easing -------------------------------------------------------------------------------------------
 
     private static readonly Vector4 Gravity = new(.55f, .085f, .68f, .53f);
     private static readonly Vector4 SinkIn = new(.2f, .6f, .4f, 1);
     private static readonly Vector4 Squash = new(.3f, .7f, .5f, 1);
     private static readonly Vector4 GlowOut = new(.2f, .7f, .3f, 1);
+    private static readonly Vector4 EmergeEase = new(.45f, 0, .25f, 1); // a gentle swell, no yank
+    private static readonly Vector4 RiseEase = new(.35f, 0, .25f, 1);
+    private static readonly Vector4 RingOut = new(.2f, .6f, .35f, 1);
 
     private CompositionEasingFunction Ease(Vector4 b) =>
         _compositor.CreateCubicBezierEasingFunction(new Vector2(b.X, b.Y), new Vector2(b.Z, b.W));
@@ -138,8 +179,14 @@ internal sealed class ToastMelt
     }
 
     /// <summary>The drop's center height (y, 0 = the pill's top edge) at <paramref name="ms"/> on its own clock.</summary>
-    private static float DropY(Drop d, float ms)
+    private float DropY(Drop d, float ms)
     {
+        if (_back)
+        {
+            if (ms <= d.Start) return SinkDepth;
+            if (ms <= d.Free) return SinkDepth * (1 - Bezier(EmergeEase, (ms - d.Start) / EmergeMs));
+            return -FallHeight * Bezier(RiseEase, Math.Min(1, (ms - d.Free) / RiseMs));
+        }
         if (ms <= d.Start) return -FallHeight;
         if (ms <= d.Land) return -FallHeight * (1 - Bezier(Gravity, (ms - d.Start) / d.FallMs));
         return SinkDepth * Bezier(SinkIn, Math.Min(1, (ms - d.Land) / MeltMs));
@@ -158,6 +205,7 @@ internal sealed class ToastMelt
         if (_mode == MeltMode.Win2D) BuildWin2D(); else BuildOutline();
         BuildGlows();
         BuildGlyphs();
+        if (_back) BuildRings();
     }
 
     /// <summary>Starts every animation at once; they run on the compositor from here.</summary>
@@ -208,6 +256,18 @@ internal sealed class ToastMelt
     private Vector2KeyFrameAnimation FallAndSink(Drop d)
     {
         var a = _compositor.CreateVector2KeyFrameAnimation();
+        if (_back)
+        {
+            // Out of the pill where it went in, then up to its place in the row.
+            float span = EmergeMs + RiseMs;
+            a.InsertKeyFrame(0, new Vector2(d.X, SinkDepth));
+            a.InsertKeyFrame(EmergeMs / span, new Vector2(d.X, 0), Ease(EmergeEase));
+            a.InsertKeyFrame(1, new Vector2(d.X, -FallHeight), Ease(RiseEase));
+            a.Duration = Ms(span);
+            a.DelayTime = Ms(d.Start);
+            a.DelayBehavior = AnimationDelayBehavior.SetInitialValueBeforeDelay;
+            return a;
+        }
         float total = d.FallMs + MeltMs;
         a.InsertKeyFrame(0, new Vector2(d.X, -FallHeight));
         a.InsertKeyFrame(d.FallMs / total, new Vector2(d.X, 0), Ease(Gravity));
@@ -222,6 +282,22 @@ internal sealed class ToastMelt
     private Vector2KeyFrameAnimation GrowAndMelt(Drop d)
     {
         var a = _compositor.CreateVector2KeyFrameAnimation();
+        if (_back)
+        {
+            // Un-melts as it swells out, keeps its size in the row, then pops: a small swell and gone.
+            float span = d.Pop + PopMs - d.Start;
+            float swell = d.Pop + PopMs * 0.55f - d.Start;
+            a.InsertKeyFrame(0, new Vector2(0.25f));
+            a.InsertKeyFrame(EmergeMs * 0.65f / span, new Vector2(0.86f, 1.18f), Ease(Squash));
+            a.InsertKeyFrame((EmergeMs + 60) / span, Vector2.One, Ease(Squash));
+            a.InsertKeyFrame((d.Pop - d.Start) / span, Vector2.One);
+            a.InsertKeyFrame(swell / span, new Vector2(1.22f), Ease(new Vector4(0, 0, .58f, 1)));
+            a.InsertKeyFrame((swell + 1) / span, Vector2.Zero);
+            a.InsertKeyFrame(1, Vector2.Zero);
+            a.Duration = Ms(span);
+            a.DelayTime = Ms(d.Start);
+            return a;
+        }
         float total = d.FallMs + MeltMs + 60;
         a.InsertKeyFrame(0, new Vector2(0.3f));
         a.InsertKeyFrame(180 / total, Vector2.One, Ease(new Vector4(0, 0, .58f, 1)));
@@ -245,7 +321,7 @@ internal sealed class ToastMelt
             shape.StrokeThickness = 2;
             shape.IsStrokeNonScaling = true;
         }
-        shape.Offset = new Vector2(d.X, -FallHeight);
+        shape.Offset = new Vector2(d.X, _back ? SinkDepth : -FallHeight);
         shape.Scale = Vector2.Zero;
         _start.Add(() =>
         {
@@ -324,7 +400,8 @@ internal sealed class ToastMelt
         bump.Radius = Vector2.Zero;
         waist.Radius = Vector2.Zero;
 
-        float from = d.Start + d.FallMs * 0.5f, to = d.Land + MeltMs;
+        float from = _back ? d.Start : d.Start + d.FallMs * 0.5f;
+        float to = _back ? d.Free + RiseMs * 0.6f : d.Land + MeltMs;
         var bumpRadius = _compositor.CreateVector2KeyFrameAnimation();
         var waistRadius = _compositor.CreateVector2KeyFrameAnimation();
         var waistCenter = _compositor.CreateVector2KeyFrameAnimation();
@@ -335,14 +412,15 @@ internal sealed class ToastMelt
             float y = DropY(d, ms);
             float gap = -(y + Radius); // drop bottom above the edge (negative once it overlaps)
             float ry;
-            if (ms <= d.Land) ry = gap >= reach ? 0 : reach - Math.Max(gap, 0);
+            if (_back && ms <= d.Free) ry = reach * Bezier(EmergeEase, (ms - d.Start) / EmergeMs); // the pill pushes it out
+            else if (_back || ms <= d.Land) ry = gap >= reach ? 0 : reach - Math.Max(gap, 0); // holds on, then lets go
             else ry = reach * (1 - Bezier(SinkIn, Math.Min(1, (ms - d.Land) / MeltMs)));
             float rx = ry > 0 ? Radius * 0.7f + ry * 1.1f : 0;
             bumpRadius.InsertKeyFrame(p, new Vector2(rx, ry));
 
             // Joined when the bump's top reaches the drop's bottom.
             float overlap = (ry - 1) - gap;
-            bool joined = ry > 0 && overlap > 0 && ms <= d.Land + MeltMs * 0.6f;
+            bool joined = ry > 0 && overlap > 0 && (_back ? ms >= d.Free - EmergeMs * 0.4f : ms <= d.Land + MeltMs * 0.6f);
             float wry = joined ? Math.Min(6, 2 + overlap / 2) : 0;
             float wrx = joined ? Radius * 0.85f : 0;
             waistRadius.InsertKeyFrame(p, new Vector2(wrx, wry));
@@ -465,8 +543,8 @@ internal sealed class ToastMelt
             fade.InsertKeyFrame(1, 0, Ease(GlowOut));
             foreach (var a in new KeyFrameAnimation[] { scale, fade })
             {
-                a.Duration = Ms(650);
-                a.DelayTime = Ms(d.Land + 30);
+                a.Duration = Ms(_back ? 700 : 650);
+                a.DelayTime = Ms(_back ? d.Start : d.Land + 30);
             }
             _start.Add(() =>
             {
@@ -497,7 +575,50 @@ internal sealed class ToastMelt
             var visual = ElementCompositionPreview.GetElementVisual(icon);
             visual.Opacity = 0;
             visual.CenterPoint = new Vector3(7, 7, 0);
-            visual.Properties.InsertVector3("Translation", new Vector3(0, -FallHeight, 0));
+            visual.Properties.InsertVector3("Translation", new Vector3(0, _back ? SinkDepth : -FallHeight, 0));
+
+            if (_back)
+            {
+                // Rides out with its drop, shows as it clears the edge, and pops with it.
+                float span = EmergeMs + RiseMs;
+                var up = _compositor.CreateVector3KeyFrameAnimation();
+                up.InsertKeyFrame(0, new Vector3(0, SinkDepth, 0));
+                up.InsertKeyFrame(EmergeMs / span, Vector3.Zero, Ease(EmergeEase));
+                up.InsertKeyFrame(1, new Vector3(0, -FallHeight, 0), Ease(RiseEase));
+                up.Duration = Ms(span);
+                up.DelayTime = Ms(d.Start);
+                up.DelayBehavior = AnimationDelayBehavior.SetInitialValueBeforeDelay;
+
+                float showAt = d.Start + EmergeMs * 0.5f;
+                float life2 = d.Pop + PopMs - showAt;
+                float popAt = d.Pop + PopMs * 0.55f - showAt;
+                var seen = _compositor.CreateScalarKeyFrameAnimation();
+                seen.InsertKeyFrame(0, 0);
+                seen.InsertKeyFrame(260 / life2, 1, Ease(new Vector4(0, 0, .58f, 1)));
+                seen.InsertKeyFrame(popAt / life2, 1);
+                seen.InsertKeyFrame((popAt + 1) / life2, 0);
+                seen.InsertKeyFrame(1, 0);
+                seen.Duration = Ms(life2);
+                seen.DelayTime = Ms(showAt);
+
+                var size = _compositor.CreateVector3KeyFrameAnimation();
+                size.InsertKeyFrame(0, new Vector3(0.5f, 0.5f, 1));
+                size.InsertKeyFrame(260 / life2, Vector3.One, Ease(new Vector4(0, 0, .58f, 1)));
+                size.InsertKeyFrame((d.Pop - showAt) / life2, Vector3.One);
+                size.InsertKeyFrame(popAt / life2, new Vector3(1.2f, 1.2f, 1), Ease(new Vector4(0, 0, .58f, 1)));
+                size.InsertKeyFrame(1, new Vector3(1.2f, 1.2f, 1));
+                size.Duration = Ms(life2);
+                size.DelayTime = Ms(showAt);
+                size.DelayBehavior = AnimationDelayBehavior.SetInitialValueBeforeDelay;
+
+                _start.Add(() =>
+                {
+                    visual.StartAnimation("Translation", up);
+                    visual.StartAnimation("Opacity", seen);
+                    visual.StartAnimation("Scale", size);
+                });
+                continue;
+            }
 
             var move = _compositor.CreateVector3KeyFrameAnimation();
             float total = d.FallMs + MeltMs;
@@ -531,6 +652,62 @@ internal sealed class ToastMelt
                 visual.StartAnimation("Translation", move);
                 visual.StartAnimation("Opacity", fade);
                 visual.StartAnimation("Scale", shrink);
+            });
+        }
+    }
+    /// <summary>
+    /// The ring each bubble leaves when it pops: thin and sharp, then wider and softer as it spreads and fades.
+    /// A ring-shaped radial gradient whose inner and outer edges move apart (no blur needed, so it's the same in
+    /// both modes).
+    /// </summary>
+    private void BuildRings()
+    {
+        const float size = 64;
+        foreach (var d in _drops)
+        {
+            var clear = Color.FromArgb(0, _glow.R, _glow.G, _glow.B);
+            var brush = _compositor.CreateRadialGradientBrush();
+            brush.EllipseCenter = new Vector2(0.5f);
+            brush.EllipseRadius = new Vector2(0.5f);
+            var inner = _compositor.CreateColorGradientStop(0.40f, clear);
+            var line = _compositor.CreateColorGradientStop(0.47f, _glow);
+            var outer = _compositor.CreateColorGradientStop(0.52f, clear);
+            brush.ColorStops.Add(_compositor.CreateColorGradientStop(0, clear));
+            brush.ColorStops.Add(inner);
+            brush.ColorStops.Add(line);
+            brush.ColorStops.Add(outer);
+            var ring = _compositor.CreateSpriteVisual();
+            ring.Brush = brush;
+            ring.Size = new Vector2(size);
+            ring.CenterPoint = new Vector3(size / 2, size / 2, 0);
+            ring.Offset = new Vector3(d.X - size / 2, -FallHeight - size / 2, 0);
+            ring.Opacity = 0;
+            _root!.Children.InsertAtTop(ring);
+
+            float at = d.Pop + 100;
+            var grow = _compositor.CreateVector3KeyFrameAnimation();
+            grow.InsertKeyFrame(0, new Vector3(1.05f, 1.05f, 1));
+            grow.InsertKeyFrame(1, new Vector3(2.1f, 2.1f, 1), Ease(RingOut));
+            var fade = _compositor.CreateScalarKeyFrameAnimation();
+            fade.InsertKeyFrame(0, 0);
+            fade.InsertKeyFrame(0.08f, 0.85f);
+            fade.InsertKeyFrame(0.45f, 0.5f);
+            fade.InsertKeyFrame(1, 0, Ease(RingOut));
+            var soften = _compositor.CreateScalarKeyFrameAnimation();
+            soften.InsertKeyFrame(1, 0.18f, Ease(RingOut));
+            var widen = _compositor.CreateScalarKeyFrameAnimation();
+            widen.InsertKeyFrame(1, 0.8f, Ease(RingOut));
+            foreach (var a in new KeyFrameAnimation[] { grow, fade, soften, widen })
+            {
+                a.Duration = Ms(RingMs);
+                a.DelayTime = Ms(at);
+            }
+            _start.Add(() =>
+            {
+                ring.StartAnimation("Scale", grow);
+                ring.StartAnimation("Opacity", fade);
+                inner.StartAnimation("Offset", soften);
+                outer.StartAnimation("Offset", widen);
             });
         }
     }

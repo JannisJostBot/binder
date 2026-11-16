@@ -38,7 +38,7 @@ public sealed partial class GameModeToast : Window
     private Storyboard? _restartBar;
 
     // Test branch (ToastMelt): the changes fall onto the pill and melt in, the count rolling up as each lands.
-    private const double MeltRoom = 116; // room above the pill for the falling drops
+    private const double MeltRoom = 136; // room above the pill for the drops (and, going back, their rings)
     private readonly MeltMode _melt;
     private readonly float _slow = 1;
     private readonly int _meltCount;
@@ -318,7 +318,7 @@ public sealed partial class GameModeToast : Window
     {
         MeltDetail.MinWidth = MeltDetail.ActualWidth; // keeps the final width while the count rolls up
         var glow = _applied ? ((SolidColorBrush)DotFill.Fill).Color : ((SolidColorBrush)Mark.Stroke).Color;
-        _melting = new ToastMelt(MeltHost, GlyphHost, _melt, _slow, Math.Min(_meltCount, 5),
+        _melting = new ToastMelt(MeltHost, GlyphHost, _melt, back: !_applied, _slow, Math.Min(_meltCount, 5),
             new Vector2((float)Surface.ActualWidth, (float)Surface.ActualHeight),
             ((SolidColorBrush)Surface.Background).Color, ((SolidColorBrush)Surface.BorderBrush).Color, glow,
             (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]);
@@ -354,8 +354,9 @@ public sealed partial class GameModeToast : Window
         if (_melting is not { } melt) return;
         var body = VisualOf(Body);
         var c = body.Compositor;
-        var lands = melt.Lands;
-        float last = lands[^1];
+        // Coming in, the pill answers each landing; going back, the changes arrive above it, so it stays still.
+        float[] lands = _applied ? melt.Lands : [];
+        float last = melt.Settled;
 
         // Up from the taskbar (board 31, C), then a small give under each drop as it lands.
         var rise = new List<(float, float, CompositionEasingFunction?)>();
@@ -395,7 +396,7 @@ public sealed partial class GameModeToast : Window
             sweep.InsertKeyFrame(0, -90);
             sweep.InsertKeyFrame(1, 40, Ease(c, .34f, 1.56f, .64f, 1));
             sweep.Duration = TimeSpan.FromMilliseconds(Ms(700));
-            sweep.DelayTime = TimeSpan.FromMilliseconds(last + Ms(80));
+            sweep.DelayTime = TimeSpan.FromMilliseconds(last);
             VisualOf(Needle).StartAnimation("RotationAngleInDegrees", sweep);
         }
         else
@@ -404,7 +405,7 @@ public sealed partial class GameModeToast : Window
             {
                 From = 8, To = 0, EnableDependentAnimation = true,
                 Duration = TimeSpan.FromMilliseconds(Ms(400)),
-                BeginTime = TimeSpan.FromMilliseconds(last + Ms(80)),
+                BeginTime = TimeSpan.FromMilliseconds(last),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut },
             };
             Storyboard.SetTarget(draw, Mark);
