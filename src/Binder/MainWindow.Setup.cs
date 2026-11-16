@@ -16,18 +16,22 @@ public sealed partial class MainWindow
 
     void ISetupActions.Import(IReadOnlyList<ShortcutFile> picked)
     {
-        // Shown in step 3 itself: the panel's notice would sit over its Done button. First the shortcuts that went
-        // fly into Binder's logo (skipped with animations off), then step 3.
-        // The moves run in the background (with many shortcuts they take a moment) while the picked rows fly, so the
-        // animation starts at once; step 3 waits for both and says what actually went.
+        // Shown in step 3 itself: the panel's notice would sit over its Done button. First the picked shortcuts fly
+        // into Binder's logo (skipped with animations off), then step 3. The moves run in the background (with many
+        // shortcuts they take a moment), so the animation starts at once; the games go onto the shelf as soon as
+        // they're moved, still during the animation (it runs on the compositor), so step 3 follows it straight away
+        // and says what actually went.
         var moving = Task.Run(() => MoveShortcuts(picked));
+        var adding = AddWhenMoved(moving);
         SetupPage.PlayMerge(picked, async () =>
         {
-            var result = AddStored(await moving);
-            var (title, detail) = ImportResultText(result);
+            var (title, detail) = ImportResultText(await adding);
             SetupPage.ViewModel!.ImportDone(title, detail);
         });
     }
+
+    private async Task<ImportResult> AddWhenMoved(Task<List<(ShortcutFile Shortcut, ImportedShortcut? Record)>> moving) =>
+        AddStored(await moving); // back on the UI thread
 
     /// <summary>First-run setup (board 10). Also reachable from Settings → "Run first-time setup again".</summary>
     private void ShowSetup()

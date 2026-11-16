@@ -14,8 +14,8 @@ namespace Binder.Views;
 /// Setup step 2, as on the website's launcher list (site/chips.js): the shortcuts that were just moved onto the
 /// shelf fly into Binder's logo. Each visible row becomes a stand-in that flies, one after another, to one of the
 /// logo's three covers and turns into it on the way (size, corners, angle, blue); as the last one lands the logo
-/// itself shows on top and its play mark pops in. Rows beyond the first seven, or scrolled out of view, and the rows
-/// that weren't moved fade while the pills form.
+/// itself shows on top and its play mark pops in. The list's card fades as the pills form, with the rows that stay,
+/// those beyond the first seven and those scrolled out of view.
 /// Everything is started at once and runs on the compositor; a scoped batch calls back when it's over (about
 /// 1.5 s), no timer. Animation effects off or high contrast: no animation, the callback runs at once.
 /// </summary>
@@ -23,9 +23,12 @@ internal static class LogoMerge
 {
     private const int MaxFlying = 7;
     private const float LogoPx = 80, Unit = LogoPx / 48; // logo.svg's 48-unit box, drawn at 80 px
-    // First each row becomes a pill around its name (PillMs), a beat (PauseMs), then the pills fly one after another;
-    // the logo then stays long enough to take in (HoldMs) and fades before step 3.
-    private const float PillMs = 320, PauseMs = 140, FlyMs = 600, StaggerMs = 70, HoldMs = 1100, LogoOutMs = 250;
+    // First each row becomes a pill around its name (PillMs), a beat (PauseMs); the pills spread out, one after
+    // another, to points scattered around where the logo forms (GatherMs, GatherStaggerMs), rest there a moment
+    // (RestMs), then fold into the logo's covers (FlyMs, StaggerMs). The logo then stays long enough to take in
+    // (HoldMs) and fades before step 3.
+    private const float PillMs = 320, PauseMs = 140, GatherMs = 600, GatherStaggerMs = 50, RestMs = 250,
+        FlyMs = 480, StaggerMs = 50, HoldMs = 1100, LogoOutMs = 250;
 
     /// <summary>A cover of the logo: its centre from the logo's centre (px), its angle and its blue.</summary>
     private readonly record struct Cover(Vector2 Centre, float Degrees, Color Tint);
@@ -46,8 +49,7 @@ internal static class LogoMerge
         return new Cover(new Vector2((float)(rx - 24) * Unit, (float)(ry - 24) * Unit), degrees, tint);
     }
 
-    public static void Play(Canvas layer, FrameworkElement area, IReadOnlyList<FrameworkElement> rows,
-        IReadOnlyList<FrameworkElement> others, Action then)
+    public static void Play(Canvas layer, FrameworkElement area, IReadOnlyList<FrameworkElement> rows, Action then)
     {
         if (rows.Count == 0 || layer.ActualWidth <= 0 || !new Windows.UI.ViewManagement.UISettings().AnimationsEnabled ||
             new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast)
@@ -59,16 +61,14 @@ internal static class LogoMerge
         var compositor = ElementCompositionPreview.GetElementVisual(layer).Compositor;
         var ease = compositor.CreateCubicBezierEasingFunction(new Vector2(.65f, 0), new Vector2(.35f, 1));
 
-        // Which rows fly: those in view, in list order, at most seven. The rest fade where they are.
+        // Which rows fly: those in view, in list order, at most seven. The rest go with the list's card.
         var view = Bounds(area, layer);
         var flying = new List<(FrameworkElement Row, Rect Box)>();
-        var fading = new List<FrameworkElement>(others); // the rows left on the desktop go too, as the pills form
         foreach (var row in rows)
         {
+            if (flying.Count == MaxFlying) break;
             var box = Bounds(row, layer);
-            bool inView = box.Height > 0 && box.Top >= view.Top - 1 && box.Bottom <= view.Bottom + 1;
-            if (inView && flying.Count < MaxFlying) flying.Add((row, box));
-            else fading.Add(row);
+            if (box.Height > 0 && box.Top >= view.Top - 1 && box.Bottom <= view.Bottom + 1) flying.Add((row, box));
         }
         if (flying.Count == 0)
         {
@@ -76,16 +76,32 @@ internal static class LogoMerge
             return;
         }
 
-        // Stand-ins, their names over them, the logo on top: three layers in the overlay.
+        // Stand-ins, their names over them, the logo on top: layers in the overlay. The logo itself stays hidden; what
+        // shows is a live copy of it as one image (a visual surface), so it fades as a whole instead of each cover
+        // showing through the others.
+        var logoSource = new Canvas { IsHitTestVisible = false };
         var standInHost = new Canvas();
         var labels = new Canvas { IsHitTestVisible = false };
+        var logoHost = new Canvas { IsHitTestVisible = false };
         var logo = BuildLogo(out var play);
+        logoSource.Children.Add(logo);
+        layer.Children.Add(logoSource);
         layer.Children.Add(standInHost);
         layer.Children.Add(labels);
-        layer.Children.Add(logo);
+        layer.Children.Add(logoHost);
         var centre = new Vector2((float)(view.X + view.Width / 2), (float)(view.Y + view.Height / 2));
-        Canvas.SetLeft(logo, centre.X - LogoPx / 2);
-        Canvas.SetTop(logo, centre.Y - LogoPx / 2);
+        ElementCompositionPreview.GetElementVisual(logoSource).Opacity = 0;
+        var surface = compositor.CreateVisualSurface();
+        surface.SourceVisual = ElementCompositionPreview.GetElementVisual(logo);
+        surface.SourceSize = new Vector2(LogoPx);
+        var logoVisual = compositor.CreateSpriteVisual();
+        logoVisual.Size = new Vector2(LogoPx);
+        logoVisual.Offset = new Vector3(centre - new Vector2(LogoPx / 2), 0);
+        logoVisual.Brush = compositor.CreateSurfaceBrush(surface);
+        ElementCompositionPreview.SetElementChildVisual(logoHost, logoVisual);
+
+        // The list's card goes with the rows, so the pills fly over the page's own background.
+        ElementCompositionPreview.GetElementVisual(area).StartAnimation("Opacity", Scalar(compositor, 0, PillMs, 0, null));
 
         var shapes = compositor.CreateShapeVisual();
         shapes.Size = new Vector2((float)layer.ActualWidth, (float)layer.ActualHeight);
@@ -98,21 +114,26 @@ internal static class LogoMerge
         var edge = ((SolidColorBrush)resources["ControlStrokeColorDefaultBrush"]).Color;
         var noEdge = Color.FromArgb(0, edge.R, edge.G, edge.B);
         var coverSize = new Vector2(20, 28) * Unit;
-        float flyFrom = PillMs + PauseMs;
+        float gatherFrom = PillMs + PauseMs;
+        float flyFrom = gatherFrom + (flying.Count - 1) * GatherStaggerMs + GatherMs + RestMs;
         float lastLand = flyFrom + (flying.Count - 1) * StaggerMs + FlyMs;
+
+        // The pills: around each row's name (a copy of it on top, where the name is, so the row can go), like the
+        // website's launcher chips; then where each rests around the logo.
+        var pills = flying.Select(f => Pill(f.Row, f.Box, layer)).ToList();
+        var stars = Constellation(view, centre, pills.Select(p => p.Size).ToList());
 
         for (int i = 0; i < flying.Count; i++)
         {
             var (row, box) = flying[i];
             // The last rows go to the front cover, so the front is the last to land, on top.
             var cover = Covers[Math.Min(2, i * 3 / flying.Count)];
+            float gather = gatherFrom + i * GatherStaggerMs, rest = gather + GatherMs;
             float leave = flyFrom + i * StaggerMs, end = leave + FlyMs;
             var rowSize = new Vector2((float)box.Width, (float)box.Height);
             var rowCentre = new Vector2((float)(box.X + box.Width / 2), (float)(box.Y + box.Height / 2));
-
-            // The pill: around the row's name (a copy of it on top, where the name is, so the row can go), like
-            // the website's launcher chips.
-            var (pillCentre, pillSize, label) = Pill(row, box, layer);
+            var (pillCentre, pillSize, label) = pills[i];
+            var star = stars[i];
             if (label is not null) labels.Children.Add(label);
 
             var geometry = compositor.CreateRoundedRectangleGeometry();
@@ -130,9 +151,11 @@ internal static class LogoMerge
             holder.Shapes.Add(sprite);
             shapes.Shapes.Add(holder);
 
-            // One path per property (a second animation would replace the first): row → pill, wait, → cover.
+            // One path per property (a second animation would replace the first): row → pill, wait, → its point
+            // around the logo, rest, → cover.
             var pillRadius = new Vector2(pillSize.Y / 2);
-            Start(holder, "Offset", V2Path(compositor, end, ease, (PillMs, pillCentre), (leave, pillCentre), (end, centre + cover.Centre)));
+            Start(holder, "Offset", V2Path(compositor, end, ease, (PillMs, pillCentre), (gather, pillCentre), (rest, star),
+                (leave, star), (end, centre + cover.Centre)));
             Start(holder, "RotationAngleInDegrees", ScalarPath(compositor, end, ease, (leave, 0), (end, cover.Degrees)));
             Start(geometry, "Size", V2Path(compositor, end, ease, (PillMs, pillSize), (leave, pillSize), (end, coverSize)));
             Start(geometry, "Offset", V2Path(compositor, end, ease, (PillMs, -pillSize / 2), (leave, -pillSize / 2), (end, -coverSize / 2)));
@@ -143,13 +166,21 @@ internal static class LogoMerge
             // The row goes as its pill forms (its name stays, as the copy); the name goes as the pill leaves.
             ElementCompositionPreview.GetElementVisual(row).StartAnimation("Opacity", Scalar(compositor, 0, 150, 0, null));
             if (label is not null)
-                ElementCompositionPreview.GetElementVisual(label).StartAnimation("Opacity", Scalar(compositor, 0, 120, leave, null));
+            {
+                // The name travels with its pill (Translation, which layout leaves alone), and goes as it folds in.
+                ElementCompositionPreview.SetIsTranslationEnabled(label, true);
+                var visual = ElementCompositionPreview.GetElementVisual(label);
+                var move = star - pillCentre;
+                var path = compositor.CreateVector3KeyFrameAnimation();
+                path.InsertKeyFrame(gather / rest, Vector3.Zero, ease);
+                path.InsertKeyFrame(1, new Vector3(move, 0), ease);
+                path.Duration = TimeSpan.FromMilliseconds(rest);
+                visual.StartAnimation("Translation", path);
+                visual.StartAnimation("Opacity", Scalar(compositor, 0, 120, leave, null));
+            }
         }
-        foreach (var row in fading)
-            ElementCompositionPreview.GetElementVisual(row).StartAnimation("Opacity", Scalar(compositor, 0, PillMs, 0, null));
 
         // The logo shows on top as the last cover lands; the stand-ins under it go; the play mark pops in.
-        var logoVisual = ElementCompositionPreview.GetElementVisual(logo);
         logoVisual.Opacity = 0;
         var standIns = ElementCompositionPreview.GetElementVisual(standInHost);
         standIns.StartAnimation("Opacity", Scalar(compositor, 0, 200, lastLand + 170, null));
@@ -184,12 +215,12 @@ internal static class LogoMerge
     }
 
     /// <summary>Takes the overlay away and gives the rows back their opacity (step 2 can be shown again).</summary>
-    public static void Clear(Canvas layer, IReadOnlyList<FrameworkElement> rows)
+    public static void Clear(Canvas layer, FrameworkElement area, IReadOnlyList<FrameworkElement> rows)
     {
         foreach (var child in layer.Children)
             if (child is Canvas host) ElementCompositionPreview.SetElementChildVisual(host, null);
         layer.Children.Clear();
-        foreach (var row in rows)
+        foreach (var row in rows.Append(area))
         {
             var visual = ElementCompositionPreview.GetElementVisual(row);
             visual.StopAnimation("Opacity");
@@ -223,6 +254,51 @@ internal static class LogoMerge
         float h = (float)Math.Min(box.Height, 32);
         var fallback = new Vector2((float)Math.Min(box.Width, 160), h);
         return (new Vector2((float)box.X + fallback.X / 2, (float)(box.Y + box.Height / 2)), fallback, null);
+    }
+
+    /// <summary>
+    /// Where the pills rest before they fold in: round the logo's centre on an oval that fits the list, the first at
+    /// the top and on clockwise, every other one a little nearer and turned a little, so they read as a scatter
+    /// rather than a ring. Each stays inside the list.
+    /// </summary>
+    private static List<Vector2> Constellation(Rect view, Vector2 centre, IReadOnlyList<Vector2> sizes)
+    {
+        const float Margin = 8;
+        float widest = sizes.Max(s => s.X), tallest = sizes.Max(s => s.Y);
+        float rx = Math.Max(LogoPx, (float)view.Width / 2 - widest / 2 - Margin);
+        float ry = Math.Max(LogoPx, Math.Min((float)view.Height / 2 - tallest - Margin, rx * 1.1f));
+        var stars = new List<Vector2>(sizes.Count);
+        for (int i = 0; i < sizes.Count; i++)
+        {
+            bool odd = i % 2 == 1;
+            double a = (-90 + 360.0 * i / sizes.Count + (odd ? 14 : 0)) * Math.PI / 180;
+            float r = odd ? 0.8f : 1f;
+            stars.Add(centre + new Vector2((float)Math.Cos(a) * rx * r, (float)Math.Sin(a) * ry * r));
+        }
+
+        // Pills that would touch are pushed apart, up and down (they're wide), a few rounds; at most seven pills.
+        for (int round = 0; round < 8; round++)
+        {
+            bool moved = false;
+            for (int i = 0; i < stars.Count; i++)
+                for (int j = i + 1; j < stars.Count; j++)
+                {
+                    var gap = (sizes[i] + sizes[j]) / 2 + new Vector2(Margin);
+                    var d = stars[j] - stars[i];
+                    if (Math.Abs(d.X) >= gap.X || Math.Abs(d.Y) >= gap.Y) continue;
+                    float push = (gap.Y - Math.Abs(d.Y)) / 2 * (d.Y < 0 ? -1 : 1);
+                    stars[i] -= new Vector2(0, push);
+                    stars[j] += new Vector2(0, push);
+                    moved = true;
+                }
+            for (int i = 0; i < stars.Count; i++) stars[i] = Inside(stars[i], sizes[i] / 2);
+            if (!moved) break;
+        }
+        return stars;
+
+        Vector2 Inside(Vector2 p, Vector2 half) => new(
+            Math.Clamp(p.X, (float)view.Left + half.X + Margin, Math.Max((float)view.Left + half.X + Margin, (float)view.Right - half.X - Margin)),
+            Math.Clamp(p.Y, (float)view.Top + half.Y + Margin, Math.Max((float)view.Top + half.Y + Margin, (float)view.Bottom - half.Y - Margin)));
     }
 
     private static Vector2KeyFrameAnimation V2Path(Compositor c, float total, CompositionEasingFunction ease, params (float At, Vector2 Value)[] keys)

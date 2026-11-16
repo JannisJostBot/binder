@@ -29,13 +29,12 @@ public sealed partial class SetupView : UserControl
     public void PlayMerge(IReadOnlyList<Library.ShortcutFile> moved, Func<Task> then)
     {
         var rows = Picker.RowsFor(moved);
-        var others = Picker.RowsExcept(rows);
         IsHitTestVisible = false;
-        LogoMerge.Play(MergeLayer, Picker.ListArea, rows, others, async () =>
+        LogoMerge.Play(MergeLayer, Picker.ListArea, rows, async () =>
         {
             await then();
             IsHitTestVisible = true;
-            LogoMerge.Clear(MergeLayer, [.. rows, .. others]);
+            LogoMerge.Clear(MergeLayer, Picker.ListArea, rows);
         });
     }
 
