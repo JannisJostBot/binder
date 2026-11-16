@@ -67,15 +67,19 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
 | `src/Binder/Services/` | Launching, storage, Windows integration |
 | `src/Binder/Views/` | The UI (XAML + code-behind); `Format.cs` has the text formatting |
 | `tests/Binder.Tests/Tests.cs` | All unit tests: one console program, `Check(condition, "description")` per check |
-| `site/` | The website: `index.html`, `docs.html`, `styles.css`, `logo.svg` (see "The website" below) |
+| `site/` | The website: `index.html`, `docs.html`, `styles.css`, `logo.svg`, `release.js` (see "The website" below) |
 
 ## The website (`site/`)
 
 The project's website: `site/index.html` (the home page), `site/docs.html` (the documentation: what Binder
-changes on the PC), `site/styles.css` and `site/logo.svg`. `.github/workflows/pages.yml` publishes it to GitHub
+changes on the PC), `site/styles.css`, `site/logo.svg` and `site/release.js`. `.github/workflows/pages.yml` publishes it to GitHub
 Pages whenever a change to `site/` reaches `main`, so what's merged is live within minutes.
 
-- Plain HTML and CSS only. No JavaScript, no frameworks, no build step.
+- Plain HTML and CSS, no frameworks, no build step. The one script is `site/release.js`: it asks GitHub's API
+  (`api.github.com`, this repository's latest release) for the download link, the version line and the VirusTotal
+  box, which `index.html` also holds as fallback values. That fetch, for things directly about Binder's releases,
+  is the only one allowed (owner, 2026-11-16); it applies to the website only, not to the app. No inline scripts
+  or event handlers, no `innerHTML`; `index.html`'s Content-Security-Policy allows only that address.
 - Nothing loaded from other servers: no web fonts, CDNs, analytics, embeds or tracking pixels. The page promises
   privacy, so it must keep it. Links to other sites (`<a href="https://…">`) are fine. `check.ps1` enforces this.
 - Colours only through the variables at the top of `styles.css` (`var(--text)`, `var(--accent)`, …), which

@@ -94,7 +94,9 @@ scripts/                  publish.ps1 (builds publish\app: widget folder + AOT w
                           check.ps1 (the hard rules on a diff, then build + tests; -Task for agent cards),
                           sign-release.ps1 (owner only: sign a release with the YubiKeys, spec §25),
                           make-tray-icons.ps1 / make-watcher-icon.ps1 (redraw icons after a logo change)
-site/                     the website: plain HTML + CSS, no scripts, nothing from other servers; index.html,
+site/                     the website: HTML + CSS, nothing loaded from other servers; one script, release.js, asks
+                          GitHub's API for the latest release (download link, version, VirusTotal box; the website
+                          only: the app's network rules below don't change); index.html,
                           docs.html (what Binder changes on the PC: every Game mode item, autostart, updates, …)
 docs/proposals.md         approved feature specs, progress table (§0), decisions log, "Not decided"
 docs/tasks/, AGENTS.md    task cards and rules for cheaper coding agents

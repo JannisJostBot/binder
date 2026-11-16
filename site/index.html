@@ -10,7 +10,10 @@
   <meta property="og:type" content="website">
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://api.github.com; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
   <link rel="stylesheet" href="styles.css">
+  <script src="release.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#top">Skip to content</a>
@@ -349,18 +352,20 @@
         <span class="download-logo"><svg aria-hidden="true" width="80" height="80" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
         <h2 class="h2">Download Binder</h2>
         <p class="touch-hint touch-hint-download" role="note"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5"></rect><path d="M8 20h8M12 16v4"></path></svg><span>Binder is an app for Windows PCs. To install it, open this page on your PC.</span></p>
-        <a class="button button-light download-button" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe">
+        <a class="button button-light download-button" id="download-link" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe">
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download for Windows
         </a>
-        <p class="download-meta">Version 0.2.1 · 34 MB · Windows 10 and 11, 64-bit · <a href="https://github.com/JannisJostBot/binder/releases">Release notes and earlier versions</a> · <a href="https://github.com/JannisJostBot/binder">Source code</a></p>
-        <!-- VirusTotal: copied from the release notes' "VirusTotal" section (.github/workflows/virustotal.yml), with each
-             release. Like the notes, it says how many engines flagged the setup, not which; the report lists them. -->
-        <div class="scan">
+        <p class="download-meta"><span id="download-version">Version 0.2.1 · 34 MB</span> · Windows 10 and 11, 64-bit · <a href="https://github.com/JannisJostBot/binder/releases">Release notes and earlier versions</a> · <a href="https://github.com/JannisJostBot/binder">Source code</a></p>
+        <!-- The link, the version line and the VirusTotal box hold the last release's values; release.js replaces them
+             with the latest release on GitHub when the page opens (the box from the release notes' "VirusTotal"
+             section, .github/workflows/virustotal.yml). Like the notes, the box says how many engines flagged the
+             setup, not which; the report lists them. -->
+        <div class="scan" id="scan">
           <span class="scan-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg></span>
           <div class="scan-text">
-            <p class="scan-title">VirusTotal: 1 of 69 antivirus engines flagged this installer</p>
-            <p>Installers that aren't code-signed yet are sometimes flagged. Scanned on <time datetime="2026-11-16">16 November 2026</time> · <a href="https://www.virustotal.com/gui/file/e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5">Full report</a></p>
-            <p class="scan-hash">SHA-256 <code>e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5</code></p>
+            <p class="scan-title" id="scan-title">VirusTotal: 1 of 69 antivirus engines flagged this installer</p>
+            <p id="scan-detail">Installers that aren't code-signed yet are sometimes flagged. Scanned on <time id="scan-date" datetime="2026-11-16">16 November 2026</time> · <a id="scan-report" href="https://www.virustotal.com/gui/file/e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5">Full report</a></p>
+            <p class="scan-hash">SHA-256 <code id="scan-hash">e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5</code></p>
           </div>
         </div>
         <p class="download-text">Run the installer and follow the short setup: pick your launchers and, if you like, which desktop shortcuts to tidy away. Binder tells you when there's an update, or you can run a newer installer yourself, even while a game is running.</p>
