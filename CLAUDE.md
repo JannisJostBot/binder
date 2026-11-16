@@ -196,7 +196,8 @@ the reference for what exists; these rules apply to every change:
 - Full keyboard (arrows, Enter plays, Space details, Esc back, type-to-search), native context menus, tooltips and
   UI Automation names on all controls.
 - Hidden from taskbar and Alt+Tab (`WS_EX_TOOLWINDOW`). Standard file picker, Run key autostart (exe path quoted,
-  the real install location), data in AppData.
+  the real install location; turned off in Task Manager or Settings › Apps › Startup reads as off, and turning it on
+  in Binder lifts that), data in AppData.
 - Settings and Detail (boards 19, 21): one card per setting under group headings (`GroupLabel`, `SettingCard`,
   `SettingLinkCard`; `Disclosure` for cards that open, not Expander). A card's second line says only state;
   explanations go in tooltips.
