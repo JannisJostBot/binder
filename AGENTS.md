@@ -91,7 +91,7 @@ Pages whenever a change to `site/` reaches `main`, so what's merged is live with
   `.tile`, `.stat`, `.faq-item`, `.note`) instead of new styles; no inline `style="…"` except a `--c`/`--h`
   value on a picture's parts.
 - The look: Windows-native type and colours, plus Binder's own touches: pill buttons, the bloom in the logo's
-  blues, the logo's fanned cover stack (hero, download panel), launcher chips like the app's filter chips, the
+  blues, the logo's fanned cover stack (download panel), a quiet wallpaper behind the hero's product shot, launcher chips like the app's filter chips, the
   deep blue privacy and download panels. Keep them; no small labels above headings, and don't add stock illustrations, emoji or other fonts.
 - "What happens when you play a game" is a scroll story in pure CSS (scroll-driven animations on `.how-scroll`,
   keyframes `how-*`): the three steps stay pinned and the picture changes as the page scrolls. Without support or

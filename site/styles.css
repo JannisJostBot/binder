@@ -1,8 +1,8 @@
 /* Binder website: index.html and docs.html.
 
    Look: Windows-native (Segoe UI Variable, the Windows accent for actions, light and dark like the app), with a
-   few things of its own: pill buttons, a soft "bloom" in the logo's blues, the logo's fanned cover stack behind
-   the product shot and the download panel, the app's filter chips for the launchers, and a deep Binder-blue
+   few things of its own: pill buttons, a soft "bloom" in the logo's blues, a quiet wallpaper behind the product
+   shot, the logo's fanned cover stack behind the download panel, the app's filter chips for the launchers, and a deep Binder-blue
    privacy panel.
 
    Colours come only from the variables below. The product shot (.stage, .mock-*) and the step and feature
@@ -324,33 +324,57 @@ summary::-webkit-details-marker { display: none; }
 .hero-footnote sup { color: var(--accent); font-weight: 600; }
 .hero-footnote:target { color: var(--text); }
 
-/* The product shot: the app's panel above the taskbar, the logo's fanned covers behind it. */
+/* The product shot: the app's panel above the taskbar on a quiet desktop wallpaper: soft gradients and two wide,
+   flowing bands, nothing that looks like content, so the eye goes to the panel. */
 .stage {
   position: relative;
   margin: 0;
   height: 560px;
   border-radius: var(--radius-large);
   background:
-    radial-gradient(70% 60% at 20% 15%, #D6ECFF 0%, rgba(214, 236, 255, 0) 60%),
-    radial-gradient(70% 70% at 85% 90%, #2F6FB0 0%, rgba(47, 111, 176, 0) 70%),
-    linear-gradient(155deg, #A9CDEE, #4F86C2);
+    radial-gradient(80% 60% at 10% 0%, #EAF3FC 0%, rgba(234, 243, 252, 0) 65%),
+    radial-gradient(90% 80% at 100% 100%, #2E5E9E 0%, rgba(46, 94, 158, 0) 70%),
+    radial-gradient(60% 50% at 25% 85%, rgba(160, 150, 230, 0.45) 0%, rgba(160, 150, 230, 0) 70%),
+    linear-gradient(160deg, #BCD4EE, #7A9FD0 55%, #4F78B4);
   box-shadow: var(--shadow-2), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
   overflow: hidden;
   isolation: isolate;
 }
-.stage-cards { position: absolute; inset: 0; z-index: -1; }
-.stage-cards span { position: absolute; width: 210px; aspect-ratio: 3 / 4; border-radius: 18px; box-shadow: 0 20px 40px -12px rgba(4, 30, 56, 0.45); }
-.stage-cards span:nth-child(1) { left: 6%; top: 18%; background: linear-gradient(135deg, #E3F5FF, #9CCDEF); transform: rotate(-14deg); }
-.stage-cards span:nth-child(2) { left: 16%; top: 12%; background: linear-gradient(135deg, #B4E6FF, #4AA6E6); transform: rotate(-4deg); }
-.stage-cards span:nth-child(3) { left: 26%; top: 20%; background: linear-gradient(135deg, #7BD8FF, #0C78D2); transform: rotate(8deg); }
-.stage-cards span:nth-child(3)::after {
+.stage-wallpaper { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+.stage-wallpaper::before, .stage-wallpaper::after {
   content: "";
   position: absolute;
-  left: 38%;
-  top: 38%;
-  border-style: solid;
-  border-width: 26px 0 26px 42px;
-  border-color: transparent transparent transparent rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+}
+.stage-wallpaper::before {
+  left: -45%;
+  top: 30%;
+  width: 150%;
+  height: 90%;
+  transform: rotate(-12deg);
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.08) 60%, rgba(255, 255, 255, 0));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.45);
+}
+.stage-wallpaper::after {
+  left: -30%;
+  top: 52%;
+  width: 160%;
+  height: 90%;
+  transform: rotate(-8deg);
+  background: linear-gradient(100deg, rgba(36, 80, 150, 0.45), rgba(36, 80, 150, 0.15) 70%);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25);
+}
+@media (prefers-color-scheme: dark) {
+  .stage {
+    background:
+      radial-gradient(80% 60% at 10% 0%, #36557E 0%, rgba(54, 85, 126, 0) 65%),
+      radial-gradient(90% 80% at 100% 100%, #0B1F3D 0%, rgba(11, 31, 61, 0) 70%),
+      radial-gradient(60% 50% at 25% 85%, rgba(110, 90, 190, 0.35) 0%, rgba(110, 90, 190, 0) 70%),
+      linear-gradient(160deg, #2A4568, #1C3354 55%, #12233E);
+    box-shadow: var(--shadow-2), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  }
+  .stage-wallpaper::before { background: linear-gradient(100deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03) 60%, rgba(255, 255, 255, 0)); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.18); }
+  .stage-wallpaper::after { background: linear-gradient(100deg, rgba(4, 14, 32, 0.5), rgba(4, 14, 32, 0.2) 70%); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.1); }
 }
 .mock-panel {
   position: absolute;
@@ -430,6 +454,16 @@ summary::-webkit-details-marker { display: none; }
 .stage:has(.shelf-toggle) .mock-hint { display: flex; }
 .stage:has(.shelf-toggle:not(:checked)) .mock-hint-open { display: none; }
 .stage:has(.shelf-toggle:not(:checked)) .mock-hint-closed { display: inline; }
+/* Dark mode: a dark taskbar, as Windows has in dark mode. */
+@media (prefers-color-scheme: dark) {
+  .mock-taskbar { background: rgba(28, 28, 32, 0.92); border-top-color: rgba(255, 255, 255, 0.08); }
+  .mock-clock { color: #F3F3F5; }
+  .mock-hint { color: #C8C8D0; }
+  .mock-tray { background: rgba(255, 255, 255, 0.06); }
+  .mock-tray:hover, .mock-tray:has(.shelf-toggle:checked) { background: rgba(255, 255, 255, 0.1); }
+  .mock-tray:has(.shelf-toggle:checked) { box-shadow: inset 0 -3px 0 -1px #4CC2FF; }
+  .mock-tray:has(.shelf-toggle:focus-visible) { outline-color: #FFFFFF; }
+}
 @media (prefers-reduced-motion: reduce) {
   .mock-panel, .mock-tray { transition: none; }
 }
@@ -449,8 +483,6 @@ summary::-webkit-details-marker { display: none; }
   .hero-lead { font-size: 17px; }
   .hero-actions { align-self: stretch; flex-direction: column; margin-top: 4px; }
   .stage { height: 420px; border-radius: 18px; }
-  .stage-cards span { width: 150px; border-radius: 14px; }
-  .stage-cards span:nth-child(3)::after { border-width: 18px 0 18px 30px; }
   .mock-taskbar { gap: 8px; padding: 0 10px 0 12px; }
   .mock-hint { font-size: 11px; gap: 4px; }
 }
