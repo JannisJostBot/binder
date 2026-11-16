@@ -41,6 +41,10 @@
     <!-- Approved in CLAUDE.md (Dependencies). Only the WinUI part of the Windows App SDK; not the AI, ML,
          widgets or search components the umbrella Microsoft.WindowsAppSDK package also brings. -->
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="2.6.4" />
+    <!-- TEST BRANCH ONLY (test/toast-melt): Win2D for the Game mode toast's "melt" effect (Views/ToastMelt.cs), to
+         compare with the version that needs no package. Approved by the owner for this branch only; not in
+         CLAUDE.md, THIRD-PARTY-NOTICES.txt or publish.ps1's licenses until it's chosen. -->
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -37,6 +37,16 @@ public sealed partial class GameModeToast : Window
     private readonly RestartViewModel? _restart;
     private Storyboard? _restartBar;
 
+    // Test branch (ToastMelt): the changes fall onto the pill and melt in, the count rolling up as each lands.
+    private const double MeltRoom = 116; // room above the pill for the falling drops
+    private readonly MeltMode _melt;
+    private readonly float _slow = 1;
+    private readonly int _meltCount;
+    private readonly bool _applied;
+    private ToastMelt? _melting;
+    private Storyboard? _drawCheck;
+    private bool _highContrast;
+
     /// <summary>A message that waits for the user (something couldn't be put back): nothing should replace it.</summary>
     public bool WaitsForUser => _timeout is null && _restart is null;
 
@@ -109,7 +119,7 @@ public sealed partial class GameModeToast : Window
         _timer.Start();
     }
 
-    public GameModeToast(Kind kind, RestoreResult result)
+    public GameModeToast(Kind kind, RestoreResult result, MeltMode melt = MeltMode.Off, float slow = 1)
     {
         InitializeComponent();
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -129,6 +139,25 @@ public sealed partial class GameModeToast : Window
             LineDetail.Text = " · " + detail;
             var (longTitle, longDetail) = GameModeText.Toast(result, applied);
             AutomationProperties.SetName(LineText, Strings.Format(Strings.Sentences, longTitle, longDetail));
+            _applied = applied;
+            if (melt != MeltMode.Off && result.Restored > 0 && !_highContrast && new Windows.UI.ViewManagement.UISettings().AnimationsEnabled)
+            {
+                _melt = melt;
+                _slow = slow;
+                _meltCount = result.Restored;
+                LineText.Visibility = Visibility.Collapsed;
+                MeltLine.Visibility = Visibility.Visible;
+                MeltTitle.Text = title;
+                MeltSep.Text = "·";
+                MeltDetail.Text = detail; // laid out with the final count, so the pill keeps its width
+                AutomationProperties.SetName(MeltLine, AutomationProperties.GetName(LineText));
+                if (applied)
+                {
+                    OnGlyph.Visibility = Visibility.Collapsed;
+                    Gauge.Visibility = Visibility.Visible;
+                }
+                Root.Padding = new Thickness(Root.Padding.Left, Root.Padding.Top + MeltRoom, Root.Padding.Right, Root.Padding.Bottom);
+            }
             if (!applied)
             {
                 // Done: a quiet neutral dot with a green check, not the accent.
@@ -139,7 +168,7 @@ public sealed partial class GameModeToast : Window
                 DotFill.Stroke = (Brush)resources["ControlStrokeColorDefaultBrush"];
                 Mark.Stroke = (Brush)resources["SystemFillColorSuccessBrush"];
             }
-            _announce = LineText;
+            _announce = _melt != MeltMode.Off ? MeltLine : LineText;
         }
         else
         {
@@ -158,6 +187,9 @@ public sealed partial class GameModeToast : Window
         {
             _timer?.Stop();
             ShowStoryboard.Stop();
+            _drawCheck?.Stop();
+            CompositionTarget.Rendering -= StartMeltOnFirstFrame;
+            _melting?.Remove();
         };
     }
 
@@ -173,8 +205,12 @@ public sealed partial class GameModeToast : Window
         // See-through and frameless: the XAML surface draws the whole pill, its round ends and its shadow.
         NativeWindow.MakeFrameless(_hwnd);
         SystemBackdrop = new TransparentBackdrop();
-        if (new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast)
+        _highContrast = new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
+        if (_highContrast)
+        {
             Surface.BorderThickness = new Thickness(2); // system colors, a stronger edge and no shadow
+            Inner.Margin = new Thickness(2);
+        }
         else
             Surface.SizeChanged += (_, _) => UpdateShadow();
     }
@@ -205,6 +241,12 @@ public sealed partial class GameModeToast : Window
         // The window's bottom edge sits on the taskbar: the shadow room below the pill (Root's padding) is the gap.
         int top = bottom - height;
         NativeWindow.SetBounds(_hwnd, new PixelRect(left, top, left + width, top + height));
+
+        if (_melt != MeltMode.Off)
+        {
+            PlayMelt();
+            return;
+        }
 
         // The storyboard's first frame (From values) is in place before the window shows; with animations off
         // the XAML's values are already the final state.
@@ -253,6 +295,193 @@ public sealed partial class GameModeToast : Window
         pop.DelayTime = TimeSpan.FromMilliseconds(100);
         pop.DelayBehavior = AnimationDelayBehavior.SetInitialValueBeforeDelay;
         visual.StartAnimation("Scale", pop);
+    }
+
+    // ---- Test branch: the changes melt in (ToastMelt, canvas board 33) --------------------------------------
+
+    private static Visual VisualOf(UIElement element, bool translation = false)
+    {
+        if (translation) ElementCompositionPreview.SetIsTranslationEnabled(element, true);
+        return ElementCompositionPreview.GetElementVisual(element);
+    }
+
+    private CompositionEasingFunction Ease(Compositor c, float x1, float y1, float x2, float y2) =>
+        c.CreateCubicBezierEasingFunction(new Vector2(x1, y1), new Vector2(x2, y2));
+
+    private float Ms(float ms) => ms * _slow;
+
+    /// <summary>
+    /// Builds the melt in its first frame (the pill drawn by the melt, the drops hidden, the line's count hidden),
+    /// shows the window and starts everything once that frame is on screen.
+    /// </summary>
+    private void PlayMelt()
+    {
+        MeltDetail.MinWidth = MeltDetail.ActualWidth; // keeps the final width while the count rolls up
+        var glow = _applied ? ((SolidColorBrush)DotFill.Fill).Color : ((SolidColorBrush)Mark.Stroke).Color;
+        _melting = new ToastMelt(MeltHost, GlyphHost, _melt, _slow, Math.Min(_meltCount, 5),
+            new Vector2((float)Surface.ActualWidth, (float)Surface.ActualHeight),
+            ((SolidColorBrush)Surface.Background).Color, ((SolidColorBrush)Surface.BorderBrush).Color, glow,
+            (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]);
+        _melting.Build();
+        _melting.Landed += OnMeltLanded;
+        _melting.Finished += () => Surface.Opacity = 1;
+        Surface.Opacity = 0; // the melt draws the pill until the last drop has merged
+
+        var body = VisualOf(Body, translation: true);
+        body.Opacity = 0;
+        body.Properties.InsertVector3("Translation", new Vector3(0, 96, 0));
+        VisualOf(MeltSep).Opacity = 0;
+        VisualOf(MeltDetail, translation: true).Opacity = 0;
+        var dot = VisualOf(Dot);
+        dot.CenterPoint = new Vector3(14, 14, 0);
+        dot.Scale = new Vector3(0.6f, 0.6f, 1);
+        if (_applied)
+        {
+            var needle = VisualOf(Needle);
+            needle.CenterPoint = new Vector3(12, 17, 0);
+            needle.RotationAngleInDegrees = -90;
+        }
+        else Mark.StrokeDashOffset = 8;
+
+        NativeWindow.Cloak(_hwnd, false);
+        FrameworkElementAutomationPeer.CreatePeerForElement(_announce)?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+        CompositionTarget.Rendering += StartMeltOnFirstFrame;
+    }
+
+    private void StartMeltOnFirstFrame(object? sender, object e)
+    {
+        CompositionTarget.Rendering -= StartMeltOnFirstFrame;
+        if (_melting is not { } melt) return;
+        var body = VisualOf(Body);
+        var c = body.Compositor;
+        var lands = melt.Lands;
+        float last = lands[^1];
+
+        // Up from the taskbar (board 31, C), then a small give under each drop as it lands.
+        var rise = new List<(float, float, CompositionEasingFunction?)>();
+        Add(rise, 0, 96, null);
+        Add(rise, Ms(367), 0, Ease(c, .1f, .9f, .2f, 1));
+        for (int i = 0; i < lands.Length; i++)
+        {
+            float next = i + 1 < lands.Length ? lands[i + 1] : float.MaxValue;
+            Add(rise, lands[i], 0, null);
+            Add(rise, lands[i] + Ms(90), 2, Ease(c, 0, 0, .58f, 1));
+            Add(rise, Math.Min(lands[i] + Ms(360), next), 0, Ease(c, .3f, 1.72f, .5f, 1));
+        }
+        body.StartAnimation("Translation", Timeline(c, rise, v => new Vector3(0, v, 0)));
+        var fade = c.CreateScalarKeyFrameAnimation();
+        fade.InsertKeyFrame(1, 1);
+        fade.Duration = TimeSpan.FromMilliseconds(Ms(100));
+        body.StartAnimation("Opacity", fade);
+
+        // The dot settles, then bumps as each drop lands.
+        var bump = new List<(float, float, CompositionEasingFunction?)>();
+        Add(bump, 0, 0.6f, null);
+        Add(bump, Ms(150), 0.6f, null);
+        Add(bump, Ms(510), 1, Ease(c, .34f, 1.56f, .64f, 1));
+        for (int i = 0; i < lands.Length; i++)
+        {
+            float next = i + 1 < lands.Length ? lands[i + 1] : float.MaxValue;
+            Add(bump, lands[i], 1, null);
+            Add(bump, lands[i] + Ms(100), 1.18f, Ease(c, .2f, .8f, .4f, 1));
+            Add(bump, Math.Min(lands[i] + Ms(420), next), 1, Ease(c, .34f, 1.84f, .64f, 1));
+        }
+        VisualOf(Dot).StartAnimation("Scale", Timeline(c, bump, v => new Vector3(v, v, 1)));
+
+        // Once the last change is in: the needle sweeps up, or the check draws itself.
+        if (_applied)
+        {
+            var sweep = c.CreateScalarKeyFrameAnimation();
+            sweep.InsertKeyFrame(0, -90);
+            sweep.InsertKeyFrame(1, 40, Ease(c, .34f, 1.56f, .64f, 1));
+            sweep.Duration = TimeSpan.FromMilliseconds(Ms(700));
+            sweep.DelayTime = TimeSpan.FromMilliseconds(last + Ms(80));
+            VisualOf(Needle).StartAnimation("RotationAngleInDegrees", sweep);
+        }
+        else
+        {
+            var draw = new DoubleAnimation
+            {
+                From = 8, To = 0, EnableDependentAnimation = true,
+                Duration = TimeSpan.FromMilliseconds(Ms(400)),
+                BeginTime = TimeSpan.FromMilliseconds(last + Ms(80)),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut },
+            };
+            Storyboard.SetTarget(draw, Mark);
+            Storyboard.SetTargetProperty(draw, "StrokeDashOffset");
+            _drawCheck = new Storyboard();
+            _drawCheck.Children.Add(draw);
+            _drawCheck.Begin();
+        }
+
+        melt.Start();
+
+        _timer = DispatcherQueue.CreateTimer();
+        _timer.Interval = TimeSpan.FromMilliseconds(last) + SuccessTimeout;
+        _timer.IsRepeating = false;
+        _timer.Tick += (_, _) => LeaveAndClose();
+        _timer.Start();
+    }
+
+    /// <summary>A keyframe, unless it would come before the one already there (landings close together).</summary>
+    private static void Add(List<(float Ms, float Value, CompositionEasingFunction? Ease)> points, float ms, float value, CompositionEasingFunction? ease)
+    {
+        if (points.Count == 0 || ms > points[^1].Ms + 1) points.Add((ms, value, ease));
+    }
+
+    private static Vector3KeyFrameAnimation Timeline(Compositor c, List<(float Ms, float Value, CompositionEasingFunction? Ease)> points, Func<float, Vector3> map)
+    {
+        var a = c.CreateVector3KeyFrameAnimation();
+        float end = Math.Max(1, points[^1].Ms);
+        foreach (var (ms, value, ease) in points)
+        {
+            if (ease is null) a.InsertKeyFrame(ms / end, map(value));
+            else a.InsertKeyFrame(ms / end, map(value), ease);
+        }
+        a.Duration = TimeSpan.FromMilliseconds(end);
+        return a;
+    }
+
+    /// <summary>A change landed: the count rolls up to its share of the total.</summary>
+    private void OnMeltLanded(int index, int of)
+    {
+        int shown = (int)Math.Round(_meltCount * (index + 1) / (double)of);
+        string changes = Strings.Plural(shown, Strings.GmChangeCountOne, Strings.GmChangeCount);
+        MeltDetail.Text = _applied ? changes : Strings.Format(Strings.GmPillPutBack, changes);
+
+        var detail = VisualOf(MeltDetail);
+        var c = detail.Compositor;
+        var roll = c.CreateVector3KeyFrameAnimation();
+        roll.InsertKeyFrame(0, new Vector3(0, 9, 0));
+        roll.InsertKeyFrame(1, Vector3.Zero, Ease(c, .3f, 1.5f, .5f, 1));
+        roll.Duration = TimeSpan.FromMilliseconds(Ms(280));
+        detail.StartAnimation("Translation", roll);
+        var show = c.CreateScalarKeyFrameAnimation();
+        show.InsertKeyFrame(0, 0);
+        show.InsertKeyFrame(1, 1, Ease(c, .3f, 1.5f, .5f, 1));
+        show.Duration = TimeSpan.FromMilliseconds(Ms(280));
+        detail.StartAnimation("Opacity", show);
+        if (index == 0)
+        {
+            var sep = c.CreateScalarKeyFrameAnimation();
+            sep.InsertKeyFrame(1, 1);
+            sep.Duration = TimeSpan.FromMilliseconds(Ms(200));
+            VisualOf(MeltSep).StartAnimation("Opacity", sep);
+        }
+    }
+
+    /// <summary>Back down behind the taskbar, then closed.</summary>
+    private void LeaveAndClose()
+    {
+        var body = VisualOf(Body);
+        var c = body.Compositor;
+        var batch = c.CreateScopedBatch(CompositionBatchTypes.Animation);
+        var down = c.CreateVector3KeyFrameAnimation();
+        down.InsertKeyFrame(1, new Vector3(0, 96, 0), Ease(c, .7f, 0, 1, .5f));
+        down.Duration = TimeSpan.FromMilliseconds(Ms(200));
+        body.StartAnimation("Translation", down);
+        batch.End();
+        batch.Completed += (_, _) => Close();
     }
 
     private LayerVisual? _shadowLayer;

@@ -38,8 +38,12 @@
             <Border x:Name="ShadowHost" IsHitTestVisible="False" />
             <!-- The surface: fully round ends on the 48 px pill, the same radius on the card. -->
             <Border x:Name="Surface" CornerRadius="24" BorderThickness="1" Background="{ThemeResource ToastSurfaceBrush}"
-                    BorderBrush="{ThemeResource ToastStrokeBrush}">
-            <Grid>
+                    BorderBrush="{ThemeResource ToastStrokeBrush}" />
+            <!-- Test branch (ToastMelt): the drops and the surface they melt into, then the icons they carry, between
+                 the surface and the text. Empty unless the toast was asked for with "melt outline" or "melt win2d". -->
+            <Canvas x:Name="MeltHost" IsHitTestVisible="False" AutomationProperties.AccessibilityView="Raw" />
+            <Canvas x:Name="GlyphHost" IsHitTestVisible="False" AutomationProperties.AccessibilityView="Raw" />
+            <Grid x:Name="Inner" Margin="1">
 
             <!-- The pill: a small round dot (accent while game mode is on, neutral with a green check once Windows
                  is back to normal) and one line of text. -->
@@ -52,6 +56,15 @@
                     <Ellipse x:Name="DotFill" Fill="{ThemeResource AccentFillColorDefaultBrush}" StrokeThickness="1" />
                     <!-- On: a gauge. Back to normal: a check that draws itself. -->
                     <FontIcon x:Name="OnGlyph" Glyph="&#xEC4A;" FontSize="14" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                    <!-- Test branch: a gauge whose needle really sweeps (ToastMelt's toast). -->
+                    <Viewbox x:Name="Gauge" Width="16" Height="16" Visibility="Collapsed">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="M 4,17 A 8,8 0 1 1 20,17" Stroke="{ThemeResource TextOnAccentFillColorPrimaryBrush}" StrokeThickness="2.2"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                            <Path x:Name="Needle" Data="M 12,17 L 12,9.5" Stroke="{ThemeResource TextOnAccentFillColorPrimaryBrush}" StrokeThickness="2.2"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                        </Canvas>
+                    </Viewbox>
                     <Path x:Name="Mark" Data="M 9,14.5 L 12.5,18 L 19.5,10.5" StrokeThickness="2" StrokeDashArray="8 8"
                           StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Visibility="Collapsed" />
                 </Grid>
@@ -59,6 +72,15 @@
                            Style="{StaticResource BodyTextBlockStyle}" TextWrapping="NoWrap" AutomationProperties.LiveSetting="Assertive">
                     <Run x:Name="LineTitle" FontWeight="SemiBold" /><Run x:Name="LineDetail" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </TextBlock>
+                <!-- Test branch: the same line in parts, so the count can roll up as each change lands. -->
+                <StackPanel x:Name="MeltLine" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed"
+                            AutomationProperties.LiveSetting="Assertive">
+                    <TextBlock x:Name="MeltTitle" Style="{StaticResource BodyTextBlockStyle}" FontWeight="SemiBold" TextWrapping="NoWrap" />
+                    <TextBlock x:Name="MeltSep" Style="{StaticResource BodyTextBlockStyle}" Margin="4,0,4,0"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock x:Name="MeltDetail" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="NoWrap"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
             </Grid>
 
             <!-- Restart after a crash (spec §17): the same pill with a caution dot, "[Game] crashed · Restarting in
@@ -120,7 +142,6 @@
                         Visibility="Collapsed" />
             </Grid>
             </Grid>
-            </Border>
         </Grid>
     </Grid>
 </Window>
