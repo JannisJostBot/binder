@@ -68,6 +68,10 @@ internal sealed class ToastMelt
     /// <summary>When the needle or the check should move: the last change is in, or the last bubble has popped.</summary>
     public float Settled { get; }
 
+    /// <summary>Going back: when the check draws, as the first change starts to leave (the toast's timer still
+    /// goes by <see cref="Settled"/>).</summary>
+    public float CheckAt { get; }
+
     /// <summary>A drop landed: its number (0 = first to land) and how many drops there are.</summary>
     public event Action<int, int>? Landed;
 
@@ -95,7 +99,8 @@ internal sealed class ToastMelt
         if (back)
         {
             float lastPop = _drops.Max(d => d.Pop);
-            Settled = (lastPop + PopMs) * _k; // the check draws as the last change finishes popping
+            Settled = (lastPop + PopMs) * _k;
+            CheckAt = _drops.Min(d => d.Start) * _k; // the check draws as the first change starts to leave
             Done = (lastPop + 100 + RingMs + 60) * _k;
         }
         else
@@ -525,6 +530,15 @@ internal sealed class ToastMelt
         layer.Size = _size;
         layer.Clip = _compositor.CreateGeometricClip(clipGeometry);
         _root!.Children.InsertAtTop(layer);
+        ContainerVisual? above = null;
+        if (_back)
+        {
+            above = _compositor.CreateContainerVisual();
+            above.Offset = new Vector3(-Pad, -Top, 0);
+            above.Size = new Vector2(_size.X + 2 * Pad, Top);
+            above.Clip = _compositor.CreateInsetClip();
+            _root.Children.InsertAtTop(above);
+        }
 
         foreach (var d in _drops)
         {
@@ -553,10 +567,25 @@ internal sealed class ToastMelt
                 a.Duration = Ms(_back ? 700 : 650);
                 a.DelayTime = Ms(_back ? d.Start : d.Land + 30);
             }
+            // Going back, the light also spreads out above the pill, around the change leaving it: the same glow
+            // in a layer that holds only what's above the pill's top edge, so the two halves meet along it.
+            SpriteVisual? outside = null;
+            if (above is not null)
+            {
+                outside = _compositor.CreateSpriteVisual();
+                outside.Brush = brush;
+                outside.Size = glow.Size;
+                outside.CenterPoint = glow.CenterPoint;
+                outside.Offset = new Vector3(d.X - 44 + Pad, Top - 44, 0);
+                outside.Opacity = 0;
+                above.Children.InsertAtTop(outside);
+            }
             _start.Add(() =>
             {
                 glow.StartAnimation("Scale", scale);
                 glow.StartAnimation("Opacity", fade);
+                outside?.StartAnimation("Scale", scale);
+                outside?.StartAnimation("Opacity", fade);
             });
         }
     }

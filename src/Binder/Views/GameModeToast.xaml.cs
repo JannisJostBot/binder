@@ -405,7 +405,7 @@ public sealed partial class GameModeToast : Window
             {
                 From = 8.5, To = 0, EnableDependentAnimation = true,
                 Duration = TimeSpan.FromMilliseconds(Ms(400)),
-                BeginTime = TimeSpan.FromMilliseconds(last),
+                BeginTime = TimeSpan.FromMilliseconds(melt.CheckAt),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut },
             };
             Storyboard.SetTarget(draw, Mark);
