@@ -53,10 +53,18 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
   `CoverCache`, `Storage`, `RunningGames`, `GameLogs`, `GameModeService`) and `Views/PanelBackdrop.cs`
 - The library sources and security checks: `Library/*Source.cs`, `SourceDefaults.cs`, `InstallFolder.cs`, `ShortcutFile.cs`,
   `ShortcutImporter.cs`, `Vdf.cs`, `LibraryScanner.cs`
-- Updates: `Library/UpdateManifest.cs`, `Services/UpdateKeys.cs`, `Services/Updater.cs`, `docs/releases/`
+- Updates: `Library/UpdateManifest.cs`, `Services/UpdateKeys.cs`, `Services/Updater.cs`, `docs/releases/` (except `next.md`, see
+  "Release notes" below)
 - Project and build files (`*.csproj`, `*.sln`, `*.props`), `scripts/`, `.github/`,
   `tests/smoke.ps1`, `tests/setup-test.ps1`, `tests/FakeGame/`
 - `CLAUDE.md`, `AGENTS.md`, `docs/proposals.md`, `docs/installer.md`, `docs/tasks/`
+
+## Release notes
+
+When the card changes something people using Binder will notice, add a line to `docs/releases/next.md` (the
+card lists it under `## Files` then). Plain words for the user, no code names; a small bug fix gets no line of its
+own, only "Small fixes" set to `yes`. Tests, the website and other work nobody sees in the app get nothing. The
+rules are in `docs/releases/README.md`, "Collecting changes".
 
 ## Where things are
 

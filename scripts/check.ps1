@@ -17,7 +17,7 @@
 
   Also checked with -Strict or -Task (work by agents from docs/tasks):
     - no changes to protected files (the watcher, the launcher, security checks, native code, the installer,
-      project files, CI and the rules themselves)
+      project files, CI and the rules themselves); docs/releases/next.md is the one release file agents may change
     - no new timers, sleeps, delays, file watchers or endless loops, and no new native imports
     - no existing Check(...) removed or changed in the unit tests
     - with -Task: only the files listed under "## Files" in that task card are changed
@@ -123,7 +123,7 @@ if ($Strict) {
         '^src/Binder/Services/(Launcher|Native\w*|DesktopLayer|Monitors|Footprint|ShellImage[\w.]*|ShellNotify|PcChecks|PcInfo|CrashLog|Autostart|CoverCache|Storage|RunningGames|GameLogs|GameModeService)\.cs$',
         '^src/Binder/Library/(\w+Source|SourceDefaults|InstallFolder|ShortcutFile|ShortcutImporter|Vdf|LibraryScanner)\.cs$',
         '^src/Binder/Views/PanelBackdrop\.cs$',
-        '^src/Binder/Library/UpdateManifest\.cs$', '^src/Binder/Services/(UpdateKeys|Updater)\.cs$', '^docs/releases/',
+        '^src/Binder/Library/UpdateManifest\.cs$', '^src/Binder/Services/(UpdateKeys|Updater)\.cs$', '^docs/releases/(?!next\.md$)',
         '\.(csproj|sln|props|targets)$', '^scripts/', '^\.github/',
         '^tests/(smoke|setup-test)\.ps1$', '^tests/FakeGame/',
         '^(CLAUDE|AGENTS)\.md$', '^docs/(proposals|installer)\.md$', '^docs/tasks/'

@@ -1809,7 +1809,8 @@ A release can be marked `"urgent": true` for a security fix that shouldn't wait 
 1. **Prepare (owner):** raise `<Version>` in `Directory.Build.props` and write the notes in
    `docs/releases/<version>.json` (`en`, `de`, `fr`, same rules as the app's text: short, plain, no selling; an
    urgent release adds `"urgent": { "en": …, "de": …, "fr": … }`, the line the script puts first; see
-   `docs/releases/README.md`).
+   `docs/releases/README.md`), from what `docs/releases/next.md` collected since the last release, then empty
+   `next.md`'s lists and set "Small fixes" back to `no`.
    Merge to `main` through a pull request with CI green.
 2. **Tag (owner):** `git tag v0.2.0` on that commit of `main`, push it. A tag ruleset lets only the owner create
    `v*` tags and forbids moving or deleting them.

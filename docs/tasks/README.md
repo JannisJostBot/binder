@@ -17,6 +17,8 @@ Small, exactly specified tasks for coding agents (see `AGENTS.md`). One card = o
 - Give the expected values; don't leave them to be worked out. Check them against the code first.
 - Say how to know it's done: the check command and what the output must contain.
 - List what's out of scope under `## Don't`.
+- When the change is something people using Binder will notice, list `docs/releases/next.md` under `## Files`
+  and give the line to add (or "Small fixes: `yes`"), worded as `docs/releases/README.md` says.
 
 Template:
 

@@ -331,6 +331,10 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
   compare its Game mode cards with `GameModeInfo`/`ElevatedPart` (items, order, defaults, admin, services, apps,
   limits); `check.ps1` fails when a documented file changes without `docs.html`. When every sentence still
   holds, pass `-DocsUnchanged`, or (for CI) add a `Docs-Unchanged: <why>` line to one of the branch's commits.
+- Release notes: a change people using Binder will notice adds its line to `docs/releases/next.md` in the same
+  commit, in plain words for them (no code names). Only big bugs get a line of their own; small fixes only set
+  "Small fixes" to `yes` (the standard line "Stability improvements and small fixes."); internal work, tests, CI
+  and the website get nothing. Rules: `docs/releases/README.md`, "Collecting changes".
 - After each change run `./scripts/check.ps1` (or `dotnet build` + the unit tests). This repo builds on Windows only;
   on Linux only the unit tests run. Test new behaviour on the real PC's launchers where possible.
 - Commit at each milestone with a short message.
