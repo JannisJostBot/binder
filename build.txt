@@ -1,0 +1,15 @@
+  Determining projects to restore...
+  Restored D:\a\binder\binder\src\Binder.Setup\Binder.Setup.csproj (in 176 ms).
+  Restored D:\a\binder\binder\src\Binder.Watcher\Binder.Watcher.csproj (in 17.14 sec).
+  Restored D:\a\binder\binder\src\Binder.Elevated\Binder.Elevated.csproj (in 16.96 sec).
+  Restored D:\a\binder\binder\src\Binder\Binder.csproj (in 20.93 sec).
+  Binder.Watcher -> D:\a\binder\binder\bin\Release\Binder.Watcher.dll
+  Binder.Elevated -> D:\a\binder\binder\bin\Release\Binder.Elevated.dll
+  Binder.Setup -> D:\a\binder\binder\bin\Release\BinderSetup.dll
+  Binder -> D:\a\binder\binder\bin\Release\Binder.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:01:16.62
