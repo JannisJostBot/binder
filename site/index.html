@@ -133,25 +133,51 @@
       </ol>
 
       <div class="usage">
-        <h3 class="h3">How much it uses</h3>
+        <div class="usage-head">
+          <h3 class="h3">How much it uses</h3>
+          <p class="footnote">Approximate, measured on [TEST PC]. Your numbers will vary with the size of your library. The bars share one scale, up to 230 MB.</p>
+        </div>
         <ul class="stats">
           <li class="stat">
-            <span class="stat-when">Binder is open</span>
-            <span class="stat-value"><small>About</small> 130–230 MB</span>
-            <span class="stat-detail">Memory, more with many covers. Processor: only while you use it.</span>
+            <div class="stat-head"><span class="stat-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><rect x="7" y="9" width="4" height="5" rx="1"></rect><rect x="13" y="9" width="4" height="5" rx="1"></rect><path d="M7 6.5h6"></path></svg></span><h4 class="stat-when">Binder is open</h4></div>
+            <div class="stat-row">
+              <span class="stat-label">Memory</span>
+              <span class="stat-value">130–230<span class="stat-unit">MB</span></span>
+              <span class="stat-meter" aria-hidden="true"><span class="stat-fill" style="--w: 56.5%"></span><span class="stat-fill stat-fill-range" style="--w: 43.5%"></span></span>
+              <span class="stat-note">More with many covers</span>
+            </div>
+            <div class="stat-row stat-row-cpu">
+              <span class="stat-label">Processor</span>
+              <span class="stat-cpu">Only while you use it</span>
+            </div>
           </li>
           <li class="stat">
-            <span class="stat-when">Closed, waiting in the notification area</span>
-            <span class="stat-value"><small>About</small> 12 MB</span>
-            <span class="stat-detail">Memory. Processor: none.</span>
+            <div class="stat-head"><span class="stat-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18"></path><path d="M3 21h18"></path><path d="M9 10l3-3 3 3"></path></svg></span><h4 class="stat-when">Closed, waiting in the notification area</h4></div>
+            <div class="stat-row">
+              <span class="stat-label">Memory</span>
+              <span class="stat-value">12<span class="stat-unit">MB</span></span>
+              <span class="stat-meter" aria-hidden="true"><span class="stat-fill" style="--w: 5.2%"></span></span>
+              <span class="stat-note">Binder's window is closed</span>
+            </div>
+            <div class="stat-row stat-row-cpu">
+              <span class="stat-label">Processor</span>
+              <span class="stat-cpu">None</span>
+            </div>
           </li>
           <li class="stat stat-accent">
-            <span class="stat-when">A game is running</span>
-            <span class="stat-value"><small>About</small> 3 MB</span>
-            <span class="stat-detail">The helper's memory; Binder itself is closed. Processor: none once the game is found.</span>
+            <div class="stat-head"><span class="stat-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 8h9a4.5 4.5 0 0 1 4.4 5.4l-.7 3.4a2.4 2.4 0 0 1-4.1 1.2L14 16h-4l-2.1 2a2.4 2.4 0 0 1-4.1-1.2l-.7-3.4A4.5 4.5 0 0 1 7.5 8z"></path><path d="M8 11v3M6.5 12.5h3"></path><path d="M15.5 12h.01M17.5 13.5h.01"></path></svg></span><h4 class="stat-when">A game is running</h4></div>
+            <div class="stat-row">
+              <span class="stat-label">Memory</span>
+              <span class="stat-value">3<span class="stat-unit">MB</span></span>
+              <span class="stat-meter" aria-hidden="true"><span class="stat-fill" style="--w: 1.3%"></span></span>
+              <span class="stat-note">Only the helper; Binder itself is closed</span>
+            </div>
+            <div class="stat-row stat-row-cpu">
+              <span class="stat-label">Processor</span>
+              <span class="stat-cpu">None once the game is found</span>
+            </div>
           </li>
         </ul>
-        <p class="footnote">Measured on [TEST PC]. Your numbers will vary with the size of your library.</p>
       </div>
     </div>
   </section>
