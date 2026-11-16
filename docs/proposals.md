@@ -1831,7 +1831,13 @@ A release can be marked `"urgent": true` for a security fix that shouldn't wait 
    - Uploads `release.json` and `release.json.sig` to the draft and publishes it as the latest release.
 5. **Published:** with "immutable releases" on, the release's files and tag can't change any more. A bad release is
    fixed by the next version, never by replacing files (the app never downgrades).
-6. **Website (after publishing):** `site/index.html`'s "Download for Windows" button links to the published file,
+6. **VirusTotal (automatic, `.github/workflows/virustotal.yml`):** publishing starts a separate job that downloads
+   the setup, checks its SHA-256 against `release.json`, uploads it to VirusTotal, waits for the result and adds a
+   "VirusTotal" section to the release notes (engines that flagged it, a link to the report). A finding is a
+   warning, not a failure: look at which engines and why before telling anyone. It runs only with the repository
+   secret `VT_API_KEY` (a free VirusTotal account's key); `release.yml` itself stays without secrets. Earlier tags:
+   Actions › VirusTotal › Run workflow.
+7. **Website (after publishing):** `site/index.html`'s "Download for Windows" button links to the published file,
    `https://github.com/JannisJostBot/binder/releases/download/v<version>/BinderSetup-<version>.exe`, and the line
    under it says `Version <version> · <size> MB` (size in MiB, rounded; the sign script prints both at the end).
    Change both in one commit to `main` once the release is out, never before: until then the link would be a 404.
