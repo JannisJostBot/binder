@@ -79,6 +79,11 @@ internal static class DevPanel
         Add("Back to normal · 3 of 5, two failed (card)", () => app.DevRestored(new RestoreResult(3, 5, ["Print Spooler", "Spotify"])));
         Add("Restart pill after a crash", app.DevRestartPill);
 
+        Add("Back to normal · 2 changes", () => app.DevRestored(new RestoreResult(2, 2, [])));
+        var slow = new CheckBox { Content = "Quarter speed (the melt in the toasts above)", IsChecked = app.DevSlowToasts };
+        slow.Click += (_, _) => app.DevSlowToasts = slow.IsChecked == true;
+        list.Children.Add(slow);
+
         Group("Crash card (opens the panel)");
         Crash("Graphics driver (NVIDIA), driver reset", g => Record(g, GameEnding.Crashed, CrashCulprit.NvidiaDriver, 0xC0000005, "nvwgf2umx.dll", driverReset: true));
         Crash("Overlay or mod", g => Record(g, GameEnding.Crashed, CrashCulprit.Overlay, 0xC0000005, "dxgi.dll"));

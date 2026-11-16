@@ -26,6 +26,14 @@ public sealed partial class App
     /// <summary>"Back to normal", as the watcher reports it with "--restored" (with its sound, if that's on).</summary>
     internal void DevRestored(Shared.RestoreResult result) => ShowRestored(result.Encode(), exitWhenClosed: false);
 
+    /// <summary>The debug panel's "Quarter speed": the Game mode toasts melt four times slower while it's ticked.</summary>
+    internal bool DevSlowToasts { get; set; }
+
+    partial void DevToastSpeed(ref float slow)
+    {
+        if (DevSlowToasts) slow = 4;
+    }
+
     /// <summary>The restart pill after a crash; its countdown and Cancel only close it, nothing is started.</summary>
     internal void DevRestartPill()
     {

@@ -18,8 +18,10 @@ their games, and it must feel like part of Windows. When an idea doesn't clearly
 - Cache expensive results (covers, parsed manifests) on disk; never re-download or re-parse needlessly.
 - Cheap UI: hardware rendering, a virtualized grid, no blur/transparency of our own, no continuous or decorative
   animations; short hover/transition effects only if they cost nothing when idle and are skipped with "Animation
-  effects" off. The one approved exception is the panel's Acrylic backdrop (`PanelBackdrop`, WinUI's
+  effects" off. One approved exception is the panel's Acrylic backdrop (`PanelBackdrop`, WinUI's
   `DesktopAcrylicController`, active while unfocused; solid when Transparency is off, in high contrast or unsupported).
+  The other is the Game mode toast's melt (`ToastMelt`, Win2D blur): only while it plays, its visuals removed after,
+  the plain pill with animations off or in high contrast.
 - Data structures by the operation: lookups by id or path go through a `Dictionary`/`HashSet` built once, never a
   list search inside a loop over games or sessions (O(n·m)); one pass over the sessions per screen, not one per game.
 - No heavy or reflection-heavy dependencies. Between simpler-but-heavier and a bit-more-code-but-lighter, pick lighter.
@@ -47,8 +49,13 @@ their games, and it must feel like part of Windows. When an idea doesn't clearly
 - Approved: `Microsoft.WindowsAppSDK.WinUI` 2.6.4 (its binaries are under the Microsoft Software License Terms for
   the Windows App SDK, not MIT; redistributable with the app), only this component, not the `Microsoft.WindowsAppSDK`
   umbrella (it bundles AI runtimes we don't use).
-- **License:** Binder is GPL 3.0 with a section 7 permission to combine it with the Windows App SDK, .NET and
-  WebView2 (`LICENSE`, `LICENSE-EXCEPTION.txt`). Every bundled component and its license is listed in
+- Approved: `Microsoft.Graphics.Win2D` 1.4.0 (owner, 2026-11-16), only for the Game mode toast's melt
+  (`Views/ToastMelt.cs`: a blur and color-matrix effect). Its source is MIT (`licenses/Win2D-LICENSE.txt`, from
+  github.com/microsoft/Win2D); the package's metadata still links an old Microsoft EULA page that no longer exists,
+  so it's also named in the license permission. Adds `Microsoft.Graphics.Canvas.dll` (~1.7 MB) to the app folder.
+- `check.ps1` lets a `<PackageReference>` pass only when it matches a `Name` version pinned on an "Approved" line here.
+- **License:** Binder is GPL 3.0 with a section 7 permission to combine it with the Windows App SDK, Win2D, .NET
+  and WebView2 (`LICENSE`, `LICENSE-EXCEPTION.txt`). Every bundled component and its license is listed in
   `THIRD-PARTY-NOTICES.txt`; `publish.ps1` copies the upstream license and notice files into `app\licenses` and
   stops if one is missing. A new dependency must have a GPL-compatible license or be added to that permission,
   and gets its line in `THIRD-PARTY-NOTICES.txt`.
@@ -72,7 +79,8 @@ src/Binder/            the WinUI widget
   ViewModels/             MVVM: ObservableObject, RelayCommand, one <Page>ViewModel + I<Page>Actions per page (Shelf,
                           Detail, Settings, Setup, FreeSpace, GameMode)
   Views/                  ShelfView, DetailView, SettingsView, SetupView, ImportView, FreeSpaceView, GameModeView,
-                          GameModeToast, BannerLogo, Sheen (shiny favorites); Format.cs the text formatting,
+                          GameModeToast, ToastMelt (its changes melt in, Win2D), BannerLogo, Sheen (shiny
+                          favorites); Format.cs the text formatting,
                           GameAction.cs (menu actions, chart bars)
   Themes/Theme.xaml        shared styles and brushes
   Strings/                the app's text: Strings.resx (English), Strings.de.resx, Strings.fr.resx, one property per
@@ -105,6 +113,7 @@ site/                     the website: HTML + CSS, nothing loaded from other ser
                           network rules below don't change), clock.js sets the product shot's clock, chips.js merges the
                           launcher chips into the logo on hover; index.html,
                           docs.html (what Binder changes on the PC: every Game mode item, autostart, updates, …)
+licenses/                 license texts kept here because a package carries none (Win2D); publish.ps1 copies them
 docs/proposals.md         approved feature specs, progress table (§0), decisions log, "Not decided"
 docs/tasks/, AGENTS.md    task cards and rules for cheaper coding agents
 ```

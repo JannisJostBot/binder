@@ -213,6 +213,9 @@ public sealed partial class App : Application
 
     private Views.GameModeToast? _gameModeToast;
 
+    /// <summary>The debug panel's slow motion for the toast; only Debug builds have a body for it (App.Dev.cs).</summary>
+    partial void DevToastSpeed(ref float slow);
+
     /// <summary>Game mode's "Restored" toast (board 4), and the Game mode page's last result if it's open.</summary>
     private void ShowRestored(string encoded, bool exitWhenClosed)
     {
@@ -255,7 +258,9 @@ public sealed partial class App : Application
     private void ShowGameModeToast(Views.GameModeToast.Kind kind, Shared.RestoreResult result, bool exitWhenClosed = false)
     {
         _gameModeToast?.Close();
-        var toast = new Views.GameModeToast(kind, result);
+        float slow = 1;
+        DevToastSpeed(ref slow);
+        var toast = new Views.GameModeToast(kind, result, slow);
         toast.Closed += (_, _) =>
         {
             if (ReferenceEquals(_gameModeToast, toast)) _gameModeToast = null;

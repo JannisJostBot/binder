@@ -48,6 +48,9 @@ The build order is at the end of this file. The ideas under "Not decided" at the
 **2026-11-16**
 - The website may fetch what is directly about Binder's releases: `site/release.js` reads the latest release from
   GitHub's API (download link, version, VirusTotal result). Website only; the app's rules don't change.
+- The Game mode toast's changes melt in (canvas board 33), drawn with Win2D (`Microsoft.Graphics.Win2D` 1.4.0,
+  approved; MIT source, also named in the license permission). Chosen over the package-free outline version, whose
+  joins had small corners. Its blur runs only while the toast plays.
 
 **2026-11-01**
 - Logo **B** (cover stack).
