@@ -244,6 +244,14 @@ summary::-webkit-details-marker { display: none; }
 .hero-facts { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 14px; color: var(--text-2); }
 .hero-facts li { display: flex; align-items: center; gap: 6px; }
 .hero-facts svg { color: var(--accent); flex-shrink: 0; }
+/* Footnote 1: what needs administrator rights (referenced from the hero facts and the privacy list) */
+.fn-ref { line-height: 0; }
+.fn-ref a { margin-left: 2px; padding: 0 2px; font-size: 0.75em; font-weight: 600; text-decoration: none; }
+.fn-ref a:hover { text-decoration: underline; }
+.privacy-list .fn-ref a { color: #9BE2FF; }
+.hero-footnote { margin: 0; max-width: 560px; padding-top: 12px; border-top: 1px solid var(--divider); font-size: 13px; line-height: 1.5; color: var(--text-2); }
+.hero-footnote sup { color: var(--accent); font-weight: 600; }
+.hero-footnote:target { color: var(--text); }
 
 /* The product shot: the app's panel above the taskbar, the logo's fanned covers behind it. */
 .stage {
