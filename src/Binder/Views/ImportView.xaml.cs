@@ -62,6 +62,13 @@ public sealed partial class ImportView : UserControl
         return found;
     }
 
+    /// <summary>Every row in the list that isn't one of <paramref name="rows"/>.</summary>
+    public IReadOnlyList<FrameworkElement> RowsExcept(IReadOnlyList<FrameworkElement> rows)
+    {
+        var skip = new HashSet<FrameworkElement>(rows, ReferenceEqualityComparer.Instance);
+        return RowsList.Children.OfType<FrameworkElement>().Where(r => !skip.Contains(r)).ToList();
+    }
+
     /// <summary>The card the rows scroll in: what's outside it isn't in view.</summary>
     public FrameworkElement ListArea => ListCard;
 

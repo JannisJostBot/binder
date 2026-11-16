@@ -14,7 +14,8 @@ namespace Binder.Views;
 /// Setup step 2, as on the website's launcher list (site/chips.js): the shortcuts that were just moved onto the
 /// shelf fly into Binder's logo. Each visible row becomes a stand-in that flies, one after another, to one of the
 /// logo's three covers and turns into it on the way (size, corners, angle, blue); as the last one lands the logo
-/// itself shows on top and its play mark pops in. Rows beyond the first seven, or scrolled out of view, fade.
+/// itself shows on top and its play mark pops in. Rows beyond the first seven, or scrolled out of view, and the rows
+/// that weren't moved fade while the pills form.
 /// Everything is started at once and runs on the compositor; a scoped batch calls back when it's over (about
 /// 1.5 s), no timer. Animation effects off or high contrast: no animation, the callback runs at once.
 /// </summary>
@@ -45,7 +46,8 @@ internal static class LogoMerge
         return new Cover(new Vector2((float)(rx - 24) * Unit, (float)(ry - 24) * Unit), degrees, tint);
     }
 
-    public static void Play(Canvas layer, FrameworkElement area, IReadOnlyList<FrameworkElement> rows, Action then)
+    public static void Play(Canvas layer, FrameworkElement area, IReadOnlyList<FrameworkElement> rows,
+        IReadOnlyList<FrameworkElement> others, Action then)
     {
         if (rows.Count == 0 || layer.ActualWidth <= 0 || !new Windows.UI.ViewManagement.UISettings().AnimationsEnabled ||
             new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast)
@@ -60,7 +62,7 @@ internal static class LogoMerge
         // Which rows fly: those in view, in list order, at most seven. The rest fade where they are.
         var view = Bounds(area, layer);
         var flying = new List<(FrameworkElement Row, Rect Box)>();
-        var fading = new List<FrameworkElement>();
+        var fading = new List<FrameworkElement>(others); // the rows left on the desktop go too, as the pills form
         foreach (var row in rows)
         {
             var box = Bounds(row, layer);
@@ -144,7 +146,7 @@ internal static class LogoMerge
                 ElementCompositionPreview.GetElementVisual(label).StartAnimation("Opacity", Scalar(compositor, 0, 120, leave, null));
         }
         foreach (var row in fading)
-            ElementCompositionPreview.GetElementVisual(row).StartAnimation("Opacity", Scalar(compositor, 0, 200, 0, null));
+            ElementCompositionPreview.GetElementVisual(row).StartAnimation("Opacity", Scalar(compositor, 0, PillMs, 0, null));
 
         // The logo shows on top as the last cover lands; the stand-ins under it go; the play mark pops in.
         var logoVisual = ElementCompositionPreview.GetElementVisual(logo);
