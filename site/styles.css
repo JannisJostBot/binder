@@ -354,11 +354,11 @@ summary::-webkit-details-marker { display: none; }
 }
 .mock-panel {
   position: absolute;
-  right: 20px;
-  bottom: 62px;
+  top: 12px;
+  right: 12px;
+  bottom: 60px;
   width: 330px;
-  max-width: calc(100% - 40px);
-  height: 450px;
+  max-width: calc(100% - 24px);
   box-sizing: border-box;
   padding: 16px;
   display: flex;
@@ -393,8 +393,10 @@ summary::-webkit-details-marker { display: none; }
 
 /* Opening and closing the shelf: the tray icon is a switch (a checkbox laid over it), and the desktop behind the
    open shelf is a label for it, so clicking the desktop closes the shelf like the real flyout. No script: the
-   closed look needs :has(), and without it the shelf simply stays open. It slides up from the taskbar the way
-   Windows' own flyouts do, at once with reduced motion. */
+   closed look needs :has(), and without it the shelf simply stays open. It moves as the app's flyout does
+   (MainWindow.Flyout.cs, Placement.cs): the work area's full height 12 px from the edges, sliding in 40 px from
+   the screen's right edge over 300 ms on Fluent's entrance curve, cut off by the edge rather than faded; closing
+   hides it at once. With reduced motion it just appears, like the app with "Animation effects" off. */
 .mock-taskbar { z-index: 2; }
 .mock-tray { position: relative; transition: background-color 0.15s; }
 .shelf-toggle {
@@ -410,17 +412,8 @@ summary::-webkit-details-marker { display: none; }
 .mock-tray:has(.shelf-toggle:checked) { background: rgba(0, 0, 0, 0.1); box-shadow: inset 0 -3px 0 -1px #005FB8; }
 .mock-tray:has(.shelf-toggle:focus-visible) { outline: 2px solid #1B1B1B; outline-offset: 2px; }
 .stage-desktop { position: absolute; inset: 0 0 48px; z-index: 0; cursor: default; }
-.mock-panel {
-  z-index: 1;
-  transform-origin: 100% 100%;
-  transition: transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.18s, visibility 0s;
-}
-.stage:has(.shelf-toggle:not(:checked)) .mock-panel {
-  transform: translateY(40px);
-  opacity: 0;
-  visibility: hidden;
-  transition: transform 0.18s ease-in, opacity 0.15s, visibility 0s 0.18s;
-}
+.mock-panel { z-index: 1; transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
+.stage:has(.shelf-toggle:not(:checked)) .mock-panel { transform: translateX(40px); visibility: hidden; transition: none; }
 .stage:has(.shelf-toggle:not(:checked)) .stage-desktop { pointer-events: none; }
 .mock-hint {
   margin-right: auto;
@@ -438,8 +431,7 @@ summary::-webkit-details-marker { display: none; }
 .stage:has(.shelf-toggle:not(:checked)) .mock-hint-open { display: none; }
 .stage:has(.shelf-toggle:not(:checked)) .mock-hint-closed { display: inline; }
 @media (prefers-reduced-motion: reduce) {
-  .mock-panel, .stage:has(.shelf-toggle:not(:checked)) .mock-panel, .mock-tray { transition: none; }
-  .stage:has(.shelf-toggle:not(:checked)) .mock-panel { transform: none; }
+  .mock-panel, .mock-tray { transition: none; }
 }
 @media (forced-colors: active) {
   .mock-tray:has(.shelf-toggle:checked) { outline: 2px solid Highlight; }
@@ -459,7 +451,6 @@ summary::-webkit-details-marker { display: none; }
   .stage { height: 420px; border-radius: 18px; }
   .stage-cards span { width: 150px; border-radius: 14px; }
   .stage-cards span:nth-child(3)::after { border-width: 18px 0 18px 30px; }
-  .mock-panel { right: 12px; bottom: 56px; height: 344px; max-width: calc(100% - 24px); }
   .mock-taskbar { gap: 8px; padding: 0 10px 0 12px; }
   .mock-hint { font-size: 11px; gap: 4px; }
 }
