@@ -304,6 +304,7 @@
 
         <h3 id="pc-autostart" class="docs-h3">Start with Windows</h3>
         <p>When <strong>Start with Windows</strong> is on, Binder adds a value named <code>Binder</code> to <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run</code>, the standard per-user startup list (also shown in Task Manager › Startup apps). It starts Binder with <code>--background</code>, so it waits in the notification area instead of opening. Turning the setting off removes the value.</p>
+        <p>If you turn Binder off in Task Manager or in Settings › Apps › Startup, Windows doesn't remove the value: it marks it as turned off under <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run</code>. Binder's switch then shows it as off. Turning it on in Binder removes that mark again, so Binder starts with Windows; turning it off removes the mark too.</p>
 
         <h3 id="pc-updates" class="docs-h3">Updates</h3>
         <ul class="docs-list">
