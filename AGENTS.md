@@ -72,8 +72,8 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
 ## The website (`site/`)
 
 The project's website: `site/index.html` (the home page), `site/docs.html` (the documentation: what Binder
-changes on the PC), `site/styles.css` and `site/logo.svg`. It will be published
-from this repo (for example with GitHub Pages) once the repo is public.
+changes on the PC), `site/styles.css` and `site/logo.svg`. `.github/workflows/pages.yml` publishes it to GitHub
+Pages whenever a change to `site/` reaches `main`, so what's merged is live within minutes.
 
 - Plain HTML and CSS only. No JavaScript, no frameworks, no build step.
 - Nothing loaded from other servers: no web fonts, CDNs, analytics, embeds or tracking pixels. The page promises
