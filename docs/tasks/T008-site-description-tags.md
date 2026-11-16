@@ -1,5 +1,5 @@
 # T008 · Site: description for search engines and link previews
-Status: ready
+Status: done
 Depends on: none
 Branch: agent/T008
 

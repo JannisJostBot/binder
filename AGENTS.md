@@ -67,26 +67,41 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
 | `src/Binder/Services/` | Launching, storage, Windows integration |
 | `src/Binder/Views/` | The UI (XAML + code-behind); `Format.cs` has the text formatting |
 | `tests/Binder.Tests/Tests.cs` | All unit tests: one console program, `Check(condition, "description")` per check |
-| `site/` | The website: `index.html`, `styles.css`, `logo.svg` (see "The website" below) |
+| `site/` | The website: `index.html`, `docs.html`, `styles.css`, `logo.svg` (see "The website" below) |
 
 ## The website (`site/`)
 
-The project's one-page website: `site/index.html`, `site/styles.css` and `site/logo.svg`. It will be published
-from this repo (for example with GitHub Pages) once the repo is public.
+The project's website: `site/index.html` (the home page), `site/docs.html` (the documentation: what Binder
+changes on the PC), `site/styles.css` and `site/logo.svg`. `.github/workflows/pages.yml` publishes it to GitHub
+Pages whenever a change to `site/` reaches `main`, so what's merged is live within minutes.
 
 - Plain HTML and CSS only. No JavaScript, no frameworks, no build step.
 - Nothing loaded from other servers: no web fonts, CDNs, analytics, embeds or tracking pixels. The page promises
   privacy, so it must keep it. Links to other sites (`<a href="https://…">`) are fine. `check.ps1` enforces this.
-- Colours only through the variables at the top of `styles.css` (`var(--text)`, `var(--accent)`, …). The
-  product shot in the hero (`<figure>`) is a picture of the app and keeps its own fixed colours.
-- Layout and spacing are inline `style="…"` attributes, section by section. Copy the style of a neighbouring
-  element instead of inventing new values.
+- Colours only through the variables at the top of `styles.css` (`var(--text)`, `var(--accent)`, …), which
+  have light and dark values. The product shot in the hero (`.stage`, `.mock-*`), the step and feature pictures
+  and the Game mode pill are pictures of the app and keep its own fixed colours.
+- Layout is in classes in `styles.css`, grouped by section, with each section's phone values (up to 600 px)
+  right after it. Reuse the existing pieces (`.section`, `.section-head`, `.h2`, `.lead`, `.button`,
+  `.tile`, `.stat`, `.faq-item`, `.note`) instead of new styles; no inline `style="…"` except a `--c`/`--h`
+  value on a picture's parts.
+- The look: Windows-native type and colours, plus Binder's own touches: pill buttons, the bloom in the logo's
+  blues, the logo's fanned cover stack (hero, download panel), launcher chips like the app's filter chips, the
+  deep blue privacy and download panels. Keep them; no small labels above headings, and don't add stock illustrations, emoji or other fonts.
+- "What happens when you play a game" is a scroll story in pure CSS (scroll-driven animations on `.how-scroll`,
+  keyframes `how-*`): the three steps stay pinned and the picture changes as the page scrolls. Without support or
+  with reduced motion it's three cards; check both after changing a step.
+- The header and footer are the same on both pages (`docs.html` links back with `index.html#…`). The "Binder is
+  an app for Windows PCs" note (`touch-hint`) shows only on touch screens.
 - The text is factual and plain: only what the app really does, numbers only from the card, no marketing words
   ("amazing", "seamless", "blazing fast"). Placeholders in square brackets (`[DOWNLOAD LINK]`) stay until a card
   gives the real value.
 - Keep the "Before you download" section (the AI disclaimer and "Not affiliated") as it is.
-- Check your change by opening `site/index.html` in a browser, at full width and at about 390 px wide (phone):
-  nothing may overflow sideways. Say in your report that you did.
+- `docs.html` is long text, so its parts are `docs-*` / `doc-*` classes in `styles.css`, not inline styles. Every
+  sentence must be true of the code. Each Game mode item is one `doc-item` card with `data-item`, `data-default`
+  and `data-admin` in that order; `tests/Binder.Tests/DocsTests.cs` checks them against the code.
+- Check your change by opening the page you changed (`site/index.html` or `site/docs.html`) in a browser, at
+  full width and at about 390 px wide (phone): nothing may overflow sideways. Say in your report that you did.
 
 ## Commands
 

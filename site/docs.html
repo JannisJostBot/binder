@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Binder documentation</title>
+  <meta name="description" content="What Binder changes on your PC while you play and when you set it up, and how it puts each change back.">
+  <meta property="og:title" content="Binder documentation">
+  <meta property="og:description" content="What Binder changes on your PC while you play and when you set it up, and how it puts each change back.">
+  <meta property="og:type" content="website">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<!-- The logo's gradients, used by every logo on the page. -->
+<svg class="defs" aria-hidden="true" width="0" height="0"><defs><linearGradient id="la" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7BD8FF"></stop><stop offset="1" stop-color="#0C78D2"></stop></linearGradient><linearGradient id="lm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B4E6FF"></stop><stop offset="1" stop-color="#4AA6E6"></stop></linearGradient><linearGradient id="ls" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E3F5FF"></stop><stop offset="1" stop-color="#9CCDEF"></stop></linearGradient></defs></svg>
+<div class="page">
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-bar">
+      <a href="index.html" class="brand" aria-label="Binder home">
+        <svg aria-hidden="true" width="30" height="30" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
+        <span>Binder</span>
+      </a>
+      <nav aria-label="Sections" class="header-nav">
+        <a href="index.html#how">How it works</a>
+        <a href="index.html#features">Features</a>
+        <a href="index.html#privacy">Privacy</a>
+        <a href="index.html#faq">FAQ</a>
+        <a href="docs.html" aria-current="page">Docs</a>
+      </nav>
+      <a href="https://github.com/JannisJostBot/binder" class="header-github"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"></path><path d="M16 7l5 5-5 5"></path></svg>GitHub</a>
+      <a href="index.html#download" class="button button-small header-download">Download</a>
+    </div>
+  </header>
+
+<main id="main" class="docs">
+  <div class="docs-intro">
+    <h1 class="h2">Documentation</h1>
+    <p class="lead">What Binder changes on your PC, exactly, and how it puts each change back.</p>
+  </div>
+
+  <div class="docs-layout">
+    <nav class="docs-toc" aria-label="On this page">
+      <p class="docs-toc-title">On this page</p>
+      <ol>
+        <li><a href="#game-mode">Game mode</a>
+          <ol>
+            <li><a href="#gm-how">How it works</a></li>
+            <li><a href="#gm-helper">The admin helper</a></li>
+            <li><a href="#gm-performance">Performance</a></li>
+            <li><a href="#gm-services">Background services</a></li>
+            <li><a href="#gm-network">Network</a></li>
+            <li><a href="#gm-apps">Apps while playing</a></li>
+            <li><a href="#gm-windows">Windows' own settings</a></li>
+            <li><a href="#gm-never">What it never does</a></li>
+          </ol>
+        </li>
+        <li><a href="#pc">Other changes to your PC</a>
+          <ol>
+            <li><a href="#pc-shortcuts">Desktop shortcuts</a></li>
+            <li><a href="#pc-autostart">Start with Windows</a></li>
+            <li><a href="#pc-updates">Updates</a></li>
+            <li><a href="#pc-space">Free up space</a></li>
+            <li><a href="#pc-data">Your data</a></li>
+            <li><a href="#pc-uninstall">Uninstalling</a></li>
+          </ol>
+        </li>
+      </ol>
+    </nav>
+
+    <div class="docs-content">
+
+      <section id="game-mode" class="docs-part">
+        <h2 class="docs-h2">Game mode</h2>
+        <p>Game mode changes a few Windows settings while a game runs and puts each one back when the game closes. It's off until you turn on <strong>Optimize Windows while I play</strong> in Settings › Game mode. You choose which of the items below it uses, and you can turn Game mode on or off for one game in that game's details.</p>
+
+        <h3 id="gm-how" class="docs-h3">How it works</h3>
+        <ul class="docs-list">
+          <li>When you press Play, Binder's small helper program (the one that waits for the game to close) applies the items you chose while the game starts. The game's priority and its network marking follow as soon as the game is found.</li>
+          <li>Before each change, the helper writes down what it's about to change and what it was before, in <code>%LOCALAPPDATA%\Binder\gamemode-journal.json</code>, and saves that to disk first.</li>
+          <li>When the game closes, and after about 3 seconds for games that restart themselves, everything is put back in reverse order. Only what is still the way Game mode set it is changed back: if you changed something yourself in the meantime, your setting stays.</li>
+          <li>If the game is never found, everything is put back straight away.</li>
+          <li>Settings that are already the way Game mode would set them are left alone and aren't counted as changes.</li>
+          <li>If the PC crashes or loses power during a game, the journal is still there. Binder puts it back the next time it starts, and the admin part when you sign in. <strong>Restore now</strong> on the Game mode page does it by hand.</li>
+          <li>Each step is written to <code>%LOCALAPPDATA%\Binder\gamemode.log</code> (<strong>View log</strong> on the Game mode page). The admin helper writes its own log to <code>%ProgramData%\Binder\elevated.log</code>.</li>
+        </ul>
+
+        <h3 id="gm-helper" class="docs-h3">The admin helper</h3>
+        <p>Pausing services and the network items need administrator rights; everything else works without them. <strong>Allow…</strong> on the Game mode page asks once, with the usual Windows prompt, and then:</p>
+        <ul class="docs-list">
+          <li>copies a small helper, <code>Binder.Elevated.exe</code>, to <code>%ProgramFiles%\Binder\</code>, a folder only administrators can change;</li>
+          <li>creates two scheduled tasks for your account, <code>Binder Apply</code> and <code>Binder Restore</code> (followed by your account's ID). They run that helper with administrator rights, only while you're signed in. You can start them, but changing them needs administrator rights;</li>
+          <li>creates <code>%ProgramData%\Binder\</code> for the helper's journal and log, which only administrators can change.</li>
+        </ul>
+        <p>Windows asks again only if a Binder update changes the helper (<strong>Update…</strong> on the Game mode page), and when you remove the helper or uninstall Binder. Allowing it needs an administrator account; on a standard account, the items that need it can't be turned on and the others still work.</p>
+        <p>The helper does only what's listed on this page. It reads Binder's request from your user folder and checks everything in it again: only the four services below, only program file names (never Windows' own programs or security software), and only the upload limits Binder offers. <strong>Remove it</strong> on the Game mode page, or uninstalling Binder, puts back anything still applied and then removes the tasks, the folder and the helper.</p>
+
+        <h3 id="gm-performance" class="docs-h3">Performance</h3>
+
+        <section class="doc-item" id="gm-power" data-item="power" data-default="on" data-admin="no">
+          <h4>Best performance power mode</h4>
+          <p class="doc-tags"><span class="doc-tag doc-tag-on">On by default</span><span class="doc-tag">No admin rights needed</span></p>
+          <dl class="doc-facts">
+            <dt>What it does</dt>
+            <dd>On the Balanced power plan, the usual one on Windows 10 and 11, it sets the power mode to <strong>Best performance</strong>: the same as Settings › System › Power &amp; battery › Power mode. If the power mode can't be set, or another plan is active, it switches to the <strong>High performance</strong> power plan instead.</dd>
+            <dt>Effect</dt>
+            <dd>The processor keeps higher clock speeds and reacts faster to load. Laptops use more power and can get louder.</dd>
+            <dt>Left alone</dt>
+            <dd>When Best performance, High performance or Ultimate performance is already on.</dd>
+            <dt>Put back</dt>
+            <dd>The exact power mode or plan from before, if it's still the one Game mode set.</dd>
+          </dl>
+        </section>
+
+        <section class="doc-item" id="gm-priority" data-item="priority" data-default="on" data-admin="no">
+          <h4>Give the game priority</h4>
+          <p class="doc-tags"><span class="doc-tag doc-tag-on">On by default</span><span class="doc-tag">No admin rights needed</span></p>
+          <dl class="doc-facts">
+            <dt>What it does</dt>
+            <dd>Once the game is found, its processes run at <strong>Above normal</strong> priority, the same as choosing it in Task Manager. Never High or Realtime, which can make the rest of Windows stop responding.</dd>
+            <dt>Effect</dt>
+            <dd>When other programs want the processor at the same time, Windows lets the game go first.</dd>
+            <dt>Left alone</dt>
+            <dd>A game that set its own priority keeps it. Some games and anti-cheat programs don't allow the change; the log says so.</dd>
+            <dt>Put back</dt>
+            <dd>Nothing to put back: the priority ends with the game's processes.</dd>
+          </dl>
+        </section>
+
+        <h3 id="gm-services" class="docs-h3">Background services</h3>
+        <p>For each service below: Game mode only stops it, and never changes whether it starts with Windows. It's stopped only if it's running, accepts a stop and no other running service depends on it. After the game, it's started again only if Game mode stopped it and it hasn't been turned off meanwhile.</p>
+
+        <section class="doc-item" id="gm-wsearch" data-item="wsearch" data-default="on" data-admin="yes">
+          <h4>Pause Windows Search</h4>
+          <p class="doc-tags"><span class="doc-tag doc-tag-on">On by default</span><span class="doc-tag doc-tag-admin">Needs the admin helper</span></p>
+          <dl class="doc-facts">
+            <dt>Service</dt>
+            <dd>Windows Search (<code>WSearch</code>)</dd>
+            <dt>What it does</dt>
+            <dd>The service keeps the search index for Start and File Explorer up to date by reading new and changed files. Paused, it doesn't read from the disk while you play.</dd>
+            <dt>While it's paused</dt>
+            <dd>Searching still works, but can be slower and may miss files changed during the game.</dd>
+          </dl>
+        </section>
+
+        <section class="doc-item" id="gm-sysmain" data-item="sysmain" data-default="on" data-admin="yes">
+          <h4>Pause SysMain</h4>
+          <p class="doc-tags"><span class="doc-tag doc-tag-on">On by default</span><span class="doc-tag doc-tag-admin">Needs the admin helper</span></p>
+          <dl class="doc-facts">
+            <dt>Service</dt>
+            <dd>SysMain (<code>SysMain</code>), formerly Superfetch</dd>
+            <dt>What it does</dt>
+            <dd>The service loads programs you use often into memory ahead of time, so they start faster. Paused, it doesn't read ahead from the disk while you play.</dd>
+            <dt>While it's paused</dt>
+            <dd>Other programs may start a little slower until it runs again.</dd>
+          </dl>
+        </section>
+
+        <section class="doc-item" id="gm-diagtrack" data-item="diagtrack" data-default="on" data-admin="yes">
+          <h4>Pause Telemetry</h4>
+          <p class="doc-tags"><span class="doc-tag doc-tag-on">On by default</span><span class="doc-tag doc-tag-admin">Needs the admin helper</span></p>
+          <dl class="doc-facts">
+            <dt>Service</dt>
+            <dd>Connected User Experiences and Telemetry (<code>DiagTrack</code>)</dd>
+            <dt>What it does</dt>
+            <dd>The service collects diagnostic data and sends it to Microsoft. Paused, it does neither while you play.</dd>
+            <dt>While it's paused</dt>
+            <dd>Nothing you'd notice. It isn't turned off: it runs again after the game.</dd>
+          </dl>
+        </section>
+
+        <section class="doc-item" id="gm-spooler" data-item="spooler" data-default="off" data-admin="yes">
+          <h4>Pause Print Spooler</h4>
+          <p class="doc-tags"><span class="doc-tag">Off by default</span><span class="doc-tag doc-tag-admin">Needs the admin helper</span></p>
+          <dl class="doc-facts">
+            <dt>Service</dt>
+            <dd>Print Spooler (<code>Spooler</code>)</dd>
+            <dt>What it does</dt>
+            <dd>The service handles printing. Paused, it stops checking printers and print jobs while you play.</dd>
+            <dt>While it's paused</dt>
+            <dd>You can't print until the game closes.</dd>
+          </dl>
+        </section>
+
+        <section class="doc-item" id="gm-gamebar" data-item="gamebar" data-default="off" data-admin="no">
+          <h4>Pause Game Bar background recording</h4>
+          <p class="doc-tags"><span class="doc-tag">Off by default</span><span class="doc-tag">No admin rights needed</span></p>
+          <dl class="doc-facts">
+            <dt>What it does</dt>
+            <dd>Turns off <strong>Record what happened</strong> (Settings › Gaming › Captures) while you play, by setting <code>HistoricalCaptureEnabled</code> to 0 in <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\GameDVR</code>.</dd>
+            <dt>Effect</dt>
+            <dd>Windows stops recording the last minutes of play in the background, which uses the graphics card's video encoder and the disk.</dd>
+            <dt>Left alone</dt>
+            <dd>When background recording is already off.</dd>
+            <dt>Put back</dt>
+            <dd>Turned on again, if it's still off.</dd>
+          </dl>
+        </section>
+
+        <section class="doc-item" id="gm-onedrive" data-item="onedrive" data-default="off" data-admin="no">
+          <h4>Pause OneDrive syncing</h4>
+          <p class="doc-tags"><span class="doc-tag">Off by default</span><span class="doc-tag">No admin rights needed</span></p>
+          <dl class="doc-facts">
+            <dt>What it does</dt>
+            <dd>Closes OneDrive with its own <code>/shutdown</code> command, the same as <strong>Quit OneDrive</strong> in its menu, and waits up to 10 seconds for it to close.</dd>
+            <dt>Effect</dt>
+            <dd>No syncing while you play: no uploads, downloads or disk work from OneDrive. Files changed meanwhile sync after the game.</dd>
+            <dt>Left alone</dt>
+            <dd>When OneDrive isn't running, or when your Documents folder is inside OneDrive: games often keep their saves there, and files that are only online can't be opened while OneDrive is closed.</dd>
+            <dt>Put back</dt>
+            <dd>Started again with <code>/background</code>, if Game mode closed it and it isn't running already.</dd>
+          </dl>
+        </section>
+
+        <h3 id="gm-network" class="docs-h3">Network</h3>
+        <p>The network items use Windows' policy-based Quality of Service, the same as the <code>New-NetQosPolicy</code> command. The policies go into a temporary store that Windows empties when it restarts, so none can stay behind for long. Each is named starting with "Binder", and Game mode only ever removes policies with that name.</p>
+
+        <section class="doc-item" id="gm-smooth" data-item="smooth" data-default="on" data-admin="yes">
+          <h4>Game and voice chat first</h4>
+          <p class="doc-tags"><span class="doc-tag doc-tag-on">On by default</span><span class="doc-tag doc-tag-admin">Needs the admin helper</span></p>
+          <dl class="doc-facts">
+            <dt>What it does</dt>
+            <dd>Marks the network traffic of the game and of voice chat apps as urgent (DSCP 46, "expedited forwarding").</dd>
+            <dt>Which apps</dt>
+            <dd>The game's own programs, once it's found; Discord, TeamSpeak, Mumble, Teams and Zoom when they're installed; and the apps you add under <strong>Apps kept smooth</strong>.</dd>
+            <dt>Effect</dt>
+            <dd>A router that honours the marking sends this traffic first when the connection is busy. Many home routers ignore it; then nothing changes.</dd>
+            <dt>Put back</dt>
+            <dd>The policies are removed.</dd>
+          </dl>
+        </section>
+
+        <section class="doc-item" id="gm-uploads" data-item="uploads" data-default="on" data-admin="yes">
+          <h4>Slow down background uploads</h4>
+          <p class="doc-tags"><span class="doc-tag doc-tag-on">On by default</span><span class="doc-tag doc-tag-admin">Needs the admin helper</span></p>
+          <dl class="doc-facts">
+            <dt>What it does</dt>
+            <dd>Limits how fast each app on the list can upload: 1, 5 or 20 Mbit/s, chosen under <strong>Upload limit</strong>. The default is 5 Mbit/s.</dd>
+            <dt>Which apps</dt>
+            <dd>OneDrive (<code>OneDrive.exe</code>), Google Drive (<code>GoogleDriveFS.exe</code>) and Dropbox (<code>Dropbox.exe</code>), and the apps you add. Never a Windows service, Windows' own programs, security software listed in Windows Security, or another account's programs.</dd>
+            <dt>Effect</dt>
+            <dd>A large upload can fill the connection and cause lag. This limits only what the apps send; downloads can't be limited on the PC itself. Steam pauses its downloads while you play; Epic and Battle.net have a download limit in their own settings.</dd>
+            <dt>Put back</dt>
+            <dd>The policies are removed.</dd>
+          </dl>
+        </section>
+
+        <section class="doc-item" id="gm-updates" data-item="updates" data-default="on" data-admin="yes">
+          <h4>Limit Windows Update downloads</h4>
+          <p class="doc-tags"><span class="doc-tag doc-tag-on">On by default</span><span class="doc-tag doc-tag-admin">Needs the admin helper</span></p>
+          <dl class="doc-facts">
+            <dt>What it does</dt>
+            <dd>Limits Windows Update's background downloads (Delivery Optimization) to 10% of the bandwidth, by setting the policy <code>DOPercentageMaxBackgroundBandwidth</code> in <code>HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization</code>.</dd>
+            <dt>Left alone</dt>
+            <dd>When a limit of 10% or less is already set.</dd>
+            <dt>Put back</dt>
+            <dd>Exactly the value from before, including "not set", and the policy key is deleted again if Game mode created it. Only if the value is still the one Game mode set.</dd>
+          </dl>
+        </section>
+
+        <h3 id="gm-apps" class="docs-h3">Apps while playing</h3>
+        <p>You can add apps that have a window and choose for each one:</p>
+        <dl class="doc-facts doc-facts-plain">
+          <dt>Close</dt>
+          <dd>Binder asks the app to close the way its close button would, and waits about 5 seconds. An app that's still open then (it asked to save something, has no window or runs as administrator) is left open and isn't reopened. Apps that closed are started again after the game, from the same program file, without extra options.</dd>
+          <dt>Calm</dt>
+          <dd>The app runs in efficiency mode (the green leaf in Task Manager) until the game closes: Windows runs it at its most efficient speed, and on processors with efficient cores mostly on those. Unlike Task Manager, Binder doesn't lower its priority. Afterwards only that same process is changed back, if it's still in efficiency mode.</dd>
+        </dl>
+        <p>Programs are never ended. The game's own files, Windows' programs, Store apps and Binder itself can't be closed or calmed.</p>
+
+        <h3 id="gm-windows" class="docs-h3">Windows' own settings</h3>
+        <p>The Game mode page also shows three of Windows' own settings, with buttons that open them in Windows Settings. Binder only reads them and never changes them.</p>
+        <dl class="doc-facts doc-facts-plain">
+          <dt>Game Mode</dt>
+          <dd>Windows' own game mode (Settings › Gaming › Game Mode). While a game runs, Windows gives it priority and holds back driver installs and restart prompts from Windows Update.</dd>
+          <dt>Optimizations for windowed games</dt>
+          <dd>Settings › System › Display › Graphics. Lowers latency for games in a window or borderless window. Not shown on Windows 10.</dd>
+          <dt>Do not disturb</dt>
+          <dd>Windows can turn it on during full-screen games: <strong>When playing a game</strong> under Turn on do not disturb automatically, in Settings › System › Notifications.</dd>
+        </dl>
+
+        <h3 id="gm-never" class="docs-h3">What Game mode never does</h3>
+        <ul class="docs-list">
+          <li>End a program, or close one that has unsaved work.</li>
+          <li>Change whether a service starts with Windows, or touch any service other than the four above.</li>
+          <li>Touch Microsoft Defender, Windows Update's own services, Xbox and gaming services, anti-cheat, audio, networking, the desktop or File Explorer.</li>
+          <li>Change settings that need a restart or lower security, such as hardware-accelerated GPU scheduling or virtualization-based security.</li>
+          <li>Use tricks that don't measurably help or can harm, such as clearing standby memory, timer resolution or core parking changes.</li>
+          <li>Set any program to High or Realtime priority, or lower another program's priority.</li>
+        </ul>
+      </section>
+
+      <section id="pc" class="docs-part">
+        <h2 class="docs-h2">Other changes to your PC</h2>
+
+        <h3 id="pc-shortcuts" class="docs-h3">Desktop shortcuts</h3>
+        <p><strong>Import desktop shortcuts</strong> lists the shortcuts on your desktop and the shared (Public) desktop; you tick which are games. Those are <strong>moved</strong>, not deleted, to <code>%APPDATA%\Binder\Shortcuts\</code>. A shortcut on the shared desktop that needs administrator rights to move is copied instead, and the original stays. Shortcuts are only read while they're listed, never run. <strong>Restore</strong> in Settings › Desktop shortcuts moves them back onto your desktop.</p>
+
+        <h3 id="pc-autostart" class="docs-h3">Start with Windows</h3>
+        <p>When <strong>Start with Windows</strong> is on, Binder adds a value named <code>Binder</code> to <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run</code>, the standard per-user startup list (also shown in Task Manager › Startup apps). It starts Binder with <code>--background</code>, so it waits in the notification area instead of opening. Turning the setting off removes the value.</p>
+
+        <h3 id="pc-updates" class="docs-h3">Updates</h3>
+        <ul class="docs-list">
+          <li>Binder checks GitHub for a new version once a day, when it opens. Settings › About › Updates offers <strong>Install automatically</strong>, <strong>Ask before installing</strong> and <strong>Don't check</strong>; with Don't check, Binder makes no request at all.</li>
+          <li>The check downloads a list signed by Binder's author. Binder installs only a newer version whose signature, size and checksum match, and never an older one.</li>
+          <li>It never installs while a game is running or Game mode still has changes applied. With Ask before installing, security fixes still install when you close Binder.</li>
+          <li>Downloads are kept in <code>%LOCALAPPDATA%\Binder\updates\</code> and deleted once installed.</li>
+        </ul>
+
+        <h3 id="pc-space" class="docs-h3">Free up space</h3>
+        <p>Free up space suggests games you could remove to make room on a drive. Binder never deletes game files itself: each uninstall is handed to the game's own launcher, which asks before it removes anything.</p>
+
+        <h3 id="pc-data" class="docs-h3">Your data</h3>
+        <ul class="docs-list">
+          <li><code>%APPDATA%\Binder\</code>: your game list, settings, playtime and imported shortcuts.</li>
+          <li><code>%LOCALAPPDATA%\Binder\</code>: cover pictures, logs, Game mode's journal while a game runs, and downloaded updates.</li>
+          <li><code>%ProgramData%\Binder\</code>: only if you allowed Game mode's admin helper; its journal and log.</li>
+        </ul>
+        <p>Binder sends nothing about you or your PC anywhere. Besides the update check, it only downloads cover art for Steam games, from Steam's servers.</p>
+
+        <h3 id="pc-uninstall" class="docs-h3">Uninstalling</h3>
+        <p>Uninstall Binder from Settings › Apps. It first puts back anything Game mode still has applied and removes the admin helper. Then it asks whether to put your imported shortcuts back on the desktop, and whether to also delete your game list, play history and settings.</p>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <a href="index.html" class="brand brand-small" aria-label="Binder home">
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
+        <span>Binder</span>
+      </a>
+      <nav aria-label="Footer" class="footer-nav">
+        <a href="index.html#disclaimer">Disclaimer</a>
+        <a href="index.html#privacy">Privacy</a>
+        <a href="docs.html">Documentation</a>
+        <a href="https://github.com/JannisJostBot/binder">Source code</a>
+      </nav>
+      <span class="footer-copy">© 2026 Jannis Jost</span>
+    </div>
+  </footer>
+</div>
+</body>
+</html>

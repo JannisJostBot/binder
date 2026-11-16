@@ -11,6 +11,9 @@
     - no [DllImport] (use [LibraryImport]) and no [ComImport] (use [GeneratedComInterface]): Native AOT
     - no {Binding} in XAML (use x:Bind): Native AOT
     - the website (site/) has no scripts and loads nothing from other servers
+    - a change to what site/docs.html documents (Game mode and its helper, Start with Windows, updates, shortcut
+      import, the installer) also changes site/docs.html, unless -DocsUnchanged or a commit on the branch has a
+      'Docs-Unchanged: <why>' line (what the page says still holds)
 
   Also checked with -Strict or -Task (work by agents from docs/tasks):
     - no changes to protected files (the watcher, the launcher, security checks, native code, the installer,
@@ -29,7 +32,8 @@ param(
     [string]$Task,
     [switch]$Strict,
     [switch]$SkipBuild,
-    [switch]$AllowPackages
+    [switch]$AllowPackages,
+    [switch]$DocsUnchanged
 )
 
 $ErrorActionPreference = 'Stop'
@@ -93,6 +97,23 @@ Scan '\.xaml$' '\{\s*Binding' 'use x:Bind instead of {Binding} (Native AOT)'
 Scan '^site/.*\.html?$' '<\s*(script|iframe|embed|object)\b' 'no scripts or embedded pages on the website'
 Scan '^site/.*\.html?$' '<\s*(img|link|source|video|audio|track|image|use)\b[^>]*\b(src|href|srcset)\s*=\s*["'']?\s*(https?:)?//' 'the website loads nothing from other servers'
 Scan '^site/.*\.(html?|css)$' '(@import|url\(\s*["'']?\s*(https?:)?//)' 'the website loads nothing from other servers'
+
+# The documentation page says exactly what these do on the user's PC (the unit tests compare its Game mode items
+# with the code; this catches the rest). A change that leaves every sentence true passes with -DocsUnchanged, or
+# in CI with a 'Docs-Unchanged: <why>' line in one of the branch's commit messages.
+$documented = @(
+    '^src/Binder\.Watcher/GameMode(Shared)?\.cs$', '^src/Binder\.Elevated/', '^src/Binder\.Setup/',
+    '^src/Binder/Services/(GameModeService|WindowsGaming|Autostart|Updater)\.cs$',
+    '^src/Binder/Library/(ShortcutImporter|UpdateManifest)\.cs$'
+)
+if (-not $DocsUnchanged) { $DocsUnchanged = [bool](git log --format=%B "$mergeBase..HEAD" | Select-String -Pattern '^Docs-Unchanged:\s*\S') }
+if (-not $DocsUnchanged -and -not ($changed -contains 'site/docs.html')) {
+    foreach ($f in $changed) {
+        foreach ($p in $documented) {
+            if ($f -match $p) { Problem "${f}: site/docs.html documents what this does; update it in the same change, or if every sentence there still holds, pass -DocsUnchanged or add a 'Docs-Unchanged: <why>' line to a commit message"; break }
+        }
+    }
+}
 
 # --- Rules for agent work -------------------------------------------------------------------------------
 if ($Strict) {
