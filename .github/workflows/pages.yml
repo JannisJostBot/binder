@@ -1,7 +1,7 @@
 name: Website
 
-# Publishes site/ (index.html, docs.html, styles.css, logo.svg) to GitHub Pages: on every push to main that changes
-# the site, or by hand (Actions › Website › Run workflow). The files go up exactly as they are: no build step, no
+# Publishes site/ (index.html, docs.html, styles.css, logo.svg, release.js, clock.js, chips.js) to GitHub
+# Pages: on every push to main that changes the site, or by hand (Actions › Website › Run workflow). The files go up exactly as they are: no build step, no
 # Jekyll. Address: https://jannisjostbot.github.io/binder/ (or a custom domain set in Settings › Pages).
 #
 # Setup (owner, once): Settings › Pages › Build and deployment › Source: "GitHub Actions".
