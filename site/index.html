@@ -22,7 +22,7 @@
   <header class="site-header">
     <div class="header-bar">
       <a href="#top" class="brand" aria-label="Binder home">
-        <svg aria-hidden="true" width="30" height="30" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
+        <svg aria-hidden="true" width="28" height="28" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
         <span>Binder</span>
       </a>
       <nav aria-label="Sections" class="header-nav">
@@ -33,74 +33,66 @@
         <a href="docs.html">Docs</a>
       </nav>
       <a href="https://github.com/JannisJostBot/binder" class="header-github"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"></path><path d="M16 7l5 5-5 5"></path></svg>GitHub</a>
-      <a href="#download" class="button button-small header-download">Download</a>
+      <a href="#download" class="button button-primary button-small header-download">Download</a>
     </div>
   </header>
 
-  <!-- Hero -->
+  <!-- Hero: a shelf of covers, one of them starting -->
   <section id="top" class="hero">
-    <div class="hero-bloom" aria-hidden="true"></div>
     <div class="wrap hero-grid">
       <div class="hero-text">
-        <p class="eyebrow">Game launcher for Windows 10 and 11</p>
         <h1 class="h1">All your PC games in one window</h1>
         <p class="hero-lead">Binder lists the games you've installed with Steam, Epic, GOG and other launchers, and starts them with one click. While you play, Binder closes, and it opens again when you quit the game.</p>
         <div class="hero-actions">
           <a href="#download" class="button button-primary">
             <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download for Windows
           </a>
-          <a href="#how" class="button button-secondary">See how it works</a>
+          <a href="#how" class="text-link">See how it works<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"></path></svg></a>
         </div>
         <p class="touch-hint" role="note"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5"></rect><path d="M8 20h8M12 16v4"></path></svg><span>Binder is an app for Windows PCs. To install it, open this page on your PC.</span></p>
         <ul class="hero-facts">
-          <li><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Windows 10 and 11 (64-bit)</li>
-          <li><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>No account needed</li>
-          <li><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg><span>Installs without admin rights<sup class="fn-ref"><a href="#fn-admin" aria-label="Footnote 1: what needs administrator rights">1</a></sup></span></li>
+          <li>Windows 10 and 11 (64-bit)</li>
+          <li>No account needed</li>
+          <li><span>Installs without admin rights<sup class="fn-ref"><a href="#fn-admin" aria-label="Footnote 1: what needs administrator rights">1</a></sup></span></li>
         </ul>
-        <p class="hero-footnote" id="fn-admin"><sup>1</sup> Binder and its installer run with your account's normal rights. Only Game mode's optional admin helper asks for administrator rights: once when you choose <strong>Allow…</strong> to let Game mode pause background services and set network priority, again if a Binder update changes the helper, and when you remove it or uninstall Binder. <a href="docs.html#gm-helper">What the helper does</a></p>
       </div>
 
-      <!-- Product shot: a picture of the app, so it keeps the app's own dark colours. -->
-      <figure class="stage" aria-label="Binder's shelf open above the notification area on a Windows desktop">
-        <div class="stage-cards" aria-hidden="true"><span></span><span></span><span></span></div>
-        <div class="mock-panel">
-          <div class="mock-greeting">Good evening</div>
-          <div class="mock-search"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A9A9B2" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>Search 72 games</div>
-          <div class="mock-continue">
-            <div class="mock-continue-text"><span>Continue playing</span><strong>[Game title]</strong></div>
-            <span class="mock-play">Play</span>
-          </div>
-          <div class="mock-chips"><span class="on">All</span><span>Favorites</span><span>Recent</span><span>Steam</span></div>
-          <div class="mock-grid" aria-hidden="true">
-            <span style="--c: #6B3B3B"></span><span class="focus" style="--c: #2F5A4A"></span><span style="--c: #5A4A2F"></span><span style="--c: #4A3B6B"></span>
-            <span style="--c: #2F4F5A"></span><span style="--c: #5A2F4A"></span><span style="--c: #44484F"></span><span style="--c: #3B5A33"></span>
-            <span style="--c: #4E3A5C"></span><span style="--c: #2C4A5E"></span><span style="--c: #5A3B33"></span><span style="--c: #3A4258"></span>
-          </div>
+      <!-- A picture of the app: its cover grid (generated covers: a monogram on a muted colour) and the launch toast,
+           in the app's own colours. -->
+      <figure class="shelf" aria-label="Binder's grid of game covers; one game is starting and Binder closes in 10 seconds">
+        <div class="shelf-grid" aria-hidden="true">
+          <span class="cover" style="--c: #6B3B3B">AR</span><span class="cover" style="--c: #4A3B6B">MO</span><span class="cover" style="--c: #5A4A2F">SK</span><span class="cover" style="--c: #2C4A5E">VE</span>
+          <span class="cover" style="--c: #3B5A33">LU</span><span class="cover cover-focus" style="--c: #2F5A4A">NO</span><span class="cover" style="--c: #5A2F4A">DR</span><span class="cover" style="--c: #44484F">TI</span>
+          <span class="cover" style="--c: #5A3B33">QE</span><span class="cover" style="--c: #2F4F5A">BA</span><span class="cover" style="--c: #4E3A5C">HY</span><span class="cover" style="--c: #3A4258">FO</span>
         </div>
-        <div class="mock-taskbar" aria-hidden="true">
-          <span class="mock-tray"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
-          <span class="mock-clock">21:14<br>05/11/2026</span>
+        <div class="launch-toast" aria-hidden="true">
+          <strong>Starting [Game title]</strong>
+          <span>Binder closes in 10 s</span>
+          <div class="launch-countdown"><span class="launch-track"><span></span></span><span class="launch-keep">Keep open</span></div>
         </div>
       </figure>
     </div>
+    <div class="wrap">
+      <p class="hero-footnote" id="fn-admin"><sup>1</sup> Binder and its installer run with your account's normal rights. Only Game mode's optional admin helper asks for administrator rights: once when you choose <strong>Allow…</strong> to let Game mode pause background services and set network priority, again if a Binder update changes the helper, and when you remove it or uninstall Binder. <a href="docs.html#gm-helper">What the helper does</a></p>
+    </div>
   </section>
 
-  <!-- Works with: the app's own filter chips -->
+  <!-- Works with -->
   <section class="launchers" aria-label="Supported launchers">
     <div class="wrap launchers-inner">
-      <p class="launchers-label">Finds games installed with</p>
-      <ul class="chips">
+      <p class="mono-label">Finds games installed with</p>
+      <ul class="launcher-list">
         <li>Steam</li><li>Epic Games</li><li>GOG</li><li>EA app</li><li>Ubisoft Connect</li><li>Xbox app</li><li>Rockstar Games Launcher</li>
       </ul>
       <p class="launchers-note">You can also import your desktop game shortcuts, or add any game yourself.</p>
     </div>
   </section>
 
-  <!-- How it works -->
+  <!-- 01 How it works -->
   <section id="how" class="section">
     <div class="wrap">
+      <div class="divider" style="--tab: #2F5A4A; --tab-at: 0"><span class="tab"><span class="tab-num">01</span>How it works</span></div>
       <div class="section-head">
-        <p class="eyebrow">How it works</p>
         <h2 class="h2">What happens when you play a game</h2>
         <p class="lead">Binder doesn't stay open next to your game. It closes, so it doesn't use memory or processor time your game could use.</p>
       </div>
@@ -146,213 +138,207 @@
           <h3 class="h3">How much it uses</h3>
           <p class="footnote">Approximate, measured on [TEST PC]. Your numbers will vary with the size of your library.</p>
         </div>
-        <ul class="stats">
-          <li class="stat">
-            <div class="stat-head"><span class="stat-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><rect x="7" y="9" width="4" height="5" rx="1"></rect><rect x="13" y="9" width="4" height="5" rx="1"></rect><path d="M7 6.5h6"></path></svg></span><h4 class="stat-when">Binder is open</h4></div>
-            <div class="stat-row">
-              <span class="stat-label">Memory</span>
-              <span class="stat-value">130–230<span class="stat-unit">MB</span></span>
-              <span class="stat-note">More with many covers</span>
-            </div>
-            <div class="stat-row stat-row-cpu">
-              <span class="stat-label">Processor</span>
-              <span class="stat-cpu">Only while you use it</span>
-            </div>
-          </li>
-          <li class="stat">
-            <div class="stat-head"><span class="stat-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18"></path><path d="M3 21h18"></path><path d="M9 10l3-3 3 3"></path></svg></span><h4 class="stat-when">Closed, waiting in the notification area</h4></div>
-            <div class="stat-row">
-              <span class="stat-label">Memory</span>
-              <span class="stat-value">12<span class="stat-unit">MB</span></span>
-              <span class="stat-note">Binder's window is closed</span>
-            </div>
-            <div class="stat-row stat-row-cpu">
-              <span class="stat-label">Processor</span>
-              <span class="stat-cpu">None</span>
-            </div>
-          </li>
-          <li class="stat stat-accent">
-            <div class="stat-head"><span class="stat-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 8h9a4.5 4.5 0 0 1 4.4 5.4l-.7 3.4a2.4 2.4 0 0 1-4.1 1.2L14 16h-4l-2.1 2a2.4 2.4 0 0 1-4.1-1.2l-.7-3.4A4.5 4.5 0 0 1 7.5 8z"></path><path d="M8 11v3M6.5 12.5h3"></path><path d="M15.5 12h.01M17.5 13.5h.01"></path></svg></span><h4 class="stat-when">A game is running</h4></div>
-            <div class="stat-row">
-              <span class="stat-label">Memory</span>
-              <span class="stat-value">3<span class="stat-unit">MB</span></span>
-              <span class="stat-note">Only the helper; Binder itself is closed</span>
-            </div>
-            <div class="stat-row stat-row-cpu">
-              <span class="stat-label">Processor</span>
-              <span class="stat-cpu">None once the game is found</span>
-            </div>
-          </li>
-        </ul>
+        <dl class="spec">
+          <div class="spec-col">
+            <dt>Binder is open</dt>
+            <dd class="spec-value">130–230<span>MB</span></dd>
+            <dd class="spec-note">Memory, more with many covers</dd>
+            <dd class="spec-cpu"><span class="mono-label">Processor</span>Only while you use it</dd>
+          </div>
+          <div class="spec-col">
+            <dt>Closed, waiting in the notification area</dt>
+            <dd class="spec-value">12<span>MB</span></dd>
+            <dd class="spec-note">Memory; Binder's window is closed</dd>
+            <dd class="spec-cpu"><span class="mono-label">Processor</span>None</dd>
+          </div>
+          <div class="spec-col spec-col-game">
+            <dt>A game is running</dt>
+            <dd class="spec-value">3<span>MB</span></dd>
+            <dd class="spec-note">Only the helper; Binder itself is closed</dd>
+            <dd class="spec-cpu"><span class="mono-label">Processor</span>None once the game is found</dd>
+          </div>
+        </dl>
       </div>
     </div>
   </section>
 
-  <!-- Features: a bento grid -->
-  <section id="features" class="section section-alt">
+  <!-- 02 Features -->
+  <section id="features" class="section">
     <div class="wrap">
+      <div class="divider" style="--tab: #5A4A2F; --tab-at: 1"><span class="tab"><span class="tab-num">02</span>Features</span></div>
       <div class="section-head">
-        <p class="eyebrow">Features</p>
         <h2 class="h2">What else it does</h2>
         <p class="lead">Everything here helps you start, find or manage your games. Binder doesn't add overlays or change your games.</p>
       </div>
-      <div class="bento">
-        <article class="tile tile-wide">
-          <div class="tile-picture treemap" aria-hidden="true"><span class="a"></span><span class="b"></span><span class="c"></span><span class="d"></span><span class="e"></span></div>
-          <div class="tile-text">
-            <h3>Free up space for a new game</h3>
-            <p>Enter the size of the game you want to install. Binder shows, for each drive, which games you could remove to make room, starting with the ones you play least. You choose; each game is then uninstalled by its own launcher. Binder never deletes game files itself.</p>
-          </div>
-        </article>
-        <article class="tile tile-narrow">
-          <div class="tile-picture" aria-hidden="true">
-            <div class="crash-card">
-              <strong><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#C42B1C"></circle><path d="M12 7v6.5M12 16.5v.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"></path></svg>[Game title] crashed</strong>
-              <span>Likely cause: the graphics driver stopped responding.</span>
-              <span>Try updating the driver, then lower the graphics preset.</span>
+
+      <article class="feature">
+        <div class="feature-picture" aria-hidden="true">
+          <div class="drive">
+            <div class="drive-bar"><span class="g1"></span><span class="g2"></span><span class="g3"></span><span class="free"></span></div>
+            <div class="drive-rows">
+              <span><i style="--c: #6B3B3B"></i>[Game title]<b>least played</b></span>
+              <span><i style="--c: #4A3B6B"></i>[Game title]</span>
+              <span><i style="--c: #5A4A2F"></i>[Game title]</span>
             </div>
           </div>
-          <div class="tile-text">
-            <h3>See why a game crashed</h3>
-            <p>If a game crashes, Binder shows what Windows recorded about it, with a likely cause and things to try. It's a best guess from Windows' event log, not a guaranteed diagnosis.</p>
-          </div>
-        </article>
-        <article class="tile tile-narrow tile-gamemode">
-          <span class="tile-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"></path></svg></span>
-          <div class="tile-text">
-            <h3>Game mode</h3>
-            <p>If you turn it on, Binder can switch Windows to its best performance power mode, pause a few background services and give the game's network traffic priority while you play. Everything is put back when the game closes.</p>
-            <a class="tile-link" href="docs.html#game-mode">What Game mode changes<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
-          </div>
-          <div class="gm-pill" aria-hidden="true"><span class="gm-pill-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><strong>Game mode on</strong><span>3 changes · undone when the game closes</span></div>
-        </article>
-        <div class="tile-group">
-          <article class="tile tile-small">
-            <span class="tile-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M8.5 10.5l2 2 4-4"></path></svg></span>
-            <h3>A tidy desktop</h3>
-            <p>Choose which game shortcuts to move off your desktop. Binder keeps them in its own folder and can put them back anytime.</p>
-          </article>
-          <article class="tile tile-small">
-            <span class="tile-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"></rect><rect x="13" y="8" width="5" height="9" rx="1"></rect></svg></span>
-            <h3>Works like Windows</h3>
-            <p>Open it from the notification area or with Win + Shift + G (you can change this). It uses your accent colour, light or dark mode and display scaling.</p>
-          </article>
-          <article class="tile tile-small">
-            <span class="tile-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V11"></path><path d="M10 20V5"></path><path d="M15 20v-6"></path><path d="M20 20V9"></path></svg></span>
-            <h3>Your playtime</h3>
-            <p>See how long you've played each game, by week and month. Binder counts the sessions you start from Binder.</p>
-          </article>
-          <article class="tile tile-small">
-            <span class="tile-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"></path></svg></span>
-            <h3>Keyboard and screen readers</h3>
-            <p>Type to search, use the arrow keys to move and Enter to play. Every control is labelled for screen readers.</p>
-          </article>
         </div>
-      </div>
+        <div class="feature-text">
+          <h3>Free up space for a new game</h3>
+          <p>Enter the size of the game you want to install. Binder shows, for each drive, which games you could remove to make room, starting with the ones you play least. You choose; each game is then uninstalled by its own launcher. Binder never deletes game files itself.</p>
+        </div>
+      </article>
+
+      <article class="feature feature-flip">
+        <div class="feature-picture" aria-hidden="true">
+          <div class="crash-card">
+            <strong><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#C42B1C"></circle><path d="M12 7v6.5M12 16.5v.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"></path></svg>[Game title] crashed</strong>
+            <span>Likely cause: the graphics driver stopped responding.</span>
+            <span>Try updating the driver, then lower the graphics preset.</span>
+          </div>
+        </div>
+        <div class="feature-text">
+          <h3>See why a game crashed</h3>
+          <p>If a game crashes, Binder shows what Windows recorded about it, with a likely cause and things to try. It's a best guess from Windows' event log, not a guaranteed diagnosis.</p>
+        </div>
+      </article>
+
+      <article class="feature">
+        <div class="feature-picture" aria-hidden="true">
+          <div class="gm-pill"><span class="gm-pill-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><strong>Game mode on</strong><span>3 changes · undone when the game closes</span></div>
+        </div>
+        <div class="feature-text">
+          <h3>Game mode</h3>
+          <p>If you turn it on, Binder can switch Windows to its best performance power mode, pause a few background services and give the game's network traffic priority while you play. Everything is put back when the game closes.</p>
+          <a class="text-link" href="docs.html#game-mode">What Game mode changes<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+        </div>
+      </article>
+
+      <ul class="small-features">
+        <li>
+          <h3><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M8.5 10.5l2 2 4-4"></path></svg>A tidy desktop</h3>
+          <p>Choose which game shortcuts to move off your desktop. Binder keeps them in its own folder and can put them back anytime.</p>
+        </li>
+        <li>
+          <h3><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"></rect><rect x="13" y="8" width="5" height="9" rx="1"></rect></svg>Works like Windows</h3>
+          <p>Open it from the notification area or with Win + Shift + G (you can change this). It uses your accent colour, light or dark mode and display scaling.</p>
+        </li>
+        <li>
+          <h3><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V11"></path><path d="M10 20V5"></path><path d="M15 20v-6"></path><path d="M20 20V9"></path></svg>Your playtime</h3>
+          <p>See how long you've played each game, by week and month. Binder counts the sessions you start from Binder.</p>
+        </li>
+        <li>
+          <h3><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"></path></svg>Keyboard and screen readers</h3>
+          <p>Type to search, use the arrow keys to move and Enter to play. Every control is labelled for screen readers.</p>
+        </li>
+      </ul>
     </div>
   </section>
 
-  <!-- Privacy: Binder's own deep blue -->
+  <!-- 03 Privacy -->
   <section id="privacy" class="section">
     <div class="wrap">
-      <div class="privacy-panel">
-        <div class="privacy-text">
-          <p class="eyebrow">Privacy</p>
+      <div class="divider" style="--tab: #4A3B6B; --tab-at: 2"><span class="tab"><span class="tab-num">03</span>Privacy</span></div>
+      <div class="privacy-grid">
+        <div class="section-head">
           <h2 class="h2">Your data stays on your PC</h2>
-          <p>Binder only connects to the internet to download cover art for Steam games, from Steam's servers, and once a day to look for a new version on GitHub (you can turn that off). It sends nothing about you or your PC, and installs only updates signed by its maker.</p>
+          <p class="lead">Binder only connects to the internet to download cover art for Steam games, from Steam's servers, and once a day to look for a new version on GitHub (you can turn that off). It sends nothing about you or your PC, and installs only updates signed by its maker.</p>
         </div>
-        <ul class="privacy-list">
-          <li><span class="privacy-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg></span>No account, no telemetry, no analytics</li>
-          <li><span class="privacy-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg></span><span>Installs for your account only, without admin rights<sup class="fn-ref"><a href="#fn-admin" aria-label="Footnote 1: what needs administrator rights">1</a></sup></span></li>
-          <li><span class="privacy-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"></path><path d="M4 10h16"></path></svg></span>Your library, playtime and settings are saved in your user folder (AppData)</li>
-          <li><span class="privacy-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path></svg></span>Uninstall from Settings › Apps. Your shortcuts go back on the desktop, and you choose whether to keep your data</li>
+        <ul class="ledger">
+          <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg><span>No account, no telemetry, no analytics</span></li>
+          <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg><span>Installs for your account only, without admin rights<sup class="fn-ref"><a href="#fn-admin" aria-label="Footnote 1: what needs administrator rights">1</a></sup></span></li>
+          <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"></path><path d="M4 10h16"></path></svg><span>Your library, playtime and settings are saved in your user folder (AppData)</span></li>
+          <li><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path></svg><span>Uninstall from Settings › Apps. Your shortcuts go back on the desktop, and you choose whether to keep your data</span></li>
         </ul>
       </div>
     </div>
   </section>
 
-  <!-- FAQ -->
-  <section id="faq" class="section section-alt">
-    <div class="wrap faq-grid">
-      <div class="section-head faq-head">
-        <p class="eyebrow">FAQ</p>
-        <h2 class="h2">Frequently asked questions</h2>
-        <p class="lead">What Binder changes on your PC, item by item, is in the <a href="docs.html">documentation</a>.</p>
-      </div>
-      <div class="faq-list">
-        <details class="faq-item" open>
-          <summary>Will it slow down my games?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>It shouldn't. Binder closes 10 seconds after the game starts. Only the helper keeps running, using about 3 MB of memory and no processor time once it has found the game.</p>
-        </details>
-        <details class="faq-item">
-          <summary>Does it delete my desktop shortcuts?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>No. The shortcuts you choose are moved into Binder's own folder, and you can put them back anytime. Uninstalling Binder puts them back too.</p>
-        </details>
-        <details class="faq-item">
-          <summary>Do I still need Steam, Epic and the others?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>Yes. Binder starts each game through the launcher it belongs to, so saves, updates and friends lists work as before.</p>
-        </details>
-        <details class="faq-item">
-          <summary>Why does Windows warn me when I run the installer?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>The installer isn't code-signed yet, so SmartScreen may show "Windows protected your PC". If you downloaded it from this page, choose More info, then Run anyway.</p>
-        </details>
-        <details class="faq-item">
-          <summary>What if Binder doesn't notice the game?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>If the helper can't find the game within about 3 minutes, Binder opens again and tells you. You can then pick the game's process in its settings so it's found next time.</p>
-        </details>
-        <details class="faq-item">
-          <summary>Which launchers aren't supported yet?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>Battle.net, Riot, Amazon Games, itch.io, Humble and Meta are planned but not there yet. Until then, add those games yourself or import their desktop shortcuts. Controller support is also planned.</p>
-        </details>
-        <details class="faq-item">
-          <summary>Where does Binder keep my data?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>On your PC, in your user folder: your library, playtime, settings and imported shortcuts in %APPDATA%\Binder, and the cover pictures in %LOCALAPPDATA%\Binder. When you uninstall Binder, it asks whether to delete them.</p>
-        </details>
-        <details class="faq-item">
-          <summary>What does it cost?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>Nothing, it's free. Binder is open source under the GNU GPL, version 3: anyone can read, change and share <a href="https://github.com/JannisJostBot/binder">the code on GitHub</a>, and changed versions stay open too.</p>
-        </details>
-      </div>
-    </div>
-  </section>
-
-  <!-- Before you download: the AI disclaimer and "Not affiliated", worded as they are -->
-  <section id="disclaimer" class="section section-tight" aria-labelledby="disclaimer-title">
-    <div class="wrap wrap-narrow">
-      <h2 id="disclaimer-title" class="h2 h2-small">Before you download</h2>
-      <div class="notes">
-        <div class="note note-caution" role="note">
-          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" class="caution-fill"></circle><path d="M12 7v6.5M12 16.5v.5" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"></path></svg>
-          <div class="note-text">
-            <strong>AI-generated code, provided as is.</strong>
-        <span>Binder was built with Claude, Anthropic's AI. Its author designed and directed it and tests every version on real PCs; the code itself was written by the AI and isn't reviewed line by line by a human developer.</span>
-        <span>It's provided "as is", without warranty of any kind. In no event shall the author or anyone involved be liable for any claim, damages or other liability arising from its use.</span>
-          </div>
-        </div>
-        <div class="note" role="note">
-          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" class="accent-fill"></circle><path d="M12 11v6M12 7.5v.5" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"></path></svg>
-          <div class="note-text">
-            <strong>Not affiliated with any game store</strong>
-        <span>Binder isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Electronic Arts, Ubisoft, Rockstar Games, Microsoft or any other company whose launchers it works with. Their names and icons belong to their owners.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Download -->
-  <section id="download" class="section">
+  <!-- 04 FAQ -->
+  <section id="faq" class="section">
     <div class="wrap">
-      <div class="download-panel">
-        <div class="download-cards" aria-hidden="true"><span></span><span></span><span></span></div>
-        <span class="download-logo"><svg aria-hidden="true" width="80" height="80" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
-        <h2 class="h2">Download Binder</h2>
-        <p class="touch-hint touch-hint-download" role="note"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5"></rect><path d="M8 20h8M12 16v4"></path></svg><span>Binder is an app for Windows PCs. To install it, open this page on your PC.</span></p>
-        <a class="button button-light download-button" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe">
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download for Windows
-        </a>
-        <p class="download-meta">Version 0.2.1 · 34 MB · Windows 10 and 11, 64-bit · <a href="https://github.com/JannisJostBot/binder/releases">Release notes and earlier versions</a> · <a href="https://github.com/JannisJostBot/binder">Source code</a></p>
-        <p class="download-text">Run the installer and follow the short setup: pick your launchers and, if you like, which desktop shortcuts to tidy away. Binder tells you when there's an update, or you can run a newer installer yourself, even while a game is running.</p>
+      <div class="divider" style="--tab: #2C4A5E; --tab-at: 3"><span class="tab"><span class="tab-num">04</span>FAQ</span></div>
+      <div class="faq-grid">
+        <div class="section-head faq-head">
+          <h2 class="h2">Frequently asked questions</h2>
+          <p class="lead">What Binder changes on your PC, item by item, is in the <a href="docs.html">documentation</a>.</p>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item" open>
+            <summary>Will it slow down my games?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+            <p>It shouldn't. Binder closes 10 seconds after the game starts. Only the helper keeps running, using about 3 MB of memory and no processor time once it has found the game.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Does it delete my desktop shortcuts?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+            <p>No. The shortcuts you choose are moved into Binder's own folder, and you can put them back anytime. Uninstalling Binder puts them back too.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Do I still need Steam, Epic and the others?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+            <p>Yes. Binder starts each game through the launcher it belongs to, so saves, updates and friends lists work as before.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Why does Windows warn me when I run the installer?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+            <p>The installer isn't code-signed yet, so SmartScreen may show "Windows protected your PC". If you downloaded it from this page, choose More info, then Run anyway.</p>
+          </details>
+          <details class="faq-item">
+            <summary>What if Binder doesn't notice the game?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+            <p>If the helper can't find the game within about 3 minutes, Binder opens again and tells you. You can then pick the game's process in its settings so it's found next time.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Which launchers aren't supported yet?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+            <p>Battle.net, Riot, Amazon Games, itch.io, Humble and Meta are planned but not there yet. Until then, add those games yourself or import their desktop shortcuts. Controller support is also planned.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Where does Binder keep my data?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+            <p>On your PC, in your user folder: your library, playtime, settings and imported shortcuts in %APPDATA%\Binder, and the cover pictures in %LOCALAPPDATA%\Binder. When you uninstall Binder, it asks whether to delete them.</p>
+          </details>
+          <details class="faq-item">
+            <summary>What does it cost?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+            <p>Nothing, it's free. Binder is open source under the GNU GPL, version 3: anyone can read, change and share <a href="https://github.com/JannisJostBot/binder">the code on GitHub</a>, and changed versions stay open too.</p>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 Download: Binder as one more cover on the shelf; "Before you download" stays worded as it is -->
+  <section id="download" class="section section-download">
+    <div class="wrap">
+      <div class="divider" style="--tab: #6B3B3B; --tab-at: 4"><span class="tab"><span class="tab-num">05</span>Download</span></div>
+      <div class="download-grid">
+        <div class="download-cover" aria-hidden="true">
+          <svg aria-hidden="true" width="96" height="96" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
+          <span>Binder</span>
+        </div>
+        <div class="download-text">
+          <h2 class="h2">Download Binder</h2>
+          <p class="touch-hint touch-hint-download" role="note"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5"></rect><path d="M8 20h8M12 16v4"></path></svg><span>Binder is an app for Windows PCs. To install it, open this page on your PC.</span></p>
+          <a class="button button-primary download-button" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download for Windows
+          </a>
+          <p class="download-meta">Version 0.2.1 · 34 MB · Windows 10 and 11, 64-bit · <a href="https://github.com/JannisJostBot/binder/releases">Release notes and earlier versions</a> · <a href="https://github.com/JannisJostBot/binder">Source code</a></p>
+          <p class="download-note">Run the installer and follow the short setup: pick your launchers and, if you like, which desktop shortcuts to tidy away. Binder tells you when there's an update, or you can run a newer installer yourself, even while a game is running.</p>
+        </div>
+      </div>
+
+      <div id="disclaimer" class="disclaimer" aria-labelledby="disclaimer-title">
+        <h2 id="disclaimer-title" class="h3">Before you download</h2>
+        <div class="notes">
+          <div class="note note-caution" role="note">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" class="caution-fill"></circle><path d="M12 7v6.5M12 16.5v.5" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"></path></svg>
+            <div class="note-text">
+              <strong>AI-generated code, provided as is.</strong>
+          <span>Binder was built with Claude, Anthropic's AI. Its author designed and directed it and tests every version on real PCs; the code itself was written by the AI and isn't reviewed line by line by a human developer.</span>
+          <span>It's provided "as is", without warranty of any kind. In no event shall the author or anyone involved be liable for any claim, damages or other liability arising from its use.</span>
+            </div>
+          </div>
+          <div class="note" role="note">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" class="accent-fill"></circle><path d="M12 11v6M12 7.5v.5" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"></path></svg>
+            <div class="note-text">
+              <strong>Not affiliated with any game store</strong>
+          <span>Binder isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Electronic Arts, Ubisoft, Rockstar Games, Microsoft or any other company whose launchers it works with. Their names and icons belong to their owners.</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
