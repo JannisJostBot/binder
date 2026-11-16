@@ -8,8 +8,9 @@ name: VirusTotal
 # the VirusTotal key and nothing else. It checks out no code, builds nothing and uses no third-party actions: it
 # downloads the published BinderSetup-<version>.exe, checks its SHA-256 against the signed release.json, uploads it to
 # VirusTotal (https://docs.virustotal.com/reference/overview), waits for the result and writes it between the markers
-# below. A finding doesn't fail the job (new unsigned installers are sometimes flagged); it's shown as a warning and
-# named in the notes.
+# below: the scan date, the report link and the hash. The notes don't repeat the verdict (the report shows it);
+# a finding doesn't fail the job (new unsigned installers are sometimes flagged) but shows as a warning on the run,
+# with the engines that flagged it.
 #
 # Setup (owner, once): a free VirusTotal account's API key as the repository secret VT_API_KEY (Settings › Secrets
 # and variables › Actions). The public API allows 4 requests a minute, so the job waits 30 s between checks.
@@ -99,11 +100,10 @@ jobs:
           $section = @(
               '<!-- virustotal -->'
               '### VirusTotal'
-              "``$setupName``: $flagged of $engines engines flagged it, scanned $date. [Full report]($report)"
+              "``$setupName`` was scanned with VirusTotal on ${date}: [full report]($report)."
               ''
               "SHA-256 ``$sha256``, the same as in the signed ``release.json``."
           )
-          if ($flagged -gt 0) { $section += ''; $section += "Flagged by: $($names -join ', ')." }
           $section += '<!-- /virustotal -->'
           $body = gh release view $env:TAG --repo $env:REPO --json body --jq .body
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
