@@ -10,7 +10,8 @@
     - no new NuGet packages (<PackageReference>) unless -AllowPackages (the owner approved it)
     - no [DllImport] (use [LibraryImport]) and no [ComImport] (use [GeneratedComInterface]): Native AOT
     - no {Binding} in XAML (use x:Bind): Native AOT
-    - the website (site/) has no scripts and loads nothing from other servers
+    - the website (site/) loads nothing from other servers; its scripts are its own .js files and contact only
+      GitHub's API for this repository's releases
     - a change to what site/docs.html documents (Game mode and its helper, Start with Windows, updates, shortcut
       import, the installer) also changes site/docs.html, unless -DocsUnchanged or a commit on the branch has a
       'Docs-Unchanged: <why>' line (what the page says still holds)
@@ -93,8 +94,15 @@ if (-not $AllowPackages) {
 Scan '\.cs$' '\[\s*DllImport' 'use [LibraryImport] instead of [DllImport] (Native AOT)'
 Scan '\.cs$' '\[\s*ComImport' 'use [GeneratedComInterface] instead of [ComImport] (Native AOT)'
 Scan '\.xaml$' '\{\s*Binding' 'use x:Bind instead of {Binding} (Native AOT)'
-# The website stays plain and private: no scripts, nothing loaded from other servers (links are fine).
-Scan '^site/.*\.html?$' '<\s*(script|iframe|embed|object)\b' 'no scripts or embedded pages on the website'
+# The website stays plain and private: nothing loaded from other servers (links are fine), no embedded pages, and
+# scripts only from its own .js files (no inline code). Those may contact one address: GitHub's API for this
+# repository's releases (owner, 2026-11-16: the download section follows the latest release); the page's
+# Content-Security-Policy says the same. This is the website only; the app's network rules are in CLAUDE.md.
+Scan '^site/.*\.html?$' '<\s*(iframe|embed|object)\b' 'no embedded pages on the website'
+Scan '^site/.*\.html?$' '<\s*script\b(?![^>]*\bsrc\s*=\s*"[a-z0-9-]+\.js")' 'website scripts only from its own .js files, no inline code'
+Scan '^site/.*\.html?$' '\bon[a-z]+\s*=\s*["'']' 'no inline event handlers on the website'
+Scan '^site/.*\.js$' '(https?:)?//(?!api\.github\.com/repos/|github\.com/|www\.virustotal\.com/gui/file/)[a-z0-9.-]+\.[a-z]' 'website scripts contact only api.github.com (links: github.com, VirusTotal reports)'
+Scan '^site/.*\.js$' '\b(XMLHttpRequest|WebSocket|EventSource|sendBeacon|importScripts|eval)\s*\(|new\s+(XMLHttpRequest|WebSocket|EventSource|Function)\b|\.innerHTML\b|document\.write' 'website scripts: fetch only, no eval or innerHTML'
 Scan '^site/.*\.html?$' '<\s*(img|link|source|video|audio|track|image|use)\b[^>]*\b(src|href|srcset)\s*=\s*["'']?\s*(https?:)?//' 'the website loads nothing from other servers'
 Scan '^site/.*\.(html?|css)$' '(@import|url\(\s*["'']?\s*(https?:)?//)' 'the website loads nothing from other servers'
 

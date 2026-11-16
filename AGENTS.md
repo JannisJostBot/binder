@@ -67,15 +67,21 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
 | `src/Binder/Services/` | Launching, storage, Windows integration |
 | `src/Binder/Views/` | The UI (XAML + code-behind); `Format.cs` has the text formatting |
 | `tests/Binder.Tests/Tests.cs` | All unit tests: one console program, `Check(condition, "description")` per check |
-| `site/` | The website: `index.html`, `docs.html`, `styles.css`, `logo.svg` (see "The website" below) |
+| `site/` | The website: `index.html`, `docs.html`, `styles.css`, `logo.svg`, `release.js`, `clock.js`, `chips.js` (see "The website" below) |
 
 ## The website (`site/`)
 
 The project's website: `site/index.html` (the home page), `site/docs.html` (the documentation: what Binder
-changes on the PC), `site/styles.css` and `site/logo.svg`. `.github/workflows/pages.yml` publishes it to GitHub
+changes on the PC), `site/styles.css`, `site/logo.svg` and its scripts (`release.js`, `clock.js`, `chips.js`). `.github/workflows/pages.yml` publishes it to GitHub
 Pages whenever a change to `site/` reaches `main`, so what's merged is live within minutes.
 
-- Plain HTML and CSS only. No JavaScript, no frameworks, no build step.
+- Plain HTML and CSS, no frameworks, no build step. Three small scripts: `site/clock.js` sets the product shot's
+  taskbar clock and greeting from the visitor's time, `site/chips.js` measures the launcher chips so hovering them
+  gathers them into the logo (both without network), and `site/release.js` asks GitHub's API
+  (`api.github.com`, this repository's latest release) for the download link, the version line and the VirusTotal
+  box, which `index.html` also holds as fallback values. That fetch, for things directly about Binder's releases,
+  is the only one allowed (owner, 2026-11-16); it applies to the website only, not to the app. No inline scripts
+  or event handlers, no `innerHTML`; `index.html`'s Content-Security-Policy allows only that address.
 - Nothing loaded from other servers: no web fonts, CDNs, analytics, embeds or tracking pixels. The page promises
   privacy, so it must keep it. Links to other sites (`<a href="https://…">`) are fine. `check.ps1` enforces this.
 - Colours only through the variables at the top of `styles.css` (`var(--text)`, `var(--accent)`, …), which
@@ -86,7 +92,7 @@ Pages whenever a change to `site/` reaches `main`, so what's merged is live with
   `.tile`, `.stat`, `.faq-item`, `.note`) instead of new styles; no inline `style="…"` except a `--c`/`--h`
   value on a picture's parts.
 - The look: Windows-native type and colours, plus Binder's own touches: pill buttons, the bloom in the logo's
-  blues, the logo's fanned cover stack (hero, download panel), launcher chips like the app's filter chips, the
+  blues, the logo's fanned cover stack (download panel), a quiet wallpaper behind the hero's product shot, launcher chips like the app's filter chips, the
   deep blue privacy and download panels. Keep them; no small labels above headings, and don't add stock illustrations, emoji or other fonts.
 - "What happens when you play a game" is a scroll story in pure CSS (scroll-driven animations on `.how-scroll`,
   keyframes `how-*`): the three steps stay pinned and the picture changes as the page scrolls. Without support or
@@ -96,6 +102,9 @@ Pages whenever a change to `site/` reaches `main`, so what's merged is live with
 - The text is factual and plain: only what the app really does, numbers only from the card, no marketing words
   ("amazing", "seamless", "blazing fast"). Placeholders in square brackets (`[DOWNLOAD LINK]`) stay until a card
   gives the real value.
+  The product shot's shelf shows made-up games (Starfall Drift, Ember Keep, …) with covers drawn in CSS
+  (`.mock-grid .g1`–`.g12`), and the step and crash pictures use the same names; they stay made up: never a
+  real game's name or look.
 - Keep the "Before you download" section (the AI disclaimer and "Not affiliated") as it is.
 - `docs.html` is long text, so its parts are `docs-*` / `doc-*` classes in `styles.css`, not inline styles. Every
   sentence must be true of the code. Each Game mode item is one `doc-item` card with `data-item`, `data-default`
