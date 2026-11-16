@@ -79,22 +79,10 @@ internal static class DevPanel
         Add("Back to normal · 3 of 5, two failed (card)", () => app.DevRestored(new RestoreResult(3, 5, ["Print Spooler", "Spotify"])));
         Add("Restart pill after a crash", app.DevRestartPill);
 
-        // Test branch (ToastMelt): the same toasts with the melt; the buttons above stay today's toast.
-        Group("Melt (test branch)");
-        var slow = new CheckBox { Content = "Quarter speed" };
+        Add("Back to normal · 2 changes", () => app.DevRestored(new RestoreResult(2, 2, [])));
+        var slow = new CheckBox { Content = "Quarter speed (the melt in the toasts above)", IsChecked = app.DevSlowToasts };
+        slow.Click += (_, _) => app.DevSlowToasts = slow.IsChecked == true;
         list.Children.Add(slow);
-        void Melt(string label, Views.MeltMode mode, bool applied, int changes) => Add(label, () =>
-            app.DevMelt(mode, slow.IsChecked == true, () =>
-            {
-                if (applied) app.DevApplied(new RestoreResult(changes, changes, []));
-                else app.DevRestored(new RestoreResult(changes, changes, []));
-            }));
-        Melt("On · 5 changes · Win2D", Views.MeltMode.Win2D, applied: true, 5);
-        Melt("On · 5 changes · outline", Views.MeltMode.Outline, applied: true, 5);
-        Melt("On · 2 changes · Win2D", Views.MeltMode.Win2D, applied: true, 2);
-        Melt("Back to normal · 5 changes · Win2D", Views.MeltMode.Win2D, applied: false, 5);
-        Melt("Back to normal · 5 changes · outline", Views.MeltMode.Outline, applied: false, 5);
-        Melt("Back to normal · 2 changes · Win2D", Views.MeltMode.Win2D, applied: false, 2);
 
         Group("Crash card (opens the panel)");
         Crash("Graphics driver (NVIDIA), driver reset", g => Record(g, GameEnding.Crashed, CrashCulprit.NvidiaDriver, 0xC0000005, "nvwgf2umx.dll", driverReset: true));

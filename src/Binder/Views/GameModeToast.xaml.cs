@@ -37,9 +37,9 @@ public sealed partial class GameModeToast : Window
     private readonly RestartViewModel? _restart;
     private Storyboard? _restartBar;
 
-    // Test branch (ToastMelt): the changes fall onto the pill and melt in, the count rolling up as each lands.
+    // The changes fall onto the pill and melt in (ToastMelt), the count rolling up as each lands.
     private const double MeltRoom = 136; // room above the pill for the drops (and, going back, their rings)
-    private readonly MeltMode _melt;
+    private readonly bool _melt;
     private readonly float _slow = 1;
     private readonly int _meltCount;
     private readonly bool _applied;
@@ -119,7 +119,8 @@ public sealed partial class GameModeToast : Window
         _timer.Start();
     }
 
-    public GameModeToast(Kind kind, RestoreResult result, MeltMode melt = MeltMode.Off, float slow = 1)
+    /// <summary>Game mode on, or back to normal; <paramref name="slow"/> stretches the melt (the debug panel's slow motion).</summary>
+    public GameModeToast(Kind kind, RestoreResult result, float slow = 1)
     {
         InitializeComponent();
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -140,9 +141,10 @@ public sealed partial class GameModeToast : Window
             var (longTitle, longDetail) = GameModeText.Toast(result, applied);
             AutomationProperties.SetName(LineText, Strings.Format(Strings.Sentences, longTitle, longDetail));
             _applied = applied;
-            if (melt != MeltMode.Off && result.Restored > 0 && !_highContrast && new Windows.UI.ViewManagement.UISettings().AnimationsEnabled)
+            // The melt needs something to melt in, animations on and no high contrast; otherwise the plain pill.
+            if (result.Restored > 0 && !_highContrast && new Windows.UI.ViewManagement.UISettings().AnimationsEnabled)
             {
-                _melt = melt;
+                _melt = true;
                 _slow = slow;
                 _meltCount = result.Restored;
                 LineText.Visibility = Visibility.Collapsed;
@@ -168,7 +170,7 @@ public sealed partial class GameModeToast : Window
                 DotFill.Stroke = (Brush)resources["ControlStrokeColorDefaultBrush"];
                 Mark.Stroke = (Brush)resources["SystemFillColorSuccessBrush"];
             }
-            _announce = _melt != MeltMode.Off ? MeltLine : LineText;
+            _announce = _melt ? MeltLine : LineText;
         }
         else
         {
@@ -242,7 +244,7 @@ public sealed partial class GameModeToast : Window
         int top = bottom - height;
         NativeWindow.SetBounds(_hwnd, new PixelRect(left, top, left + width, top + height));
 
-        if (_melt != MeltMode.Off)
+        if (_melt)
         {
             PlayMelt();
             return;
@@ -297,7 +299,7 @@ public sealed partial class GameModeToast : Window
         visual.StartAnimation("Scale", pop);
     }
 
-    // ---- Test branch: the changes melt in (ToastMelt, canvas board 33) --------------------------------------
+    // ---- The changes melt in (ToastMelt, canvas board 33) ---------------------------------------------------
 
     private static Visual VisualOf(UIElement element, bool translation = false)
     {
@@ -318,7 +320,7 @@ public sealed partial class GameModeToast : Window
     {
         MeltDetail.MinWidth = MeltDetail.ActualWidth; // keeps the final width while the count rolls up
         var glow = _applied ? ((SolidColorBrush)DotFill.Fill).Color : ((SolidColorBrush)Mark.Stroke).Color;
-        _melting = new ToastMelt(MeltHost, GlyphHost, _melt, back: !_applied, _slow, Math.Min(_meltCount, 5),
+        _melting = new ToastMelt(MeltHost, GlyphHost, back: !_applied, _slow, Math.Min(_meltCount, 5),
             new Vector2((float)Surface.ActualWidth, (float)Surface.ActualHeight),
             ((SolidColorBrush)Surface.Background).Color, ((SolidColorBrush)Surface.BorderBrush).Color, glow,
             (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]);

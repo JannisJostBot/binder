@@ -31,6 +31,13 @@ copies them there.
    License: BSD-style license. Copyright (C) Microsoft Corporation.
    Files: licenses\WebView2-LICENSE.txt, licenses\WebView2-NOTICE.txt
 
+4. Win2D (Microsoft.Graphics.Win2D)
+   Used in: the widget (Binder.exe) and Microsoft.Graphics.Canvas.dll next to it, for the Game mode toast's
+   animation.
+   License: MIT. Copyright (c) Microsoft Corporation.
+   Files: licenses\Win2D-LICENSE.txt
+   Source: https://github.com/microsoft/Win2D
+
 Not included: Windows' own system DLLs (they're part of Windows) and the launchers' icons, which Binder reads
 from the launchers installed on the PC while it runs.
 

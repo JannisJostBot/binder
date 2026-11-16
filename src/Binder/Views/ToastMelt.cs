@@ -11,20 +11,11 @@ using Windows.UI;
 
 namespace Binder.Views;
 
-/// <summary>How the Game mode pill's changes melt in (test branch: <c>--melt outline|win2d</c>).</summary>
-public enum MeltMode { Off, Outline, Win2D }
-
 /// <summary>
-/// TEST BRANCH ONLY (canvas board 33, "Melt in", the board's default tweaks). Each change falls onto the pill as a
-/// drop of the pill's own surface and melts into it; a faint light spreads inside from where it entered.
-/// Two ways to draw the merge, to compare on a real PC:
-/// <list type="bullet">
-/// <item><see cref="MeltMode.Win2D"/>: the board's look exactly. The pill and the drops are blurred together and
-/// cut at two alpha levels (edge, then fill): a blur and color-matrix effect from Win2D on a visual surface.</item>
-/// <item><see cref="MeltMode.Outline"/>: no package. The pill, the drops and a bump that rises to meet each drop
-/// are plain composition shapes; all their 2 px strokes are drawn first and all their fills over them, so the
-/// shapes join into one outline with a 1 px edge. The join has small corners where the board's is smooth.</item>
-/// </list>
+/// The Game mode pill's changes melting in (canvas board 33, "Melt in", the board's default tweaks). Each change
+/// falls onto the pill as a drop of the pill's own surface and melts into it; a faint light spreads inside from
+/// where it entered. The pill and the drops are blurred together and cut at two alpha levels (edge, then fill), a
+/// blur and color-matrix effect from Win2D on a visual surface, so drop and pill flow into one smooth outline.
 /// "Back to normal" plays the other way, in order: left to right on an even beat, each change swells gently out
 /// of the pill where it went in and floats back up to where it fell from; when all are back in their row they
 /// pop one after another, each leaving a thin ring that softens as it spreads.
@@ -48,7 +39,6 @@ internal sealed class ToastMelt
     private readonly Compositor _compositor;
     private readonly UIElement _host;
     private readonly Canvas _glyphHost;
-    private readonly MeltMode _mode;
     private readonly bool _back; // "Back to normal": the changes go back out
     private readonly float _k; // 1, or 4 for slow motion
     private readonly Vector2 _size;
@@ -80,13 +70,12 @@ internal sealed class ToastMelt
 
     private static readonly string[] Glyphs = ["", "", "", "", ""]; // quiet hours, power, pause, close, cloud
 
-    public ToastMelt(UIElement host, Canvas glyphHost, MeltMode mode, bool back, float slow, int drops, Vector2 pillSize,
+    public ToastMelt(UIElement host, Canvas glyphHost, bool back, float slow, int drops, Vector2 pillSize,
         Color fill, Color stroke, Color glow, Brush glyphBrush)
     {
         _host = host;
         _glyphHost = glyphHost;
         _compositor = ElementCompositionPreview.GetElementVisual(host).Compositor;
-        _mode = mode;
         _back = back;
         _k = slow;
         _size = pillSize;
@@ -170,33 +159,6 @@ internal sealed class ToastMelt
     private CompositionEasingFunction Ease(Vector4 b) =>
         _compositor.CreateCubicBezierEasingFunction(new Vector2(b.X, b.Y), new Vector2(b.Z, b.W));
 
-    /// <summary>A CSS-style cubic-bezier at progress x (for sampling the bump against the drop's fall).</summary>
-    private static float Bezier(Vector4 b, float x)
-    {
-        static float Axis(float p1, float p2, float t) => 3 * (1 - t) * (1 - t) * t * p1 + 3 * (1 - t) * t * t * p2 + t * t * t;
-        float lo = 0, hi = 1, mid = x;
-        for (int i = 0; i < 24; i++)
-        {
-            mid = (lo + hi) / 2;
-            if (Axis(b.X, b.Z, mid) < x) lo = mid; else hi = mid;
-        }
-        return Axis(b.Y, b.W, mid);
-    }
-
-    /// <summary>The drop's center height (y, 0 = the pill's top edge) at <paramref name="ms"/> on its own clock.</summary>
-    private float DropY(Drop d, float ms)
-    {
-        if (_back)
-        {
-            if (ms <= d.Start) return SinkDepth;
-            if (ms <= d.Free) return SinkDepth * (1 - Bezier(EmergeEase, (ms - d.Start) / EmergeMs));
-            return -FallHeight * Bezier(RiseEase, Math.Min(1, (ms - d.Free) / RiseMs));
-        }
-        if (ms <= d.Start) return -FallHeight;
-        if (ms <= d.Land) return -FallHeight * (1 - Bezier(Gravity, (ms - d.Start) / d.FallMs));
-        return SinkDepth * Bezier(SinkIn, Math.Min(1, (ms - d.Land) / MeltMs));
-    }
-
     private TimeSpan Ms(float ms) => TimeSpan.FromMilliseconds(Math.Max(1, ms * _k));
 
     // ---- Building and starting ----------------------------------------------------------------------------
@@ -207,7 +169,7 @@ internal sealed class ToastMelt
         _root = _compositor.CreateContainerVisual();
         ElementCompositionPreview.SetElementChildVisual(_host, _root);
 
-        if (_mode == MeltMode.Win2D) BuildWin2D(); else BuildOutline();
+        BuildWin2D();
         BuildGlows();
         BuildGlyphs();
         if (_back) BuildRings();
@@ -346,111 +308,6 @@ internal sealed class ToastMelt
         shapes.Offset = new Vector2(Pad, Top);
         visual.Shapes.Add(shapes);
         return (visual, shapes);
-    }
-
-    // ---- Outline: plain shapes, strokes under fills -------------------------------------------------------
-
-    private void BuildOutline()
-    {
-        var (visual, shapes) = Area();
-        var strokes = _compositor.CreateContainerShape();
-        var fills = _compositor.CreateContainerShape();
-        shapes.Shapes.Add(strokes);
-        shapes.Shapes.Add(fills);
-        var fill = _compositor.CreateColorBrush(_fill);
-        var stroke = _compositor.CreateColorBrush(_stroke);
-
-        // The pill: inset 1 px, so its 2 px stroke's outer half is the 1 px edge at the surface's bounds.
-        CompositionSpriteShape Pill(CompositionBrush? f, CompositionBrush? s)
-        {
-            var g = _compositor.CreateRoundedRectangleGeometry();
-            g.Offset = new Vector2(1);
-            g.Size = _size - new Vector2(2);
-            g.CornerRadius = new Vector2(_size.Y / 2 - 1);
-            var shape = _compositor.CreateSpriteShape(g);
-            shape.FillBrush = f;
-            if (s is not null) { shape.StrokeBrush = s; shape.StrokeThickness = 2; }
-            return shape;
-        }
-        strokes.Shapes.Add(Pill(null, stroke));
-        fills.Shapes.Add(Pill(fill, null));
-
-        foreach (var d in _drops)
-        {
-            Bump(d, null, stroke, out var bumpEdge, out var waistEdge);
-            strokes.Shapes.Add(bumpEdge);
-            strokes.Shapes.Add(waistEdge);
-            strokes.Shapes.Add(DropShape(d, Radius - 1, null, stroke));
-            Bump(d, fill, null, out var bumpFill, out var waistFill);
-            fills.Shapes.Add(bumpFill);
-            fills.Shapes.Add(waistFill);
-            fills.Shapes.Add(DropShape(d, Radius - 1, fill, null));
-        }
-        _root!.Children.InsertAtTop(visual);
-    }
-
-    /// <summary>
-    /// The pill reaching up to meet a drop: a bump (an ellipse centered on the top edge) that grows as the drop
-    /// nears and settles as it sinks in, and a small waist where the two meet, which softens the corners there.
-    /// Both are sampled every frame against the drop's own fall, so they stay in step with it.
-    /// </summary>
-    private void Bump(Drop d, CompositionBrush? fill, CompositionBrush? stroke,
-        out CompositionSpriteShape bumpShape, out CompositionSpriteShape waistShape)
-    {
-        float reach = 4 + 8 * Stickiness; // how far above the edge the pill starts reaching for a drop
-        var bump = _compositor.CreateEllipseGeometry();
-        var waist = _compositor.CreateEllipseGeometry();
-        bump.Center = new Vector2(d.X, 1);
-        waist.Center = new Vector2(d.X, 0);
-        bump.Radius = Vector2.Zero;
-        waist.Radius = Vector2.Zero;
-
-        float from = _back ? d.Start : d.Start + d.FallMs * 0.5f;
-        float to = _back ? d.Free + RiseMs * 0.6f : d.Land + MeltMs;
-        var bumpRadius = _compositor.CreateVector2KeyFrameAnimation();
-        var waistRadius = _compositor.CreateVector2KeyFrameAnimation();
-        var waistCenter = _compositor.CreateVector2KeyFrameAnimation();
-        const float step = 1000f / 60;
-        for (float ms = from; ; ms = Math.Min(to, ms + step))
-        {
-            float p = (ms - from) / (to - from);
-            float y = DropY(d, ms);
-            float gap = -(y + Radius); // drop bottom above the edge (negative once it overlaps)
-            float ry;
-            if (_back && ms <= d.Free) ry = reach * Bezier(EmergeEase, (ms - d.Start) / EmergeMs); // the pill pushes it out
-            else if (_back || ms <= d.Land) ry = gap >= reach ? 0 : reach - Math.Max(gap, 0); // holds on, then lets go
-            else ry = reach * (1 - Bezier(SinkIn, Math.Min(1, (ms - d.Land) / MeltMs)));
-            float rx = ry > 0 ? Radius * 0.7f + ry * 1.1f : 0;
-            bumpRadius.InsertKeyFrame(p, new Vector2(rx, ry));
-
-            // Joined when the bump's top reaches the drop's bottom.
-            float overlap = (ry - 1) - gap;
-            bool joined = ry > 0 && overlap > 0 && (_back ? ms >= d.Free - EmergeMs * 0.4f : ms <= d.Land + MeltMs * 0.6f);
-            float wry = joined ? Math.Min(6, 2 + overlap / 2) : 0;
-            float wrx = joined ? Radius * 0.85f : 0;
-            waistRadius.InsertKeyFrame(p, new Vector2(wrx, wry));
-            waistCenter.InsertKeyFrame(p, new Vector2(d.X, joined ? (-gap + (1 - ry)) / 2 : 0));
-            if (ms >= to) break;
-        }
-        foreach (var a in new[] { bumpRadius, waistRadius, waistCenter })
-        {
-            a.Duration = Ms(to - from);
-            a.DelayTime = Ms(from);
-        }
-        _start.Add(() =>
-        {
-            bump.StartAnimation("Radius", bumpRadius);
-            waist.StartAnimation("Radius", waistRadius);
-            waist.StartAnimation("Center", waistCenter);
-        });
-
-        bumpShape = _compositor.CreateSpriteShape(bump);
-        waistShape = _compositor.CreateSpriteShape(waist);
-        foreach (var s in new[] { bumpShape, waistShape })
-        {
-            s.FillBrush = fill;
-            if (stroke is not null) { s.StrokeBrush = stroke; s.StrokeThickness = 2; }
-        }
     }
 
     // ---- Win2D: blur and two alpha cuts --------------------------------------------------------------------

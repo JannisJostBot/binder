@@ -112,6 +112,10 @@ foreach ($library in $assets.libraries.PSObject.Properties | Where-Object { $_.N
     if (Test-Path -LiteralPath $notice) { Add-License $notice "$short-NOTICE.txt" }
 }
 if ($sdkLicenses.Count -eq 0) { throw 'The Windows App SDK license was not found in its packages' }
+# Win2D (the Game mode toast's melt): its package carries no license file, so the MIT text from its repository is
+# kept in licenses\ here.
+if (-not (Get-ChildItem $app -File -Filter 'Microsoft.Graphics.Canvas.dll')) { throw 'Win2D (Microsoft.Graphics.Canvas.dll) is missing from the app' }
+Add-License (Join-Path $repo 'licenses/Win2D-LICENSE.txt') 'Win2D-LICENSE.txt'
 # WebView2, only when its DLLs came along into the app folder.
 if (Get-ChildItem $app -Recurse -File -Filter 'Microsoft.Web.WebView2*.dll') {
     $webView = $assets.libraries.PSObject.Properties | Where-Object { $_.Name -like 'Microsoft.Web.WebView2/*' } | Select-Object -First 1

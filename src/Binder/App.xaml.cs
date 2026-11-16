@@ -160,7 +160,6 @@ public sealed partial class App : Application
         var notice = StartupNotice.Parse(args);
         bool background = args.Contains("--background");
         var restored = StartupNotice.Restored(args);
-        _melt = MeltArgs(args);
 
         if (notice is null && restored is not null)
         {
@@ -214,20 +213,8 @@ public sealed partial class App : Application
 
     private Views.GameModeToast? _gameModeToast;
 
-    /// <summary>
-    /// Test branch: how the toast's changes melt in, from "--melt outline" or "--melt win2d" next to "--applied" or
-    /// "--restored" (and "--melt-slow" for a quarter of the speed). Without it the toast is today's.
-    /// </summary>
-    private (Views.MeltMode Mode, float Slow) _melt;
-
-    private static (Views.MeltMode, float) MeltArgs(string[] args)
-    {
-        int i = Array.IndexOf(args, "--melt");
-        var mode = i >= 0 && i + 1 < args.Length
-            ? args[i + 1] switch { "win2d" => Views.MeltMode.Win2D, "outline" => Views.MeltMode.Outline, _ => Views.MeltMode.Off }
-            : Views.MeltMode.Off;
-        return (mode, args.Contains("--melt-slow") ? 4 : 1);
-    }
+    /// <summary>The debug panel's slow motion for the toast; only Debug builds have a body for it (App.Dev.cs).</summary>
+    partial void DevToastSpeed(ref float slow);
 
     /// <summary>Game mode's "Restored" toast (board 4), and the Game mode page's last result if it's open.</summary>
     private void ShowRestored(string encoded, bool exitWhenClosed)
@@ -271,7 +258,9 @@ public sealed partial class App : Application
     private void ShowGameModeToast(Views.GameModeToast.Kind kind, Shared.RestoreResult result, bool exitWhenClosed = false)
     {
         _gameModeToast?.Close();
-        var toast = new Views.GameModeToast(kind, result, _melt.Mode, _melt.Slow);
+        float slow = 1;
+        DevToastSpeed(ref slow);
+        var toast = new Views.GameModeToast(kind, result, slow);
         toast.Closed += (_, _) =>
         {
             if (ReferenceEquals(_gameModeToast, toast)) _gameModeToast = null;

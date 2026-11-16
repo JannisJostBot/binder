@@ -143,7 +143,7 @@ dotted names, or stream syntax; at most 8 levels and 2000 files) that includes t
 it extracts only the files that list names.
 
 The app folder includes `licenses\`: Binder's license (GPL 3.0 and its additional permission),
-`THIRD-PARTY-NOTICES.txt`, and the license and notice files of the .NET runtime, the Windows App SDK and WebView2,
+`THIRD-PARTY-NOTICES.txt`, and the license and notice files of the .NET runtime, the Windows App SDK, Win2D and WebView2,
 copied from the exact package versions the build used. `publish.ps1` stops if one is missing.
 
 ### Install and update steps (`Installer.cs`)
