@@ -52,6 +52,18 @@ public sealed partial class ImportView : UserControl
         ListCard.Margin = new Thickness(0);
     }
 
+    /// <summary>The rows showing these shortcuts, in list order (setup's merge animation).</summary>
+    public IReadOnlyList<FrameworkElement> RowsFor(IReadOnlyList<ShortcutFile> shortcuts)
+    {
+        var wanted = new HashSet<ShortcutFile>(shortcuts, ReferenceEqualityComparer.Instance);
+        var found = new List<FrameworkElement>();
+        for (int i = 0; i < _rows.Count && i < RowsList.Children.Count; i++)
+            if (wanted.Contains(_rows[i].Shortcut) && RowsList.Children[i] is FrameworkElement row) found.Add(row);
+        return found;
+    }
+    /// <summary>The card the rows scroll in: what's outside it isn't in view.</summary>
+    public FrameworkElement ListArea => ListCard;
+
     public IReadOnlyList<ShortcutFile> Selected => _rows.Where(r => r.Selected).Select(r => r.Shortcut).ToList();
 
     public void Show(IReadOnlyList<ShortcutFile> shortcuts, IReadOnlyList<Game> library)

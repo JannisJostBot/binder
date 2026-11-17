@@ -142,5 +142,8 @@
                         Command="{x:Bind ViewModel.DoneCommand}" AutomationProperties.Name="{x:Bind s:Strings.Done}" />
             </Grid>
         </Grid>
+
+        <!-- Step 2's moved shortcuts fly into Binder's logo here (LogoMerge); empty otherwise. -->
+        <Canvas x:Name="MergeLayer" IsHitTestVisible="False" AutomationProperties.AccessibilityView="Raw" />
     </Grid>
 </UserControl>
