@@ -37,6 +37,7 @@ break the user's system.
 | 24 Lean speed-ups | §23 | To do |
 | 25 Weekly chart details | §24 | Proposed (2026-11-12), waiting for the owner's go; two choices open (§24 "To decide") |
 | 26 Updates from GitHub | §25 | **In progress** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; the keys (both YubiKeys' since 2026-11-15, made on the keys with PIN and touch always) and the repository set at build time since 2026-11-15: `build/OfficialRelease.props` for `publish.ps1 -Official` (release.yml), `build/Updates.targets` checks them and generates `Services.UpdateKeys`; other builds and forks without their own keys never check (About says so); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier on Linux with software keys, not yet with a YubiKey or a real draft; notes format in `docs/releases/README.md`. Default decided: Ask before installing (2026-11-14).<br>Built (2026-11-14), not yet tried on the real PC: `.github/workflows/release.yml` (v* tags only, actions pinned, a draft with the setup and its attestation; never run yet); `Services/Updater` (check with redirects only through `IsAllowedAddress`, 15 s, a client per check, no cookies; manifest kept in `%LOCALAPPDATA%\Binder\updates\` and verified again when read; the download hashed while it streams; the setup hashed again through a handle held with read sharing only and started with `/S /update`; waits for a watcher or a Game mode journal); `App.Updates` (check after a panel's first frame at most once a day, download at once with "Install automatically" or urgent, closing the panel cancels it, install when the flyout closes or at a `--background` start, the in-panel toast "Updated to …" with What's new after `--updated`, "couldn't be installed" when `--updated` comes back on the old version); Settings › About (version card with Check for updates / Update / Restart now, progress bar, What's new with Skip this version, the Updates combo); the "…" dot and first item, the tray item; three settings fields plus the mode; 37 strings in EN/DE/FR; view model tests. The pill is the panel's toast, not board 23's separate pill window. Not built: the Authenticode same-publisher check (Binder is unsigned today).<br>Next: Windows has to see the YubiKeys' certificates for `sign-release.ps1` (the inbox PIV driver says "Missing stored keyset"; next try Yubico's minidriver); then a dry run of `release.yml` + `sign-release.ps1 -DryRun`. Built 2026-11-15: the setup's `/update` (the widget comes back with `--updated --background` after a success, a failure or a busy setup) and the all-or-nothing swap (§25 "To decide" 3, owner: yes; `FileSwap`, unit-tested on real files); not yet run through `setup-test.ps1` in CI |
+| 27 Native ARM64 build | §26 | Proposed (2026-11-17), waiting for the owner's go; choices open (§26 "To decide") |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
 
 The build order is at the end of this file. The ideas under "Not decided" at the bottom must **not** be built.
@@ -2058,6 +2059,64 @@ download's size and hash checks against a local file.
    are YubiKey 5 series (`ykman info`), and their firmware version.
 3. ~~Write and verify every file before swapping any~~: decided 2026-11-15, **yes** (`Binder.Setup/FileSwap.cs`): all
    files are written and checked first, then swapped in; a failed swap puts back what was already swapped.
+
+## 26. Native ARM64 build (milestone 27, proposed 2026-11-17, no board)
+
+Binder ships for x64 only. Windows 11 on Arm runs it through emulation (Prism), so it works there today, but every
+start pays for the translation and the emulated watcher sits in memory while a game runs. A native `win-arm64`
+build removes that. **Proposed, not approved yet:** build only after the owner's go; it changes "Windows 10/11 x64"
+in `CLAUDE.md`.
+
+### What carries over unchanged (checked 2026-11-17)
+
+- WinUI (`Microsoft.WindowsAppSDK.WinUI`), Native AOT and .NET 10 all support `win-arm64`; no new package.
+- No code depends on x64: the `WOW6432Node` registry paths are the same on Arm64; the helper's VARIANT is 24 bytes
+  on every 64-bit Windows; XInput, power plans, QoS, WMI and the scheduled tasks exist on Windows on Arm.
+- The watcher matches games by their exe's path, so it follows emulated x64 games as well as native ones.
+
+### Build
+
+- The three `.csproj` files take the runtime from the build instead of fixing `win-x64`; `publish.ps1` gets
+  `-Runtime win-x64|win-arm64` and builds into `publish\<runtime>\`.
+- Cross-compiled on GitHub's x64 Windows runners (Native AOT for Arm64 with MSVC's Arm64 tools; nothing runs).
+- Tests: the unit tests are architecture-free. The smoke and setup tests need an Arm64 machine: GitHub's
+  `windows-11-arm` runners (free for public repositories) or the owner's own Arm PC. An Arm64 build isn't released
+  until both have passed on Arm64 at least once.
+
+### Two setups, not one
+
+- `BinderSetup-<version>.exe` (x64, as now) and `BinderSetup-arm64-<version>.exe`. One setup carrying both apps would
+  double every download and update (~35 → ~70 MB) for everyone; the brief prefers the lighter way.
+- An x64 setup started on an Arm64 PC (Windows 11 runs it) installs the x64 app as now; switching is a new install
+  from the Arm64 setup, which replaces the files in place (same folder, same data).
+
+### Updates (§25)
+
+- The signed manifest gains an optional `setupArm64` object (`size`, `sha256`), checked like `setup`. The parser
+  already ignores unknown fields, so installed x64 copies keep working unchanged.
+- An Arm64 copy (`RuntimeInformation.ProcessArchitecture`) reads `setupArm64`, builds its address from the version
+  alone (`BinderSetup-arm64-<version>.exe`) and refuses a manifest without it ("no update for this PC yet"), never
+  falling back to the x64 setup.
+- `release.yml` builds both, attests both; `sign-release.ps1` checks both attestations and writes both entries.
+  `UpdateManifest` unit tests for: missing entry on Arm64, a bad entry, x64 ignoring it.
+
+### Website
+
+- The script-free part of the page can't tell the processor (browsers on Windows on Arm usually report x64), so it
+  offers both: the main button "Download for Windows" (x64), under it a plain link "Download for Arm-based PCs".
+- The line under them: "Most PCs need the first one. To check: Settings › System › About › System type says
+  'x64-based processor' or 'ARM-based processor'." (Windows' own words.)
+- `release.js` fills both links and sizes from the release's assets, as it does for the one setup now.
+
+### Cost
+
+- No change for x64 users. Release builds take about twice as long; two files to sign per release.
+
+### To decide (owner)
+
+1. Go or no go, and whether the first Arm64 release waits for a `windows-11-arm` CI run (public repository) or a
+   test on an Arm PC.
+2. Windows 10 on Arm (end of support October 2025): proposed not to support it; it can't run the x64 setup either.
 
 ## Build order (after milestone 7)
 

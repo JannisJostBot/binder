@@ -68,17 +68,19 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
 | `src/Binder/Services/` | Launching, storage, Windows integration |
 | `src/Binder/Views/` | The UI (XAML + code-behind); `Format.cs` has the text formatting |
 | `tests/Binder.Tests/Tests.cs` | All unit tests: one console program, `Check(condition, "description")` per check |
-| `site/` | The website: `index.html`, `docs.html`, `styles.css`, `logo.svg`, `release.js`, `clock.js`, `chips.js` (see "The website" below) |
+| `site/` | The website: `index.html`, `docs.html`, `styles.css`, `logo.svg`, `release.js`, `clock.js`, `chips.js`, `game.js` (see "The website" below) |
 
 ## The website (`site/`)
 
 The project's website: `site/index.html` (the home page), `site/docs.html` (the documentation: what Binder
-changes on the PC), `site/styles.css`, `site/logo.svg` and its scripts (`release.js`, `clock.js`, `chips.js`). `.github/workflows/pages.yml` publishes it to GitHub
+changes on the PC), `site/styles.css`, `site/logo.svg` and its scripts (`release.js`, `clock.js`, `chips.js`, `game.js`). `.github/workflows/pages.yml` publishes it to GitHub
 Pages whenever a change to `site/` reaches `main`, so what's merged is live within minutes.
 
-- Plain HTML and CSS, no frameworks, no build step. Three small scripts: `site/clock.js` sets the product shot's
+- Plain HTML and CSS, no frameworks, no build step. Four small scripts: `site/clock.js` sets the product shot's
   taskbar clock and greeting from the visitor's time, `site/chips.js` measures the launcher chips so hovering them
-  gathers them into the logo (both without network), and `site/release.js` asks GitHub's API
+  gathers them into the logo, `site/game.js` is the hidden game behind the product shot's Play button (the launch
+  toast, 20 seconds of catching the made-up games' covers, then "Welcome back" with the score; nothing runs until
+  Play is pressed; reduced motion: covers appear in place) (all three without network), and `site/release.js` asks GitHub's API
   (`api.github.com`, this repository's latest release) for the download link, the version line and the VirusTotal
   box, which `index.html` also holds as fallback values. That fetch, for things directly about Binder's releases,
   is the only one allowed (owner, 2026-11-16); it applies to the website only, not to the app. No inline scripts

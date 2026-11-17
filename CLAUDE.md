@@ -113,7 +113,8 @@ scripts/                  publish.ps1 (builds publish\app: widget folder + AOT w
 site/                     the website: HTML + CSS, nothing loaded from other servers; release.js asks GitHub's API
                           for the latest release (download link, version, VirusTotal box; the website only: the app's
                           network rules below don't change), clock.js sets the product shot's clock, chips.js merges the
-                          launcher chips into the logo on hover; index.html,
+                          launcher chips into the logo on hover, game.js is the hidden game behind the product shot's
+                          Play (catch the covers, then "Welcome back"); index.html,
                           docs.html (what Binder changes on the PC: every Game mode item, autostart, updates, …)
 licenses/                 license texts kept here because a package carries none (Win2D); publish.ps1 copies them
 docs/proposals.md         approved feature specs, progress table (§0), decisions log, "Not decided"

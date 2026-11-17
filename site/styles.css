@@ -414,7 +414,7 @@ summary::-webkit-details-marker { display: none; }
 .mock-continue-text { flex-grow: 1; display: flex; flex-direction: column; }
 .mock-continue-text span { font-size: 10px; color: #C8C8D0; }
 .mock-continue-text strong { font-size: 15px; font-weight: 600; }
-.mock-play { height: 26px; display: flex; align-items: center; padding: 0 12px; border-radius: 4px; background: #4CC2FF; color: #0A1A24; font-size: 11px; font-weight: 600; }
+.mock-play { height: 26px; display: flex; align-items: center; padding: 0 12px; border-radius: 4px; background: #4CC2FF; color: #0A1A24; font-size: 11px; font-weight: 600; font-family: inherit; border: 0; margin: 0; flex-shrink: 0; cursor: pointer; }
 .mock-chips { display: flex; gap: 6px; font-size: 11px; }
 .mock-chips span { padding: 3px 10px; border-radius: 12px; border: 1px solid #3C3C43; color: #E4E4E8; white-space: nowrap; }
 .mock-chips span.on { background: #4CC2FF; border-color: #4CC2FF; color: #0A1A24; font-weight: 600; }
@@ -423,7 +423,7 @@ summary::-webkit-details-marker { display: none; }
 .mock-grid span::before { content: ""; position: absolute; z-index: 1; left: 4px; top: 4px; width: 12px; height: 12px; border-radius: 4px; background: rgba(0, 0, 0, 0.55); }
 .mock-grid span.focus { box-shadow: 0 0 0 2px #4CC2FF; overflow: visible; }
 /* The made-up games' covers: a title over a little picture drawn with gradients. */
-.mock-grid b {
+.mock-grid b, .mock-fly b {
   position: absolute;
   left: 0;
   right: 0;
@@ -440,7 +440,7 @@ summary::-webkit-details-marker { display: none; }
   color: #FFFFFF;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
-.mock-grid .g1 { /* Starfall Drift: a ringed planet among stars */
+.mock-grid .g1, .mock-fly.g1 { /* Starfall Drift: a ringed planet among stars */
   background:
     radial-gradient(circle at 62% 38%, #F2C78C 0, #C9773F 9px, #8A3F25 13px, rgba(138, 63, 37, 0) 14px),
     radial-gradient(34px 7px at 62% 40%, rgba(242, 199, 140, 0) 60%, rgba(242, 199, 140, 0.6) 64%, rgba(242, 199, 140, 0) 72%),
@@ -448,7 +448,7 @@ summary::-webkit-details-marker { display: none; }
     radial-gradient(1.5px 1.5px at 82% 14%, #FFFFFF 99%, transparent), radial-gradient(1px 1px at 76% 66%, #DCE6FF 99%, transparent),
     linear-gradient(180deg, #0B1030, #2A1B4F);
 }
-.mock-grid .g2 { /* Ember Keep: a keep on a hill at sunset */
+.mock-grid .g2, .mock-fly.g2 { /* Ember Keep: a keep on a hill at sunset */
   background:
     linear-gradient(#2A1410, #2A1410) 50% 58% / 26% 26% no-repeat,
     linear-gradient(#2A1410, #2A1410) 33% 50% / 9% 26% no-repeat,
@@ -457,13 +457,13 @@ summary::-webkit-details-marker { display: none; }
     radial-gradient(circle at 50% 46%, #FFE1A0 0, #FFB25C 18px, rgba(255, 178, 92, 0) 30px),
     linear-gradient(180deg, #F59E4B, #B8402A);
 }
-.mock-grid .g3 { /* Tidebreak: a wave breaking */
+.mock-grid .g3, .mock-fly.g3 { /* Tidebreak: a wave breaking */
   background:
     radial-gradient(70% 22% at 35% 62%, #E8F7FF 0 40%, rgba(232, 247, 255, 0) 42%),
     radial-gradient(90% 30% at 70% 66%, #2B86C5 0 55%, rgba(43, 134, 197, 0) 57%),
     linear-gradient(180deg, #8FD6F2 0 48%, #2B86C5 48% 68%, #13507F 68%);
 }
-.mock-grid .g4 { /* Neon Circuit: a road into a striped sun */
+.mock-grid .g4, .mock-fly.g4 { /* Neon Circuit: a road into a striped sun */
   background:
     repeating-linear-gradient(90deg, rgba(255, 110, 210, 0.55) 0 1px, rgba(0, 0, 0, 0) 1px 9px) 0 100% / 100% 42% no-repeat,
     repeating-linear-gradient(180deg, rgba(255, 110, 210, 0.55) 0 1px, rgba(0, 0, 0, 0) 1px 7px) 0 100% / 100% 42% no-repeat,
@@ -471,14 +471,14 @@ summary::-webkit-details-marker { display: none; }
     radial-gradient(circle at 50% 58%, #FFD36E 0, #FF6FA8 20px, rgba(255, 111, 168, 0) 21px),
     linear-gradient(180deg, #1A0B3A, #5A1A6E 58%, #22073A 58%);
 }
-.mock-grid .g5 { /* Frostline: icy peaks */
+.mock-grid .g5, .mock-fly.g5 { /* Frostline: icy peaks */
   background:
     conic-gradient(from 135deg at 66% 40%, #E6F4FF 0 90deg, rgba(0, 0, 0, 0) 0) 0 0 / 100% 100% no-repeat,
     conic-gradient(from 140deg at 30% 30%, #FFFFFF 0 80deg, rgba(0, 0, 0, 0) 0),
     conic-gradient(from 135deg at 30% 30%, #9CC6E6 0 90deg, rgba(0, 0, 0, 0) 0),
     linear-gradient(180deg, #CDEBFA, #7FB3DD);
 }
-.mock-grid .g6 { /* Hollow Pines: a pine forest */
+.mock-grid .g6, .mock-fly.g6 { /* Hollow Pines: a pine forest */
   background:
     conic-gradient(from 155deg at 50% 0%, #163D22 0 50deg, rgba(0, 0, 0, 0) 0) 15% 100% / 34% 70% no-repeat,
     conic-gradient(from 155deg at 50% 0%, #1E4D2B 0 50deg, rgba(0, 0, 0, 0) 0) 85% 100% / 34% 62% no-repeat,
@@ -486,27 +486,27 @@ summary::-webkit-details-marker { display: none; }
     radial-gradient(circle at 70% 22%, #FFF6D8 0 5px, rgba(255, 246, 216, 0) 6px),
     linear-gradient(180deg, #DDEBC6, #8DB48A);
 }
-.mock-grid .g7 { /* Iron Courier: hazard stripes on steel */
+.mock-grid .g7, .mock-fly.g7 { /* Iron Courier: hazard stripes on steel */
   background:
     linear-gradient(#F08A24, #F08A24) 0 60% / 100% 9% no-repeat,
     repeating-linear-gradient(135deg, #2E3239 0 7px, #F0B429 7px 14px) 0 30% / 100% 12% no-repeat,
     repeating-linear-gradient(135deg, #3A3F47 0 9px, #454B55 9px 18px);
 }
-.mock-grid .g8 { /* Glowmoth: one light in the dark */
+.mock-grid .g8, .mock-fly.g8 { /* Glowmoth: one light in the dark */
   background:
     radial-gradient(circle at 50% 44%, #FFF6C8 0 3px, rgba(255, 226, 130, 0.7) 5px, rgba(255, 226, 130, 0) 26px),
     radial-gradient(14px 8px at 40% 44%, rgba(180, 255, 230, 0.35) 99%, transparent),
     radial-gradient(14px 8px at 60% 44%, rgba(180, 255, 230, 0.35) 99%, transparent),
     radial-gradient(120% 90% at 50% 40%, #134046, #071A1F);
 }
-.mock-grid .g9 { /* Dune Runners: dunes under a low sun */
+.mock-grid .g9, .mock-fly.g9 { /* Dune Runners: dunes under a low sun */
   background:
     radial-gradient(90% 32% at 25% 100%, #B86E26 99%, rgba(184, 110, 38, 0)),
     radial-gradient(100% 30% at 85% 86%, #D99140 99%, rgba(217, 145, 64, 0)),
     radial-gradient(circle at 70% 36%, #FFF1C8 0 7px, rgba(255, 241, 200, 0) 8px),
     linear-gradient(180deg, #F7DDA6, #F0B060);
 }
-.mock-grid .g10 { /* Skyward Isles: a floating island */
+.mock-grid .g10, .mock-fly.g10 { /* Skyward Isles: a floating island */
   background:
     radial-gradient(42% 9% at 50% 46%, #4FA35A 99%, rgba(79, 163, 90, 0)),
     conic-gradient(from -30deg at 50% 100%, #6B4B32 0 60deg, rgba(0, 0, 0, 0) 0) 50% 52% / 70% 28% no-repeat,
@@ -514,11 +514,11 @@ summary::-webkit-details-marker { display: none; }
     radial-gradient(24% 6% at 80% 74%, rgba(255, 255, 255, 0.85) 99%, rgba(255, 255, 255, 0)),
     linear-gradient(180deg, #9ED8FF, #5BAFE8);
 }
-.mock-grid .g11 { /* Rift Tactics: a red split */
+.mock-grid .g11, .mock-fly.g11 { /* Rift Tactics: a red split */
   background:
     linear-gradient(115deg, #1B1B22 0 46%, #FF5A4E 46% 49%, #FFD2C8 49% 50%, #5A1620 50%);
 }
-.mock-grid .g12 { /* Little Lantern: a lantern at night */
+.mock-grid .g12, .mock-fly.g12 { /* Little Lantern: a lantern at night */
   background:
     linear-gradient(#3A2414, #3A2414) 50% 34% / 10% 5% no-repeat,
     linear-gradient(#FFD27A, #F59A3C) 50% 46% / 20% 22% no-repeat,
@@ -584,6 +584,53 @@ summary::-webkit-details-marker { display: none; }
 }
 @media (forced-colors: active) {
   .mock-tray:has(.shelf-toggle:checked) { outline: 2px solid Highlight; }
+}
+
+/* The hidden game behind Play (game.js): Binder's launch toast counts down, the shelf slides away as when a game
+   starts, covers drift up the desktop to be caught, and the shelf comes back with "Welcome back". Nothing moves
+   until Play is pressed; with reduced motion the covers appear in place and fade. */
+.mock-play:hover { background: #47B1E8; }
+.mock-play:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
+.mock-play:disabled { cursor: default; }
+.mock-toast {
+  position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 2;
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: #2C2C31; border: 1px solid #3C3C43; border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-size: 12px; color: #F3F3F5;
+}
+.mock-toast-text { flex-grow: 1; }
+.mock-toast-count { min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 11px; background: #4CC2FF; color: #0A1A24; font-weight: 600; }
+.stage.playing .mock-panel { transform: translateX(40px); visibility: hidden; transition: none; }
+.mock-game { position: absolute; inset: 0 0 48px; z-index: 1; overflow: hidden; }
+.mock-score {
+  position: absolute; left: 12px; top: 12px; padding: 4px 12px; border-radius: 14px;
+  background: rgba(20, 20, 24, 0.75); color: #F3F3F5; font-size: 13px; font-weight: 600; font-family: var(--text-font);
+}
+.mock-fly {
+  position: absolute; left: var(--x); bottom: -100px; width: 64px; aspect-ratio: 3 / 4; padding: 0; border: 0;
+  border-radius: 6px; overflow: hidden; background: #3A3A42; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  cursor: pointer; text-align: left; font: inherit;
+  animation: cover-rise var(--d) linear forwards;
+}
+.mock-fly:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
+.mock-fly.caught { animation: caught-pop 0.25s ease-out forwards; pointer-events: none; }
+@keyframes cover-rise {
+  from { transform: translateY(0) rotate(var(--r)); }
+  to { transform: translateY(calc(-100cqh - 220px)) rotate(calc(var(--r) * -1)); }
+}
+@keyframes caught-pop {
+  to { transform: scale(1.35); opacity: 0; }
+}
+.mock-game { container-type: size; }
+.mock-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) {
+  .mock-fly { bottom: auto; top: var(--y); animation: cover-blink var(--d) linear forwards; }
+  .mock-fly.caught { animation: cover-fade 0.25s linear forwards; }
+  @keyframes cover-blink { 0% { opacity: 0; } 15%, 80% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes cover-fade { to { opacity: 0; } }
+}
+@media (forced-colors: active) {
+  .mock-fly { border: 2px solid ButtonText; }
 }
 
 @media (max-width: 960px) {
