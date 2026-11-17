@@ -56,6 +56,14 @@ public sealed partial class MainWindow
         SetupPage.ViewModel!.Start(App.Settings, _games, Autostart.IsEnabled());
         ShowPage(SetupPage);
         _ = CountLaunchersForSetupAsync();
+        _ = ReadStartMenuForSetupAsync();
+    }
+
+    /// <summary>Step 1's "N of them aren't in Start search" (spec §22 d): the Start menu read once per run, off the UI thread.</summary>
+    private async Task ReadStartMenuForSetupAsync()
+    {
+        var entries = await Task.Run(StartMenuGames.ReadEntries);
+        if (!IsClosing && SetupPage.Visibility == Visibility.Visible) SetupPage.ViewModel!.SetStartEntries(entries);
     }
 
     private HashSet<GameSource> _sourcesBeforeSetup = [];

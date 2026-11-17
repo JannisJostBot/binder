@@ -26,6 +26,7 @@
     <Compile Include="..\..\src\Binder\Models\*.cs" Link="Linked\Models\%(Filename)%(Extension)" />
     <Compile Include="..\..\src\Binder\Library\Vdf.cs" Link="Linked\Library\Vdf.cs" />
     <Compile Include="..\..\src\Binder\Library\GameSearch.cs" Link="Linked\Library\GameSearch.cs" />
+    <Compile Include="..\..\src\Binder\Library\StartMenuMatch.cs" Link="Linked\Library\StartMenuMatch.cs" />
     <Compile Include="..\..\src\Binder\Library\GameFiles.cs" Link="Linked\Library\GameFiles.cs" />
     <Compile Include="..\..\src\Binder\Library\LibraryScanner.cs" Link="Linked\Library\LibraryScanner.cs" />
     <Compile Include="..\..\src\Binder\Library\SteamSource.cs" Link="Linked\Library\SteamSource.cs" />

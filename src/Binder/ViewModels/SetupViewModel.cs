@@ -89,6 +89,8 @@ public sealed partial class SetupViewModel : ObservableObject
         _shortcutsLoaded = false;
         Launchers = []; // a new run starts from the settings' ticks
         _foundCounts = null;
+        _startEntries = null;
+        NotInStartText = "";
         Shortcuts = [];
         _selected = [];
         ImportTitle = ImportDetail = "";
@@ -147,7 +149,36 @@ public sealed partial class SetupViewModel : ObservableObject
         _libraryCounts = games.Where(g => Format.HasBadge(g.Source))
             .GroupBy(g => g.Source)
             .ToDictionary(group => group.Key, group => group.Count());
+        _shelf = [.. games.Where(g => !g.Hidden)];
         BuildLaunchers();
+        CountNotInStart();
+    }
+
+    // ---- Step 1's "N of them aren't in Start search" (spec §22 d) ----------------------------------------------
+
+    private Game[] _shelf = [];
+    private IReadOnlyList<ShortcutFile>? _startEntries;
+
+    /// <summary>"23 of them aren't in Start search", or empty (none, or not counted yet).</summary>
+    public string NotInStartText { get; private set; } = "";
+    public bool HasNotInStart => NotInStartText.Length > 0;
+
+    /// <summary>The Start menu's shortcuts, read once per run by the owner (never stored).</summary>
+    public void SetStartEntries(IReadOnlyList<ShortcutFile> entries)
+    {
+        _startEntries = entries;
+        CountNotInStart();
+    }
+
+    private void CountNotInStart()
+    {
+        var text = _startEntries is null ? "" : StartMenuMatch.CountMissing(_startEntries, _shelf) is > 0 and var missing
+            ? Strings.Plural(missing, Strings.NotInStartOne, Strings.NotInStart)
+            : "";
+        if (text == NotInStartText) return;
+        NotInStartText = text;
+        OnPropertyChanged(nameof(NotInStartText));
+        OnPropertyChanged(nameof(HasNotInStart));
     }
 
     /// <summary>Every launcher's games on this PC, also the ones turned off.</summary>

@@ -102,6 +102,7 @@ static partial class Tests
         ShelfViewModelTests();
         ShelfUpdateTests();
         GameSearchTests();
+        StartMenuTests();
         FormatTests();
         LocalizationTests();
         DocsTests();
@@ -152,6 +153,43 @@ static partial class Tests
         Check(GameSearch.Search(games, "bg3", played).Select(g => g.Id).SequenceEqual(["b", "c"]) &&
               GameSearch.Search(games, "bal", played).Select(g => g.Id).SequenceEqual(["b"]), "search: initials find both, a prefix one");
         Check(GameSearch.Search(games, "  ", played).Count == 5, "search: an empty query matches everything");
+    }
+
+    /// <summary>Spec §22 c, d: which games Start search already finds, and the Play tooltip.</summary>
+    static void StartMenuTests()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "binder-start-" + Guid.NewGuid().ToString("N"));
+        string P(params string[] parts) => Path.Combine([root, .. parts]);
+        var games = new List<Game>
+        {
+            new() { Id = "steam1", Source = GameSource.Steam, StoreId = "570", InstallDir = P("Steam", "dota") },
+            new() { Id = "epic1", Source = GameSource.Epic, StoreId = "Fortnite" },
+            new() { Id = "gog1", Source = GameSource.Gog, StoreId = "1", InstallDir = P("GOG", "Witcher") },
+            new() { Id = "man1", Source = GameSource.Manual, ExePath = P("Tools", "game.exe") },
+            new() { Id = "xbox1", Source = GameSource.Xbox, StoreId = "fam" },
+            new() { Id = "ubi1", Source = GameSource.Ubisoft, StoreId = "4553" },
+            new() { Id = "none", Source = GameSource.Ea, InstallDir = P("EA", "Other") },
+        };
+        var entries = new List<ShortcutFile>
+        {
+            new("a.url", "Dota", null, "steam://rungameid/570"),
+            new("b.url", "Fortnite", null, "com.epicgames.launcher://apps/fn%3A4fe75bbc%3AFortnite?action=launch"),
+            new("c.lnk", "Witcher", P("GOG", "Witcher", "bin", "x64", "witcher3.exe"), null),
+            new("d.lnk", "Game", P("Tools", "game.exe"), null),
+            new("e.url", "Other game", null, "steam://rungameid/999"),
+            new("f.lnk", "EA app", P("EA", "EADesktop.exe"), null), // the launcher, beside the game's folder
+        };
+        var found = StartMenuMatch.GamesWithEntry(entries, games);
+        Check(found.SetEquals(["steam1", "epic1", "gog1", "man1", "xbox1"]),
+            "start menu: matched by store link, exe and install folder; Xbox games are Start apps; others not");
+        Check(StartMenuMatch.CountMissing(entries, games) == 2 && StartMenuMatch.CountMissing([], games) == 6, "start menu: the games it doesn't find");
+
+        var steam = new Game { Source = GameSource.Steam };
+        Check(Format.PlayToolTip(steam, false) == "Plays without opening Steam's window" &&
+              Format.PlayToolTip(steam, true) == "Plays with Game mode, without opening Steam's window" &&
+              Format.PlayToolTip(new Game { Source = GameSource.Epic, GameMode = true }, false) == "Plays with Game mode" &&
+              Format.PlayToolTip(new Game { Source = GameSource.Epic, GameMode = false }, true) == "Play",
+            "play tooltip: what Play does for that game");
     }
 
     /// <summary>Milestone 8: generated cover colors and initials, sort orders.</summary>

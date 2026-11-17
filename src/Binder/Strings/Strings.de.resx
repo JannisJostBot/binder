@@ -2477,4 +2477,28 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   <data name="EnterKey" xml:space="preserve">
     <value>Eingabe</value>
   </data>
+  <data name="NotInStartOne" xml:space="preserve">
+    <value>1 davon ist nicht in der Startsuche</value>
+  </data>
+  <data name="NotInStart" xml:space="preserve">
+    <value>{0} davon sind nicht in der Startsuche</value>
+  </data>
+  <data name="DesktopFewerIconsOne" xml:space="preserve">
+    <value>Ihr Desktop hat 1 Symbol weniger</value>
+  </data>
+  <data name="DesktopFewerIcons" xml:space="preserve">
+    <value>Ihr Desktop hat {0} Symbole weniger</value>
+  </data>
+  <data name="WelcomeClosedLine" xml:space="preserve">
+    <value>Binder war die ganze Zeit geschlossen, während Sie gespielt haben</value>
+  </data>
+  <data name="PlayTipSteam" xml:space="preserve">
+    <value>Spielt, ohne das Steam-Fenster zu öffnen</value>
+  </data>
+  <data name="PlayTipGameMode" xml:space="preserve">
+    <value>Spielt mit Spielmodus</value>
+  </data>
+  <data name="PlayTipSteamGameMode" xml:space="preserve">
+    <value>Spielt mit Spielmodus, ohne das Steam-Fenster zu öffnen</value>
+  </data>
 </root>

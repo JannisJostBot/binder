@@ -88,6 +88,8 @@ public sealed partial class GameTile : UserControl
         FavoriteBadge.Visibility = game.Favorite ? Visibility.Visible : Visibility.Collapsed;
         Shine.SetOn(game.Favorite && App.Settings.ShinyFavorites && !Accessibility.HighContrast);
         AutomationProperties.SetName(DetailsButton, Strings.Format(Strings.DetailsFor, game.Name));
+        // What a click on the cover does (spec §22 e); the Details button keeps its own tooltip.
+        ToolTipService.SetToolTip(CoverArea, Format.PlayToolTip(game, App.Settings.GameModeEnabled));
     }
 
     /// <summary>The search's top match shows an "Enter" key (Enter in the search box plays it).</summary>

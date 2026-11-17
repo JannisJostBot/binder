@@ -3301,4 +3301,36 @@ Calm: efficiency mode while you play</value>
     <value>Enter</value>
     <comment>A small keyboard key drawn on the search's first result: pressing this key in the search box plays it. The key's name as printed on keyboards in your language. Very short.</comment>
   </data>
+  <data name="NotInStartOne" xml:space="preserve">
+    <value>1 of them isn't in Start search</value>
+    <comment>Line under "N games found" on the first setup step, singular. "Start search" = searching from the Windows Start menu.</comment>
+  </data>
+  <data name="NotInStart" xml:space="preserve">
+    <value>{0} of them aren't in Start search</value>
+    <comment>Line under "N games found" on the first setup step, plural. {0} = number of found games that searching from the Windows Start menu doesn't find.</comment>
+  </data>
+  <data name="DesktopFewerIconsOne" xml:space="preserve">
+    <value>Your desktop has 1 fewer icon</value>
+    <comment>Toast title after desktop shortcuts were moved onto the shelf, singular.</comment>
+  </data>
+  <data name="DesktopFewerIcons" xml:space="preserve">
+    <value>Your desktop has {0} fewer icons</value>
+    <comment>Toast title after desktop shortcuts were moved onto the shelf, plural. {0} = number of shortcuts that left the desktop.</comment>
+  </data>
+  <data name="WelcomeClosedLine" xml:space="preserve">
+    <value>Binder was closed the whole time you played</value>
+    <comment>One line on the "Welcome back" card, shown once: the app's process didn't run while the game ran.</comment>
+  </data>
+  <data name="PlayTipSteam" xml:space="preserve">
+    <value>Plays without opening Steam's window</value>
+    <comment>Tooltip of a Steam game's cover: clicking it starts the game; Steam's own window doesn't open.</comment>
+  </data>
+  <data name="PlayTipGameMode" xml:space="preserve">
+    <value>Plays with Game mode</value>
+    <comment>Tooltip of a game's cover when Binder's Game mode is on for it. "Game mode" is Binder's own feature (same term as its settings page).</comment>
+  </data>
+  <data name="PlayTipSteamGameMode" xml:space="preserve">
+    <value>Plays with Game mode, without opening Steam's window</value>
+    <comment>Tooltip of a Steam game's cover when Binder's Game mode is on for it: both PlayTipSteam and PlayTipGameMode.</comment>
+  </data>
 </root>

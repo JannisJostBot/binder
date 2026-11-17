@@ -52,6 +52,8 @@ public sealed class Settings
     /// the widget exits while a game runs. Null until it first runs: then it's set without showing anything.
     /// </summary>
     public DateTimeOffset? WelcomeBackSessionStart { get; set; }
+    /// <summary>Welcome back has said once that Binder was closed the whole time the game ran (spec §22 d).</summary>
+    public bool ClosedLineShown { get; set; }
     /// <summary>Favourite covers get a rainbow sheen that follows the pointer (proposals §13 d).</summary>
     public bool ShinyFavorites { get; set; } = true;
 

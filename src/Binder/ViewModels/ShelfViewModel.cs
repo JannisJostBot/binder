@@ -497,8 +497,10 @@ public sealed partial class ShelfViewModel : ObservableObject
         {
             ContinueEyebrow = Strings.WelcomeBack;
             ContinueDetail = Strings.Format(Strings.WelcomeDetail, Format.Duration(_welcome!.Length), Format.Playtime(_welcome.Week));
-            ContinueMilestone = Strings.Format(Strings.WelcomeMilestone, _welcome.Milestone, ContinueGame.Name);
-            MilestoneVisible = _welcome.Milestone > 0;
+            ContinueMilestone = _welcome.ClosedLine
+                ? Strings.WelcomeClosedLine
+                : Strings.Format(Strings.WelcomeMilestone, _welcome.Milestone, ContinueGame.Name);
+            MilestoneVisible = _welcome.Milestone > 0 || _welcome.ClosedLine;
         }
         else
         {

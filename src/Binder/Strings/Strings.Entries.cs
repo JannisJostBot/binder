@@ -828,4 +828,12 @@ public sealed partial class Strings
     public static string SearchEnterPlays => Get(nameof(SearchEnterPlays));
     public static string SearchEnterHelp => Get(nameof(SearchEnterHelp));
     public static string EnterKey => Get(nameof(EnterKey));
+    public static string NotInStartOne => Get(nameof(NotInStartOne));
+    public static string NotInStart => Get(nameof(NotInStart));
+    public static string DesktopFewerIconsOne => Get(nameof(DesktopFewerIconsOne));
+    public static string DesktopFewerIcons => Get(nameof(DesktopFewerIcons));
+    public static string WelcomeClosedLine => Get(nameof(WelcomeClosedLine));
+    public static string PlayTipSteam => Get(nameof(PlayTipSteam));
+    public static string PlayTipGameMode => Get(nameof(PlayTipGameMode));
+    public static string PlayTipSteamGameMode => Get(nameof(PlayTipSteamGameMode));
 }

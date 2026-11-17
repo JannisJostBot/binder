@@ -211,6 +211,26 @@ public static class ShortcutImporter
     }
 
     /// <summary>
+    /// The import toast's Undo (spec §22 d): puts back only the shortcuts of that import (by their stored paths),
+    /// removes the games made from them and keeps the records of the rest. The caller saves the library.
+    /// </summary>
+    public static (int Restored, int Failed) RestoreBatch(IReadOnlyCollection<string> storedPaths, List<Game> games)
+    {
+        var batch = storedPaths.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var records = Storage.LoadImportedShortcuts();
+        var mine = records.Where(r => batch.Contains(r.StoredPath)).ToList();
+        if (mine.Count == 0) return (0, 0);
+        var failed = Restore(mine);
+        var restored = mine.Except(failed).Select(r => r.StoredPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        games.RemoveAll(g => g.Source == GameSource.Shortcut && g.ExePath is { } path && restored.Contains(path));
+        records.RemoveAll(r => restored.Contains(r.StoredPath));
+        try { Storage.SaveImportedShortcuts(records); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        ShellNotify.DesktopsChanged();
+        return (restored.Count, failed.Count);
+    }
+
+    /// <summary>
     /// Puts imported shortcuts back where they came from (next to an existing file of the same name if
     /// needed). Returns the records that couldn't be restored.
     /// </summary>

@@ -62,6 +62,22 @@ public static class Format
     /// <summary>A hide delay: "Instantly" or "10 s".</summary>
     public static string Delay(int seconds) => seconds <= 0 ? Strings.Instantly : Strings.Format(Strings.Seconds, seconds);
 
+    /// <summary>
+    /// The cover's Play tooltip (spec §22 e): what Play does beyond starting the game, from facts the game already
+    /// has. Steam games start without Steam's window; Game mode is named when it's on for the game.
+    /// </summary>
+    public static string PlayToolTip(Models.Game game, bool gameModeForAll)
+    {
+        bool steam = game.Source == Models.GameSource.Steam, gameMode = game.GameMode ?? gameModeForAll;
+        return (steam, gameMode) switch
+        {
+            (true, true) => Strings.PlayTipSteamGameMode,
+            (true, false) => Strings.PlayTipSteam,
+            (false, true) => Strings.PlayTipGameMode,
+            _ => Strings.Play,
+        };
+    }
+
     /// <summary>Manually added games and imported shortcuts get no launcher badge.</summary>
     public static bool HasBadge(Models.GameSource source) => source is not (Models.GameSource.Manual or Models.GameSource.Shortcut);
 

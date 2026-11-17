@@ -17,6 +17,12 @@ public sealed class AppState
     public List<CrashRecord> Crashes { get; set; } = [];
 
     /// <summary>
+    /// The game whose end started this process (the watcher's "--returned" at a first start): Binder was closed the
+    /// whole time it ran. Welcome back says so once (spec §22 d).
+    /// </summary>
+    public string? ClosedDuringGame { get; set; }
+
+    /// <summary>
     /// The stores are scanned when the panel first opens, on Refresh, and when it opens again more than
     /// <see cref="RescanAfter"/> after the last scan (games uninstalled meanwhile leave the shelf), not every time.
     /// </summary>
@@ -184,6 +190,7 @@ public sealed partial class App : Application
         {
             // A game ended (the watcher brought us back): pick up the session it wrote.
             State.Sessions = Storage.LoadSessions();
+            if (firstStart) State.ClosedDuringGame = notice.GameId;
             if (!_crashedOnly) // else only the restart pill (or the crash card), after the check
             {
                 if (Settings.DisplayMode == DisplayMode.Desktop) OpenPanel();

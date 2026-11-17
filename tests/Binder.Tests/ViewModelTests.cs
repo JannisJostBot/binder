@@ -641,6 +641,12 @@ static partial class Tests
               vm.Launchers[0].Count == "2 games" && vm.Launchers[1].Count == "None found" && !vm.Launchers[2].Enabled,
             "setup: launchers with games first, unticked as in the settings");
         Check(vm.FoundTitle == "2 games found" && !vm.NothingFound, "setup: manual games aren't counted");
+        Check(!vm.HasNotInStart, "setup: no Start search line before the Start menu is read");
+        vm.SetStartEntries([new("x.lnk", "Two", null, null)]);
+        Check(vm.HasNotInStart && vm.NotInStartText == "3 of them aren't in Start search", "setup: how many Start search doesn't find");
+        vm.UpdateLibrary([games[0]]);
+        Check(vm.NotInStartText == "1 of them isn't in Start search", "setup: counted again when the library changes");
+        vm.UpdateLibrary(games);
         Check(vm.Flyout == true && vm.Desktop == false && vm.StartWithWindows && vm.HotkeyText.Length > 0, "setup: step 3 from the settings");
 
         vm.Launchers[0].Enabled = false; // unticked before the counts come in
@@ -876,6 +882,8 @@ static partial class Tests
               vm.ContinueDetail.EndsWith(" this week") && vm.MilestoneVisible && vm.ContinueMilestone == "10 hours in Charlie",
             "shelf: Welcome back takes the top slot, with its milestone and no switch");
         Check(vm.EnterGame?.Id == "e1" && vm.Placeholder.EndsWith("Enter plays Charlie"), "shelf: Enter plays the Welcome back game");
+        vm.SetWelcome(new Library.WelcomeMoment("e1", now.AddHours(-2), TimeSpan.FromMinutes(45), TimeSpan.FromHours(3), 0, ClosedLine: true));
+        Check(vm.MilestoneVisible && vm.ContinueMilestone == "Binder was closed the whole time you played", "shelf: Welcome back says once that Binder was closed");
         vm.SetWelcome(null);
         Check(!vm.ShowsWelcome && vm.ContinueGame?.Id == "s1" && vm.ContinueEyebrow == "Continue playing" && !vm.MilestoneVisible &&
               vm.ShowWeek && vm.SwitchVisible, "shelf: the next opening shows the normal slot again");

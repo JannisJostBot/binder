@@ -28,6 +28,9 @@
             <StackPanel>
                 <TextBlock Style="{StaticResource StepLabel}" Text="{x:Bind s:Strings.Step1}" />
                 <TextBlock Style="{StaticResource StepTitle}" Text="{x:Bind ViewModel.FoundTitle, Mode=OneWay}" />
+                <!-- Spec §22 d: the user's own number, once, when there's one to say. -->
+                <TextBlock Style="{StaticResource StepText}" Text="{x:Bind ViewModel.NotInStartText, Mode=OneWay}"
+                           Visibility="{x:Bind ViewModel.HasNotInStart, Mode=OneWay}" />
                 <TextBlock Style="{StaticResource StepText}"
                            Text="{x:Bind s:Strings.SetupStep1Text}" />
             </StackPanel>
