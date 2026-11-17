@@ -19,6 +19,8 @@ public enum UpdatePhase
     NotVerified,
     /// <summary>The setup couldn't be started, or it ran and the old version is still here.</summary>
     InstallFailed,
+    /// <summary>A build without release keys (a local build, a fork that set none): never checks.</summary>
+    Unavailable,
 }
 
 /// <summary>
@@ -52,7 +54,7 @@ public sealed partial class SettingsViewModel
     [
         nameof(AboutTitle), nameof(AboutText), nameof(AboutToolTip), nameof(ShowCheckButton), nameof(CanCheckUpdates),
         nameof(UpdateActionText), nameof(ShowUpdateAction), nameof(ShowDownloadProgress), nameof(DownloadPercent),
-        nameof(HasNotes), nameof(NotesText), nameof(CanSkipUpdate), nameof(UpdateStatus),
+        nameof(HasNotes), nameof(NotesText), nameof(CanSkipUpdate), nameof(UpdateStatus), nameof(ShowUpdatesChoice),
     ];
 
     /// <summary>The owner reports a new state (a check, a download's progress, a result). Refreshes only the About card.</summary>
@@ -81,13 +83,17 @@ public sealed partial class SettingsViewModel
         UpdatePhase.DownloadFailed => Strings.UpdateDownloadFailed,
         UpdatePhase.NotVerified => Strings.UpdateNotVerified,
         UpdatePhase.InstallFailed => Strings.UpdateInstallFailed,
+        UpdatePhase.Unavailable => Strings.UpdatesUnavailable,
         _ => "",
     };
 
-    /// <summary>Where the setup's log is, for "couldn't be installed"; nothing otherwise.</summary>
-    public string? AboutToolTip => _update.Phase == UpdatePhase.InstallFailed
-        ? Strings.Format(Strings.UpdateInstallFailedToolTip, Path.Combine(Path.GetTempPath(), "BinderSetup.log"))
-        : null;
+    /// <summary>Where the setup's log is, for "couldn't be installed"; why a build doesn't check; nothing otherwise.</summary>
+    public string? AboutToolTip => _update.Phase switch
+    {
+        UpdatePhase.InstallFailed => Strings.Format(Strings.UpdateInstallFailedToolTip, Path.Combine(Path.GetTempPath(), "BinderSetup.log")),
+        UpdatePhase.Unavailable => Strings.UpdatesUnavailableToolTip,
+        _ => null,
+    };
 
     private static string CheckedText(DateTimeOffset at)
     {
@@ -100,7 +106,10 @@ public sealed partial class SettingsViewModel
     private static int Megabytes(long bytes) => (int)Math.Ceiling(bytes / (1024.0 * 1024.0));
 
     /// <summary>"Check for updates" shows when there's nothing to do with an update.</summary>
-    public bool ShowCheckButton => !ShowUpdateAction && _update.Phase != UpdatePhase.Downloading;
+    public bool ShowCheckButton => !ShowUpdateAction && _update.Phase is not (UpdatePhase.Downloading or UpdatePhase.Unavailable);
+
+    /// <summary>The Updates choice, hidden in a build that never checks.</summary>
+    public bool ShowUpdatesChoice => _update.Phase != UpdatePhase.Unavailable;
     public bool CanCheckUpdates => _update.Phase != UpdatePhase.Checking;
 
     public string UpdateActionText => _update.Phase switch

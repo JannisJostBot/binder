@@ -41,6 +41,18 @@
     <!-- Approved in CLAUDE.md (Dependencies). Only the WinUI part of the Windows App SDK; not the AI, ML,
          widgets or search components the umbrella Microsoft.WindowsAppSDK package also brings. -->
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="2.6.4" />
+    <!-- Approved in CLAUDE.md (Dependencies): Win2D, for the Game mode toast's melt (Views/ToastMelt.cs: a blur
+         and color-matrix effect). Licensed in licenses\Win2D-LICENSE.txt and THIRD-PARTY-NOTICES.txt. -->
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
+  </ItemGroup>
+
+  <!-- Where updates come from, compiled in (build/Updates.targets): none unless the build names them. -->
+  <Import Project="..\..\build\Updates.targets" />
+
+  <!-- The debug panel (Dev\, started with the dev switch) is for Debug builds only: Release builds don't compile it at all, so none of it
+       ships. publish.ps1 checks the published files for its marker and stops if it's there. -->
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <Compile Remove="Dev\**" />
   </ItemGroup>
 
   <ItemGroup>

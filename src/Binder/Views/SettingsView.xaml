@@ -520,7 +520,7 @@
                                      Visibility="{x:Bind ViewModel.CanSkipUpdate, Mode=OneWay}" />
                 </StackPanel>
             </Border>
-            <Border Style="{StaticResource SettingCard}">
+            <Border Style="{StaticResource SettingCard}" Visibility="{x:Bind ViewModel.ShowUpdatesChoice, Mode=OneWay}">
                 <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.UpdatesToolTip}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -539,6 +539,7 @@
             </Border>
 
             <Button Style="{StaticResource SettingLinkCard}" Command="{x:Bind ViewModel.RepositoryCommand}" AutomationProperties.Name="{x:Bind s:Strings.BinderOnGitHub}"
+                    Visibility="{x:Bind ViewModel.ShowRepository}"
                     ToolTipService.ToolTip="{x:Bind s:Strings.BinderOnGitHubToolTip}">
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>

@@ -54,6 +54,11 @@ jobs:
           New-Item -ItemType Directory -Force artifacts | Out-Null
           dotnet build Binder.sln -c Release 2>&1 | Tee-Object artifacts/build.txt
 
+      # The debug panel (src/Binder/Dev) is only compiled in Debug builds, which nothing else here makes: build the
+      # widget once in Debug too, so a change that breaks the panel fails here instead of on someone's PC.
+      - name: Build (Debug, with the debug panel)
+        run: dotnet build src/Binder -c Debug 2>&1 | Tee-Object artifacts/build-debug.txt
+
       # Test what ships: the published WinUI widget folder and the Native AOT watcher (publish.ps1).
       - name: Publish
         run: |

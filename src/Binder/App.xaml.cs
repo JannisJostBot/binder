@@ -133,11 +133,20 @@ public sealed partial class App : Application
         HandleCommand(StartArgs, firstStart: true);
     }
 
+    /// <summary>The debug panel's way in; only Debug builds have a body for it (src/Binder/Dev/App.Dev.cs).</summary>
+    partial void DevCommand(string[] args, ref bool handled);
+
     /// <summary>Arguments from this start, or forwarded from a second start (taskbar pin, Start menu, watcher).</summary>
     private void HandleCommand(string[] args) => HandleCommand(args, firstStart: false);
 
     private void HandleCommand(string[] args, bool firstStart)
     {
+        // Debug builds only: "--dev" opens the debug panel (src/Binder/Dev, left out of Release builds). In a release
+        // this partial method has no body, so the compiler removes the call and its arguments entirely.
+        bool handledByDev = false;
+        DevCommand(args, ref handledByDev);
+        if (handledByDev) return;
+
         if (args.Contains("--memory-report"))
         {
             Footprint.WriteReport(_panel is null ? "closed" : "open");
@@ -204,6 +213,9 @@ public sealed partial class App : Application
 
     private Views.GameModeToast? _gameModeToast;
 
+    /// <summary>The debug panel's slow motion for the toast; only Debug builds have a body for it (App.Dev.cs).</summary>
+    partial void DevToastSpeed(ref float slow);
+
     /// <summary>Game mode's "Restored" toast (board 4), and the Game mode page's last result if it's open.</summary>
     private void ShowRestored(string encoded, bool exitWhenClosed)
     {
@@ -246,7 +258,9 @@ public sealed partial class App : Application
     private void ShowGameModeToast(Views.GameModeToast.Kind kind, Shared.RestoreResult result, bool exitWhenClosed = false)
     {
         _gameModeToast?.Close();
-        var toast = new Views.GameModeToast(kind, result);
+        float slow = 1;
+        DevToastSpeed(ref slow);
+        var toast = new Views.GameModeToast(kind, result, slow);
         toast.Closed += (_, _) =>
         {
             if (ReferenceEquals(_gameModeToast, toast)) _gameModeToast = null;

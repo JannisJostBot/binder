@@ -29,12 +29,12 @@ function Number([string] $key, [double] $max) {
 
 function Html([string] $text) { [System.Net.WebUtility]::HtmlEncode($text) }
 
-# "2.4 MB", "12 MB", "120 MB": one decimal below 10, whole numbers below 100, tens above.
-function Megabytes([double] $mb) {
+# "2.4", "12", "120" (MB): one decimal below 10, whole numbers below 100, tens above.
+function Mb([double] $mb) {
     $inv = [cultureinfo]::InvariantCulture
-    if ($mb -lt 10) { return ([math]::Round($mb, 1)).ToString('0.#', $inv) + ' MB' }
-    if ($mb -lt 100) { return ([math]::Round($mb)).ToString('0', $inv) + ' MB' }
-    return ([math]::Round($mb / 10) * 10).ToString('0', $inv) + ' MB'
+    if ($mb -lt 10) { return ([math]::Round($mb, 1)).ToString('0.#', $inv) }
+    if ($mb -lt 100) { return ([math]::Round($mb)).ToString('0', $inv) }
+    return ([math]::Round($mb / 10) * 10).ToString('0', $inv)
 }
 
 $open = Number 'openMB' 4000
@@ -58,11 +58,14 @@ if ($n.ramGB) { $machine += "$([int]$n.ramGB) GB" }
 $machineText = if ($machine) { " ($($machine -join ', '))" } else { '' }
 
 $values = @{
-    watcher  = Html (Megabytes $watcher)
-    closed   = Html (Megabytes $closed)
-    open     = Html "$(Megabytes $open) with $games games, $(Megabytes $openBig) with $bigGames games"
-    measured = Html ("Binder $Version, measured on " + $when.ToString('d MMMM yyyy', [cultureinfo]::InvariantCulture) +
-         " on a GitHub Actions test machine$machineText, with Steam covers. Memory as Task Manager shows it")
+    # The figures (the page writes "MB" after them) and the helper's "About … MB" in the steps.
+    open        = Html (Mb $open)
+    openNote    = Html "With $games games; $(Mb $openBig) MB with $bigGames"
+    closed      = Html (Mb $closed)
+    watcher     = Html (Mb $watcher)
+    watcherStep = Html "$(Mb $watcher) MB"
+    measured    = Html ("Binder $Version, measured on " + $when.ToString('d MMMM yyyy', [cultureinfo]::InvariantCulture) +
+        " on a GitHub Actions test machine$machineText, with Steam covers. Memory as Task Manager shows it")
 }
 
 $html = [IO.File]::ReadAllText((Resolve-Path $Site))
@@ -83,4 +86,4 @@ $result = [regex]::Replace($html, $pattern, {
 if ($result -ceq $html) { Write-Host 'The page already shows these numbers.'; exit 0 }
 [IO.File]::WriteAllText((Resolve-Path $Site), $result, (New-Object System.Text.UTF8Encoding $false))
 Write-Host "Updated ${Site}:"
-foreach ($key in 'open', 'closed', 'watcher', 'measured') { Write-Host "  ${key}: $($values[$key])" }
+foreach ($key in 'open', 'openNote', 'closed', 'watcher', 'watcherStep', 'measured') { Write-Host "  ${key}: $($values[$key])" }

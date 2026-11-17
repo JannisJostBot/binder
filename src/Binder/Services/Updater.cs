@@ -49,9 +49,9 @@ public static class Updater
 
     private static Version Normalize(Version? v) => v is null ? new Version(0, 0, 0) : new Version(v.Major, v.Minor, Math.Max(v.Build, 0));
 
-    /// <summary>Whether a check is due: the user allows it and the last one was over a day ago (or never ran).</summary>
+    /// <summary>Whether a check is due: the build has release keys, the user allows it and the last one was over a day ago (or never ran).</summary>
     public static bool CheckDue(Settings settings, DateTimeOffset now) =>
-        settings.Updates != UpdateMode.Off &&
+        UpdateKeys.Enabled && settings.Updates != UpdateMode.Off &&
         (settings.UpdateCheckedAt is not { } last || now - last >= CheckEvery || last > now + CheckEvery);
 
     // ---- The check ---------------------------------------------------------------------------------------------
@@ -64,6 +64,7 @@ public static class Updater
     /// </summary>
     public static async Task<UpdateCheckResult> CheckAsync(DateTimeOffset? lastIssued, string? skipped, CancellationToken cancel)
     {
+        if (!UpdateKeys.Enabled) return new(UpdateCheckOutcome.UpToDate, null); // a build without release keys: no request at all
         byte[]? manifest, signature;
         try
         {
@@ -120,7 +121,7 @@ public static class Updater
     {
         try
         {
-            if (!UsableFolder()) return null;
+            if (!UpdateKeys.Enabled || !UsableFolder()) return null;
             var manifest = ReadCapped(ManifestPath, UpdateManifest.MaxManifestBytes);
             var signature = ReadCapped(SignaturePath, UpdateManifest.MaxSignatureBytes);
             if (manifest is null || signature is null) return null;

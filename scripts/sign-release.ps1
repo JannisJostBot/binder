@@ -7,7 +7,7 @@
 
   -ExportPublicKey
     Prints the public key of a YubiKey's signing certificate (PIV slot 9c, ECC P-384, found by Windows in
-    CurrentUser\My) as base64 SubjectPublicKeyInfo, for src/Binder/Services/UpdateKeys.cs.
+    CurrentUser\My) as base64 SubjectPublicKeyInfo, for build/OfficialRelease.props.
 
   -Version 0.2.0 [-Urgent] [-DryRun]
     For the draft release v<Version> that .github/workflows/release.yml made:
@@ -18,7 +18,8 @@
       4. shows it and asks to confirm;
       5. signs it (the YubiKey asks for its PIN and a touch), with -Urgent with both YubiKeys in turn; with both
          keys' certificates in Windows, it asks which one signs (or pass -Thumbprint);
-      6. verifies the signature file with the keys in UpdateKeys.cs at the tagged commit, as the app will;
+      6. verifies the signature file with the keys in build/OfficialRelease.props at the tagged commit, as the app
+         will (the official build compiles in those keys and that repository);
       7. uploads release.json and release.json.sig to the draft and publishes it as the latest release.
     -DryRun stops after uploading: the draft stays a draft, nobody gets it. Run again without -DryRun to publish it
     (the dry run's release.json and .sig are replaced), or delete it.
@@ -55,7 +56,6 @@ Set-Location (Split-Path $PSScriptRoot -Parent)   # the repo root
 # git's output (the notes with their accents) is UTF-8; read it as such, whatever the console's code page.
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 
-$Repo = 'JannisJostBot/binder'
 $Prefix = [System.Text.Encoding]::ASCII.GetBytes("Binder release manifest v1`0")
 $Utf8 = [System.Text.UTF8Encoding]::new($false)
 $SHA384 = [System.Security.Cryptography.HashAlgorithmName]::SHA384
@@ -93,8 +93,8 @@ function Get-PublicKeyText($cert) { [Convert]::ToBase64String($cert.PublicKey.Ex
 if ($ExportPublicKey) {
     $cert = Get-SigningCertificate $Thumbprint 'the YubiKey'
     Write-Host "Certificate: $($cert.Subject) ($($cert.Thumbprint))"
-    Write-Host 'For src/Binder/Services/UpdateKeys.cs:'
-    Write-Output "        `"$(Get-PublicKeyText $cert)`","
+    Write-Host 'For build/OfficialRelease.props (BinderOfficialUpdateKeys, one per line):'
+    Write-Output "      $(Get-PublicKeyText $cert)"
     exit 0
 }
 
@@ -112,10 +112,12 @@ if ($LASTEXITCODE -ne 0) { Fail "$tag ($commit) isn't on main." }
 $props = (Run git @('show', "${commit}:Directory.Build.props")) -join "`n"
 if ($props -notmatch "<Version>$([regex]::Escape($Version))</Version>") { Fail "Directory.Build.props at $tag doesn't say $Version." }
 
-# The keys the app will verify with, from the tagged commit (not from the working tree).
-$keysFile = (Run git @('show', "${commit}:src/Binder/Services/UpdateKeys.cs")) -join "`n"
-$keys = @([regex]::Matches(($keysFile -replace '//[^\n]*', ''), '"([A-Za-z0-9+/]{100,}={0,2})"') | ForEach-Object { $_.Groups[1].Value })
-if ($keys.Count -eq 0) { Fail 'UpdateKeys.cs at the tag has no keys: run -ExportPublicKey and add them first.' }
+# The repository and the keys the official build compiles in, from the tagged commit (not from the working tree).
+[xml] $official = (Run git @('show', "${commit}:build/OfficialRelease.props")) -join "`n"
+$Repo = "$($official.Project.PropertyGroup.BinderOfficialRepository)".Trim()
+if ($Repo -notmatch '^[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9._-]{1,100}$') { Fail "build/OfficialRelease.props at $tag names no repository." }
+$keys = @("$($official.Project.PropertyGroup.BinderOfficialUpdateKeys)" -split '\s+' | Where-Object { $_ })
+if ($keys.Count -eq 0) { Fail 'build/OfficialRelease.props at the tag has no keys: run -ExportPublicKey and add them first.' }
 
 $shared = (Run git @('show', "${commit}:src/Binder.Watcher/GameModeShared.cs")) -join "`n"
 if ($shared -notmatch 'HelperVersion\s*=\s*(\d+)\s*;') { Fail "Can't read HelperVersion at $tag." }
@@ -200,7 +202,7 @@ if ((Read-Host "Type $Version to sign$(if ($DryRun) { ' (dry run, not published)
 # --- 5. Sign ---------------------------------------------------------------------------------------------
 $payload = [byte[]]($Prefix + $manifestBytes)
 function Sign-With($cert) {
-    if ((Get-PublicKeyText $cert) -notin $keys) { Fail "The certificate $($cert.Thumbprint) isn't one of the keys in UpdateKeys.cs at $tag." }
+    if ((Get-PublicKeyText $cert) -notin $keys) { Fail "The certificate $($cert.Thumbprint) isn't one of the keys in build/OfficialRelease.props at $tag." }
     $key = [System.Security.Cryptography.X509Certificates.ECDsaCertificateExtensions]::GetECDsaPrivateKey($cert)
     if (-not $key) { Fail "Can't open the private key of $($cert.Thumbprint)." }
     try {
@@ -244,3 +246,6 @@ if ($DryRun) {
 Run gh @('release', 'edit', $tag, '--repo', $Repo, '--draft=false', '--latest') | Out-Host
 Remove-Item -LiteralPath $work -Recurse -Force
 Write-Host "Published $tag." -ForegroundColor Green
+# The website links to this exact file (docs/proposals.md §25, "Making a release", step 7).
+$siteMB = [Math]::Round($size / 1MB)
+Write-Host "Website: in site/index.html set the download link to https://github.com/$Repo/releases/download/$tag/$setupName and the line under it to ""Version $Version · $siteMB MB""." -ForegroundColor Yellow

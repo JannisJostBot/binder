@@ -2291,6 +2291,12 @@ Ralentir : mode efficacité pendant le jeu</value>
   <data name="UpdateCheckOff" xml:space="preserve">
     <value>Ne recherche pas les mises à jour</value>
   </data>
+  <data name="UpdatesUnavailable" xml:space="preserve">
+    <value>Cette version ne recherche pas les mises à jour</value>
+  </data>
+  <data name="UpdatesUnavailableToolTip" xml:space="preserve">
+    <value>Créée sans clés de publication. Obtenez les mises à jour là où vous avez obtenu cette version.</value>
+  </data>
   <data name="UpdateChecking" xml:space="preserve">
     <value>Recherche de mises à jour…</value>
   </data>

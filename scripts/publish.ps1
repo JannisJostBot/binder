@@ -4,21 +4,51 @@
 #                          as they're laid out in the install folder
 #   BinderSetup.exe     Native AOT installer/updater with app\ inside
 #
-#   ./scripts/publish.ps1
+#   ./scripts/publish.ps1                                 # no update source: this build never checks for updates
+#   ./scripts/publish.ps1 -Official                       # the official releases' (build/OfficialRelease.props; release.yml)
+#   ./scripts/publish.ps1 -Repository you/binder -UpdateKeys <key1>,<key2>   # a fork's own releases
 #   ./scripts/publish.ps1 -CertificateThumbprint <sha1>   # also Authenticode-signs the exes (cert in your store)
+#
+# Where updates come from is compiled into the widget (build/Updates.targets): -Repository is the GitHub repository
+# whose releases it checks, -UpdateKeys the one or two public keys their manifest is signed with
+# (scripts/sign-release.ps1 -ExportPublicKey).
 #
 # Native AOT needs the "Desktop development with C++" workload (MSVC linker) from Visual Studio
 # or the Build Tools.
 param(
     [string] $Output = (Join-Path (Split-Path $PSScriptRoot -Parent) 'publish'),
     [string] $CertificateThumbprint,
-    [string] $TimestampUrl = 'http://timestamp.digicert.com'
+    [string] $TimestampUrl = 'http://timestamp.digicert.com',
+    [switch] $Official,
+    [string] $Repository,
+    [string[]] $UpdateKeys
 )
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent   # the repo root
 Set-Location $repo
 
 $runtime = 'win-x64'
+
+# Where updates come from (build/Updates.targets checks the values and fails the build on a bad one).
+$updateSource = @()
+if ($Official) {
+    if ($Repository -or $UpdateKeys) { throw '-Official uses build/OfficialRelease.props; leave out -Repository and -UpdateKeys.' }
+    # A fork's copy of release.yml would build with the owner's keys: it has to name its own instead.
+    [xml] $officialProps = Get-Content -Raw (Join-Path $repo 'build/OfficialRelease.props')
+    $officialRepository = "$($officialProps.Project.PropertyGroup.BinderOfficialRepository)".Trim()
+    if ($env:GITHUB_REPOSITORY -and $env:GITHUB_REPOSITORY -ne $officialRepository) {
+        throw "-Official builds $officialRepository's releases, not ${env:GITHUB_REPOSITORY}'s: build with -Repository and -UpdateKeys (docs/installer.md, Forks)."
+    }
+    $updateSource = @('-p:BinderOfficialRelease=true')
+}
+elseif ($Repository -or $UpdateKeys) {
+    if (-not $Repository -or -not $UpdateKeys) { throw '-Repository and -UpdateKeys go together.' }
+    # Spaces between the keys: MSBuild reads commas and semicolons in -p: as separators.
+    $updateSource = @("-p:BinderRepository=$Repository", "-p:BinderUpdateKeys=$($UpdateKeys -join ' ')")
+}
+else {
+    Write-Host 'No update source (-Official, or -Repository and -UpdateKeys): this build never checks for updates.'
+}
 
 function Sign([string[]] $files) {
     if (-not $CertificateThumbprint) { return }
@@ -37,7 +67,7 @@ Remove-Item $app -Recurse -Force -ErrorAction SilentlyContinue
 
 # Intermediate output goes to obj/publish-* so it can't mix with the normal bin/ build.
 dotnet publish src/Binder -c Release -r $runtime -p:PublishAot=true -p:DebugType=none `
-    -p:OutputPath="$repo/obj/publish-widget/" -o $app
+    -p:OutputPath="$repo/obj/publish-widget/" @updateSource -o $app
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 dotnet publish src/Binder.Watcher -c Release -r $runtime -p:PublishAot=true `
@@ -51,6 +81,19 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # Metadata for compilers and debug symbols: not needed to run.
 Get-ChildItem $app -Recurse -File -Include *.winmd, *.pdb | Remove-Item
+
+# The debug panel (src/Binder/Dev, "--dev") is for Debug builds only and Release builds leave it out. Make sure none
+# of it got into what ships: its marker text (Dev/DevPanel.cs) must be in none of the published files, in either
+# of the encodings a compiled string can have.
+$devMarker = 'BINDER-DEBUG-PANEL-' + 'NOT-FOR-RELEASE' # split, so this script never matches itself
+$latin1 = [Text.Encoding]::GetEncoding(28591)
+$needles = @([Text.Encoding]::Unicode, [Text.Encoding]::UTF8) | ForEach-Object { $latin1.GetString($_.GetBytes($devMarker)) }
+foreach ($file in Get-ChildItem $app -Recurse -File) {
+    $bytes = $latin1.GetString([IO.File]::ReadAllBytes($file.FullName))
+    foreach ($needle in $needles) {
+        if ($bytes.Contains($needle)) { throw "Debug code got into the release: $($file.Name) contains the debug panel's marker" }
+    }
+}
 
 # The app's translations (de\, fr\ Binder.resources.dll): Native AOT compiles them into Binder.exe.
 foreach ($satellite in Get-ChildItem $app -Recurse -File -Filter 'Binder.resources.dll') {
@@ -99,6 +142,10 @@ foreach ($library in $assets.libraries.PSObject.Properties | Where-Object { $_.N
     if (Test-Path -LiteralPath $notice) { Add-License $notice "$short-NOTICE.txt" }
 }
 if ($sdkLicenses.Count -eq 0) { throw 'The Windows App SDK license was not found in its packages' }
+# Win2D (the Game mode toast's melt): its package carries no license file, so the MIT text from its repository is
+# kept in licenses\ here.
+if (-not (Get-ChildItem $app -File -Filter 'Microsoft.Graphics.Canvas.dll')) { throw 'Win2D (Microsoft.Graphics.Canvas.dll) is missing from the app' }
+Add-License (Join-Path $repo 'licenses/Win2D-LICENSE.txt') 'Win2D-LICENSE.txt'
 # WebView2, only when its DLLs came along into the app folder.
 if (Get-ChildItem $app -Recurse -File -Filter 'Microsoft.Web.WebView2*.dll') {
     $webView = $assets.libraries.PSObject.Properties | Where-Object { $_.Name -like 'Microsoft.Web.WebView2/*' } | Select-Object -First 1

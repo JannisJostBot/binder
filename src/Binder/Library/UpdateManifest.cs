@@ -40,7 +40,8 @@ public sealed record UpdateManifest(
 {
     public const string Product = "Binder";
     public const string Channel = "stable";
-    public const string Repository = "JannisJostBot/binder";
+    /// <summary>The GitHub repository the releases come from (owner/name), set at build time; empty: no updates.</summary>
+    public const string Repository = Services.UpdateKeys.Repository;
 
     /// <summary>Caps on bytes actually read, before anything is parsed.</summary>
     public const int MaxManifestBytes = 64 * 1024;

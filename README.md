@@ -68,6 +68,11 @@ dotnet build           # a normal development build into bin\
 dotnet run --project tests/Binder.Tests -c Release   # unit tests
 ```
 
+A build of your own doesn't check for updates: only the official releases have the repository and the signing keys
+compiled in. A fork that publishes its own releases builds with
+`./scripts/publish.ps1 -Repository you/binder -UpdateKeys <your public keys>` (see
+[docs/installer.md](docs/installer.md#forks)).
+
 CI (`.github/workflows/ci.yml`) builds and tests every push on a real Windows machine. That includes a UI smoke
 test and an installer test.
 
