@@ -796,7 +796,8 @@ static partial class Tests
         vm.SetData(games, sessions, settings);
         Check(notified is [""] && spy.Calls.Count == 0 && spy.Saves == 0, "shelf: new data refreshes every binding once and asks nothing");
         Check(vm.Visible.Select(g => g.Id).SequenceEqual(["s1", "s2", "e1", "g1", "x1", "m1"]), "shelf: hidden and turned-off launchers left out, sorted by name");
-        Check(vm.Placeholder == "Search 6 games" && !vm.EmptyVisible && vm.Greeting.Length > 0, "shelf: the search box counts the games");
+        Check(vm.Placeholder == "Search 6 games · Enter plays Alpha" && vm.EnterGame?.Id == "s1" && !vm.EmptyVisible && vm.Greeting.Length > 0,
+            "shelf: the search box counts the games and says Enter plays the last game");
         Check(vm.ShownChips.SequenceEqual(["Steam", "Epic", "Gog"]) && vm.MoreChips.SequenceEqual(["Xbox", "Other"]) && vm.MoreVisible,
             "shelf: three launchers (most games first), the rest under More");
         Check(ShelfViewModel.ChipLabel("Gog") == "GOG" && ShelfViewModel.ChipLabel("Ea") == "EA", "shelf: chip labels");
@@ -819,14 +820,24 @@ static partial class Tests
             "shelf: footer hint and medium covers");
         Check(!vm.HelperBarOpen && !vm.GameModeOn, "shelf: no helper notice");
 
+        Check(vm.PlayEnterGame() && spy.Calls is ["play s1"], "shelf: Enter on an empty search plays the Continue playing game");
+        spy.Calls.Clear();
+
         notified.Clear();
         vm.Query = "arl";
         Check(vm.Visible.Select(g => g.Id).SequenceEqual(["e1"]) && notified.Contains(nameof(ShelfViewModel.Visible)) &&
-              !vm.SpotlightVisible && vm.Searching, "shelf: search filters and hides the top slot");
+              !vm.SpotlightVisible && vm.Searching && vm.Placeholder == "Search 6 games", "shelf: search filters and hides the top slot");
+        Check(vm.EnterGame?.Id == "e1" && vm.PlayEnterGame() && spy.Calls is ["play e1"], "shelf: Enter plays the top match");
+        spy.Calls.Clear();
         notified.Clear();
         vm.Query = "arl ";
         Check(!notified.Contains(nameof(ShelfViewModel.Visible)), "shelf: the same result keeps the shown list");
+        vm.Query = "a"; // Alpha starts with it; Bravo, Charlie and Delta only contain it
+        Check(vm.Visible[0].Id == "s1" && vm.Visible.Count == 4, "shelf: a name that starts with the query comes first");
+        vm.Query = "o"; // only inside Bravo, Echo and Foxtrot, none played: the shelf's order (by name)
+        Check(vm.Visible.Select(g => g.Id).SequenceEqual(["s2", "x1", "m1"]), "shelf: within a rank, the shelf's order");
         vm.Query = "zzz";
+        Check(vm.EnterGame is null && !vm.PlayEnterGame() && spy.Calls.Count == 0, "shelf: Enter with no match does nothing");
         Check(vm.EmptyVisible && vm.EmptyClearVisible && !vm.EmptyImportVisible && vm.EmptyActionsVisible &&
               vm.EmptyText.StartsWith("No games match “zzz”") && vm.EmptyGlyph == "", "shelf: no match offers to clear the search");
         vm.Query = "";
@@ -851,11 +862,12 @@ static partial class Tests
         Check(vm.Visible[0].Id == "s2" && spy.Saves == 2, "shelf: favorites first");
         vm.ShowWeekCard(true);
         Check(vm.ShowWeek && !vm.ContinueVisible && settings.SpotlightShowsWeek && spy.Saves == 3, "shelf: the This week card is remembered");
+        Check(vm.EnterGame is null && vm.Placeholder == "Search 6 games", "shelf: with This week showing, Enter waits for a search");
         vm.ShowWeekCard(true);
         Check(spy.Saves == 3, "shelf: the same card saves nothing");
 
         vm.SetCrashShown(true);
-        Check(vm.CrashVisible && !vm.SpotlightVisible && vm.CrashShown, "shelf: the crash card takes the top slot");
+        Check(vm.CrashVisible && !vm.SpotlightVisible && vm.CrashShown && vm.EnterGame is null, "shelf: the crash card takes the top slot");
         vm.SetCrashShown(false);
         Check(!vm.CrashVisible && vm.SpotlightVisible, "shelf: the top slot comes back");
 
@@ -863,6 +875,7 @@ static partial class Tests
         Check(vm.ShowsWelcome && vm.ContinueGame?.Id == "e1" && vm.ContinueEyebrow == "Welcome back" && !vm.ShowWeek && !vm.SwitchVisible &&
               vm.ContinueDetail.EndsWith(" this week") && vm.MilestoneVisible && vm.ContinueMilestone == "10 hours in Charlie",
             "shelf: Welcome back takes the top slot, with its milestone and no switch");
+        Check(vm.EnterGame?.Id == "e1" && vm.Placeholder.EndsWith("Enter plays Charlie"), "shelf: Enter plays the Welcome back game");
         vm.SetWelcome(null);
         Check(!vm.ShowsWelcome && vm.ContinueGame?.Id == "s1" && vm.ContinueEyebrow == "Continue playing" && !vm.MilestoneVisible &&
               vm.ShowWeek && vm.SwitchVisible, "shelf: the next opening shows the normal slot again");

@@ -2468,4 +2468,13 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   <data name="SetupGmCouldntAllow" xml:space="preserve">
     <value>Admin-Hilfsprogramm konnte nicht zugelassen werden</value>
   </data>
+  <data name="SearchEnterPlays" xml:space="preserve">
+    <value>{0} · Eingabetaste spielt {1}</value>
+  </data>
+  <data name="SearchEnterHelp" xml:space="preserve">
+    <value>Die Eingabetaste spielt das erste Ergebnis</value>
+  </data>
+  <data name="EnterKey" xml:space="preserve">
+    <value>Eingabe</value>
+  </data>
 </root>

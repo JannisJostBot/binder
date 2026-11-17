@@ -43,6 +43,8 @@ public sealed partial class GameTile : UserControl
         InitializeComponent();
         ToolTipService.SetToolTip(FavoriteBadge, Strings.Favorite);
         ToolTipService.SetToolTip(DetailsButton, Strings.Details);
+        EnterHintText.Text = Strings.EnterKey;
+        AutomationProperties.SetAccessibilityView(EnterHint, Microsoft.UI.Xaml.Automation.Peers.AccessibilityView.Raw);
         Cover.ImageChanged += hasImage => PlaceholderTitle.Visibility = hasImage ? Visibility.Collapsed : Visibility.Visible;
         PlayMark.Translation = new Vector3(0, PlayRise, 0);
         // The grid item handles the press itself, so listen to handled events too.
@@ -87,6 +89,9 @@ public sealed partial class GameTile : UserControl
         Shine.SetOn(game.Favorite && App.Settings.ShinyFavorites && !Accessibility.HighContrast);
         AutomationProperties.SetName(DetailsButton, Strings.Format(Strings.DetailsFor, game.Name));
     }
+
+    /// <summary>The search's top match shows an "Enter" key (Enter in the search box plays it).</summary>
+    public void SetEnterHint(bool on) => EnterHint.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
 
     /// <summary>The sheen follows the pointer over a favourite (§13 d); still with "Animation effects" off.</summary>
     private void OnCoverPointerMoved(object sender, PointerRoutedEventArgs e)

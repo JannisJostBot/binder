@@ -64,7 +64,8 @@
                 </InfoBar.ActionButton>
             </InfoBar>
             <AutoSuggestBox x:Name="SearchBox" PlaceholderText="{x:Bind ViewModel.Placeholder, Mode=OneWay}" QueryIcon="Find"
-                            AutomationProperties.Name="{x:Bind s:Strings.SearchGames}" TextChanged="OnSearchChanged"
+                            AutomationProperties.Name="{x:Bind s:Strings.SearchGames}" AutomationProperties.HelpText="{x:Bind s:Strings.SearchEnterHelp}"
+                            TextChanged="OnSearchChanged"
                             PreviewKeyDown="OnSearchKeyDown" />
         </StackPanel>
 

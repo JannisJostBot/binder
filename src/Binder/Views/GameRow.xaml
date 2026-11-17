@@ -20,6 +20,10 @@
                        TextTrimming="CharacterEllipsis" />
             <FontIcon x:Name="FavoriteIcon" Glyph="&#xE735;" FontSize="11" Foreground="{ThemeResource FavoriteBrush}"
                       Visibility="Collapsed" />
+            <!-- The search's top match (spec §22 a): Enter in the search box plays it. -->
+            <Border x:Name="EnterHint" Style="{StaticResource KeyCap}" Visibility="Collapsed">
+                <TextBlock x:Name="EnterHintText" Style="{StaticResource KeyCapText}" />
+            </Border>
         </StackPanel>
         <TextBlock x:Name="SourceText" Grid.Column="2" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center"
                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

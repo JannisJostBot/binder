@@ -825,4 +825,7 @@ public sealed partial class Strings
     public static string SetupGmDeclined => Get(nameof(SetupGmDeclined));
     public static string SetupAllowAndFinish => Get(nameof(SetupAllowAndFinish));
     public static string SetupGmCouldntAllow => Get(nameof(SetupGmCouldntAllow));
+    public static string SearchEnterPlays => Get(nameof(SearchEnterPlays));
+    public static string SearchEnterHelp => Get(nameof(SearchEnterHelp));
+    public static string EnterKey => Get(nameof(EnterKey));
 }

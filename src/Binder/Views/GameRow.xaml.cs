@@ -15,7 +15,12 @@ public sealed partial class GameRow : UserControl
     {
         InitializeComponent();
         ToolTipService.SetToolTip(DetailsButton, Strings.Details);
+        EnterHintText.Text = Strings.EnterKey;
+        AutomationProperties.SetAccessibilityView(EnterHint, Microsoft.UI.Xaml.Automation.Peers.AccessibilityView.Raw);
     }
+
+    /// <summary>The search's top match shows an "Enter" key (Enter in the search box plays it).</summary>
+    public void SetEnterHint(bool on) => EnterHint.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
 
     /// <summary>Called when the Details (i) button is pressed. Clicking the row itself plays.</summary>
     public Action<Game>? DetailsRequested { get; set; }

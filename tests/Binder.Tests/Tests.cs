@@ -101,6 +101,7 @@ static partial class Tests
         SetupViewModelTests();
         ShelfViewModelTests();
         ShelfUpdateTests();
+        GameSearchTests();
         FormatTests();
         LocalizationTests();
         DocsTests();
@@ -113,6 +114,44 @@ static partial class Tests
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");
         return fails;
+    }
+
+    /// <summary>Spec §22 a: the search's ranking and initials.</summary>
+    static void GameSearchTests()
+    {
+        var invariant = System.Globalization.CultureInfo.InvariantCulture.CompareInfo;
+        GameSearch.Rank M(string name, string query) => GameSearch.Match(name, query, invariant);
+        Check(M("Baldur's Gate 3", "bal") == GameSearch.Rank.Prefix, "search: the name starts with it");
+        Check(M("Baldur's Gate 3", "gate") == GameSearch.Rank.WordStart && M("Baldur's Gate 3", "3") == GameSearch.Rank.WordStart,
+            "search: a word starts with it");
+        Check(M("Baldur's Gate 3", "s gate") == GameSearch.Rank.Anywhere, "search: an apostrophe doesn't start a word");
+        Check(M("Baldur's Gate 3", "bg3") == GameSearch.Rank.Initials && M("Red Dead Redemption 2", "RDR2") == GameSearch.Rank.Initials &&
+              M("Left 4 Dead 2", "l4d2") == GameSearch.Rank.Initials && M("Fallout 76", "f76") == GameSearch.Rank.Initials &&
+              M("Cyberpunk 2077", "c2077") == GameSearch.Rank.Initials, "search: initials, numbers whole");
+        Check(M("The Elder Scrolls V: Skyrim", "esv") == GameSearch.Rank.Initials && M("The Elder Scrolls V: Skyrim", "tesv") == GameSearch.Rank.Initials,
+            "search: a leading The may be left out of the initials");
+        Check(M("Left4Dead", "dead") == GameSearch.Rank.WordStart && M("Left4Dead", "l4d") == GameSearch.Rank.Initials,
+            "search: digits after letters start a word");
+        Check(M("Hades II", "des") == GameSearch.Rank.Anywhere && M("Hades II", "xyz") == GameSearch.Rank.None, "search: anywhere, or not at all");
+        Check(M("Pokémon", "pokemon") == GameSearch.Rank.Prefix && M("ÖKOSIM", "oko") == GameSearch.Rank.Prefix, "search: accents and case ignored");
+        Check(M("Hades", "h") == GameSearch.Rank.Prefix && M("Half-Life", "h") == GameSearch.Rank.Prefix && M("Ah", "h") == GameSearch.Rank.Anywhere,
+            "search: one letter never counts as initials");
+        Check(GameSearch.Initials("The Witcher 3: Wild Hunt").SequenceEqual(["TW3WH", "W3WH"]), "search: the initials, with and without The");
+
+        var games = new List<Game>
+        {
+            new() { Id = "a", Name = "Gate Crasher" },
+            new() { Id = "b", Name = "Baldur's Gate 3" },
+            new() { Id = "c", Name = "Big Gun 3" },
+            new() { Id = "d", Name = "Aggate" },
+            new() { Id = "e", Name = "Gatekeeper" },
+        };
+        var played = new Dictionary<string, DateTimeOffset> { ["e"] = DateTimeOffset.Now.AddDays(-2), ["a"] = DateTimeOffset.Now.AddDays(-9) };
+        Check(GameSearch.Search(games, "gate", played).Select(g => g.Id).SequenceEqual(["e", "a", "b", "d"]),
+            "search: by rank, most recently played first within one, then the order given");
+        Check(GameSearch.Search(games, "bg3", played).Select(g => g.Id).SequenceEqual(["b", "c"]) &&
+              GameSearch.Search(games, "bal", played).Select(g => g.Id).SequenceEqual(["b"]), "search: initials find both, a prefix one");
+        Check(GameSearch.Search(games, "  ", played).Count == 5, "search: an empty query matches everything");
     }
 
     /// <summary>Milestone 8: generated cover colors and initials, sort orders.</summary>

@@ -55,6 +55,7 @@ public sealed partial class ShelfViewModel : ObservableObject
     private IReadOnlyList<Session>? _statsFor;
     private int _statsCount = -1;
     private string _query = "";
+    private bool _shownSearching;
 
     public ShelfViewModel(IShelfActions actions)
     {
@@ -121,6 +122,7 @@ public sealed partial class ShelfViewModel : ObservableObject
     [
         nameof(Placeholder), nameof(SortVisible), nameof(EmptyVisible), nameof(EmptyGlyph), nameof(EmptyText),
         nameof(EmptyActionsVisible), nameof(EmptyClearVisible), nameof(EmptyImportVisible), nameof(Searching),
+        nameof(EnterGame),
     ];
 
     /// <summary>The games shown, in order. A new list only when what's shown changes (or the data did).</summary>
@@ -138,7 +140,35 @@ public sealed partial class ShelfViewModel : ObservableObject
     }
 
     public bool Searching => _query.Trim().Length > 0;
-    public string Placeholder { get; private set; } = Strings.SearchGames;
+
+    /// <summary>
+    /// "Search 72 games", or with Enter's game "Search 72 games · Enter plays Hades II" (spec §22 b), which also
+    /// teaches the Enter key.
+    /// </summary>
+    public string Placeholder
+    {
+        get
+        {
+            var search = Strings.Plural(_sorted.Count, Strings.SearchCountOne, Strings.SearchCount);
+            return !Searching && EnterGame is { } game ? Strings.Format(Strings.SearchEnterPlays, search, game.Name) : search;
+        }
+    }
+
+    /// <summary>
+    /// What Enter in the search box plays (spec §22 a, b): the top match while searching; with nothing typed the
+    /// "Continue playing" (or "Welcome back") game, only while the top slot shows it. Null: Enter does nothing.
+    /// </summary>
+    public Game? EnterGame =>
+        Searching ? (Visible.Count > 0 ? Visible[0] : null)
+        : !_crashShown && SpotlightVisible && !ShowWeek ? ContinueGame : null;
+
+    /// <summary>Enter in the search box: plays <see cref="EnterGame"/>. False when there's nothing to play.</summary>
+    public bool PlayEnterGame()
+    {
+        if (EnterGame is not { } game) return false;
+        _actions.Play(game);
+        return true;
+    }
     public bool SortVisible { get; private set; } = true;
     public bool EmptyVisible { get; private set; }
     public string EmptyGlyph { get; private set; } = "";
@@ -169,15 +199,18 @@ public sealed partial class ShelfViewModel : ObservableObject
         foreach (var game in _sorted)
         {
             if (chip is not null && !chip(game)) continue;
-            if (query.Length > 0 && !game.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)) continue;
             visible.Add(game);
         }
-        // "Recent" is its own order (only played games, usually a few); everything else follows the sort menu.
-        if (CurrentFilter == "Recent") visible.Sort((a, b) => _lastPlayed[b.Id].CompareTo(_lastPlayed[a.Id]));
+        // While searching the best match comes first, so Enter plays it (spec §22 a). Otherwise "Recent" is its own
+        // order (only played games, usually a few); everything else follows the sort menu.
+        if (query.Length > 0) visible = GameSearch.Search(visible, query, _lastPlayed);
+        else if (CurrentFilter == "Recent") visible.Sort((a, b) => _lastPlayed[b.Id].CompareTo(_lastPlayed[a.Id]));
 
-        bool same = !force && visible.Count == Visible.Count && visible.SequenceEqual(Visible, ReferenceEqualityComparer.Instance);
+        // The first tile's "Enter" hint comes and goes with searching: the tiles are drawn again then.
+        bool searchingChanged = (query.Length > 0) != _shownSearching;
+        _shownSearching = query.Length > 0;
+        bool same = !force && !searchingChanged && visible.Count == Visible.Count && visible.SequenceEqual(Visible, ReferenceEqualityComparer.Instance);
         if (!same) Visible = visible;
-        Placeholder = Strings.Plural(_sorted.Count, Strings.SearchCountOne, Strings.SearchCount);
         SortVisible = CurrentFilter != "Recent";
 
         EmptyVisible = Visible.Count == 0;
@@ -351,7 +384,7 @@ public sealed partial class ShelfViewModel : ObservableObject
 
     private static readonly string[] SpotlightNames =
     [
-        nameof(CrashVisible), nameof(SpotlightVisible), nameof(ShowWeek), nameof(ContinueVisible), nameof(SwitchVisible),
+        nameof(Placeholder), nameof(EnterGame), nameof(CrashVisible), nameof(SpotlightVisible), nameof(ShowWeek), nameof(ContinueVisible), nameof(SwitchVisible),
     ];
 
     private bool _crashShown;

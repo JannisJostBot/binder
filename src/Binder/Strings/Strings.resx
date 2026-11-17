@@ -3289,4 +3289,16 @@ Calm: efficiency mode while you play</value>
     <value>Couldn't allow the admin helper</value>
     <comment>Title of the error notice on the last setup step when installing the admin helper failed.</comment>
   </data>
+  <data name="SearchEnterPlays" xml:space="preserve">
+    <value>{0} · Enter plays {1}</value>
+    <comment>Placeholder of the shelf's search box while nothing is typed. {0} = SearchCount ("Search 72 games"), {1} = the name of the game Enter starts. "Enter" is the keyboard key.</comment>
+  </data>
+  <data name="SearchEnterHelp" xml:space="preserve">
+    <value>Enter plays the first result</value>
+    <comment>Screen-reader help text of the shelf's search box. "Enter" is the keyboard key; use its name as Windows does.</comment>
+  </data>
+  <data name="EnterKey" xml:space="preserve">
+    <value>Enter</value>
+    <comment>A small keyboard key drawn on the search's first result: pressing this key in the search box plays it. The key's name as printed on keyboards in your language. Very short.</comment>
+  </data>
 </root>
