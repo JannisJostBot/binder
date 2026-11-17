@@ -127,7 +127,7 @@
       <li style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); padding: 24px; display: flex; flex-direction: column; gap: 14px">
         <div style="height: 128px; border-radius: 4px; background: var(--surface-2); border: 1px solid var(--divider); padding: 8px 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; font-size: 14px">
           <div style="display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border)"><span>Binder</span><span style="color: var(--text-2)">Not running</span></div>
-          <div style="display: flex; justify-content: space-between; gap: 12px; padding: 8px 0"><span>Helper</span><span style="color: var(--text-2)">About 3 MB, waiting</span></div>
+          <div style="display: flex; justify-content: space-between; gap: 12px; padding: 8px 0"><span>Helper</span><span style="color: var(--text-2)">About <!-- n:watcher -->3 MB<!-- /n -->, waiting</span></div>
         </div>
         <div style="display: flex; align-items: center; gap: 10px">
           <span style="width: 28px; height: 28px; border-radius: 14px; background: var(--accent); color: var(--on-accent); font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center">2</span>
@@ -163,13 +163,13 @@
             </tr>
           </thead>
           <tbody>
-            <tr><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider)">Binder is open</td><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider); color: var(--text-2)">About 130–230 MB, more with many covers</td><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider); color: var(--text-2)">Only while you use it</td></tr>
-            <tr><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider)">Closed, waiting in the notification area</td><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider); color: var(--text-2)">About 12 MB</td><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider); color: var(--text-2)">None</td></tr>
-            <tr><td style="padding: 12px 20px">A game is running</td><td style="padding: 12px 20px; color: var(--text-2)">Binder: none (it's closed). Helper: about 3 MB</td><td style="padding: 12px 20px; color: var(--text-2)">None once the game is found</td></tr>
+            <tr><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider)">Binder is open</td><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider); color: var(--text-2)">About <!-- n:open -->130–230 MB, more with many covers<!-- /n --></td><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider); color: var(--text-2)">Only while you use it</td></tr>
+            <tr><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider)">Closed, waiting in the notification area</td><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider); color: var(--text-2)">About <!-- n:closed -->12 MB<!-- /n --></td><td style="padding: 12px 20px; border-bottom: 1px solid var(--divider); color: var(--text-2)">None</td></tr>
+            <tr><td style="padding: 12px 20px">A game is running</td><td style="padding: 12px 20px; color: var(--text-2)">Binder: none (it's closed). Helper: about <!-- n:watcher -->3 MB<!-- /n --></td><td style="padding: 12px 20px; color: var(--text-2)">None once the game is found</td></tr>
           </tbody>
         </table>
       </div>
-      <p style="margin: 0; font-size: 13px; color: var(--text-2)">Measured on [TEST PC]. Your numbers will vary with the size of your library.</p>
+      <p style="margin: 0; font-size: 13px; color: var(--text-2)"><!-- n:measured -->Measured on [TEST PC]<!-- /n -->. Your numbers will vary with the size of your library.</p>
     </div>
   </section>
 

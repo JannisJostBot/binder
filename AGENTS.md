@@ -84,6 +84,9 @@ from this repo (for example with GitHub Pages) once the repo is public.
 - The text is factual and plain: only what the app really does, numbers only from the card, no marketing words
   ("amazing", "seamless", "blazing fast"). Placeholders in square brackets (`[DOWNLOAD LINK]`) stay until a card
   gives the real value.
+- The numbers in "How much it uses" (and the helper's "About … MB") sit between `<!-- n:key -->` and
+  `<!-- /n -->` markers. A workflow writes them for each release (`scripts/site-numbers.ps1`); don't edit the text
+  between the markers or remove them.
 - Keep the "Before you download" section (the AI disclaimer and "Not affiliated") as it is.
 - Check your change by opening `site/index.html` in a browser, at full width and at about 390 px wide (phone):
   nothing may overflow sideways. Say in your report that you did.

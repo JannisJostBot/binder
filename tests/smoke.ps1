@@ -18,6 +18,8 @@ New-Item -ItemType Directory -Force $art | Out-Null
 $dataDir = Join-Path $env:APPDATA 'Binder'
 New-Item -ItemType Directory -Force $dataDir | Out-Null
 $metrics = @()
+# The website's "How much it uses" numbers (scripts/site-numbers.ps1 writes them into site/index.html).
+$siteNumbers = [ordered]@{}
 $testStart = Get-Date
 $watcherBuild = if ($env:WATCHER_BUILD) { $env:WATCHER_BUILD } else { 'JIT' }
 
@@ -199,6 +201,12 @@ function Add-MemoryReport([string] $label) {
     Remove-Item $report -ErrorAction SilentlyContinue
     Start-Process $Exe -ArgumentList '--memory-report' -Wait
     if (Test-Path $report) { $script:metrics += "Memory report ($label): " + ((Get-Content $report | Select-Object -Skip 1) -join '; ') }
+}
+
+# Task Manager's "Memory" column (Details: "Memory (private working set)"), in MB; the number users compare with.
+function Get-PrivateWorkingSetMB($process) {
+    $p = Get-CimInstance Win32_PerfFormattedData_PerfProc_Process -Filter "IDProcess=$($process.Id)" -ErrorAction SilentlyContinue
+    if ($p) { [math]::Round($p.WorkingSetPrivate / 1MB, 1) }
 }
 
 function Assert-Running($process, [string] $when) {
@@ -533,7 +541,10 @@ try {
     $w0 = $watcher.TotalProcessorTime
     Start-Sleep -Seconds 5
     $watcher.Refresh()
-    $metrics += "Watcher while game runs: $([math]::Round($watcher.WorkingSet64 / 1MB, 1)) MB working set, $([math]::Round($watcher.PrivateMemorySize64 / 1MB, 1)) MB private, CPU over 5 s: $([int]($watcher.TotalProcessorTime - $w0).TotalMilliseconds) ms ($watcherBuild build)"
+    $watcherCpu = [int]($watcher.TotalProcessorTime - $w0).TotalMilliseconds
+    $watcherPws = Get-PrivateWorkingSetMB $watcher
+    $metrics += "Watcher while game runs: $([math]::Round($watcher.WorkingSet64 / 1MB, 1)) MB working set, $([math]::Round($watcher.PrivateMemorySize64 / 1MB, 1)) MB private, $watcherPws MB private working set, CPU over 5 s: $watcherCpu ms ($watcherBuild build)"
+    if ($watcherBuild -eq 'Native AOT') { $siteNumbers.watcherMB = $watcherPws; $siteNumbers.watcherCpuMs = $watcherCpu }
     if ($watcherBuild -eq 'Native AOT' -and $watcher.PrivateMemorySize64 -gt 3MB) {
         # Private bytes: the watcher's own memory. Working set also counts shared Windows DLL pages.
         Write-Host "::warning::Watcher private memory is $([math]::Round($watcher.PrivateMemorySize64 / 1MB, 1)) MB (budget: ~3 MB)"
@@ -585,12 +596,15 @@ try {
     Assert-Running $widget 'closing the flyout'
     $widget.Refresh()
     Add-MemoryReport 'closed after use'
-    $metrics += "Stay ready (closed after use): working set $([math]::Round($widget.WorkingSet64 / 1MB, 1)) MB, private $([math]::Round($widget.PrivateMemorySize64 / 1MB, 1)) MB"
+    $closedPws = Get-PrivateWorkingSetMB $widget
+    $metrics += "Stay ready (closed after use): working set $([math]::Round($widget.WorkingSet64 / 1MB, 1)) MB, private $([math]::Round($widget.PrivateMemorySize64 / 1MB, 1)) MB, private working set $closedPws MB"
+    $siteNumbers.closedMB = $closedPws
     $c0 = $widget.TotalProcessorTime
     Start-Sleep -Seconds 10
     $widget.Refresh()
     $closedCpu = [int]($widget.TotalProcessorTime - $c0).TotalMilliseconds
     $metrics += "Stay ready: CPU over 10 s while closed: $closedCpu ms"
+    $siteNumbers.closedCpuMs = $closedCpu
     if ($closedCpu -gt 100) { Write-Host "::warning::CPU while closed was $closedCpu ms over 10 s (budget: ~0)" }
 
     # Open with the shortcut and time it, then Esc closes.
@@ -644,7 +658,10 @@ try {
     Start-Sleep -Seconds 4
     $widget.Refresh()
     Add-MemoryReport 'open'
-    $metrics += "Flyout open: working set $([math]::Round($widget.WorkingSet64 / 1MB, 1)) MB, private $([math]::Round($widget.PrivateMemorySize64 / 1MB, 1)) MB"
+    $openPws = Get-PrivateWorkingSetMB $widget
+    $metrics += "Flyout open: working set $([math]::Round($widget.WorkingSet64 / 1MB, 1)) MB, private $([math]::Round($widget.PrivateMemorySize64 / 1MB, 1)) MB, private working set $openPws MB"
+    $siteNumbers.openMB = $openPws
+    $siteNumbers.games = @((Get-Content (Join-Path $dataDir 'library.json') -Raw | ConvertFrom-Json) | ForEach-Object { $_ }).Count
     Shot '21-flyout-after-background'
 }
 finally {
@@ -662,6 +679,14 @@ finally {
     } catch { }
     $metrics | ForEach-Object { Write-Host $_ }
     $metrics | Set-Content (Join-Path $art 'metrics.txt')
+    # The test machine, for the website's "Measured on" line.
+    try {
+        $os = Get-CimInstance Win32_OperatingSystem
+        $siteNumbers.windows = $os.Caption -replace '^Microsoft\s+', ''
+        $siteNumbers.cores = (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors
+        $siteNumbers.ramGB = [int][math]::Round($os.TotalVisibleMemorySize / 1MB)
+    } catch { }
+    $siteNumbers | ConvertTo-Json | Set-Content (Join-Path $art 'site-numbers.json')
     Copy-Item (Join-Path $dataDir '*.json') $art -ErrorAction SilentlyContinue
     Get-Process Binder, Binder.Watcher, FakeGame -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     Remove-ItemProperty $runKey 'Binder' -ErrorAction SilentlyContinue

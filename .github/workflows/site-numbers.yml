@@ -1,0 +1,103 @@
+name: Website numbers
+
+# For each published release: build that release, run the UI smoke test (which measures memory and processor use),
+# write the numbers into the website's "How much it uses" table (scripts/site-numbers.ps1) and open a pull request
+# with the change. The site is published from main, so the numbers go live when the owner merges it.
+#
+# Rules for this file (protected, AGENTS.md "Don't touch"): every action pinned to a commit hash (its version in
+# the comment); no secrets beyond the run's own token, which only the last step gets; no pull_request_target.
+# A pull request opened with the run's token starts no CI run; the change is only the marked text in index.html.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to measure, e.g. v0.2.1'
+        required: true
+
+permissions:
+  contents: write        # the site-numbers/<tag> branch
+  pull-requests: write   # the pull request
+
+concurrency:
+  group: site-numbers
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check the tag
+        id: tag
+        shell: pwsh
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          if ($env:TAG -notmatch '^v(\d{1,5}\.\d{1,5}\.\d{1,5})$') { Write-Host "Not a release tag: $env:TAG"; exit 1 }
+          "tag=$env:TAG" >> $env:GITHUB_OUTPUT
+          "version=$($Matches[1])" >> $env:GITHUB_OUTPUT
+
+      # The released code, without the token: nothing it runs can push.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ steps.tag.outputs.tag }}
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish
+        run: |
+          ./scripts/publish.ps1 -Output publish
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build stand-in game
+        run: dotnet build tests/FakeGame -c Release
+
+      - name: UI smoke test
+        shell: powershell
+        env:
+          WATCHER_BUILD: Native AOT
+        run: ./tests/smoke.ps1 -Exe publish/app/Binder.exe -FakeGame tests/FakeGame/out/FakeGame.exe
+
+      # main's page and main's script, the numbers from this release's run. Only this step has the token.
+      - name: Open a pull request with the numbers
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $numbers = (Resolve-Path artifacts/site-numbers.json).Path
+          Get-Content $numbers | Write-Host
+          $auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:GH_TOKEN"))
+          $git = @('-c', "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth")
+          $dir = Join-Path $env:RUNNER_TEMP 'main'
+          git @git clone --quiet --depth 1 --branch main "https://github.com/$env:GITHUB_REPOSITORY.git" $dir
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Set-Location $dir
+          ./scripts/site-numbers.ps1 -Numbers $numbers -Version $env:VERSION -Site site/index.html
+          git diff --quiet -- site/index.html
+          if ($LASTEXITCODE -eq 0) { Write-Host 'Nothing to change.'; exit 0 }
+          $branch = "site-numbers/$env:TAG"
+          git switch --quiet -c $branch
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' `
+            commit --quiet -m "Website: numbers measured for $env:TAG" -- site/index.html
+          git @git push --quiet --force origin $branch
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $runUrl = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
+          $existing = gh pr list --repo $env:GITHUB_REPOSITORY --head $branch --state open --json number --jq '.[0].number'
+          if ($existing) { Write-Host "Pull request #$existing updated."; exit 0 }
+          $body = "The website's ""How much it uses"" numbers, measured for $env:TAG by the UI smoke test on GitHub's " +
+            "Windows test machine ($runUrl). Only the marked text in site/index.html changes; the site goes live from " +
+            "main once this is merged.`n`nOpened by the Website numbers workflow; its own token starts no CI run."
+          gh pr create --repo $env:GITHUB_REPOSITORY --base main --head $branch `
+            --title "Website: numbers for $env:TAG" --body $body
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "::warning::Couldn't open the pull request (Settings > Actions > General: 'Allow GitHub Actions to create and approve pull requests'). The branch $branch is pushed; open it by hand."
+          }

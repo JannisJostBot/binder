@@ -93,6 +93,8 @@ tests/Binder.Tests/    plain console unit tests (no test framework packages); sm
 scripts/                  publish.ps1 (builds publish\app: widget folder + AOT watcher + helper, and BinderSetup.exe),
                           check.ps1 (the hard rules on a diff, then build + tests; -Task for agent cards),
                           sign-release.ps1 (owner only: sign a release with the YubiKeys, spec §25),
+                          site-numbers.ps1 (the smoke test's measurements into the website's "How much it uses";
+                          run per published release by .github/workflows/site-numbers.yml, which opens a PR),
                           make-tray-icons.ps1 / make-watcher-icon.ps1 (redraw icons after a logo change)
 site/                     one-page website: plain HTML + CSS, no scripts, nothing from other servers
 docs/proposals.md         approved feature specs, progress table (§0), decisions log, "Not decided"

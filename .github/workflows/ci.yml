@@ -77,6 +77,17 @@ jobs:
           WATCHER_BUILD: Native AOT
         run: ./tests/smoke.ps1 -Exe publish/app/Binder.exe -FakeGame tests/FakeGame/out/FakeGame.exe
 
+      # The website's numbers as the release workflow (site-numbers.yml) would write them, on a copy of the page:
+      # catches a broken marker or a measurement the page would contradict before a release. The result is in
+      # the artifacts (site-preview.html); it doesn't fail the run, since a busy test machine can be noisy.
+      - name: Website numbers (preview)
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $version = ([xml](Get-Content -Raw Directory.Build.props)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          Copy-Item site/index.html artifacts/site-preview.html
+          ./scripts/site-numbers.ps1 -Numbers artifacts/site-numbers.json -Version $version -Site artifacts/site-preview.html
+
       # The installer: install through its dialogs, update while the app and a watcher run, uninstall.
       - name: Setup test
         if: always()
