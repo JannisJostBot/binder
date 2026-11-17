@@ -55,8 +55,15 @@ public sealed partial class GameTile : UserControl
     private void OnTitleTrimmedChanged(TextBlock sender, IsTextTrimmedChangedEventArgs args) =>
         ToolTipService.SetToolTip(sender, sender.IsTextTrimmed ? sender.Text : null);
 
-    private void OnCoverSizeChanged(object sender, SizeChangedEventArgs e) =>
+    private void OnCoverSizeChanged(object sender, SizeChangedEventArgs e)
+    {
         CoverArea.CenterPoint = new Vector3((float)e.NewSize.Width / 2, (float)e.NewSize.Height / 2, 0);
+        bool narrow = e.NewSize.Width < NarrowCover; // Small and Medium covers: the ↵ symbol, the title keeps its room
+        EnterHintText.Visibility = narrow ? Visibility.Collapsed : Visibility.Visible;
+        EnterHintGlyph.Visibility = narrow ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private const double NarrowCover = 150;
 
     /// <summary>Called when the Details (i) button is pressed.</summary>
     public Action<Game>? DetailsRequested { get; set; }

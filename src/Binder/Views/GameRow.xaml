@@ -5,7 +5,7 @@
              IsTabStop="False">
     <!-- List view (board 11): small cover, name, launcher, last played. Clicking the row plays, like a cover;
          the Details (i) button appears on hover. -->
-    <Grid Height="52" ColumnSpacing="12" Background="Transparent" PointerEntered="OnPointerEntered"
+    <Grid x:Name="Row" Height="52" ColumnSpacing="12" SizeChanged="OnRowSizeChanged" Background="Transparent" PointerEntered="OnPointerEntered"
           PointerExited="OnPointerExited" PointerCanceled="OnPointerExited" PointerCaptureLost="OnPointerExited">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -15,9 +15,11 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <v:CoverView x:Name="Cover" Width="30" Height="40" DecodeWidth="30" CornerRadius="4" />
-        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <!-- A horizontal StackPanel never limits its children: NameText's MaxWidth is set in code (FitName) so a long
+             name ends in "…" and the star and the Enter key stay beside it. -->
+        <StackPanel x:Name="NameLine" Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
             <TextBlock x:Name="NameText" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="NoWrap"
-                       TextTrimming="CharacterEllipsis" />
+                       TextTrimming="CharacterEllipsis" IsTextTrimmedChanged="OnNameTrimmedChanged" />
             <FontIcon x:Name="FavoriteIcon" Glyph="&#xE735;" FontSize="11" Foreground="{ThemeResource FavoriteBrush}"
                       Visibility="Collapsed" />
             <!-- The search's top match (spec §22 a): Enter in the search box plays it. -->
