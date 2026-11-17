@@ -1,0 +1,36 @@
+Time to window: 1170 ms (includes UI Automation lookup)
+Epic scan: fake game found, drive-root manifest rejected
+GOG scan: fake game found
+Steam scan: 6 games found, malicious manifest rejected
+Idle CPU over 10 s: 0 ms
+Working set: 140 MB, private: 70 MB
+Launcher badges on screen: 9 (Dota 2 x1, Steam x6, Epic Games x1, GOG x1)
+Generated cover: icon of the manual game cached
+Cover size (List, Small, Medium) and sort by name: applied and saved
+Top slot: switched to This week and saved
+Hide and show again from Settings: yes
+Start with Windows: quoted Run entry added and removed
+Z-order at start: widget 80, desktop (Progman) 81
+Desktop layer: behind a new window: True, still behind after clicking the widget: True
+Win+D: widget visible: True, minimized: False, z-order widget 13 vs foreground 16 (Progman)
+Win+D: top visible windows: 3:Shell_TrayWnd, 13:WinUIDesktopWin32WindowClass (widget), 16:Progman, 53:#32770, 75:DummyDWMListenerWindow, 76:EdgeUiInputTopWndClass, 77:DummyDWMListenerWindow, 78:DummyDWMListenerWindow
+Shortcut import: 2 moved off the desktop, Steam link merged, web link left alone
+Shortcut restore: both back on the desktop, removed from the shelf
+Auto-hide taskbar: widget bottom 692 -> 692 (screen 768, taskbar 48 px), back to 692 when turned off
+Widget exited after launch: yes
+Watcher while game runs: 9.1 MB working set, 3 MB private, CPU over 5 s: 0 ms (Native AOT build)
+Widget came back and the session was recorded: yes
+First-run setup: four steps, saved, flyout kept as the default, Game mode left off
+Memory report (closed after use): private bytes: 81.8 MB; working set: 7.0 MB; managed heap (live): 2.6 MB; managed heap (committed): 2.6 MB; not managed (private - committed): 79.2 MB; threads: 28
+Stay ready (closed after use): working set 6.4 MB, private 80.8 MB
+Stay ready: CPU over 10 s while closed: 0 ms
+Time to open (Win+Shift+G, warm process): 302 ms to visible
+Esc closes the flyout: yes
+Click-away closes the flyout: yes
+Time to open (second start forwarding to the running one): 318 ms
+Second start toggles the running instance: yes
+Memory report (never opened): private bytes: 12.9 MB; working set: 7.6 MB; managed heap (live): 0.6 MB; managed heap (committed): 0.6 MB; not managed (private - committed): 12.2 MB; threads: 10
+Stay ready (started with Windows, never opened): working set 6.8 MB, private 11.8 MB
+Time to open (first open after starting with Windows): 318 ms to visible
+Memory report (open): private bytes: 67.2 MB; working set: 118.3 MB; managed heap (live): 0.6 MB; managed heap (committed): 0.6 MB; not managed (private - committed): 66.6 MB; threads: 26
+Flyout open: working set 118.3 MB, private 67.2 MB
