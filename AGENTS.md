@@ -53,7 +53,8 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
   `CoverCache`, `Storage`, `RunningGames`, `GameLogs`, `GameModeService`) and `Views/PanelBackdrop.cs`
 - The library sources and security checks: `Library/*Source.cs`, `SourceDefaults.cs`, `InstallFolder.cs`, `ShortcutFile.cs`,
   `ShortcutImporter.cs`, `Vdf.cs`, `LibraryScanner.cs`
-- Updates: `Library/UpdateManifest.cs`, `Services/UpdateKeys.cs`, `Services/Updater.cs`, `docs/releases/`
+- Updates: `Library/UpdateManifest.cs`, `Services/UpdateKeys.cs`, `Services/Updater.cs`, `docs/releases/`,
+  `build/` (`Updates.targets`, `OfficialRelease.props`: the update source and keys)
 - Project and build files (`*.csproj`, `*.sln`, `*.props`), `scripts/`, `.github/`,
   `tests/smoke.ps1`, `tests/setup-test.ps1`, `tests/FakeGame/`
 - `CLAUDE.md`, `AGENTS.md`, `docs/proposals.md`, `docs/installer.md`, `docs/tasks/`

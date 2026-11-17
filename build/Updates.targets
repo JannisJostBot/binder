@@ -1,0 +1,79 @@
+<Project>
+  <!--
+    Where updates come from (spec §25), set at build time and compiled in: never read from a file, the registry or the
+    command line at run time, so nothing on the user's side can swap the keys.
+
+      BinderRepository    owner/name on GitHub: the releases the app checks, and Settings › About's GitHub link.
+      BinderUpdateKeys    the public keys a release manifest must be signed with, separated by spaces or line breaks (one or two;
+                          ECDSA P-384, SubjectPublicKeyInfo in base64, from scripts/sign-release.ps1 -ExportPublicKey).
+      BinderOfficialRelease=true   both from build/OfficialRelease.props (the owner's releases).
+
+    Neither set (any build that isn't an official release or a fork's own): no keys, no repository, and the app never
+    checks for updates. Keys need a repository; a repository alone gives the link without updates.
+
+    Imported by src/Binder/Binder.csproj and tests/Binder.Tests/Binder.Tests.csproj, which compile the generated
+    UpdateConfig.g.cs (the values of Services.UpdateKeys).
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)OfficialRelease.props" />
+
+  <PropertyGroup Condition="'$(BinderOfficialRelease)' == 'true'">
+    <BinderRepository Condition="'$(BinderRepository)' == ''">$(BinderOfficialRepository)</BinderRepository>
+    <BinderUpdateKeys Condition="'$(BinderUpdateKeys)' == ''">$(BinderOfficialUpdateKeys)</BinderUpdateKeys>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BinderUpdateConfigFile>$(BaseIntermediateOutputPath)UpdateConfig.g.cs</BinderUpdateConfigFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(BinderUpdateConfigFile)" Link="Services\UpdateConfig.g.cs" />
+  </ItemGroup>
+
+  <!-- Before anything compiles (the XAML compiler's passes included), and checked: a typo fails the build instead
+       of quietly turning updates off. -->
+  <Target Name="BinderUpdateConfig" BeforeTargets="BeforeBuild;CoreCompile">
+    <PropertyGroup>
+      <_BinderRepository>$(BinderRepository.Trim())</_BinderRepository>
+      <_BinderKeys>$([MSBuild]::Unescape($([System.Text.RegularExpressions.Regex]::Replace($(BinderUpdateKeys.Trim()), '\s+', ';'))))</_BinderKeys>
+    </PropertyGroup>
+    <ItemGroup>
+      <_BinderKey Include="$(_BinderKeys)" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_BinderKeyCount>@(_BinderKey->Count())</_BinderKeyCount>
+      <_BinderDistinctKeyCount>@(_BinderKey->Distinct()->Count())</_BinderDistinctKeyCount>
+    </PropertyGroup>
+
+    <Error Condition="'$(BinderOfficialRelease)' == 'true' and ('$(BinderRepository)' != '$(BinderOfficialRepository)' or '$(BinderUpdateKeys)' != '$(BinderOfficialUpdateKeys)')"
+           Text="BinderOfficialRelease uses the repository and keys in build/OfficialRelease.props; don't pass BinderRepository or BinderUpdateKeys with it." />
+    <Error Condition="'$(_BinderRepository)' != '' and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(_BinderRepository)', '^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]{1,100}$'))"
+           Text="BinderRepository must be owner/name on GitHub, like JannisJostBot/binder: '$(_BinderRepository)'." />
+    <Error Condition="'$(_BinderRepository)' == '' and $(_BinderKeyCount) != 0"
+           Text="BinderUpdateKeys needs BinderRepository: the GitHub repository whose releases they sign." />
+    <Error Condition="$(_BinderKeyCount) &gt; 2"
+           Text="BinderUpdateKeys holds $(_BinderKeyCount) keys; a release is signed with one or two (main and backup)." />
+    <Error Condition="$(_BinderKeyCount) != $(_BinderDistinctKeyCount)"
+           Text="BinderUpdateKeys holds the same key twice." />
+    <!-- A P-384 SubjectPublicKeyInfo is 120 bytes: the same 24-byte header (ending in the uncompressed point's 04),
+         then the point; in base64 a fixed 32-character start and 128 more characters. -->
+    <Error Condition="'@(_BinderKey)' != '' and !$([System.Text.RegularExpressions.Regex]::IsMatch('%(_BinderKey.Identity)', '^MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE[A-Za-z0-9+/]{128}$'))"
+           Text="Not an ECDSA P-384 public key in base64 (scripts/sign-release.ps1 -ExportPublicKey prints one): '%(_BinderKey.Identity)'." />
+
+    <ItemGroup>
+      <_BinderConfigLine Include="// &lt;auto-generated&gt; by build/Updates.targets from BinderRepository and BinderUpdateKeys. &lt;/auto-generated&gt;" />
+      <_BinderConfigLine Include="namespace Binder.Services%3B" />
+      <_BinderConfigLine Include="public static partial class UpdateKeys" />
+      <_BinderConfigLine Include="{" />
+      <_BinderConfigLine Include="%20%20%20%20public const string Repository = &quot;$(_BinderRepository)&quot;%3B" />
+      <_BinderConfigLine Include="%20%20%20%20public static readonly string[] All =" />
+      <_BinderConfigLine Include="%20%20%20%20[" />
+      <_BinderConfigLine Include="@(_BinderKey->'        &quot;%(Identity)&quot;,')" />
+      <_BinderConfigLine Include="%20%20%20%20]%3B" />
+      <_BinderConfigLine Include="}" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(BinderUpdateConfigFile)" Lines="@(_BinderConfigLine)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <FileWrites Include="$(BinderUpdateConfigFile)" />
+    </ItemGroup>
+  </Target>
+</Project>

@@ -1,0 +1,28 @@
+<Project>
+  <!--
+    The official Binder releases' update source (spec §25, "The keys"): the GitHub repository whose releases the app
+    checks, and the public keys a release manifest must be signed with. Used only by a build with
+    -p:BinderOfficialRelease=true (scripts/publish.ps1 -Official, which .github/workflows/release.yml runs);
+    every other build has no keys and never checks for updates (build/Updates.targets).
+
+    The keys: ECDSA P-384, SubjectPublicKeyInfo in base64, as scripts/sign-release.ps1 -ExportPublicKey prints them,
+    one per line. The main key (YubiKey 1) and the backup key (YubiKey 2); either verifies a normal update,
+    an urgent one needs both. sign-release.ps1 reads both values from this file at the tagged commit. Changed only
+    by the owner, in a reviewed change (AGENTS.md "Don't touch").
+
+    A fork that publishes its own releases with release.yml and sign-release.ps1 puts its repository and keys here;
+    for a one-off build, publish.ps1 -Repository and -UpdateKeys do without editing it (docs/installer.md, "Forks").
+  -->
+  <PropertyGroup>
+    <BinderOfficialRepository>JannisJostBot/binder</BinderOfficialRepository>
+    <!-- YubiKey 1 (main), slot 9c, PIN and touch always, CN=Binder release key 1, certificate
+         424ADAC3045F6870BA4F035E531A5BACE5123C89 (made 2026-11-15 with ykman; replaces that day's first key, which
+         didn't need a touch and never signed anything).
+         YubiKey 2 (backup), slot 9c, PIN and touch always, CN=Binder release key 2, certificate
+         83F518D85B66946498E6D59617A6DCBB546EE451 (made 2026-11-15 with ykman). -->
+    <BinderOfficialUpdateKeys>
+      MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE/Oid10BJh+z4UQbDqElyf9kTCHnI2j1ftyjOeuZ6iPz5zJIttQHms3NSbmMZJq0ti3EOUjw3i5jDhDOz2zhpkgq3XDgbv+DaxjL9rEICDlFx7V6zVhSY89hwmzYpYUcQ
+      MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEEgAavj6pM/O49QYOywJT4DkZPdRuNNbzZv3qe2h1ay4s9ewrIagh6OHoK4zwQBcjuLjLN0dnjntdWJJU42dAfMhG+rI2q0Hy+3FSwYej14O5hSa2Pn3+sdhZtdGHAKxK
+    </BinderOfficialUpdateKeys>
+  </PropertyGroup>
+</Project>

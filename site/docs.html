@@ -311,6 +311,7 @@
           <li>The check downloads a list signed by Binder's author. Binder installs only a newer version whose signature, size and checksum match, and never an older one.</li>
           <li>It never installs while a game is running or Game mode still has changes applied. With Ask before installing, security fixes still install when you close Binder.</li>
           <li>Downloads are kept in <code>%LOCALAPPDATA%\Binder\updates\</code> and deleted once installed.</li>
+          <li>A copy built from the source code checks only if its build names a repository and signing keys. Without them it never checks, and Settings › About says <strong>This build doesn't check for updates</strong>.</li>
         </ul>
 
         <h3 id="pc-space" class="docs-h3">Free up space</h3>

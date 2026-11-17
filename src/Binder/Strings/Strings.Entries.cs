@@ -772,6 +772,8 @@ public sealed partial class Strings
     public static string AboutTitle => Get(nameof(AboutTitle));
     public static string UpdateNotChecked => Get(nameof(UpdateNotChecked));
     public static string UpdateCheckOff => Get(nameof(UpdateCheckOff));
+    public static string UpdatesUnavailable => Get(nameof(UpdatesUnavailable));
+    public static string UpdatesUnavailableToolTip => Get(nameof(UpdatesUnavailableToolTip));
     public static string UpdateChecking => Get(nameof(UpdateChecking));
     public static string UpdateCheckedToday => Get(nameof(UpdateCheckedToday));
     public static string UpdateChecked => Get(nameof(UpdateChecked));

@@ -18,7 +18,8 @@ static partial class Tests
         using var stranger = ECDsa.Create(ECCurve.NamedCurves.nistP384);
         string[] keys = [Pub(main), Pub(backup)];
 
-        // The compiled-in keys (the owner's YubiKeys): each one a P-384 public key, all different, nothing else.
+        // The compiled-in keys: this test project builds as an official release (Binder.Tests.csproj), so these are
+        // build/OfficialRelease.props's, the owner's YubiKeys: each one a P-384 public key, all different, nothing else.
         var compiled = Services.UpdateKeys.All;
         bool allP384 = compiled.All(k =>
         {
@@ -32,6 +33,11 @@ static partial class Tests
         });
         Check(compiled.Length is >= 1 and <= 2 && allP384 && compiled.Distinct().Count() == compiled.Length,
             "update keys: one or two different ECDSA P-384 public keys compiled in");
+        Check(Services.UpdateKeys.Enabled && UpdateManifest.Repository == "JannisJostBot/binder",
+            "update keys: an official build checks the official repository");
+        Check(!Services.UpdateKeys.IsEnabled("", []) && !Services.UpdateKeys.IsEnabled("someone/fork", []) &&
+              !Services.UpdateKeys.IsEnabled("", [Pub(main)]) && Services.UpdateKeys.IsEnabled("someone/fork", [Pub(main)]),
+            "update keys: a build checks only with a repository and a key");
 
         var commit = new string('a', 40);
         var sha = new string('0', 64);

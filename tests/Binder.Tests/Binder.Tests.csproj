@@ -14,7 +14,11 @@
     <!-- Keep test output out of the shared app folder (Directory.Build.props). -->
     <OutputPath>$(MSBuildProjectDirectory)\out\</OutputPath>
     <SatelliteResourceLanguages>en;de;fr</SatelliteResourceLanguages>
+    <!-- The tests check the official releases' repository and keys (build/OfficialRelease.props). -->
+    <BinderOfficialRelease>true</BinderOfficialRelease>
   </PropertyGroup>
+
+  <Import Project="..\..\build\Updates.targets" />
 
   <ItemGroup>
     <Compile Include="..\..\src\Binder\Strings\*.cs" Link="Strings\%(Filename)%(Extension)" />

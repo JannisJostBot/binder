@@ -89,7 +89,19 @@ function Scan([string]$fileRegex, [string]$lineRegex, [string]$message) {
 
 # --- Rules for every change -----------------------------------------------------------------------------
 if (-not $AllowPackages) {
-    Scan '\.(csproj|props|targets)$' '<PackageReference' 'new package: needs the owner''s approval first (CLAUDE.md, Dependencies policy)'
+    # The packages the owner approved are pinned in CLAUDE.md ("Dependencies policy": `Name` version); a reference
+    # to one of them at exactly that version passes. CLAUDE.md is protected for agents (-Task), so they can't approve.
+    $policy = [regex]::Match((Get-Content -LiteralPath CLAUDE.md -Raw), '(?s)## Dependencies policy(.*?)\r?\n## ').Groups[1].Value
+    $approved = @{}
+    foreach ($m in [regex]::Matches($policy, '`([\w.]+)`\s+(\d+(?:\.\d+)+)')) { $approved[$m.Groups[1].Value] = $m.Groups[2].Value }
+    foreach ($f in $changed) {
+        if ($f -notmatch '\.(csproj|props|targets)$') { continue }
+        foreach ($l in $added[$f]) {
+            if ($l -notmatch '<PackageReference') { continue }
+            $pinned = $l -match 'Include="([^"]+)"[^>]*\sVersion="([^"]+)"' -and $approved[$Matches[1]] -eq $Matches[2]
+            if (-not $pinned) { Problem "${f}: new package: needs the owner's approval first (CLAUDE.md, Dependencies policy)`n        $($l.Trim())" }
+        }
+    }
 }
 Scan '\.cs$' '\[\s*DllImport' 'use [LibraryImport] instead of [DllImport] (Native AOT)'
 Scan '\.cs$' '\[\s*ComImport' 'use [GeneratedComInterface] instead of [ComImport] (Native AOT)'
@@ -131,7 +143,7 @@ if ($Strict) {
         '^src/Binder/Services/(Launcher|Native\w*|DesktopLayer|Monitors|Footprint|ShellImage[\w.]*|ShellNotify|PcChecks|PcInfo|CrashLog|Autostart|CoverCache|Storage|RunningGames|GameLogs|GameModeService)\.cs$',
         '^src/Binder/Library/(\w+Source|SourceDefaults|InstallFolder|ShortcutFile|ShortcutImporter|Vdf|LibraryScanner)\.cs$',
         '^src/Binder/Views/PanelBackdrop\.cs$',
-        '^src/Binder/Library/UpdateManifest\.cs$', '^src/Binder/Services/(UpdateKeys|Updater)\.cs$', '^docs/releases/',
+        '^src/Binder/Library/UpdateManifest\.cs$', '^src/Binder/Services/(UpdateKeys|Updater)\.cs$', '^docs/releases/', '^build/',
         '\.(csproj|sln|props|targets)$', '^scripts/', '^\.github/',
         '^tests/(smoke|setup-test)\.ps1$', '^tests/FakeGame/',
         '^(CLAUDE|AGENTS)\.md$', '^docs/(proposals|installer)\.md$', '^docs/tasks/'
