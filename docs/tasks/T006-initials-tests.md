@@ -1,5 +1,5 @@
 # T006 · Tests for `CoverColors.Initials` edge cases
-Status: ready
+Status: done (2026-11-17)
 Depends on: none
 Branch: agent/T006
 
