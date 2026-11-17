@@ -22,6 +22,17 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <!-- It waits for the whole game: as small as it gets. No background GC thread, no EventSource (ETW) support
+         compiled in, the smaller code over the faster one (it does almost nothing), and a GC that keeps its heap
+         small. -->
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <EventSourceSupport>false</EventSourceSupport>
+    <OptimizationPreference>Size</OptimizationPreference>
   </PropertyGroup>
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="9" />
+  </ItemGroup>
 
 </Project>

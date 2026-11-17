@@ -107,14 +107,23 @@ internal static class Program
         int saved = 0;
         TimeSpan Save(DateTimeOffset until, GameExit how, bool reporter) =>
             Interlocked.Exchange(ref saved, 1) == 0 ? SaveSession(gameId, start, until, how, reporter) : TimeSpan.Zero;
-        SystemEvents.Listen(() => Save(DateTimeOffset.Now, default, false));
+        SystemEvents.Listen(() =>
+        {
+            Footprint.Wake(); // Windows allows only a few seconds: save at full speed
+            Save(DateTimeOffset.Now, default, false);
+        });
 
         DateTimeOffset end;
         GameExit exit;
         while (true)
         {
-            // Block until every matched process has exited. No polling while the game runs.
-            Native.WaitForMultipleObjects((uint)handles.Count, handles.ToArray(), true, Native.INFINITE);
+            // Block until every matched process has exited. No polling while the game runs, and while it waits the
+            // watcher is compacted, trimmed and in efficiency mode.
+            var waitOn = handles.ToArray();
+            matcher.ReleaseList();
+            Footprint.Rest();
+            Native.WaitForMultipleObjects((uint)waitOn.Length, waitOn, true, Native.INFINITE);
+            Footprint.Wake();
             end = DateTimeOffset.Now;
             exit = matcher.ExitOf(handles);
             CloseAll(handles);
@@ -263,35 +272,67 @@ internal static class Program
         public bool NoteReporters { get; set; }
         public bool ReporterSeen { get; private set; }
 
+        private readonly ProcessList _list = new();
+        private readonly List<(uint Pid, long Created)> _running = [];
+        private readonly RejectedProcesses _rejected = new();
+
+        /// <summary>
+        /// Adds handles to the matching processes. Each pass opens only processes it hasn't turned down before
+        /// (by id and start time, from one system call), so a long wait for a store launcher costs little; when
+        /// Windows doesn't give that list, every process is looked at.
+        /// </summary>
         public void FindMatches(List<IntPtr> handles)
         {
+            if (_list.Take(_running))
+            {
+                foreach (var (pid, created) in _running)
+                {
+                    if (handles.Count >= MaxWaitHandles) break;
+                    if (_rejected.Known(pid, created)) continue;
+                    if (Check(pid, handles) == Look.NotTheGame) _rejected.Add(pid, created);
+                }
+                _rejected.EndPass();
+                return;
+            }
             if (!Native.EnumProcesses(_pids, (uint)(_pids.Length * sizeof(uint)), out var bytes)) return;
             int count = (int)(bytes / sizeof(uint));
-            for (int i = 0; i < count && handles.Count < MaxWaitHandles; i++)
+            for (int i = 0; i < count && handles.Count < MaxWaitHandles; i++) Check(_pids[i], handles);
+        }
+
+        /// <summary>Detection is over: the process list's buffer goes (made again if the game restarts itself).</summary>
+        public void ReleaseList() => _list.Release();
+
+        private enum Look { Matched, NotTheGame, Unknown }
+
+        /// <summary>Opens one process and keeps its handle if it's the game.</summary>
+        private Look Check(uint pid, List<IntPtr> handles)
+        {
+            if (pid == 0 || pid == _self) return Look.Unknown;
+            var h = Native.OpenProcess(Native.PROCESS_QUERY_LIMITED_INFORMATION | Native.SYNCHRONIZE, false, pid);
+            if (h == IntPtr.Zero) return Look.Unknown; // tried again next pass
+            uint len = (uint)_path.Length;
+            if (!Native.QueryFullProcessImageNameW(h, 0, _path, ref len))
             {
-                uint pid = _pids[i];
-                if (pid == 0 || pid == _self) continue;
-                var h = Native.OpenProcess(Native.PROCESS_QUERY_LIMITED_INFORMATION | Native.SYNCHRONIZE, false, pid);
-                if (h == IntPtr.Zero) continue;
-                uint len = (uint)_path.Length;
-                if (Native.QueryFullProcessImageNameW(h, 0, _path, ref len) && IsMatch(_path.AsSpan(0, (int)len)))
-                {
-                    var fileName = Path.GetFileName(_path.AsSpan(0, (int)len));
-                    if (IsCrashReporter(fileName))
-                    {
-                        if (NoteReporters) ReporterSeen = true;
-                        Native.CloseHandle(h);
-                        continue;
-                    }
-                    handles.Add(h);
-                    _names[h] = fileName.ToString();
-                    if (RaisePriority && _raised.Add(pid)) Raise(pid, _names[h]);
-                }
-                else
-                {
-                    Native.CloseHandle(h);
-                }
+                Native.CloseHandle(h);
+                return Look.Unknown;
             }
+            if (!IsMatch(_path.AsSpan(0, (int)len)))
+            {
+                Native.CloseHandle(h);
+                return Look.NotTheGame;
+            }
+            var fileName = Path.GetFileName(_path.AsSpan(0, (int)len));
+            if (IsCrashReporter(fileName))
+            {
+                // Never remembered as turned down: one still running after the game exited is a sign of a crash.
+                if (NoteReporters) ReporterSeen = true;
+                Native.CloseHandle(h);
+                return Look.Unknown;
+            }
+            handles.Add(h);
+            _names[h] = fileName.ToString();
+            if (RaisePriority && _raised.Add(pid)) Raise(pid, _names[h]);
+            return Look.Matched;
         }
 
         private static void Raise(uint pid, string name)

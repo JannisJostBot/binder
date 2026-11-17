@@ -97,7 +97,8 @@ src/Binder/            the WinUI widget
   Dev/                    the debug panel, Debug builds only ("Binder.exe --dev"): buttons that show every toast, card
                           and message through the real code with made-up data; left out of Release builds
 src/Binder.Watcher/    windowless (one hidden window on its own thread, SystemEvents.cs: shutdown, sign-out and
-                          sleep); Program.cs, GameMode.cs (apply/restore + journal), ElevatedClient.cs,
+                          sleep); Program.cs, ProcessList.cs (detection's process list), Footprint.cs (rest while
+                          the game runs), GameMode.cs (apply/restore + journal), ElevatedClient.cs,
                           GameModeShared.cs (also compiled into the widget, helper and setup)
 src/Binder.Elevated/   Game mode's admin helper (Native AOT, windowless, run by scheduled tasks)
 src/Binder.Setup/      BinderSetup.exe: per-user installer/updater/uninstaller (docs/installer.md)
@@ -141,9 +142,12 @@ moves an old `sessions.json` into the year files at start (kept as `sessions.jso
 4. When the countdown ends the widget **exits** (unless Keep open).
 5. The watcher:
    - Detection: any process whose exe is inside the install folder, or the explicit process name. Polling every
-     ~2 s is allowed here only, for up to ~3 min. Never found: relaunch the widget with "Couldn't detect the game".
-   - Found: **block** on the process handle; no polling while the game runs. After an exit, re-check the folder
-     for ~3 s (games that restart themselves).
+     ~2 s is allowed here only, for up to ~3 min; each pass takes the process list in one call (`ProcessList`) and
+     opens only processes it hasn't turned down before (by id and start time). Never found: relaunch the widget
+     with "Couldn't detect the game".
+   - Found: **block** on the process handle; no polling while the game runs. While blocked the watcher is
+     compacted, trimmed and in efficiency mode (`Footprint`), undone when the game exits. After an exit, re-check
+     the folder for ~3 s (games that restart themselves).
    - On exit: append the session as one line to `sessions-<year>.jsonl` (the year it ended, `SessionLog`; never
      reads the file), relaunch the widget if "Come back when the game closes" is on, or with `--crashed` after a crash exit code of a game with "Restart if it crashes" (spec §17: the widget's
      restart pill counts 5 s down, then plays it again; at most twice in a row).
