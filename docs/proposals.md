@@ -387,8 +387,10 @@ Four steps, shown once (Settings has "Run first-time setup again"):
    - A tip about the tray icon (and pinning as an option).
 4. **Use Game mode?** (added 2026-11-17, §11): what it does in one line, then
    - three choices: **Off** (selected when the step opens; a run with Game mode already on starts from what's set),
-     **Only items that don't need administrator rights**, **All items** ("Windows asks for permission once"; only on
-     an administrator account, else `GmHelperNeedsAdmin` says why; "already installed" when the helper is current);
+     **Only items that don't need administrator rights** (takes the admin items out of the item list, so an allowed
+     helper doesn't run them), **All items** ("Windows asks for permission once"; only on an administrator account,
+     else `GmHelperNeedsAdmin` says why; "already installed" when the helper is current; puts the default admin items
+     back when none are left; `SetupViewModel.ItemsFor`);
    - "What it changes while you play": the default items (`GameModeInfo.DefaultItems`, the services on one line),
      a shield on the ones that need the helper;
    - a closed card "What the admin helper does" (`Disclosure`): the prompt, Program Files, the two scheduled tasks,

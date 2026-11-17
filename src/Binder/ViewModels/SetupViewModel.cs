@@ -336,6 +336,24 @@ public sealed partial class SetupViewModel : ObservableObject
     /// <summary>All items' second line: Windows asks once, or nothing to ask (the helper is already there).</summary>
     public string AllText => _actions.HelperReady ? Strings.SetupGmAllReady : Strings.SetupGmAllText;
 
+    /// <summary>
+    /// Game mode's items after step 4: "Only items that don't need administrator rights" drops the admin items (an
+    /// allowed helper would run them otherwise); "All items" brings back the default admin items when none are
+    /// left (a run before chose fewer); Off keeps them as they are. The order stays the defaults'.
+    /// </summary>
+    public static List<string> ItemsFor(SetupGameMode choice, IEnumerable<string> current)
+    {
+        var items = current.Distinct().ToList();
+        if (choice == SetupGameMode.NoAdmin) items.RemoveAll(Shared.GameModeInfo.IsElevatedItem);
+        else if (choice == SetupGameMode.All && !items.Any(Shared.GameModeInfo.IsElevatedItem))
+        {
+            var defaults = Shared.GameModeInfo.DefaultItems;
+            items.AddRange(defaults.Where(id => Shared.GameModeInfo.IsElevatedItem(id) && !items.Contains(id)));
+            items = [.. items.OrderBy(id => Array.IndexOf(defaults, id) is var i and >= 0 ? i : int.MaxValue)];
+        }
+        return items;
+    }
+
     /// <summary>What Game mode changes while a game runs: its default items, the admin ones marked.</summary>
     public SetupGameModeItem[] GameModeItems { get; private set; } = [];
 

@@ -95,8 +95,10 @@ public sealed partial class MainWindow
             if (choices.StartWithWindows != Autostart.IsEnabled() && !Autostart.TrySet(choices.StartWithWindows))
                 ShowToast(Strings.AutostartFailed, Strings.AutostartFailedDetail, Strings.Ok);
             settings.StartWithWindows = Autostart.IsEnabled();
-            // Step 4. The admin items are in GameModeItems by default; without the helper the watcher skips them.
+            // Step 4. The admin items are in GameModeItems by default; without the helper the watcher skips them, with
+            // it they'd run, so "Only items that don't need administrator rights" takes them out.
             settings.GameModeEnabled = choices.GameMode != SetupGameMode.Off;
+            settings.GameModeItems = SetupViewModel.ItemsFor(choices.GameMode, settings.GameModeItems);
             if (choices.StartMenuGames != settings.StartMenuGames)
             {
                 settings.StartMenuGames = choices.StartMenuGames;

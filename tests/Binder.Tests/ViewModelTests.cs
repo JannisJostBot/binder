@@ -707,6 +707,15 @@ static partial class Tests
         spy.AllowCode = 0;
         vm.DoneCommand.Execute(null);
         Check(spy.Finished == new SetupChoices(DisplayMode.Desktop, false, SetupGameMode.All, StartMenuGames: true), "setup: Done hands over the choices");
+        var defaults = Binder.Shared.GameModeInfo.DefaultItems;
+        var noAdmin = SetupViewModel.ItemsFor(SetupGameMode.NoAdmin, defaults);
+        Check(noAdmin.Count > 0 && !noAdmin.Any(Binder.Shared.GameModeInfo.IsElevatedItem) &&
+              noAdmin.SequenceEqual(defaults.Where(id => !Binder.Shared.GameModeInfo.IsElevatedItem(id))),
+            "setup: only the items without admin rights, even with the helper allowed");
+        Check(SetupViewModel.ItemsFor(SetupGameMode.All, noAdmin).SequenceEqual(defaults) &&
+              SetupViewModel.ItemsFor(SetupGameMode.All, ["power", "wsearch"]).SequenceEqual(["power", "wsearch"]) &&
+              SetupViewModel.ItemsFor(SetupGameMode.Off, ["power"]).SequenceEqual(["power"]),
+            "setup: All items brings the admin items back only when none are left; Off keeps the list");
         vm.SkipCommand.Execute(null);
         Check(spy.Calls[^1] == "skip", "setup: Skip reaches the owner");
 
