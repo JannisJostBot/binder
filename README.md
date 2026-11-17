@@ -6,6 +6,10 @@ A small Windows 10/11 app that replaces the game shortcuts on your desktop. It s
 installed as a clean cover grid, starts them with one click, gets completely out of the way while you play, and
 comes back when the game closes.
 
+<p align="center">
+  <a href="https://github.com/JannisJostBot/binder/releases/latest"><img src="https://img.shields.io/github/v/release/JannisJostBot/binder?label=Download%20for%20Windows&logo=windows&style=for-the-badge&color=0078D4" alt="Download the latest release for Windows" height="36"></a>
+</p>
+
 > **AI-generated code, provided as is.** See the [disclaimer](#disclaimer) below.
 
 ## What it does
@@ -40,7 +44,8 @@ Dark and light mode, your Windows accent color, keyboard navigation, screen-read
 
 You need Windows 10 or 11 (x64). Nothing else: the app carries its own runtimes.
 
-1. Build `BinderSetup.exe` (see below), or use a copy someone built for you.
+1. Download the setup (`BinderSetup-<version>.exe`) from the [latest release](https://github.com/JannisJostBot/binder/releases/latest),
+   or build it yourself (see below).
 2. Run it and click **Install**. It installs for your account only and never asks for administrator rights.
    (Only Game mode's service and network options do, once, if you choose to allow them in its settings.)
 3. Binder opens and walks you through a short first-time setup.
