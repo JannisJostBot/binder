@@ -60,6 +60,51 @@ public static class StartMenuMatch
         return games.Count(g => !found.Contains(g.Id));
     }
 
+    /// <summary>
+    /// Spec §22 c: the shortcuts Binder's Start folder should hold, one per game Start search doesn't find yet, by
+    /// name ("Hades II.lnk", "Hades II (2).lnk" for a second game of that name), in name order.
+    /// </summary>
+    public static List<(string FileName, Game Game)> Plan(IEnumerable<Game> shelf, IReadOnlySet<string> withEntry)
+    {
+        var plan = new List<(string, Game)>();
+        var taken = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var game in shelf.Where(g => !withEntry.Contains(g.Id) && IsPlayableId(g.Id)).OrderBy(g => g.Name, StringComparer.CurrentCultureIgnoreCase).ThenBy(g => g.Id, StringComparer.Ordinal))
+        {
+            var name = FileNameFor(game.Name, game.Id);
+            var file = name + ".lnk";
+            for (int n = 2; !taken.Add(file); n++) file = $"{name} ({n}).lnk";
+            plan.Add((file, game));
+        }
+        return plan;
+    }
+
+    /// <summary>
+    /// An id "--play" can carry as one plain argument (and that App.PlayArgument accepts): no quotes, backslashes,
+    /// spaces or control characters, at most 256 characters. Library ids are store ids and hashes, so this holds.
+    /// </summary>
+    public static bool IsPlayableId(string id) =>
+        id.Length is > 0 and <= 256 && !id.Any(c => c is '"' or '\\' || char.IsWhiteSpace(c) || char.IsControl(c));
+
+    /// <summary>A safe file name from a game's name: no path characters, no leading or trailing dots and spaces, not a device name, at most 80 characters.</summary>
+    public static string FileNameFor(string name, string fallback)
+    {
+        var invalid = Path.GetInvalidFileNameChars();
+        var chars = name.Select(c => c < 32 || Array.IndexOf(invalid, c) >= 0 || c is '\\' or '/' or ':' or '*' or '?' or '"' or '<' or '>' or '|' ? ' ' : c).ToArray();
+        var clean = string.Join(' ', new string(chars).Split(' ', StringSplitOptions.RemoveEmptyEntries)).Trim(' ', '.');
+        if (clean.Length > 80) clean = clean[..80].TrimEnd(' ', '.');
+        if (clean.Length > 0 && !IsDeviceName(clean)) return clean;
+        var id = new string(fallback.Where(char.IsAsciiLetterOrDigit).Take(40).ToArray()); // rare: a name of only symbols
+        return id.Length > 0 && !IsDeviceName(id) ? id : "Binder";
+    }
+
+    /// <summary>CON, PRN, AUX, NUL, COM1–9, LPT1–9 (also with an extension): names Windows keeps for devices.</summary>
+    private static bool IsDeviceName(string name)
+    {
+        var stem = name.Split('.')[0].Trim().ToUpperInvariant();
+        return stem is "CON" or "PRN" or "AUX" or "NUL" ||
+            (stem.Length == 4 && (stem.StartsWith("COM") || stem.StartsWith("LPT")) && char.IsAsciiDigit(stem[3]));
+    }
+
     private static string? Full(string? path)
     {
         if (string.IsNullOrEmpty(path) || !Path.IsPathFullyQualified(path)) return null;

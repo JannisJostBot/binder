@@ -3333,4 +3333,12 @@ Calm: efficiency mode while you play</value>
     <value>Plays with Game mode, without opening Steam's window</value>
     <comment>Tooltip of a Steam game's cover when Binder's Game mode is on for it: both PlayTipSteam and PlayTipGameMode.</comment>
   </data>
+  <data name="StartMenuGames" xml:space="preserve">
+    <value>Add my games to Start search</value>
+    <comment>Setting card title (Settings, and a checkbox on the first setup step): puts a Start menu shortcut for each game Windows Start search doesn't find yet.</comment>
+  </data>
+  <data name="StartMenuGamesToolTip" xml:space="preserve">
+    <value>Games Start doesn't find get a Start shortcut that plays them through Binder</value>
+    <comment>Tooltip of the "Add my games to Start search" setting. "Start" = the Windows Start menu.</comment>
+  </data>
 </root>

@@ -97,6 +97,11 @@ public sealed partial class MainWindow
             settings.StartWithWindows = Autostart.IsEnabled();
             // Step 4. The admin items are in GameModeItems by default; without the helper the watcher skips them.
             settings.GameModeEnabled = choices.GameMode != SetupGameMode.Off;
+            if (choices.StartMenuGames != settings.StartMenuGames)
+            {
+                settings.StartMenuGames = choices.StartMenuGames;
+                SyncStartMenu(); // spec §22 c, off the UI thread
+            }
         }
         settings.SetupDone = true;
         SaveSettings();

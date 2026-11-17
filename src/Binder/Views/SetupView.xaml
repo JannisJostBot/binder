@@ -31,6 +31,9 @@
                 <!-- Spec §22 d: the user's own number, once, when there's one to say. -->
                 <TextBlock Style="{StaticResource StepText}" Text="{x:Bind ViewModel.NotInStartText, Mode=OneWay}"
                            Visibility="{x:Bind ViewModel.HasNotInStart, Mode=OneWay}" />
+                <CheckBox Margin="0,6,0,0" Content="{x:Bind s:Strings.StartMenuGames}" IsChecked="{x:Bind ViewModel.AddToStart, Mode=TwoWay}"
+                          Visibility="{x:Bind ViewModel.ShowAddToStart, Mode=OneWay}" ToolTipService.ToolTip="{x:Bind s:Strings.StartMenuGamesToolTip}"
+                          AutomationProperties.Name="{x:Bind s:Strings.StartMenuGames}" />
                 <TextBlock Style="{StaticResource StepText}"
                            Text="{x:Bind s:Strings.SetupStep1Text}" />
             </StackPanel>

@@ -117,6 +117,38 @@ public sealed partial class MainWindow
         return (title, detail);
     }
 
+    /// <summary>
+    /// "Add my games to Start search" (spec §22 c): writes Binder's Start folder from the shelf (games hidden or from
+    /// a launcher turned off are left out) when the setting is on, removes it when off. Off the UI thread; the folder
+    /// is written only when something changed since the last time (the stamp in settings).
+    /// </summary>
+    private void SyncStartMenu()
+    {
+        var settings = App.Settings;
+        bool on = settings.StartMenuGames;
+        var shelf = _games.Where(g => !g.Hidden && settings.IsSourceEnabled(g.Source)).ToList();
+        var last = settings.StartMenuStamp;
+        _ = Task.Run(() =>
+        {
+            if (!on)
+            {
+                StartMenuGames.Remove();
+                return (string?)null;
+            }
+            return StartMenuGames.Sync(shelf, last);
+        }).ContinueWith(done =>
+        {
+            if (done.Exception is { } error)
+            {
+                ErrorLog.Write(error, "Start menu games");
+                return;
+            }
+            if (settings.StartMenuGames != on) return; // switched again meanwhile: that run saves
+            settings.StartMenuStamp = done.Result;
+            SaveSettings();
+        }, TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
     /// <summary>Puts every imported shortcut back on the desktop and removes the games made from them.</summary>
     private void RestoreShortcuts()
     {

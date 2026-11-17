@@ -2501,4 +2501,10 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   <data name="PlayTipSteamGameMode" xml:space="preserve">
     <value>Spielt mit Spielmodus, ohne das Steam-Fenster zu öffnen</value>
   </data>
+  <data name="StartMenuGames" xml:space="preserve">
+    <value>Meine Spiele zur Startsuche hinzufügen</value>
+  </data>
+  <data name="StartMenuGamesToolTip" xml:space="preserve">
+    <value>Spiele, die Start nicht findet, erhalten eine Startverknüpfung, die sie über Binder startet</value>
+  </data>
 </root>

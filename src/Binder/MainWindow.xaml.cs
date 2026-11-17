@@ -204,6 +204,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         _games = games;
         App.State.Scanned = true;
         SaveLibrary();
+        if (App.Settings.StartMenuGames) SyncStartMenu(); // spec §22 c: added, renamed or removed with the library
         if (IsClosing)
         {
             App.Current.LibraryRescanned(); // the panel was closed and maybe reopened meanwhile: that one shows it

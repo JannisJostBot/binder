@@ -111,7 +111,8 @@ public keys in base64 (`scripts/sign-release.ps1 -ExportPublicKey`); the build f
 
 Settings → Apps → Binder → **Uninstall** (or Start menu → right-click → Uninstall).
 
-- **Removed:** everything Binder put on your PC: the app's files, the Start menu entry, the Settings → Apps entry,
+- **Removed:** everything Binder put on your PC: the app's files, the Start menu entry and the app's `Binder games`
+  Start folder (its `.lnk` files, then the folder if nothing else is in it), the Settings → Apps entry,
   Start with Windows, the cache in `%LOCALAPPDATA%\Binder` (covers, icons, logs, Game mode's files) and, after
   it's done, setup's own log in `%TEMP%`.
 - **Your choice, shortcuts:** when you have imported shortcuts, **Put my shortcuts back on the desktop** (the

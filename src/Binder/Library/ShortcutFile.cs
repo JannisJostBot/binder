@@ -156,6 +156,32 @@ internal static unsafe partial class ShellLink
         }
     }
 
+    /// <summary>
+    /// Writes a new .lnk (spec §22 c: Binder's own Start menu folder only). Throws <see cref="COMException"/> or an
+    /// IO exception when it can't.
+    /// </summary>
+    public static void Write(string path, string target, string arguments, string description, string iconPath)
+    {
+        var clsid = ClsidShellLink;
+        var iid = typeof(IShellLinkW).GUID;
+        int hr = CoCreateInstance(in clsid, IntPtr.Zero, CLSCTX_INPROC_SERVER, in iid, out var unknown);
+        if (hr < 0 || unknown == IntPtr.Zero) throw new COMException("ShellLink", hr);
+        try
+        {
+            var link = (IShellLinkW)Wrappers.GetOrCreateObjectForComInstance(unknown, CreateObjectFlags.UniqueInstance);
+            link.SetPath(target);
+            link.SetArguments(arguments);
+            link.SetDescription(description);
+            link.SetIconLocation(iconPath, 0);
+            link.SetWorkingDirectory(System.IO.Path.GetDirectoryName(target) ?? "");
+            ((IPersistFile)link).Save(path, true);
+        }
+        finally
+        {
+            Marshal.Release(unknown);
+        }
+    }
+
     [LibraryImport("ole32.dll")]
     private static partial int CoCreateInstance(in Guid clsid, IntPtr outer, uint context, in Guid iid, out IntPtr instance);
 

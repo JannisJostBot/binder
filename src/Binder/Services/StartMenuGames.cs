@@ -1,13 +1,106 @@
 using Binder.Library;
+using Binder.Models;
 
 namespace Binder.Services;
 
 /// <summary>
 /// The Start menu (spec §22 c, d). Reads the user's and the shared Start menu shortcuts (never runs them) to tell
-/// which games Start search already finds.
+/// which games Start search already finds, and, with "Add my games to Start search" on, keeps Binder's own folder
+/// of game shortcuts ("Binder games") in step with the shelf. Only .lnk files directly in that folder are ever
+/// written or deleted, never through links; other Start entries are never touched.
 /// </summary>
 public static class StartMenuGames
 {
+    /// <summary>
+    /// Brings our folder in step with the shelf: one shortcut per game Start search doesn't find, each running
+    /// "Binder.exe --play &lt;id&gt;". Nothing is written when <paramref name="lastStamp"/> says it's already so.
+    /// Returns the new stamp (keep it in settings), or null when the folder couldn't be written. Off the UI thread.
+    /// </summary>
+    public static string? Sync(IReadOnlyList<Game> shelf, string? lastStamp)
+    {
+        lock (Gate) return SyncLocked(shelf, lastStamp);
+    }
+
+    // A rescan and the setting's switch may both start a run: one at a time on the folder.
+    private static readonly Lock Gate = new();
+
+    private static string? SyncLocked(IReadOnlyList<Game> shelf, string? lastStamp)
+    {
+        var exe = Environment.ProcessPath;
+        if (exe is null || !exe.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) return null;
+        var plan = StartMenuMatch.Plan(shelf, StartMenuMatch.GamesWithEntry(ReadEntries(), shelf));
+        var icons = plan.ConvertAll(p => IconFor(p.Game, exe));
+
+        var stamp = new System.Text.StringBuilder(exe).Append('\n');
+        for (int i = 0; i < plan.Count; i++) stamp.Append(plan[i].FileName).Append('|').Append(plan[i].Game.Id).Append('|').Append(icons[i]).Append('\n');
+        var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(stamp.ToString())));
+        var folder = OwnFolder;
+        if (hash == lastStamp && Directory.Exists(folder)) return hash;
+
+        try
+        {
+            if (Directory.Exists(folder))
+            {
+                if (IsLink(folder)) return null; // not ours: leave it alone
+                DeleteOurShortcuts(folder);
+            }
+            else Directory.CreateDirectory(folder);
+            for (int i = 0; i < plan.Count; i++)
+            {
+                var (file, game) = plan[i];
+                Library.ShellLink.Write(Path.Combine(folder, file), exe, "--play " + game.Id, game.Name, icons[i]); // a plain id (Plan)
+            }
+            return hash;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Runtime.InteropServices.COMException)
+        {
+            ErrorLog.Write(e, "Start menu games");
+            return null;
+        }
+    }
+
+    /// <summary>"Add my games to Start search" turned off, or uninstall: removes our shortcuts and then the folder if it's empty.</summary>
+    public static void Remove()
+    {
+        lock (Gate) RemoveLocked();
+    }
+
+    private static void RemoveLocked()
+    {
+        var folder = OwnFolder;
+        try
+        {
+            if (!Directory.Exists(folder) || IsLink(folder)) return;
+            DeleteOurShortcuts(folder);
+            if (!Directory.EnumerateFileSystemEntries(folder).Any()) Directory.Delete(folder);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            ErrorLog.Write(e, "Start menu games");
+        }
+    }
+
+    /// <summary>Only .lnk files directly in the folder, never links themselves.</summary>
+    private static void DeleteOurShortcuts(string folder)
+    {
+        foreach (var file in Directory.EnumerateFiles(folder, "*.lnk"))
+            if (!IsLink(file)) File.Delete(file);
+    }
+
+    private static bool IsLink(string path) => File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint);
+
+    /// <summary>The game's own icon where Binder knows one (an .exe or .ico it found), else Binder's.</summary>
+    private static string IconFor(Game game, string binderExe)
+    {
+        foreach (var candidate in new[] { game.IconPath, game.ExePath })
+            if (candidate is { } path && Path.IsPathFullyQualified(path) &&
+                (path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".ico", StringComparison.OrdinalIgnoreCase)) &&
+                File.Exists(path))
+                return path;
+        return binderExe;
+    }
+
+
     // Bounded: Start menus are small, but a broken or huge one mustn't stall setup.
     private const int MaxDepth = 4, MaxFiles = 3000;
 

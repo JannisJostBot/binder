@@ -72,6 +72,13 @@ public sealed class Settings
 
     public bool StayOnDesktop { get; set; } = true;
     public bool StartWithWindows { get; set; }
+    /// <summary>
+    /// "Add my games to Start search" (spec §22 c, off by default): Binder's Start menu folder holds a shortcut per
+    /// game Start doesn't find, each running "Binder.exe --play &lt;id&gt;".
+    /// </summary>
+    public bool StartMenuGames { get; set; }
+    /// <summary>What that folder was last written from (<c>StartMenuGames.Sync</c>), so a rescan that changed nothing writes nothing.</summary>
+    public string? StartMenuStamp { get; set; }
 
     /// <summary>Game mode (spec §11): optimize Windows while a game runs, put back when it closes. Opt-in.</summary>
     public bool GameModeEnabled { get; set; }

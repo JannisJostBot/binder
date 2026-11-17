@@ -163,6 +163,12 @@ public sealed partial class App : Application
             Quit(); // the installer is about to replace or remove us
             return;
         }
+        if (PlayArgument(args) is { } playId)
+        {
+            PlayFromStart(playId, firstStart); // a Start menu shortcut (spec §22 c)
+            return;
+        }
+
         var notice = StartupNotice.Parse(args);
         bool background = args.Contains("--background");
         var restored = StartupNotice.Restored(args);

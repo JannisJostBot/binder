@@ -2501,4 +2501,10 @@ Ralentir : mode efficacité pendant le jeu</value>
   <data name="PlayTipSteamGameMode" xml:space="preserve">
     <value>Lance le jeu avec le mode jeu, sans ouvrir la fenêtre de Steam</value>
   </data>
+  <data name="StartMenuGames" xml:space="preserve">
+    <value>Ajouter mes jeux à la recherche du menu Démarrer</value>
+  </data>
+  <data name="StartMenuGamesToolTip" xml:space="preserve">
+    <value>Les jeux que le menu Démarrer ne trouve pas reçoivent un raccourci qui les lance via Binder</value>
+  </data>
 </root>

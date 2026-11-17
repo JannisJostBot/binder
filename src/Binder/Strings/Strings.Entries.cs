@@ -836,4 +836,6 @@ public sealed partial class Strings
     public static string PlayTipSteam => Get(nameof(PlayTipSteam));
     public static string PlayTipGameMode => Get(nameof(PlayTipGameMode));
     public static string PlayTipSteamGameMode => Get(nameof(PlayTipSteamGameMode));
+    public static string StartMenuGames => Get(nameof(StartMenuGames));
+    public static string StartMenuGamesToolTip => Get(nameof(StartMenuGamesToolTip));
 }

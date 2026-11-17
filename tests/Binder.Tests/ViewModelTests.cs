@@ -71,6 +71,9 @@ static partial class Tests
 
         vm.DensityIndex = 3;
         Check(settings.GridDensity == GridDensity.List && spy.Changes is [SettingChange.Shelf], "settings: cover size writes List and reports Shelf");
+        vm.StartMenuGames = true;
+        Check(settings.StartMenuGames && spy.Changes[^1] == SettingChange.StartMenu, "settings: Add my games to Start search reports StartMenu");
+        vm.StartMenuGames = false;
         notified.Clear();
         vm.KeepLoadedIndex = 0;
         Check(settings.KeepPanelLoaded && spy.Changes[^1] == SettingChange.Behavior && notified.Contains(nameof(SettingsViewModel.StayReadyText)),
@@ -647,6 +650,8 @@ static partial class Tests
         vm.UpdateLibrary([games[0]]);
         Check(vm.NotInStartText == "1 of them isn't in Start search", "setup: counted again when the library changes");
         vm.UpdateLibrary(games);
+        Check(vm.ShowAddToStart && !vm.AddToStart, "setup: Add my games to Start search offered with the number, off");
+        vm.AddToStart = true;
         Check(vm.Flyout == true && vm.Desktop == false && vm.StartWithWindows && vm.HotkeyText.Length > 0, "setup: step 3 from the settings");
 
         vm.Launchers[0].Enabled = false; // unticked before the counts come in
@@ -701,7 +706,7 @@ static partial class Tests
         vm.GameModeAll = true;
         spy.AllowCode = 0;
         vm.DoneCommand.Execute(null);
-        Check(spy.Finished == new SetupChoices(DisplayMode.Desktop, false, SetupGameMode.All), "setup: Done hands over the choices");
+        Check(spy.Finished == new SetupChoices(DisplayMode.Desktop, false, SetupGameMode.All, StartMenuGames: true), "setup: Done hands over the choices");
         vm.SkipCommand.Execute(null);
         Check(spy.Calls[^1] == "skip", "setup: Skip reaches the owner");
 

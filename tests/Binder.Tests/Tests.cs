@@ -184,6 +184,24 @@ static partial class Tests
             "start menu: matched by store link, exe and install folder; Xbox games are Start apps; others not");
         Check(StartMenuMatch.CountMissing(entries, games) == 2 && StartMenuMatch.CountMissing([], games) == 6, "start menu: the games it doesn't find");
 
+        var shelf = new List<Game>
+        {
+            new() { Id = "steam:1", Name = "Hades II" },
+            new() { Id = "epic:2", Name = "Hades II" },
+            new() { Id = "gog:3", Name = "Alan Wake: <Remastered>?" },
+            new() { Id = "x", Name = "Already there" },
+            new() { Id = "bad\"id", Name = "Quoted" },
+            new() { Id = "con", Name = "CON" },
+        };
+        var plan = StartMenuMatch.Plan(shelf, new HashSet<string> { "x" });
+        Check(plan.Select(p => p.FileName).SequenceEqual(["Alan Wake Remastered.lnk", "Binder.lnk", "Hades II.lnk", "Hades II (2).lnk"]) &&
+              plan[2].Game.Id == "epic:2", "start menu: one shortcut per game without an entry, safe and unique names, plain ids only");
+        Check(StartMenuMatch.FileNameFor(" ..Doom.. ", "a") == "Doom" && StartMenuMatch.FileNameFor("///", "steam:42") == "steam42" &&
+              StartMenuMatch.FileNameFor(new string('x', 120), "a").Length == 80 && StartMenuMatch.FileNameFor("LPT1", "z") == "z",
+            "start menu: file names trimmed, never empty, a device name or too long");
+        Check(StartMenuMatch.IsPlayableId("steam:570") && !StartMenuMatch.IsPlayableId("a b") && !StartMenuMatch.IsPlayableId("a\\b") &&
+              !StartMenuMatch.IsPlayableId("") && !StartMenuMatch.IsPlayableId(new string('1', 257)), "start menu: only plain ids go into --play");
+
         var steam = new Game { Source = GameSource.Steam };
         Check(Format.PlayToolTip(steam, false) == "Plays without opening Steam's window" &&
               Format.PlayToolTip(steam, true) == "Plays with Game mode, without opening Steam's window" &&

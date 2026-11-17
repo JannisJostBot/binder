@@ -17,7 +17,7 @@ public sealed class SetupLauncherRow(GameSource source, string name, string coun
 public enum SetupGameMode { Off, NoAdmin, All }
 
 /// <summary>The setup's answers, applied by the window.</summary>
-public sealed record SetupChoices(DisplayMode Mode, bool StartWithWindows, SetupGameMode GameMode = SetupGameMode.Off);
+public sealed record SetupChoices(DisplayMode Mode, bool StartWithWindows, SetupGameMode GameMode = SetupGameMode.Off, bool StartMenuGames = false);
 
 /// <summary>One line of step 4's "what it changes" list; <see cref="NeedsAdmin"/> lines get the shield.</summary>
 public sealed record SetupGameModeItem(string Text, bool NeedsAdmin);
@@ -91,6 +91,7 @@ public sealed partial class SetupViewModel : ObservableObject
         _foundCounts = null;
         _startEntries = null;
         NotInStartText = "";
+        _addToStart = settings.StartMenuGames;
         Shortcuts = [];
         _selected = [];
         ImportTitle = ImportDetail = "";
@@ -163,6 +164,13 @@ public sealed partial class SetupViewModel : ObservableObject
     public string NotInStartText { get; private set; } = "";
     public bool HasNotInStart => NotInStartText.Length > 0;
 
+    private bool _addToStart;
+
+    /// <summary>"Add my games to Start search" (spec §22 c), offered next to the number; applied with Done.</summary>
+    public bool AddToStart { get => _addToStart; set => SetProperty(ref _addToStart, value); }
+    /// <summary>The choice shows with the number, or when it's already on (a run of setup again).</summary>
+    public bool ShowAddToStart => HasNotInStart || _settings.StartMenuGames;
+
     /// <summary>The Start menu's shortcuts, read once per run by the owner (never stored).</summary>
     public void SetStartEntries(IReadOnlyList<ShortcutFile> entries)
     {
@@ -179,6 +187,7 @@ public sealed partial class SetupViewModel : ObservableObject
         NotInStartText = text;
         OnPropertyChanged(nameof(NotInStartText));
         OnPropertyChanged(nameof(HasNotInStart));
+        OnPropertyChanged(nameof(ShowAddToStart));
     }
 
     /// <summary>Every launcher's games on this PC, also the ones turned off.</summary>
@@ -399,6 +408,6 @@ public sealed partial class SetupViewModel : ObservableObject
                 return;
             }
         }
-        _actions.Finish(new SetupChoices(Desktop == true ? DisplayMode.Desktop : DisplayMode.Flyout, StartWithWindows, choice));
+        _actions.Finish(new SetupChoices(Desktop == true ? DisplayMode.Desktop : DisplayMode.Flyout, StartWithWindows, choice, AddToStart));
     }
 }
