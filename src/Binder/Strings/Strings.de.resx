@@ -2490,7 +2490,7 @@ Dämpfen: Effizienzmodus während des Spielens</value>
     <value>Ihr Desktop hat {0} Symbole weniger</value>
   </data>
   <data name="WelcomeClosedLine" xml:space="preserve">
-    <value>Binder war die ganze Zeit geschlossen, während Sie gespielt haben</value>
+    <value>Binder war geschlossen, solange Sie gespielt haben</value>
   </data>
   <data name="PlayTipSteam" xml:space="preserve">
     <value>Spielt, ohne das Steam-Fenster zu öffnen</value>

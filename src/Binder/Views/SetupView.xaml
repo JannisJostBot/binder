@@ -168,7 +168,8 @@
                     <InfoBar IsOpen="{x:Bind ViewModel.AllowFailed, Mode=OneWay}" IsClosable="False" Severity="Error"
                              Title="{x:Bind s:Strings.SetupGmCouldntAllow}" Message="{x:Bind ViewModel.AllowError, Mode=OneWay}" />
 
-                    <Border Style="{StaticResource Card}" Margin="0">
+                    <!-- Card has no vertical padding (it's made for rows with dividers); these hold free content. -->
+                    <Border Style="{StaticResource Card}" Margin="0" Padding="16,10,16,12">
                         <StackPanel Spacing="4" AutomationProperties.Name="{x:Bind s:Strings.SetupGmChoice}">
                             <RadioButton GroupName="SetupGameMode" IsChecked="{x:Bind ViewModel.GameModeOff, Mode=TwoWay}"
                                          Content="{x:Bind s:Strings.SetupGmOff}" AutomationProperties.Name="{x:Bind s:Strings.SetupGmOff}" />
@@ -192,8 +193,8 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Style="{StaticResource Card}" Margin="0">
-                        <StackPanel Spacing="8">
+                    <Border Style="{StaticResource Card}" Margin="0" Padding="16,14">
+                        <StackPanel Spacing="10">
                             <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind s:Strings.SetupGmChangesTitle}" />
                             <StackPanel x:Name="GameModeList" Spacing="6" AutomationProperties.Name="{x:Bind s:Strings.SetupGmChangesTitle}" />
                         </StackPanel>
@@ -213,7 +214,7 @@
                                 <Button x:Name="HelperChevron" Grid.Column="2" Style="{StaticResource DisclosureButton}" />
                             </Grid>
                         </Border>
-                        <Border x:Name="HelperBody" Style="{StaticResource SettingCardBody}">
+                        <Border x:Name="HelperBody" Style="{StaticResource SettingCardBody}" Margin="0">
                             <TextBlock Style="{StaticResource BodyTextBlockStyle}" TextWrapping="Wrap"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind s:Strings.SetupGmHelperText}" />
                         </Border>
