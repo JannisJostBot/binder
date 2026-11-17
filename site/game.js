@@ -13,7 +13,7 @@
 
   var stage, panel, play, label, title, layer, score, live, game;
   var timers = [];
-  var caught = 0, shown = 0, playing = false;
+  var caught = 0, shown = 0, playing = false, started = 0;
   var still = false;
 
   function el(tag, cls, text) {
@@ -87,6 +87,7 @@
     play.disabled = true;
     toast(function () {
       playing = true;
+      started = Date.now();
       stage.classList.add('playing');
       layer = el('div', 'mock-game');
       score = el('span', 'mock-score', '0 caught');
@@ -105,7 +106,7 @@
     layer = null;
     stage.classList.remove('playing');
     // The top slot's "Welcome back" moment, as after a session in the app.
-    label.textContent = 'Welcome back · Played ' + seconds(ROUND_MS) + ' s';
+    label.textContent = 'Welcome back · Played ' + Math.max(1, seconds(Date.now() - started)) + ' s';
     title.textContent = caught + ' of ' + shown + ' covers caught';
     play.textContent = 'Play again';
     play.disabled = false;
@@ -129,6 +130,18 @@
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && playing) end();
     });
+    // Scrolling the story on to another step ends a round (or a countdown) there and then.
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        if (playing) { end(); return; }
+        if (play.disabled) {
+          clearTimers();
+          var toastBox = panel.querySelector('.mock-toast');
+          if (toastBox) toastBox.remove();
+          play.disabled = false;
+        }
+      }).observe(stage, { attributes: true, attributeFilter: ['data-step'] });
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

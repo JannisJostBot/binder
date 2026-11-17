@@ -28,34 +28,42 @@
     }
     observe();
 
-    // Each shortcut's icon moves onto its cover: the distance between their centres and the scale between them,
-    // measured with the scene at rest (no transforms), so it's right in any step and at any window size.
+    // Each shortcut's icon moves onto its cover: the distance between their centres and the scale between them.
+    // Measured from layout offsets, which ignore transforms, so nothing has to stop moving to be measured and a
+    // flight in progress is never interrupted. The desktop may be scaled down (narrow windows): k is that scale,
+    // and the move is given in the desktop's own, unscaled units.
+    var desk = stage.querySelector('.desk');
+    var panel = stage.querySelector('.mock-panel');
     function measure() {
-      pending = 0;
+      if (!desk || !panel) return;
+      var k = desk.getBoundingClientRect().width / desk.offsetWidth || 1;
       var tiles = stage.querySelectorAll('.mock-grid > span');
       var icons = stage.querySelectorAll('.ico[data-tile]');
-      stage.classList.add('is-measuring');
-      var moves = [];
       for (var i = 0; i < icons.length; i++) {
         var tile = tiles[parseInt(icons[i].getAttribute('data-tile'), 10) - 1];
         var pic = icons[i].querySelector('i');
-        if (!tile || !pic) continue;
-        var a = pic.getBoundingClientRect(), b = tile.getBoundingClientRect();
-        if (!a.width || !b.width) continue;
-        moves.push([icons[i], b.left + b.width / 2 - (a.left + a.width / 2), b.top + b.height / 2 - (a.top + a.height / 2), b.width / a.width]);
+        if (!tile || !pic || !pic.offsetWidth || !tile.offsetWidth) continue;
+        // Centres relative to the stage. The picture's offsets are within the desktop, the tile's within the shelf.
+        var ax = desk.offsetLeft + (pic.offsetLeft + pic.offsetWidth / 2) * k;
+        var ay = desk.offsetTop + (pic.offsetTop + pic.offsetHeight / 2) * k;
+        var bx = panel.offsetLeft + tile.offsetLeft + tile.offsetWidth / 2;
+        var by = panel.offsetTop + tile.offsetTop + tile.offsetHeight / 2;
+        icons[i].style.setProperty('--dx', ((bx - ax) / k).toFixed(1) + 'px');
+        icons[i].style.setProperty('--dy', ((by - ay) / k).toFixed(1) + 'px');
+        icons[i].style.setProperty('--s', (tile.offsetWidth / (pic.offsetWidth * k)).toFixed(3));
       }
-      stage.classList.remove('is-measuring');
-      moves.forEach(function (m) {
-        m[0].style.setProperty('--dx', m[1].toFixed(1) + 'px');
-        m[0].style.setProperty('--dy', m[2].toFixed(1) + 'px');
-        m[0].style.setProperty('--s', m[3].toFixed(3));
-      });
     }
 
-    var pending = 0;
-    function later() { if (!pending) pending = requestAnimationFrame(function () { observe(); measure(); }); }
-    window.addEventListener('resize', later);
-    window.addEventListener('load', later);
+    // Phones change the window's height while scrolling (the address bar): that moves the line, not the scene, so
+    // only a change of width measures again.
+    var width = window.innerWidth, pending = 0;
+    function resized() {
+      pending = 0;
+      observe();
+      if (window.innerWidth !== width) { width = window.innerWidth; measure(); }
+    }
+    window.addEventListener('resize', function () { if (!pending) pending = requestAnimationFrame(resized); });
+    window.addEventListener('load', measure);
     measure();
     stage.classList.add('is-live');
   }
