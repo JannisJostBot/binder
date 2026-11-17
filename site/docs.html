@@ -64,6 +64,7 @@
         <li><a href="#pc">Other changes to your PC</a>
           <ol>
             <li><a href="#pc-shortcuts">Desktop shortcuts</a></li>
+            <li><a href="#pc-startmenu">Your games in Start search</a></li>
             <li><a href="#pc-autostart">Start with Windows</a></li>
             <li><a href="#pc-updates">Updates</a></li>
             <li><a href="#pc-space">Free up space</a></li>
@@ -92,7 +93,7 @@
         </ul>
 
         <h3 id="gm-helper" class="docs-h3">The admin helper</h3>
-        <p>Pausing services and the network items need administrator rights; everything else works without them. <strong>Allow…</strong> on the Game mode page asks once, with the usual Windows prompt, and then:</p>
+        <p>Pausing services and the network items need administrator rights; everything else works without them. <strong>Allow…</strong> on the Game mode page, or <strong>All items</strong> on the last step of Binder's first-run setup, asks once, with the usual Windows prompt, and then:</p>
         <ul class="docs-list">
           <li>copies a small helper, <code>Binder.Elevated.exe</code>, to <code>%ProgramFiles%\Binder\</code>, a folder only administrators can change;</li>
           <li>creates two scheduled tasks for your account, <code>Binder Apply</code> and <code>Binder Restore</code> (followed by your account's ID). They run that helper with administrator rights, only while you're signed in. You can start them, but changing them needs administrator rights;</li>
@@ -300,7 +301,10 @@
         <h2 class="docs-h2">Other changes to your PC</h2>
 
         <h3 id="pc-shortcuts" class="docs-h3">Desktop shortcuts</h3>
-        <p><strong>Import desktop shortcuts</strong> lists the shortcuts on your desktop and the shared (Public) desktop; you tick which are games. Those are <strong>moved</strong>, not deleted, to <code>%APPDATA%\Binder\Shortcuts\</code>. A shortcut on the shared desktop that needs administrator rights to move is copied instead, and the original stays. Shortcuts are only read while they're listed, never run. <strong>Restore</strong> in Settings › Desktop shortcuts moves them back onto your desktop.</p>
+        <p><strong>Import desktop shortcuts</strong> lists the shortcuts on your desktop and the shared (Public) desktop; you tick which are games. Those are <strong>moved</strong>, not deleted, to <code>%APPDATA%\Binder\Shortcuts\</code>. A shortcut on the shared desktop that needs administrator rights to move is copied instead, and the original stays. Shortcuts are only read while they're listed, never run. <strong>Restore</strong> in Settings › Desktop shortcuts moves them back onto your desktop. Right after an import, <strong>Undo</strong> in its notice moves that import's shortcuts back.</p>
+
+        <h3 id="pc-startmenu" class="docs-h3">Your games in Start search</h3>
+        <p><strong>Add my games to Start search</strong> (off by default; in Settings and on the first page of Binder's first-run setup) gives each game that Start search doesn't find yet a shortcut in its own folder, <code>%APPDATA%\Microsoft\Windows\Start Menu\Programs\Binder games\</code>. Each shortcut runs <code>Binder.exe --play</code> with the game's id, so a game started from Start is played the same way as from Binder; an id that isn't a game in your list just opens Binder. Games that already have their own Start entry, such as a Steam shortcut, get none, and existing Start entries are never changed. To tell which games Start finds, Binder reads the shortcuts in your and the shared Start menu, without running them. The folder follows your game list: when Binder looks for new games, and when you import, add, hide or remove one. Turning the setting off, or uninstalling Binder, deletes the shortcuts in that folder and then the folder.</p>
 
         <h3 id="pc-autostart" class="docs-h3">Start with Windows</h3>
         <p>When <strong>Start with Windows</strong> is on, Binder adds a value named <code>Binder</code> to <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run</code>, the standard per-user startup list (also shown in Task Manager › Startup apps). It starts Binder with <code>--background</code>, so it waits in the notification area instead of opening. Turning the setting off removes the value.</p>
@@ -326,7 +330,7 @@
         <p>Binder sends nothing about you or your PC anywhere. Besides the update check, it only downloads cover art for Steam games, from Steam's servers.</p>
 
         <h3 id="pc-uninstall" class="docs-h3">Uninstalling</h3>
-        <p>Uninstall Binder from Settings › Apps. It first puts back anything Game mode still has applied and removes the admin helper. Then it asks whether to put your imported shortcuts back on the desktop, and whether to also delete your game list, play history and settings.</p>
+        <p>Uninstall Binder from Settings › Apps. It first puts back anything Game mode still has applied and removes the admin helper. It also removes Binder's Start menu entry and its <code>Binder games</code> folder. Then it asks whether to put your imported shortcuts back on the desktop, and whether to also delete your game list, play history and settings.</p>
       </section>
 
     </div>

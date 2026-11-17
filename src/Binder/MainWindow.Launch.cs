@@ -26,6 +26,9 @@ public sealed partial class MainWindow
     /// <summary>The restart pill ran out (spec §17): an ordinary Play, with the launch toast and countdown.</summary>
     public void PlayAfterCrash(Game game) => Play(game);
 
+    /// <summary>A Start menu shortcut's "--play" that needs the panel (a game that's gone, the anti-cheat question): an ordinary Play.</summary>
+    public void PlayFromStart(Game game) => Play(game);
+
     private async Task ConfirmConflictsAsync(Game game, List<PcChecks.Conflict> conflicts)
     {
         try
@@ -77,7 +80,7 @@ public sealed partial class MainWindow
     }
 
     /// <summary>App-wide: the panel that started a game may close and another open during the countdown.</summary>
-    private static readonly RepeatGuard Repeats = new(TimeSpan.FromSeconds(5));
+    internal static readonly RepeatGuard Repeats = new(TimeSpan.FromSeconds(5)); // also "--play" (App.Play)
 
     private void Launch(Game game)
     {

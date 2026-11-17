@@ -17,6 +17,8 @@ public enum SettingChange
     SourceArtwork,
     /// <summary>The Updates choice (spec §25).</summary>
     Updates,
+    /// <summary>"Add my games to Start search" (spec §22 c).</summary>
+    StartMenu,
 }
 
 /// <summary>What the Settings page asks its owner (the panel window) to do. An interface, so none can be left unwired.</summary>
@@ -231,6 +233,13 @@ public sealed partial class SettingsViewModel : ObservableObject
             OnPropertyChanged();
             Changed(SettingChange.Autostart);
         }
+    }
+
+    /// <summary>"Add my games to Start search" (spec §22 c).</summary>
+    public bool StartMenuGames
+    {
+        get => _settings.StartMenuGames;
+        set => Set(_settings.StartMenuGames, value, v => _settings.StartMenuGames = v, SettingChange.StartMenu, [], nameof(StartMenuGames));
     }
 
     // --- When a game starts ------------------------------------------------------------------------------

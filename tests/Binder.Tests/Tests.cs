@@ -101,6 +101,8 @@ static partial class Tests
         SetupViewModelTests();
         ShelfViewModelTests();
         ShelfUpdateTests();
+        GameSearchTests();
+        StartMenuTests();
         FormatTests();
         LocalizationTests();
         DocsTests();
@@ -113,6 +115,102 @@ static partial class Tests
         Directory.Delete(dir, recursive: true);
         Console.WriteLine(fails == 0 ? "ALL PASS" : $"{fails} FAILED");
         return fails;
+    }
+
+    /// <summary>Spec §22 a: the search's ranking and initials.</summary>
+    static void GameSearchTests()
+    {
+        var invariant = System.Globalization.CultureInfo.InvariantCulture.CompareInfo;
+        GameSearch.Rank M(string name, string query) => GameSearch.Match(name, query, invariant);
+        Check(M("Baldur's Gate 3", "bal") == GameSearch.Rank.Prefix, "search: the name starts with it");
+        Check(M("Baldur's Gate 3", "gate") == GameSearch.Rank.WordStart && M("Baldur's Gate 3", "3") == GameSearch.Rank.WordStart,
+            "search: a word starts with it");
+        Check(M("Baldur's Gate 3", "s gate") == GameSearch.Rank.Anywhere, "search: an apostrophe doesn't start a word");
+        Check(M("Baldur's Gate 3", "bg3") == GameSearch.Rank.Initials && M("Red Dead Redemption 2", "RDR2") == GameSearch.Rank.Initials &&
+              M("Left 4 Dead 2", "l4d2") == GameSearch.Rank.Initials && M("Fallout 76", "f76") == GameSearch.Rank.Initials &&
+              M("Cyberpunk 2077", "c2077") == GameSearch.Rank.Initials, "search: initials, numbers whole");
+        Check(M("The Elder Scrolls V: Skyrim", "esv") == GameSearch.Rank.Initials && M("The Elder Scrolls V: Skyrim", "tesv") == GameSearch.Rank.Initials,
+            "search: a leading The may be left out of the initials");
+        Check(M("Left4Dead", "dead") == GameSearch.Rank.WordStart && M("Left4Dead", "l4d") == GameSearch.Rank.Initials,
+            "search: digits after letters start a word");
+        Check(M("Hades II", "des") == GameSearch.Rank.Anywhere && M("Hades II", "xyz") == GameSearch.Rank.None, "search: anywhere, or not at all");
+        Check(M("Pokémon", "pokemon") == GameSearch.Rank.Prefix && M("ÖKOSIM", "oko") == GameSearch.Rank.Prefix, "search: accents and case ignored");
+        Check(M("Hades", "h") == GameSearch.Rank.Prefix && M("Half-Life", "h") == GameSearch.Rank.Prefix && M("Ah", "h") == GameSearch.Rank.Anywhere,
+            "search: one letter never counts as initials");
+        Check(GameSearch.Initials("The Witcher 3: Wild Hunt").SequenceEqual(["TW3WH", "W3WH"]), "search: the initials, with and without The");
+
+        var games = new List<Game>
+        {
+            new() { Id = "a", Name = "Gate Crasher" },
+            new() { Id = "b", Name = "Baldur's Gate 3" },
+            new() { Id = "c", Name = "Big Gun 3" },
+            new() { Id = "d", Name = "Aggate" },
+            new() { Id = "e", Name = "Gatekeeper" },
+        };
+        var played = new Dictionary<string, DateTimeOffset> { ["e"] = DateTimeOffset.Now.AddDays(-2), ["a"] = DateTimeOffset.Now.AddDays(-9) };
+        Check(GameSearch.Search(games, "gate", played).Select(g => g.Id).SequenceEqual(["e", "a", "b", "d"]),
+            "search: by rank, most recently played first within one, then the order given");
+        Check(GameSearch.Search(games, "bg3", played).Select(g => g.Id).SequenceEqual(["b", "c"]) &&
+              GameSearch.Search(games, "bal", played).Select(g => g.Id).SequenceEqual(["b"]), "search: initials find both, a prefix one");
+        Check(GameSearch.Search(games, "  ", played).Count == 5, "search: an empty query matches everything");
+    }
+
+    /// <summary>Spec §22 c, d: which games Start search already finds, and the Play tooltip.</summary>
+    static void StartMenuTests()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "binder-start-" + Guid.NewGuid().ToString("N"));
+        string P(params string[] parts) => Path.Combine([root, .. parts]);
+        var games = new List<Game>
+        {
+            new() { Id = "steam1", Source = GameSource.Steam, StoreId = "570", InstallDir = P("Steam", "dota") },
+            new() { Id = "epic1", Source = GameSource.Epic, StoreId = "Fortnite" },
+            new() { Id = "gog1", Source = GameSource.Gog, StoreId = "1", InstallDir = P("GOG", "Witcher") },
+            new() { Id = "man1", Source = GameSource.Manual, ExePath = P("Tools", "game.exe") },
+            new() { Id = "xbox1", Source = GameSource.Xbox, StoreId = "fam" },
+            new() { Id = "ubi1", Source = GameSource.Ubisoft, StoreId = "4553" },
+            new() { Id = "none", Source = GameSource.Ea, Name = "Other game", InstallDir = P("EA", "Other") },
+            new() { Id = "sc1", Source = GameSource.Shortcut, Name = "Anno 1800", ExePath = P("Binder", "Shortcuts", "Anno 1800.url") },
+            new() { Id = "sc2", Source = GameSource.Shortcut, Name = "Mirage", ExePath = P("Binder", "Shortcuts", "Mirage.url") },
+        };
+        var entries = new List<ShortcutFile>
+        {
+            new("a.url", "Dota", null, "steam://rungameid/570"),
+            new("b.url", "Fortnite", null, "com.epicgames.launcher://apps/fn%3A4fe75bbc%3AFortnite?action=launch"),
+            new("c.lnk", "Witcher", P("GOG", "Witcher", "bin", "x64", "witcher3.exe"), null),
+            new("d.lnk", "Game", P("Tools", "game.exe"), null),
+            new("e.url", "Other game", null, "steam://rungameid/999"),
+            new("f.lnk", "EA app", P("EA", "EADesktop.exe"), null), // the launcher, beside the game's folder
+            new("g.url", "anno 1800", null, "uplay://launch/9999/0"), // the launcher's own entry of an imported shortcut
+        };
+        var found = StartMenuMatch.GamesWithEntry(entries, games);
+        Check(found.SetEquals(["steam1", "epic1", "gog1", "man1", "xbox1", "sc1"]),
+            "start menu: matched by store link, exe and install folder, imported shortcuts by name; Xbox games are Start apps; others not");
+        Check(StartMenuMatch.CountMissing(entries, games) == 3 && StartMenuMatch.CountMissing([], games) == 8, "start menu: the games it doesn't find");
+
+        var shelf = new List<Game>
+        {
+            new() { Id = "steam:1", Name = "Hades II" },
+            new() { Id = "epic:2", Name = "Hades II" },
+            new() { Id = "gog:3", Name = "Alan Wake: <Remastered>?" },
+            new() { Id = "x", Name = "Already there" },
+            new() { Id = "bad\"id", Name = "Quoted" },
+            new() { Id = "con", Name = "CON" },
+        };
+        var plan = StartMenuMatch.Plan(shelf, new HashSet<string> { "x" });
+        Check(plan.Select(p => p.FileName).SequenceEqual(["Alan Wake Remastered.lnk", "Binder.lnk", "Hades II.lnk", "Hades II (2).lnk"]) &&
+              plan[2].Game.Id == "epic:2", "start menu: one shortcut per game without an entry, safe and unique names, plain ids only");
+        Check(StartMenuMatch.FileNameFor(" ..Doom.. ", "a") == "Doom" && StartMenuMatch.FileNameFor("///", "steam:42") == "steam42" &&
+              StartMenuMatch.FileNameFor(new string('x', 120), "a").Length == 80 && StartMenuMatch.FileNameFor("LPT1", "z") == "z",
+            "start menu: file names trimmed, never empty, a device name or too long");
+        Check(StartMenuMatch.IsPlayableId("steam:570") && !StartMenuMatch.IsPlayableId("a b") && !StartMenuMatch.IsPlayableId("a\\b") &&
+              !StartMenuMatch.IsPlayableId("") && !StartMenuMatch.IsPlayableId(new string('1', 257)), "start menu: only plain ids go into --play");
+
+        var steam = new Game { Source = GameSource.Steam };
+        Check(Format.PlayToolTip(steam, false) == "Plays without opening Steam's window" &&
+              Format.PlayToolTip(steam, true) == "Plays with Game mode, without opening Steam's window" &&
+              Format.PlayToolTip(new Game { Source = GameSource.Epic, GameMode = true }, false) == "Plays with Game mode" &&
+              Format.PlayToolTip(new Game { Source = GameSource.Epic, GameMode = false }, true) == "Play",
+            "play tooltip: what Play does for that game");
     }
 
     /// <summary>Milestone 8: generated cover colors and initials, sort orders.</summary>

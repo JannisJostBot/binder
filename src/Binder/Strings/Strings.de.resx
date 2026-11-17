@@ -947,13 +947,13 @@
     <value>Ersteinrichtung</value>
   </data>
   <data name="Step1" xml:space="preserve">
-    <value>Schritt 1 von 3</value>
+    <value>Schritt 1 von 4</value>
   </data>
   <data name="Step2" xml:space="preserve">
-    <value>Schritt 2 von 3</value>
+    <value>Schritt 2 von 4</value>
   </data>
   <data name="Step3" xml:space="preserve">
-    <value>Schritt 3 von 3</value>
+    <value>Schritt 3 von 4</value>
   </data>
   <data name="SetupTitleEmpty" xml:space="preserve">
     <value>Regal einrichten</value>
@@ -2413,5 +2413,98 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   </data>
   <data name="BinderOnGitHubToolTip" xml:space="preserve">
     <value>Quellcode und Versionen im Browser öffnen</value>
+  </data>
+  <data name="Step4" xml:space="preserve">
+    <value>Schritt 4 von 4</value>
+  </data>
+  <data name="SetupStep4Title" xml:space="preserve">
+    <value>Spielmodus verwenden?</value>
+  </data>
+  <data name="SetupStep4Text" xml:space="preserve">
+    <value>Während ein Spiel läuft, kann Binder Windows fürs Spielen einrichten. Wenn das Spiel geschlossen wird, wird alles zurückgesetzt.</value>
+  </data>
+  <data name="SetupGmAll" xml:space="preserve">
+    <value>Alle Punkte</value>
+  </data>
+  <data name="SetupGmAllText" xml:space="preserve">
+    <value>Windows fragt einmal nach der Berechtigung</value>
+  </data>
+  <data name="SetupGmAllReady" xml:space="preserve">
+    <value>Das Admin-Hilfsprogramm ist bereits installiert</value>
+  </data>
+  <data name="SetupGmNoAdmin" xml:space="preserve">
+    <value>Nur Punkte, die keine Administratorrechte brauchen</value>
+  </data>
+  <data name="SetupGmOff" xml:space="preserve">
+    <value>Aus</value>
+  </data>
+  <data name="SetupGmChoice" xml:space="preserve">
+    <value>Spielmodus</value>
+  </data>
+  <data name="SetupGmChangesTitle" xml:space="preserve">
+    <value>Was sich beim Spielen ändert</value>
+  </data>
+  <data name="SetupGmAdminMark" xml:space="preserve">
+    <value>Erfordert das Admin-Hilfsprogramm</value>
+  </data>
+  <data name="SetupGmHelperTitle" xml:space="preserve">
+    <value>Was das Admin-Hilfsprogramm macht</value>
+  </data>
+  <data name="DisclosureHelper" xml:space="preserve">
+    <value>Details zum Admin-Hilfsprogramm</value>
+  </data>
+  <data name="SetupGmHelperText" xml:space="preserve">
+    <value>Windows fragt einmal nach der Berechtigung. Binder kopiert dann ein kleines Hilfsprogramm nach „Programme“ und legt zwei geplante Aufgaben für Ihr Konto an. Das Hilfsprogramm kann nur die Änderungen mit dem Schild vornehmen. Es speichert jede vorher und setzt sie zurück, wenn das Spiel geschlossen wird. Entfernen können Sie es unter Einstellungen › Spielmodus oder durch Deinstallieren von Binder.</value>
+  </data>
+  <data name="SetupGmChangeLater" xml:space="preserve">
+    <value>Sie können das später unter Einstellungen › Spielmodus ändern.</value>
+  </data>
+  <data name="SetupGmDeclined" xml:space="preserve">
+    <value>Windows hat keine Berechtigung erhalten, daher wurde nichts eingeschaltet. Wählen Sie eine andere Option oder versuchen Sie es erneut.</value>
+  </data>
+  <data name="SetupAllowAndFinish" xml:space="preserve">
+    <value>Zulassen und fertigstellen…</value>
+  </data>
+  <data name="SetupGmCouldntAllow" xml:space="preserve">
+    <value>Admin-Hilfsprogramm konnte nicht zugelassen werden</value>
+  </data>
+  <data name="SearchEnterPlays" xml:space="preserve">
+    <value>{0} · Eingabetaste spielt {1}</value>
+  </data>
+  <data name="SearchEnterHelp" xml:space="preserve">
+    <value>Die Eingabetaste spielt das erste Ergebnis</value>
+  </data>
+  <data name="EnterKey" xml:space="preserve">
+    <value>Eingabe</value>
+  </data>
+  <data name="NotInStartOne" xml:space="preserve">
+    <value>1 davon ist nicht in der Startsuche</value>
+  </data>
+  <data name="NotInStart" xml:space="preserve">
+    <value>{0} davon sind nicht in der Startsuche</value>
+  </data>
+  <data name="DesktopFewerIconsOne" xml:space="preserve">
+    <value>Ihr Desktop hat 1 Symbol weniger</value>
+  </data>
+  <data name="DesktopFewerIcons" xml:space="preserve">
+    <value>Ihr Desktop hat {0} Symbole weniger</value>
+  </data>
+  <data name="WelcomeClosedLine" xml:space="preserve">
+    <value>Binder war geschlossen, solange Sie gespielt haben</value>
+  </data>
+  <data name="PlayTipSteam" xml:space="preserve">
+    <value>Spielt, ohne das Steam-Fenster zu öffnen</value>
+  </data>
+  <data name="PlayTipGameMode" xml:space="preserve">
+    <value>Spielt mit Spielmodus</value>
+  </data>
+  <data name="PlayTipSteamGameMode" xml:space="preserve">
+    <value>Spielt mit Spielmodus, ohne das Steam-Fenster zu öffnen</value>
+  </data>
+  <data name="StartMenuGames" xml:space="preserve">
+    <value>Meine Spiele zur Startsuche hinzufügen</value>
+  </data>
+  <data name="StartMenuGamesToolTip" xml:space="preserve">
+    <value>Spiele, die Start nicht findet, erhalten eine Startverknüpfung, die sie über Binder startet</value>
   </data>
 </root>

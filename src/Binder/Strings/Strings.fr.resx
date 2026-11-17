@@ -947,13 +947,13 @@
     <value>Configuration initiale</value>
   </data>
   <data name="Step1" xml:space="preserve">
-    <value>Étape 1 sur 3</value>
+    <value>Étape 1 sur 4</value>
   </data>
   <data name="Step2" xml:space="preserve">
-    <value>Étape 2 sur 3</value>
+    <value>Étape 2 sur 4</value>
   </data>
   <data name="Step3" xml:space="preserve">
-    <value>Étape 3 sur 3</value>
+    <value>Étape 3 sur 4</value>
   </data>
   <data name="SetupTitleEmpty" xml:space="preserve">
     <value>Configurer votre étagère</value>
@@ -2413,5 +2413,98 @@ Ralentir : mode efficacité pendant le jeu</value>
   </data>
   <data name="BinderOnGitHubToolTip" xml:space="preserve">
     <value>Ouvrir le code source et les versions dans votre navigateur</value>
+  </data>
+  <data name="Step4" xml:space="preserve">
+    <value>Étape 4 sur 4</value>
+  </data>
+  <data name="SetupStep4Title" xml:space="preserve">
+    <value>Utiliser le mode jeu ?</value>
+  </data>
+  <data name="SetupStep4Text" xml:space="preserve">
+    <value>Pendant qu'un jeu est lancé, Binder peut préparer Windows pour le jeu. Tout est rétabli à la fermeture du jeu.</value>
+  </data>
+  <data name="SetupGmAll" xml:space="preserve">
+    <value>Toutes les options</value>
+  </data>
+  <data name="SetupGmAllText" xml:space="preserve">
+    <value>Windows demande l'autorisation une fois</value>
+  </data>
+  <data name="SetupGmAllReady" xml:space="preserve">
+    <value>L'assistant administrateur est déjà installé</value>
+  </data>
+  <data name="SetupGmNoAdmin" xml:space="preserve">
+    <value>Uniquement les options sans droits d'administrateur</value>
+  </data>
+  <data name="SetupGmOff" xml:space="preserve">
+    <value>Désactivé</value>
+  </data>
+  <data name="SetupGmChoice" xml:space="preserve">
+    <value>Mode jeu</value>
+  </data>
+  <data name="SetupGmChangesTitle" xml:space="preserve">
+    <value>Ce qui change pendant que vous jouez</value>
+  </data>
+  <data name="SetupGmAdminMark" xml:space="preserve">
+    <value>Nécessite l'assistant administrateur</value>
+  </data>
+  <data name="SetupGmHelperTitle" xml:space="preserve">
+    <value>Ce que fait l'assistant administrateur</value>
+  </data>
+  <data name="DisclosureHelper" xml:space="preserve">
+    <value>les détails de l'assistant administrateur</value>
+  </data>
+  <data name="SetupGmHelperText" xml:space="preserve">
+    <value>Windows demande l'autorisation une fois. Binder copie ensuite un petit assistant dans Program Files et ajoute deux tâches planifiées pour votre compte. L'assistant ne peut faire que les modifications marquées du bouclier. Il enregistre chacune d'abord et la rétablit à la fermeture du jeu. Pour le supprimer, utilisez Paramètres › Mode jeu ou désinstallez Binder.</value>
+  </data>
+  <data name="SetupGmChangeLater" xml:space="preserve">
+    <value>Vous pourrez modifier ce choix plus tard dans Paramètres › Mode jeu.</value>
+  </data>
+  <data name="SetupGmDeclined" xml:space="preserve">
+    <value>Windows n'a pas reçu l'autorisation, rien n'a donc été activé. Choisissez une autre option ou réessayez.</value>
+  </data>
+  <data name="SetupAllowAndFinish" xml:space="preserve">
+    <value>Autoriser et terminer…</value>
+  </data>
+  <data name="SetupGmCouldntAllow" xml:space="preserve">
+    <value>Impossible d'autoriser l'assistant administrateur</value>
+  </data>
+  <data name="SearchEnterPlays" xml:space="preserve">
+    <value>{0} · Entrée lance {1}</value>
+  </data>
+  <data name="SearchEnterHelp" xml:space="preserve">
+    <value>Entrée lance le premier résultat</value>
+  </data>
+  <data name="EnterKey" xml:space="preserve">
+    <value>Entrée</value>
+  </data>
+  <data name="NotInStartOne" xml:space="preserve">
+    <value>1 d'entre eux n'apparaît pas dans la recherche du menu Démarrer</value>
+  </data>
+  <data name="NotInStart" xml:space="preserve">
+    <value>{0} d'entre eux n'apparaissent pas dans la recherche du menu Démarrer</value>
+  </data>
+  <data name="DesktopFewerIconsOne" xml:space="preserve">
+    <value>Votre bureau compte 1 icône de moins</value>
+  </data>
+  <data name="DesktopFewerIcons" xml:space="preserve">
+    <value>Votre bureau compte {0} icônes de moins</value>
+  </data>
+  <data name="WelcomeClosedLine" xml:space="preserve">
+    <value>Binder était fermé pendant toute votre partie</value>
+  </data>
+  <data name="PlayTipSteam" xml:space="preserve">
+    <value>Lance le jeu sans ouvrir la fenêtre de Steam</value>
+  </data>
+  <data name="PlayTipGameMode" xml:space="preserve">
+    <value>Lance le jeu avec le mode jeu</value>
+  </data>
+  <data name="PlayTipSteamGameMode" xml:space="preserve">
+    <value>Lance le jeu avec le mode jeu, sans ouvrir la fenêtre de Steam</value>
+  </data>
+  <data name="StartMenuGames" xml:space="preserve">
+    <value>Ajouter mes jeux à la recherche du menu Démarrer</value>
+  </data>
+  <data name="StartMenuGamesToolTip" xml:space="preserve">
+    <value>Les jeux que le menu Démarrer ne trouve pas reçoivent un raccourci qui les lance via Binder</value>
   </data>
 </root>

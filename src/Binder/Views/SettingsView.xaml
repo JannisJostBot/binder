@@ -163,6 +163,21 @@
                 </Grid>
             </Border>
 
+            <!-- Spec §22 c: games Start doesn't find get a Start shortcut that plays them through Binder. -->
+            <Border Style="{StaticResource SettingCard}" ToolTipService.ToolTip="{x:Bind s:Strings.StartMenuGamesToolTip}">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE721;" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.StartMenuGames}" />
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.StartMenuGames, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="{x:Bind s:Strings.StartMenuGames}" />
+                </Grid>
+            </Border>
+
             <!-- When a game starts -->
             <TextBlock Style="{StaticResource GroupLabel}" Text="{x:Bind s:Strings.GroupGameStarts}" />
             <Border Style="{StaticResource SettingCard}">

@@ -51,6 +51,13 @@ public sealed partial class MainWindow
         var moment = Moments.Pick(_sessions, shownFor, id => FindGame(id)?.MilestoneShownHours ?? 0, DateTime.Now);
         if (moment is not null)
         {
+            // Once, and only when it's true: this process started when that game ended. A milestone keeps the line;
+            // the closed line waits for the next Welcome back then.
+            if (!settings.ClosedLineShown && moment.Milestone == 0 && App.State.ClosedDuringGame == moment.GameId)
+            {
+                moment = moment with { ClosedLine = true };
+                settings.ClosedLineShown = true;
+            }
             settings.WelcomeBackSessionStart = moment.SessionStart;
             SaveSettings();
             if (moment.Milestone > 0 && FindGame(moment.GameId) is { } game)

@@ -51,7 +51,8 @@ button stays disabled until the box is ticked. Updates and reinstalls ask the sa
 - It adds **Binder** to the Start menu and to **Settings → Apps → Installed apps**, with its icon, version
   and size.
 - At the end, "Open Binder now" starts it. The first time, it runs its own first-run setup (launchers,
-  tidying the desktop, how it opens, Start with Windows).
+  tidying the desktop, how it opens, Start with Windows, Game mode). Its Game mode step shows the Windows
+  administrator prompt only if the user picks All items (for the admin helper); the setup itself never asks.
 
 The app carries its own runtimes, so there's nothing else to install. Setup downloads nothing.
 
@@ -110,7 +111,8 @@ public keys in base64 (`scripts/sign-release.ps1 -ExportPublicKey`); the build f
 
 Settings → Apps → Binder → **Uninstall** (or Start menu → right-click → Uninstall).
 
-- **Removed:** everything Binder put on your PC: the app's files, the Start menu entry, the Settings → Apps entry,
+- **Removed:** everything Binder put on your PC: the app's files, the Start menu entry and the app's `Binder games`
+  Start folder (its `.lnk` files, then the folder if nothing else is in it), the Settings → Apps entry,
   Start with Windows, the cache in `%LOCALAPPDATA%\Binder` (covers, icons, logs, Game mode's files) and, after
   it's done, setup's own log in `%TEMP%`.
 - **Your choice, shortcuts:** when you have imported shortcuts, **Put my shortcuts back on the desktop** (the

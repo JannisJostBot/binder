@@ -71,6 +71,9 @@ static partial class Tests
 
         vm.DensityIndex = 3;
         Check(settings.GridDensity == GridDensity.List && spy.Changes is [SettingChange.Shelf], "settings: cover size writes List and reports Shelf");
+        vm.StartMenuGames = true;
+        Check(settings.StartMenuGames && spy.Changes[^1] == SettingChange.StartMenu, "settings: Add my games to Start search reports StartMenu");
+        vm.StartMenuGames = false;
         notified.Clear();
         vm.KeepLoadedIndex = 0;
         Check(settings.KeepPanelLoaded && spy.Changes[^1] == SettingChange.Behavior && notified.Contains(nameof(SettingsViewModel.StayReadyText)),
@@ -614,6 +617,10 @@ static partial class Tests
         public void LoadShortcuts() => Calls.Add("load");
         public void Import(IReadOnlyList<ShortcutFile> picked) => Calls.Add($"import {picked.Count}");
         public void Finish(SetupChoices choices) { Calls.Add("finish"); Finished = choices; }
+        public bool CanAllowHelper { get; set; } = true;
+        public bool HelperReady { get; set; }
+        public int AllowCode;
+        public Task<int> AllowHelperAsync() { Calls.Add("allow"); return Task.FromResult(AllowCode); }
     }
 
     static void SetupViewModelTests()
@@ -637,6 +644,14 @@ static partial class Tests
               vm.Launchers[0].Count == "2 games" && vm.Launchers[1].Count == "None found" && !vm.Launchers[2].Enabled,
             "setup: launchers with games first, unticked as in the settings");
         Check(vm.FoundTitle == "2 games found" && !vm.NothingFound, "setup: manual games aren't counted");
+        Check(!vm.HasNotInStart, "setup: no Start search line before the Start menu is read");
+        vm.SetStartEntries([new("x.lnk", "Two", null, null)]);
+        Check(vm.HasNotInStart && vm.NotInStartText == "3 of them aren't in Start search", "setup: how many Start search doesn't find");
+        vm.UpdateLibrary([games[0]]);
+        Check(vm.NotInStartText == "1 of them isn't in Start search", "setup: counted again when the library changes");
+        vm.UpdateLibrary(games);
+        Check(vm.ShowAddToStart && !vm.AddToStart, "setup: Add my games to Start search offered with the number, off");
+        vm.AddToStart = true;
         Check(vm.Flyout == true && vm.Desktop == false && vm.StartWithWindows && vm.HotkeyText.Length > 0, "setup: step 3 from the settings");
 
         vm.Launchers[0].Enabled = false; // unticked before the counts come in
@@ -667,14 +682,65 @@ static partial class Tests
         vm.Flyout = false;
         vm.Desktop = true;
         vm.StartWithWindows = false;
+        vm.ToStep4Command.Execute(null);
+        Check(vm.IsStep4 && !vm.IsStep3, "setup: step 3's Next goes on to Game mode");
+        Check(vm.GameModeOff == true && vm.GameModeNoAdmin == false && vm.GameModeAll == false && vm.DoneText == "Done" &&
+              !vm.DoneNeedsAdmin && vm.ShowAllOption && !vm.ShowNeedsAdmin, "setup: Game mode opens on Off, nothing to ask");
+        Check(vm.GameModeItems.Length == 6 && vm.GameModeItems.Count(i => i.NeedsAdmin) == 4 &&
+              !vm.GameModeItems[0].NeedsAdmin && vm.GameModeItems.Select(i => i.Text).Distinct().Count() == 6,
+            "setup: Game mode's default items, services on one line, the admin ones marked");
+
+        vm.GameModeAll = true;
+        Check(vm.GameMode == SetupGameMode.All && vm.GameModeOff == false && vm.DoneNeedsAdmin && vm.DoneText == "Allow and finish…" &&
+              vm.AllText == "Windows asks for permission once", "setup: All items asks Windows on Done");
+        spy.AllowCode = 1223;
         vm.DoneCommand.Execute(null);
-        Check(spy.Finished == new SetupChoices(DisplayMode.Desktop, false), "setup: Done hands over the choices");
+        Check(spy.Calls[^1] == "allow" && spy.Calls.Count(c => c == "finish") == 0 && vm.IsStep4 && vm.AllowDeclined && !vm.AllowFailed && vm.DoneEnabled,
+            "setup: a declined prompt stays on the step, nothing turned on");
+        spy.AllowCode = 5;
+        vm.DoneCommand.Execute(null);
+        Check(!vm.AllowDeclined && vm.AllowFailed && vm.AllowError.Contains("5") && vm.AllowError.Contains("elevated.log") && spy.Finished is null,
+            "setup: a failed install says so and stays");
+        vm.GameModeNoAdmin = true;
+        Check(!vm.AllowFailed && !vm.DoneNeedsAdmin && vm.DoneText == "Done", "setup: another choice clears the message");
+        vm.GameModeAll = true;
+        spy.AllowCode = 0;
+        vm.DoneCommand.Execute(null);
+        Check(spy.Finished == new SetupChoices(DisplayMode.Desktop, false, SetupGameMode.All, StartMenuGames: true), "setup: Done hands over the choices");
+        var defaults = Binder.Shared.GameModeInfo.DefaultItems;
+        var noAdmin = SetupViewModel.ItemsFor(SetupGameMode.NoAdmin, defaults);
+        Check(noAdmin.Count > 0 && !noAdmin.Any(Binder.Shared.GameModeInfo.IsElevatedItem) &&
+              noAdmin.SequenceEqual(defaults.Where(id => !Binder.Shared.GameModeInfo.IsElevatedItem(id))),
+            "setup: only the items without admin rights, even with the helper allowed");
+        Check(SetupViewModel.ItemsFor(SetupGameMode.All, noAdmin).SequenceEqual(defaults) &&
+              SetupViewModel.ItemsFor(SetupGameMode.All, ["power", "wsearch"]).SequenceEqual(["power", "wsearch"]) &&
+              SetupViewModel.ItemsFor(SetupGameMode.Off, ["power"]).SequenceEqual(["power"]),
+            "setup: All items brings the admin items back only when none are left; Off keeps the list");
         vm.SkipCommand.Execute(null);
         Check(spy.Calls[^1] == "skip", "setup: Skip reaches the owner");
 
         vm.Start(new Settings(), [], startWithWindows: false);
         Check(vm.IsStep1 && vm.FoundTitle == "Set up your shelf" && vm.NothingFound && vm.SelectionText == "Nothing selected",
             "setup: a new run starts over, nothing found");
+        Check(vm.GameModeOff == true && !vm.AllowDeclined && !vm.AllowFailed, "setup: a new run opens Game mode on Off again");
+
+        // Run again with Game mode on and the helper there: starts from what's set, and Done asks nothing.
+        spy.HelperReady = true;
+        int allows = spy.Calls.Count(c => c == "allow");
+        vm.Start(new Settings { GameModeEnabled = true }, [], startWithWindows: false);
+        Check(vm.GameModeAll == true && !vm.DoneNeedsAdmin && vm.AllText == "The admin helper is already installed", "setup: helper already allowed");
+        vm.DoneCommand.Execute(null);
+        Check(spy.Calls.Count(c => c == "allow") == allows && spy.Finished?.GameMode == SetupGameMode.All, "setup: nothing to ask when it's there");
+        vm.Start(new Settings { GameModeEnabled = true, GameModeItems = ["power", "priority"] }, [], startWithWindows: false);
+        Check(vm.GameModeNoAdmin == true, "setup: a run after \"only items without admin rights\" opens on that choice, helper or not");
+
+        // A standard account: no "All items"; a note says why.
+        spy.HelperReady = false;
+        spy.CanAllowHelper = false;
+        vm.Start(new Settings { GameModeEnabled = true }, [], startWithWindows: false);
+        Check(vm.GameModeNoAdmin == true && !vm.ShowAllOption && vm.ShowNeedsAdmin, "setup: standard account, Game mode without the helper");
+        vm.GameModeNoAdmin = false; // the radio button unchecked by another: changes nothing
+        Check(vm.GameMode == SetupGameMode.NoAdmin, "setup: unchecking a radio button keeps the choice");
     }
 
     sealed class ShelfActionsSpy : IShelfActions
@@ -752,7 +818,8 @@ static partial class Tests
         vm.SetData(games, sessions, settings);
         Check(notified is [""] && spy.Calls.Count == 0 && spy.Saves == 0, "shelf: new data refreshes every binding once and asks nothing");
         Check(vm.Visible.Select(g => g.Id).SequenceEqual(["s1", "s2", "e1", "g1", "x1", "m1"]), "shelf: hidden and turned-off launchers left out, sorted by name");
-        Check(vm.Placeholder == "Search 6 games" && !vm.EmptyVisible && vm.Greeting.Length > 0, "shelf: the search box counts the games");
+        Check(vm.Placeholder == "Search 6 games · Enter plays Alpha" && vm.EnterGame?.Id == "s1" && !vm.EmptyVisible && vm.Greeting.Length > 0,
+            "shelf: the search box counts the games and says Enter plays the last game");
         Check(vm.ShownChips.SequenceEqual(["Steam", "Epic", "Gog"]) && vm.MoreChips.SequenceEqual(["Xbox", "Other"]) && vm.MoreVisible,
             "shelf: three launchers (most games first), the rest under More");
         Check(ShelfViewModel.ChipLabel("Gog") == "GOG" && ShelfViewModel.ChipLabel("Ea") == "EA", "shelf: chip labels");
@@ -775,14 +842,24 @@ static partial class Tests
             "shelf: footer hint and medium covers");
         Check(!vm.HelperBarOpen && !vm.GameModeOn, "shelf: no helper notice");
 
+        Check(vm.PlayEnterGame() && spy.Calls is ["play s1"], "shelf: Enter on an empty search plays the Continue playing game");
+        spy.Calls.Clear();
+
         notified.Clear();
         vm.Query = "arl";
         Check(vm.Visible.Select(g => g.Id).SequenceEqual(["e1"]) && notified.Contains(nameof(ShelfViewModel.Visible)) &&
-              !vm.SpotlightVisible && vm.Searching, "shelf: search filters and hides the top slot");
+              !vm.SpotlightVisible && vm.Searching && vm.Placeholder == "Search 6 games", "shelf: search filters and hides the top slot");
+        Check(vm.EnterGame?.Id == "e1" && vm.PlayEnterGame() && spy.Calls is ["play e1"], "shelf: Enter plays the top match");
+        spy.Calls.Clear();
         notified.Clear();
         vm.Query = "arl ";
         Check(!notified.Contains(nameof(ShelfViewModel.Visible)), "shelf: the same result keeps the shown list");
+        vm.Query = "a"; // Alpha starts with it; Bravo, Charlie and Delta only contain it
+        Check(vm.Visible[0].Id == "s1" && vm.Visible.Count == 4, "shelf: a name that starts with the query comes first");
+        vm.Query = "o"; // only inside Bravo, Echo and Foxtrot, none played: the shelf's order (by name)
+        Check(vm.Visible.Select(g => g.Id).SequenceEqual(["s2", "x1", "m1"]), "shelf: within a rank, the shelf's order");
         vm.Query = "zzz";
+        Check(vm.EnterGame is null && !vm.PlayEnterGame() && spy.Calls.Count == 0, "shelf: Enter with no match does nothing");
         Check(vm.EmptyVisible && vm.EmptyClearVisible && !vm.EmptyImportVisible && vm.EmptyActionsVisible &&
               vm.EmptyText.StartsWith("No games match “zzz”") && vm.EmptyGlyph == "", "shelf: no match offers to clear the search");
         vm.Query = "";
@@ -807,11 +884,12 @@ static partial class Tests
         Check(vm.Visible[0].Id == "s2" && spy.Saves == 2, "shelf: favorites first");
         vm.ShowWeekCard(true);
         Check(vm.ShowWeek && !vm.ContinueVisible && settings.SpotlightShowsWeek && spy.Saves == 3, "shelf: the This week card is remembered");
+        Check(vm.EnterGame is null && vm.Placeholder == "Search 6 games", "shelf: with This week showing, Enter waits for a search");
         vm.ShowWeekCard(true);
         Check(spy.Saves == 3, "shelf: the same card saves nothing");
 
         vm.SetCrashShown(true);
-        Check(vm.CrashVisible && !vm.SpotlightVisible && vm.CrashShown, "shelf: the crash card takes the top slot");
+        Check(vm.CrashVisible && !vm.SpotlightVisible && vm.CrashShown && vm.EnterGame is null, "shelf: the crash card takes the top slot");
         vm.SetCrashShown(false);
         Check(!vm.CrashVisible && vm.SpotlightVisible, "shelf: the top slot comes back");
 
@@ -819,6 +897,9 @@ static partial class Tests
         Check(vm.ShowsWelcome && vm.ContinueGame?.Id == "e1" && vm.ContinueEyebrow == "Welcome back" && !vm.ShowWeek && !vm.SwitchVisible &&
               vm.ContinueDetail.EndsWith(" this week") && vm.MilestoneVisible && vm.ContinueMilestone == "10 hours in Charlie",
             "shelf: Welcome back takes the top slot, with its milestone and no switch");
+        Check(vm.EnterGame?.Id == "e1" && vm.Placeholder.EndsWith("Enter plays Charlie"), "shelf: Enter plays the Welcome back game");
+        vm.SetWelcome(new Library.WelcomeMoment("e1", now.AddHours(-2), TimeSpan.FromMinutes(45), TimeSpan.FromHours(3), 0, ClosedLine: true));
+        Check(vm.MilestoneVisible && vm.ContinueMilestone == "Binder was closed the whole time you played", "shelf: Welcome back says once that Binder was closed");
         vm.SetWelcome(null);
         Check(!vm.ShowsWelcome && vm.ContinueGame?.Id == "s1" && vm.ContinueEyebrow == "Continue playing" && !vm.MilestoneVisible &&
               vm.ShowWeek && vm.SwitchVisible, "shelf: the next opening shows the normal slot again");

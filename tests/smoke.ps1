@@ -566,16 +566,22 @@ try {
     Start-Sleep -Seconds 2   # the desktop scan for the picker
     Shot '17-setup-desktop'
     Invoke-Button $window 'Not now'
-    Find-Button $window 'Done' | Out-Null
+    Find-Button $window 'Next' | Out-Null
     Start-Sleep -Milliseconds 500
     Shot '18-setup-mode'
+    Invoke-Button $window 'Next'
+    # Step 4 opens on Off: Done turns nothing on and never shows the UAC prompt (none in CI).
+    Find-Button $window 'Done' | Out-Null
+    Start-Sleep -Milliseconds 500
+    Shot '18b-setup-game-mode'
     Invoke-Button $window 'Done'
     Wait-Until { (Get-Content (Join-Path $dataDir 'settings.json') -Raw) -match '"SetupDone":\s*true' } 5 'setup saved' | Out-Null
     if ((Get-Content (Join-Path $dataDir 'settings.json') -Raw) -notmatch '"DisplayMode":\s*"Flyout"') { Fail 'Setup did not keep the flyout as the default mode' }
+    if ((Get-Content (Join-Path $dataDir 'settings.json') -Raw) -match '"GameModeEnabled":\s*true') { Fail 'Setup turned Game mode on although step 4 was left on Off' }
     Find-Button $window 'More actions' | Out-Null
     Start-Sleep -Milliseconds 800
     Shot '19-flyout-open'
-    $metrics += 'First-run setup: three steps, saved, flyout kept as the default'
+    $metrics += 'First-run setup: four steps, saved, flyout kept as the default, Game mode left off'
 
     # Shortcut closes it; the process stays, with the panel gone.
     $pid9 = $widget.Id
