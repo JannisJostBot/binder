@@ -56,6 +56,34 @@ static partial class Tests
         File.WriteAllText(Path.Combine(dir, "sessions-2024.jsonl"), new string('x', SessionLog.MaxLineBytes + 1) + "\n");
         Check(Storage.LoadSessions(dir).Count == 3, "sessions: an oversized line is skipped");
 
+        // After a game: only what was appended is read; a line still being written is read once it's complete.
+        var reloadDir = Path.Combine(root, "session-reload");
+        Directory.CreateDirectory(reloadDir);
+        var read = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        string Line(string id, DateTimeOffset start) =>
+            $"{{\"GameId\":\"{id}\",\"Start\":\"{start:O}\",\"End\":\"{start.AddHours(1):O}\"}}";
+        var day = new DateTimeOffset(2027, 3, 1, 20, 0, 0, cet);
+        var file = Path.Combine(reloadDir, "sessions-2027.jsonl");
+        SessionLog.AppendLine(file, Encoding.UTF8.GetBytes(Line("steam:1", day)));
+        var known = Storage.LoadSessions(reloadDir, read);
+        SessionLog.AppendLine(file, Encoding.UTF8.GetBytes(Line("steam:2", day.AddDays(1))));
+        var reloaded = Storage.ReloadSessions(reloadDir, known, read);
+        Check(reloaded.Count == 2 && reloaded[1].GameId == "steam:2" && known.Count == 1,
+            "sessions: after a game only the new line is added, into a new list");
+        File.AppendAllText(file, Line("steam:3", day.AddDays(2))[..20]); // the watcher is still writing it
+        reloaded = Storage.ReloadSessions(reloadDir, reloaded, read);
+        Check(reloaded.Count == 2, "sessions: a half-written line isn't read yet");
+        File.AppendAllText(file, Line("steam:3", day.AddDays(2))[20..] + "\n");
+        reloaded = Storage.ReloadSessions(reloadDir, reloaded, read);
+        Check(reloaded.Count == 3 && reloaded[2].GameId == "steam:3", "sessions: once complete it's read, once");
+        Check(Storage.ReloadSessions(reloadDir, reloaded, read).Count == 3, "sessions: nothing new, nothing added");
+        File.WriteAllText(file, Line("steam:9", day) + "\n"); // changed some other way: shorter
+        reloaded = Storage.ReloadSessions(reloadDir, reloaded, read);
+        Check(reloaded.Count == 1 && reloaded[0].GameId == "steam:9", "sessions: a file that got shorter is read again whole");
+        SessionLog.AppendLine(Path.Combine(reloadDir, "sessions-2028.jsonl"), Encoding.UTF8.GetBytes(Line("steam:4", day.AddYears(1))));
+        reloaded = Storage.ReloadSessions(reloadDir, reloaded, read);
+        Check(reloaded.Count == 2 && reloaded[1].GameId == "steam:4", "sessions: a new year's file is read from its start");
+
         // Moving the old single file over: by the year each ended, without duplicates, the old file kept as .bak.
         var legacyDir = Path.Combine(root, "session-legacy");
         Directory.CreateDirectory(legacyDir);

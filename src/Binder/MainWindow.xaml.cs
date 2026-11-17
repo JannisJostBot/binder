@@ -48,13 +48,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
         Shelf.Initialize(this); // its actions: MainWindow.Shelf.cs
-        Detail.Initialize(this); // its actions: MainWindow.Detail.cs
-        SettingsPage.Initialize(this); // its actions: MainWindow.Settings.cs
-        GameModePage.Initialize(this); // its actions: MainWindow.GameMode.cs
-        FreeSpacePage.Initialize(this); // its actions: MainWindow.FreeSpace.cs
-        ImportPage.Cancelled += ShowSettings;
-        ImportPage.ImportRequested += ImportShortcuts;
-        SetupPage.Initialize(this); // its actions: MainWindow.Setup.cs
+        // The other pages are built and initialized on their first visit (MainWindow.Pages.cs).
         Shelf.ViewModel!.SetFlyout(IsFlyout, App.Pinned);
         Shelf.ViewModel!.SetData(_games, _sessions, App.Settings);
         ListenForUpdates(); // its part: MainWindow.Updates.cs
@@ -260,8 +254,8 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     {
         Shelf.ViewModel!.SetData(_games, _sessions, App.Settings);
         RefreshSettingsPage();
-        if (SetupPage.Visibility == Visibility.Visible) SetupPage.ViewModel!.UpdateLibrary(_games);
-        if (Detail.Visibility != Visibility.Visible || Detail.Game is not { } shown) return;
+        if (Shown(SetupSlot)) SetupPage.ViewModel!.UpdateLibrary(_games);
+        if (!Shown(DetailSlot) || Detail.Game is not { } shown) return;
 
         var game = FindGame(shown.Id);
         if (game is null || game.Hidden || !App.Settings.IsSourceEnabled(game.Source)) ShowShelf();
@@ -270,19 +264,19 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
 
     private void RefreshSettingsPage()
     {
-        if (SettingsPage.Visibility != Visibility.Visible) return;
+        if (!Shown(SettingsSlot)) return;
         var bounds = NativeWindow.GetBounds(_hwnd);
         var current = Monitors.FromPoint(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
         SettingsPage.ViewModel!.SetUpdate(App.CurrentUpdate);
         SettingsPage.ViewModel!.Load(App.Settings, _games, Autostart.IsEnabled(), App.State.Scanning,
-            Storage.LoadImportedShortcuts().Count, Monitors.All(), current.Device, App.HotkeyFree);
+            Storage.ImportedShortcutCount(), Monitors.All(), current.Device, App.HotkeyFree);
     }
 
     /// <summary>Closes the pages' (i) tips: they are popups of their own and would stay on screen.</summary>
     private void CloseTips()
     {
-        SettingsPage.CloseTips();
-        FreeSpacePage.CloseTips();
+        SettingsSlot?.CloseTips();
+        FreeSpaceSlot?.CloseTips();
     }
 
     private Game? FindGame(string id) => _games.FirstOrDefault(g => g.Id == id);
@@ -292,17 +286,18 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     {
         CloseTips();
         Shelf.Visibility = page == Shelf ? Visibility.Visible : Visibility.Collapsed;
-        Detail.Visibility = page == Detail ? Visibility.Visible : Visibility.Collapsed;
-        SettingsPage.Visibility = page == SettingsPage ? Visibility.Visible : Visibility.Collapsed;
-        ImportPage.Visibility = page == ImportPage ? Visibility.Visible : Visibility.Collapsed;
-        SetupPage.Visibility = page == SetupPage ? Visibility.Visible : Visibility.Collapsed;
-        GameModePage.Visibility = page == GameModePage ? Visibility.Visible : Visibility.Collapsed;
-        if (page != FreeSpacePage && FreeSpacePage.Visibility == Visibility.Visible)
+        // Pages not built yet stay unbuilt: only the one being shown is loaded (Show… asks for it first).
+        SetShown(DetailSlot, page);
+        SetShown(SettingsSlot, page);
+        SetShown(ImportSlot, page);
+        SetShown(SetupSlot, page);
+        SetShown(GameModeSlot, page);
+        if (page != FreeSpaceSlot && Shown(FreeSpaceSlot))
         {
-            FreeSpacePage.Release();
+            FreeSpaceSlot.Release();
             App.State.FreeSpace = null;
         }
-        FreeSpacePage.Visibility = page == FreeSpacePage ? Visibility.Visible : Visibility.Collapsed;
+        SetShown(FreeSpaceSlot, page);
     }
 
     private void ShowDetail(Game game)
@@ -325,7 +320,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     private void ShowShelf()
     {
         if (Shelf.Visibility == Visibility.Visible) return;
-        var shown = Detail.Visibility == Visibility.Visible ? Detail.Game : null;
+        var shown = Shown(DetailSlot) ? Detail.Game : null;
         ShowPage(Shelf);
         Shelf.UpdateLayout();
         if (shown is not null) Shelf.FocusGame(shown);

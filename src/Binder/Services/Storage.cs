@@ -6,7 +6,7 @@ using Binder.Models;
 namespace Binder.Services;
 
 [JsonSourceGenerationOptions(
-    WriteIndented = true,
+    WriteIndented = false, // compact: smaller files, read faster at start
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     UseStringEnumConverter = true)]
 [JsonSerializable(typeof(List<Game>))]
@@ -56,54 +56,115 @@ public static class Storage
     public static List<Session> LoadSessions()
     {
         MigrateLegacySessions(DataDir);
-        return LoadSessions(DataDir);
+        SessionsRead.Clear();
+        return LoadSessions(DataDir, SessionsRead);
     }
 
-    internal static List<Session> LoadSessions(string dir)
+    /// <summary>How far each year file was read by <see cref="LoadSessions()"/> (bytes), for <see cref="ReloadSessions"/>.</summary>
+    private static readonly Dictionary<string, long> SessionsRead = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// After a game ended: <paramref name="known"/> plus the sessions appended since the last read, reading only the
+    /// new end of each year file (the watcher only ever appends). A file that got shorter or went away means it was
+    /// changed some other way: everything is read again. Returns a new list (a check off the UI thread may still be
+    /// reading the old one).
+    /// </summary>
+    public static List<Session> ReloadSessions(List<Session> known) => ReloadSessions(DataDir, known, SessionsRead);
+
+    internal static List<Session> ReloadSessions(string dir, List<Session> known, Dictionary<string, long> read)
+    {
+        var files = Shared.SessionLog.YearFiles(dir);
+        var present = new HashSet<string>(files.Select(f => f.Path), StringComparer.OrdinalIgnoreCase);
+        bool rewritten = read.Count == 0 || read.Keys.Any(p => !present.Contains(p));
+        if (!rewritten)
+        {
+            foreach (var (_, path) in files)
+            {
+                if (!read.TryGetValue(path, out long from)) continue;
+                try
+                {
+                    if (new FileInfo(path).Length < from) rewritten = true;
+                }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            }
+        }
+        if (rewritten)
+        {
+            read.Clear();
+            return LoadSessions(dir, read);
+        }
+        var sessions = new List<Session>(known);
+        foreach (var (_, path) in files)
+            read[path] = ReadSessionLines(path, sessions, read.GetValueOrDefault(path));
+        return sessions;
+    }
+
+    internal static List<Session> LoadSessions(string dir, Dictionary<string, long>? read = null)
     {
         var sessions = new List<Session>();
         foreach (var (_, path) in Shared.SessionLog.YearFiles(dir))
-            ReadSessionLines(path, sessions);
+        {
+            long end = ReadSessionLines(path, sessions, 0);
+            if (read is not null) read[path] = end;
+        }
         return sessions;
     }
 
     /// <summary>
-    /// Reads one year file. Lines that don't parse (cut off by a power loss, edited by hand) or have no game are
-    /// skipped; an oversized file is skipped whole. Shares the file with a watcher that is appending.
+    /// Reads one year file from byte <paramref name="from"/> on. Lines that don't parse (cut off by a power loss,
+    /// edited by hand) or have no game are skipped; an oversized file is skipped whole. Shares the file with a
+    /// watcher that is appending. Returns how far it's read: past the last complete line, or the end when the last
+    /// line has no line break yet but parsed (so a line still being written is read again next time, once).
     /// </summary>
-    private static void ReadSessionLines(string path, List<Session> into)
+    private static long ReadSessionLines(string path, List<Session> into, long from)
     {
         byte[] bytes;
         try
         {
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-            if (stream.Length > Shared.SessionLog.MaxFileBytes) return;
-            bytes = new byte[stream.Length];
+            if (stream.Length > Shared.SessionLog.MaxFileBytes) return from;
+            if (from < 0 || from > stream.Length) from = 0;
+            stream.Seek(from, SeekOrigin.Begin);
+            bytes = new byte[stream.Length - from];
             stream.ReadExactly(bytes);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
-            return;
+            return from;
         }
 
         ReadOnlySpan<byte> rest = bytes;
-        if (rest.StartsWith("﻿"u8)) rest = rest[3..];
+        long consumed = from;
+        if (from == 0 && rest.StartsWith("\uFEFF"u8))
+        {
+            rest = rest[3..];
+            consumed += 3;
+        }
         while (!rest.IsEmpty)
         {
             int end = rest.IndexOf((byte)'\n');
             var line = end < 0 ? rest : rest[..end];
             rest = end < 0 ? default : rest[(end + 1)..];
-            line = line.TrimEnd("\r"u8).Trim(" \t"u8);
-            if (line.IsEmpty || line.Length > Shared.SessionLog.MaxLineBytes) continue;
-            try
-            {
-                if (JsonSerializer.Deserialize(line, SessionLineContext.Default.Session) is { GameId.Length: > 0 } session)
-                    into.Add(session);
-            }
-            catch (JsonException)
-            {
-                // A broken line: skip it, keep the rest.
-            }
+            bool parsed = ReadSessionLine(line, into);
+            if (end >= 0 || parsed) consumed += end < 0 ? line.Length : end + 1;
+        }
+        return consumed;
+    }
+
+    /// <summary>One line; false when it isn't a session (yet).</summary>
+    private static bool ReadSessionLine(ReadOnlySpan<byte> line, List<Session> into)
+    {
+        line = line.TrimEnd("\r"u8).Trim(" \t"u8);
+        if (line.IsEmpty || line.Length > Shared.SessionLog.MaxLineBytes) return false;
+        try
+        {
+            if (JsonSerializer.Deserialize(line, SessionLineContext.Default.Session) is not { GameId.Length: > 0 } session) return false;
+            into.Add(session);
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false; // a broken line: skip it, keep the rest
         }
     }
 
@@ -156,10 +217,25 @@ public static class Storage
     public static List<CrashRecord> LoadCrashes() => Load(CrashesPath, StorageJsonContext.Default.ListCrashRecord) ?? [];
     public static void SaveCrashes(List<CrashRecord> list) => Save(CrashesPath, list, StorageJsonContext.Default.ListCrashRecord);
 
-    public static List<ImportedShortcut> LoadImportedShortcuts() =>
-        Load(ImportedPath, StorageJsonContext.Default.ListImportedShortcut) ?? [];
-    public static void SaveImportedShortcuts(List<ImportedShortcut> list) =>
+    public static List<ImportedShortcut> LoadImportedShortcuts()
+    {
+        var list = Load(ImportedPath, StorageJsonContext.Default.ListImportedShortcut) ?? [];
+        _importedCount = list.Count;
+        return list;
+    }
+
+    public static void SaveImportedShortcuts(List<ImportedShortcut> list)
+    {
+        _importedCount = -1; // read again if the save fails half-way
         Save(ImportedPath, list, StorageJsonContext.Default.ListImportedShortcut);
+        _importedCount = list.Count;
+    }
+
+    /// <summary>How many shortcuts were imported (the Settings card's line), read from the file only once: every
+    /// change goes through <see cref="SaveImportedShortcuts"/>.</summary>
+    public static int ImportedShortcutCount() => _importedCount >= 0 ? _importedCount : LoadImportedShortcuts().Count;
+
+    private static volatile int _importedCount = -1;
 
     /// <summary>
     /// Reads a data file. A damaged one (cut short by a power loss, edited by hand) is kept aside as ".bad" and the

@@ -141,7 +141,7 @@ public sealed partial class MainWindow
         AppWindow.Hide();
         _wasActive = false;
         // It comes back like a new panel would: on the grid, not on the last game or settings page.
-        if (Shelf.Visibility != Visibility.Visible && SetupPage.Visibility != Visibility.Visible) ShowShelf();
+        if (Shelf.Visibility != Visibility.Visible && !Shown(SetupSlot)) ShowShelf();
         return true;
     }
 

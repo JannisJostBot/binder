@@ -26,10 +26,10 @@ public sealed partial class MainWindow
     /// <summary>Esc or a controller's B: back from a page to the shelf, else close the flyout. False if nothing to do.</summary>
     private bool GoBack()
     {
-        if (Detail.Visibility == Visibility.Visible || SettingsPage.Visibility == Visibility.Visible) ShowShelf();
-        else if (FreeSpacePage.Visibility == Visibility.Visible) LeaveFreeSpace();
-        else if (GameModePage.Visibility == Visibility.Visible) GameModeBack();
-        else if (ImportPage.Visibility == Visibility.Visible) ImportPage.CancelByEscape();
+        if (Shown(DetailSlot) || Shown(SettingsSlot)) ShowShelf();
+        else if (Shown(FreeSpaceSlot)) LeaveFreeSpace();
+        else if (Shown(GameModeSlot)) GameModeBack();
+        else if (Shown(ImportSlot)) ImportPage.CancelByEscape();
         else if (IsFlyout) App.Current.ClosePanel(this);
         else return false;
         return true;
@@ -128,7 +128,7 @@ public sealed partial class MainWindow
                 OnGameAction(game, GameAction.ToggleFavorite);
                 Shelf.FocusGame(game, FocusState.Keyboard); // favorites move to the front: follow it
                 break;
-            case PadButton.Y when popup is null && Detail.Visibility == Visibility.Visible && Detail.Game is { } shown:
+            case PadButton.Y when popup is null && Shown(DetailSlot) && Detail.Game is { } shown:
                 OnGameAction(shown, GameAction.ToggleFavorite);
                 break;
             case PadButton.LeftShoulder or PadButton.RightShoulder when popup is null && Shelf.Visibility == Visibility.Visible:
@@ -136,8 +136,8 @@ public sealed partial class MainWindow
                 Shelf.ViewModel!.CycleFilter(button == PadButton.RightShoulder ? 1 : -1);
                 if (inGrid) Shelf.FocusFirstGame();
                 break;
-            case PadButton.Menu when popup is null && SetupPage.Visibility != Visibility.Visible:
-                if (SettingsPage.Visibility == Visibility.Visible) ShowShelf();
+            case PadButton.Menu when popup is null && !Shown(SetupSlot):
+                if (Shown(SettingsSlot)) ShowShelf();
                 else ShowSettings();
                 break;
         }
@@ -183,7 +183,7 @@ public sealed partial class MainWindow
     private void OnCharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs e)
     {
         // No shelf to search behind the setup; on Free up space a stray key mustn't throw the plan away.
-        if (e.Handled || SetupPage.Visibility == Visibility.Visible || FreeSpacePage.Visibility == Visibility.Visible) return;
+        if (e.Handled || Shown(SetupSlot) || Shown(FreeSpaceSlot)) return;
         var focused = FocusManager.GetFocusedElement(Root.XamlRoot);
         if (focused is TextBox || char.IsControl(e.Character)) return;
         // Space activates a focused button, item or switch; leave it alone.

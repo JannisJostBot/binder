@@ -183,7 +183,7 @@ public sealed partial class App : Application
         if (notice is { NotDetected: false })
         {
             // A game ended (the watcher brought us back): pick up the session it wrote.
-            State.Sessions = Storage.LoadSessions();
+            State.Sessions = Storage.ReloadSessions(State.Sessions); // only what was appended since
             if (!_crashedOnly) // else only the restart pill (or the crash card), after the check
             {
                 if (Settings.DisplayMode == DisplayMode.Desktop) OpenPanel();

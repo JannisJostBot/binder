@@ -28,7 +28,7 @@ public sealed partial class MainWindow
     /// <summary>The About card and the "…" dot and item follow the app's update state.</summary>
     private void PushUpdate()
     {
-        SettingsPage.ViewModel!.SetUpdate(App.CurrentUpdate);
+        SettingsSlot?.ViewModel!.SetUpdate(App.CurrentUpdate); // not built yet: it reads the state when it's shown
         Shelf.ViewModel!.SetUpdate(App.Current.UpdateMenuText);
     }
 

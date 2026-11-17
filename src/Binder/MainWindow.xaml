@@ -7,12 +7,14 @@
     <Grid x:Name="Root" AllowDrop="True" DragOver="OnDragOver" Drop="OnDrop"
           CharacterReceived="OnCharacterReceived" KeyDown="OnRootKeyDown" PointerPressed="OnRootPointerPressed">
         <v:ShelfView x:Name="Shelf" />
-        <v:DetailView x:Name="Detail" Visibility="Collapsed" />
-        <v:SettingsView x:Name="SettingsPage" Visibility="Collapsed" />
-        <v:ImportView x:Name="ImportPage" Visibility="Collapsed" />
-        <v:SetupView x:Name="SetupPage" Visibility="Collapsed" />
-        <v:FreeSpaceView x:Name="FreeSpacePage" Visibility="Collapsed" />
-        <v:GameModeView x:Name="GameModePage" Visibility="Collapsed" />
+        <!-- The other pages are built on their first visit (MainWindow.Pages.cs): the panel is made anew at every
+             open, and most opens never leave the shelf. -->
+        <v:DetailView x:Name="DetailSlot" x:Load="False" Visibility="Collapsed" />
+        <v:SettingsView x:Name="SettingsSlot" x:Load="False" Visibility="Collapsed" />
+        <v:ImportView x:Name="ImportSlot" x:Load="False" Visibility="Collapsed" />
+        <v:SetupView x:Name="SetupSlot" x:Load="False" Visibility="Collapsed" />
+        <v:FreeSpaceView x:Name="FreeSpaceSlot" x:Load="False" Visibility="Collapsed" />
+        <v:GameModeView x:Name="GameModeSlot" x:Load="False" Visibility="Collapsed" />
 
         <StackPanel VerticalAlignment="Bottom" Margin="16" Spacing="8">
             <!-- Notices (errors, Undo, …). On a solid backing so covers don't show through the InfoBar's
