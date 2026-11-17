@@ -668,6 +668,61 @@ try {
     $siteNumbers.openMB = $openPws
     $siteNumbers.games = @((Get-Content (Join-Path $dataDir 'library.json') -Raw | ConvertFrom-Json) | ForEach-Object { $_ }).Count
     Shot '21-flyout-after-background'
+
+    # --- A library of 100 games: real Steam app ids, so their covers download like a real library's. The panel is
+    # scrolled through once so every cover has been shown, then measured (the website's "with 100 games"). ---
+    Stop-Process -Id $widget.Id -Force
+    $widget.WaitForExit()
+    $bigIds = @(
+        271590, 292030, 1245620, 1091500, 413150, 105600, 252490, 578080, 359550, 1174180, 377160, 489830, 8930,
+        289070, 394360, 236850, 281990, 1158310, 255710, 346110, 252950, 218620, 550, 620, 400, 220, 546560, 4000,
+        381210, 322330, 219740, 367520, 504230, 1145360, 588650, 646570, 250900, 268910, 391540, 427520, 526870,
+        892970, 1086940, 435150, 374320, 814380, 1817070, 1593500, 582010, 1446780, 601150, 883710, 952060,
+        1196590, 2050650, 238960, 1240440, 976730, 1966720, 1623730, 553850, 945360, 990080, 1716740, 1144200,
+        739630, 108600, 304930, 286160, 1172620, 1551360, 1293830, 244210, 805550, 236390, 1097150, 1794680,
+        1150690, 1057090, 387290, 268500, 594650, 1222140, 1325200, 2379780, 1426210, 753640, 1151640, 1659040,
+        552500, 1142710, 594570, 779340, 214950)
+    $current = @((Get-Content (Join-Path $dataDir 'library.json') -Raw | ConvertFrom-Json) | ForEach-Object { $_ }).Count
+    foreach ($id in ($bigIds | Select-Object -First (100 - $current))) {
+        New-Item -ItemType Directory -Force (Join-Path $steamapps "common\Game$id") | Out-Null
+        Set-Content -Encoding UTF8 (Join-Path $steamapps "appmanifest_$id.acf") @"
+"AppState"
+{
+    "appid"		"$id"
+    "name"		"Library game $id"
+    "StateFlags"		"4"
+    "installdir"		"Game$id"
+    "SizeOnDisk"		"$([long]10GB)"
+}
+"@
+    }
+    $widget = Start-Process $Exe -PassThru
+    $window = Get-WidgetWindow $widget.Id
+    $bigCount = Wait-Until {
+        try { $n = @((Get-Content (Join-Path $dataDir 'library.json') -Raw | ConvertFrom-Json) | ForEach-Object { $_ }).Count }
+        catch { $n = 0 }   # read while it's being saved
+        if ($n -ge 100) { $n }
+    } 60 '100 games in the library after the rescan'
+    Start-Sleep -Seconds 10   # the first rows' covers download and decode
+    $scrollable = New-Object System.Windows.Automation.PropertyCondition($UIA::IsScrollPatternAvailableProperty, $true)
+    $grid = @($window.FindAll($Scope::Descendants, $scrollable)) |
+        Where-Object { $_.GetCurrentPattern([System.Windows.Automation.ScrollPattern]::Pattern).Current.VerticallyScrollable } |
+        Select-Object -First 1
+    if (-not $grid) { Fail 'No scrollable grid with 100 games' }
+    $scroll = $grid.GetCurrentPattern([System.Windows.Automation.ScrollPattern]::Pattern)
+    foreach ($percent in 10, 20, 30, 40, 50, 60, 70, 80, 90, 100) {
+        $scroll.SetScrollPercent([System.Windows.Automation.ScrollPattern]::NoScroll, $percent)
+        Start-Sleep -Milliseconds 1500   # covers coming into view download (two at a time) and decode
+    }
+    Shot '22-hundred-games'
+    $scroll.SetScrollPercent([System.Windows.Automation.ScrollPattern]::NoScroll, 0)
+    Start-Sleep -Seconds 5
+    Assert-Running $widget 'scrolling through 100 games'
+    $widget.Refresh()
+    $bigPws = Get-PrivateWorkingSetMB $widget
+    $metrics += "Flyout open with $bigCount games (scrolled through once): working set $([math]::Round($widget.WorkingSet64 / 1MB, 1)) MB, private $([math]::Round($widget.PrivateMemorySize64 / 1MB, 1)) MB, private working set $bigPws MB"
+    $siteNumbers.openBigMB = $bigPws
+    $siteNumbers.bigGames = $bigCount
 }
 finally {
     # Diagnostics for a failed run: the app's own error log, the returned widget's state, and Windows' crash

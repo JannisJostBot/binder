@@ -40,10 +40,18 @@ jobs:
           "tag=$env:TAG" >> $env:GITHUB_OUTPUT
           "version=$($Matches[1])" >> $env:GITHUB_OUTPUT
 
-      # The released code, without the token: nothing it runs can push.
+      # The released code, and main's test harness (smoke test, stand-in game), so an older tag is measured the
+      # same way as a new one. Both without the token: nothing they run can push.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: refs/tags/${{ steps.tag.outputs.tag }}
+          path: release
+          persist-credentials: false
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          path: harness
           persist-credentials: false
 
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
@@ -51,18 +59,21 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Publish
+        working-directory: release
         run: |
           ./scripts/publish.ps1 -Output publish
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build stand-in game
+        working-directory: harness
         run: dotnet build tests/FakeGame -c Release
 
       - name: UI smoke test
         shell: powershell
+        working-directory: harness
         env:
           WATCHER_BUILD: Native AOT
-        run: ./tests/smoke.ps1 -Exe publish/app/Binder.exe -FakeGame tests/FakeGame/out/FakeGame.exe
+        run: ./tests/smoke.ps1 -Exe ../release/publish/app/Binder.exe -FakeGame tests/FakeGame/out/FakeGame.exe
 
       # main's page and main's script, the numbers from this release's run. Only this step has the token.
       - name: Open a pull request with the numbers
@@ -73,7 +84,7 @@ jobs:
           VERSION: ${{ steps.tag.outputs.version }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $numbers = (Resolve-Path artifacts/site-numbers.json).Path
+          $numbers = (Resolve-Path harness/artifacts/site-numbers.json).Path
           Get-Content $numbers | Write-Host
           $auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:GH_TOKEN"))
           $git = @('-c', "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth")

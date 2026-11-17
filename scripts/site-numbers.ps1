@@ -41,6 +41,9 @@ $open = Number 'openMB' 4000
 $closed = Number 'closedMB' 1000
 $watcher = Number 'watcherMB' 100
 $games = [int](Number 'games' 100000)
+$openBig = Number 'openBigMB' 4000
+$bigGames = [int](Number 'bigGames' 100000)
+if ($bigGames -le $games) { throw "site-numbers.json: the large library ($bigGames games) isn't larger than the small one ($games)" }
 $closedCpu = Number 'closedCpuMs' 100000
 $watcherCpu = Number 'watcherCpuMs' 100000
 
@@ -53,14 +56,13 @@ if ($n.windows) { $machine += [string]$n.windows }
 if ($n.cores) { $machine += "$([int]$n.cores) cores" }
 if ($n.ramGB) { $machine += "$([int]$n.ramGB) GB" }
 $machineText = if ($machine) { " ($($machine -join ', '))" } else { '' }
-$gamesText = if ($games -eq 1) { '1 test game' } else { "$games test games" }
 
 $values = @{
     watcher  = Html (Megabytes $watcher)
     closed   = Html (Megabytes $closed)
-    open     = Html "$(Megabytes $open) with $gamesText, more with many covers"
+    open     = Html "$(Megabytes $open) with $games games, $(Megabytes $openBig) with $bigGames games"
     measured = Html ("Binder $Version, measured on " + $when.ToString('d MMMM yyyy', [cultureinfo]::InvariantCulture) +
-        " on a GitHub Actions test machine$machineText. Memory as Task Manager shows it")
+         " on a GitHub Actions test machine$machineText, with Steam covers. Memory as Task Manager shows it")
 }
 
 $html = [IO.File]::ReadAllText((Resolve-Path $Site))

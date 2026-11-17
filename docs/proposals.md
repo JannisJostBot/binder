@@ -1838,11 +1838,12 @@ A release can be marked `"urgent": true` for a security fix that shouldn't wait 
    - Signs with the main key and checks the signature with the public key from `UpdateKeys.cs` before uploading.
    - Uploads `release.json` and `release.json.sig` to the draft and publishes it as the latest release.
 5. **Website numbers (GitHub Actions, `.github/workflows/site-numbers.yml`, on a published release):** builds the
-   tag, runs the UI smoke test, writes its memory and processor numbers into the website's "How much it uses"
+   tag, runs `main`'s UI smoke test on it (so older tags are measured the same way; it also measures the open panel
+   with 100 games after scrolling through every cover), writes its memory and processor numbers into the website's "How much it uses"
    (`scripts/site-numbers.ps1`: only the text between the page's `<!-- n:… -->` markers; stops when a number is
    missing or contradicts the page's "None") and opens a pull request `Website: numbers for v…`; the site goes live
    from `main` once it's merged. Memory is Task Manager's value (private working set) on GitHub's Windows test
-   machine with the smoke test's few games, and the page says so. Needs "Allow GitHub Actions to create and approve
+   machine with the smoke test's 9 games and with 100, and the page says so. Needs "Allow GitHub Actions to create and approve
    pull requests" in the repository's Actions settings; without it the branch is pushed and the run warns. Can be
    run by hand for a tag (Actions › Website numbers › Run workflow).
 6. **Published:** with "immutable releases" on, the release's files and tag can't change any more. A bad release is
