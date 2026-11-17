@@ -106,7 +106,8 @@ public sealed partial class SetupViewModel : ObservableObject
         _allowFailed = null;
         _allowDeclined = false;
         _gameMode = !settings.GameModeEnabled ? SetupGameMode.Off
-            : _actions.HelperReady ? SetupGameMode.All : SetupGameMode.NoAdmin;
+            : _actions.HelperReady && settings.GameModeItems.Any(Shared.GameModeInfo.IsElevatedItem) ? SetupGameMode.All
+            : SetupGameMode.NoAdmin;
         GameModeItems = [.. BuildGameModeItems()];
         FillSelection();
         Step = 0; // so step 1 counts as a change

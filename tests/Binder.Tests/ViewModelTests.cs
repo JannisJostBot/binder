@@ -731,6 +731,8 @@ static partial class Tests
         Check(vm.GameModeAll == true && !vm.DoneNeedsAdmin && vm.AllText == "The admin helper is already installed", "setup: helper already allowed");
         vm.DoneCommand.Execute(null);
         Check(spy.Calls.Count(c => c == "allow") == allows && spy.Finished?.GameMode == SetupGameMode.All, "setup: nothing to ask when it's there");
+        vm.Start(new Settings { GameModeEnabled = true, GameModeItems = ["power", "priority"] }, [], startWithWindows: false);
+        Check(vm.GameModeNoAdmin == true, "setup: a run after \"only items without admin rights\" opens on that choice, helper or not");
 
         // A standard account: no "All items"; a note says why.
         spy.HelperReady = false;
