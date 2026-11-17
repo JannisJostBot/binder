@@ -1,5 +1,5 @@
-// Binder website: a small hidden game behind the product shot's Play button ("Continue playing"). It tells Binder's
-// own story: the launch toast counts down, the shelf slides away, the made-up games' covers drift up the desktop
+// Binder website: a small hidden game behind the Play button on the desktop story's shelf ("Continue playing").
+// It tells Binder's own story: the launch toast counts down, the shelf slides away, the made-up games' covers drift up the desktop
 // for 20 seconds (click or tap to catch them), then the shelf comes back with "Welcome back" and the score.
 // Nothing is fetched or stored. Nothing runs until Play is pressed, and its timers stop when the round ends.
 // With reduced motion the covers don't move: they appear in place for a moment and fade.
@@ -123,14 +123,12 @@
     game = title.textContent;
     live = el('span', 'mock-live');
     live.setAttribute('aria-live', 'polite');
-    stage.appendChild(live);
+    // Outside the picture, so screen readers hear it.
+    stage.parentNode.insertBefore(live, stage.nextSibling);
     play.addEventListener('click', start);
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && playing) end();
     });
-    // The tray icon hides the shelf: a round still running ends with it.
-    var toggle = document.getElementById('shelf-toggle');
-    if (toggle) toggle.addEventListener('change', function () { if (playing) end(); });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

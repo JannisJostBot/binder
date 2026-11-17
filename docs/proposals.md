@@ -46,6 +46,13 @@ The build order is at the end of this file. The ideas under "Not decided" at the
 
 ## Decisions log
 
+**2026-11-17**
+- The website's new look, "the desktop story" (design canvas https://claude.ai/artifact/9tRqEzXwkccPqmsjQYqWNc):
+  the page opens on a Windows desktop full of game shortcuts that fly into Binder's shelf as you scroll, then a game
+  with Binder gone and only the helper left (its measured memory), then "Welcome back". The rest is plain Windows
+  (4 px controls, neutral greys, the accent only for actions); the blue download panel stays. The launcher chips'
+  merge into the logo and the old "How it works" scroll story went with the old hero.
+
 **2026-11-16**
 - The website may fetch what is directly about Binder's releases: `site/release.js` reads the latest release from
   GitHub's API (download link, version, VirusTotal result). Website only; the app's rules don't change.

@@ -68,19 +68,19 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
 | `src/Binder/Services/` | Launching, storage, Windows integration |
 | `src/Binder/Views/` | The UI (XAML + code-behind); `Format.cs` has the text formatting |
 | `tests/Binder.Tests/Tests.cs` | All unit tests: one console program, `Check(condition, "description")` per check |
-| `site/` | The website: `index.html`, `docs.html`, `styles.css`, `logo.svg`, `release.js`, `clock.js`, `chips.js`, `game.js` (see "The website" below) |
+| `site/` | The website: `index.html`, `docs.html`, `styles.css`, `logo.svg`, `release.js`, `clock.js`, `story.js`, `game.js` (see "The website" below) |
 
 ## The website (`site/`)
 
 The project's website: `site/index.html` (the home page), `site/docs.html` (the documentation: what Binder
-changes on the PC), `site/styles.css`, `site/logo.svg` and its scripts (`release.js`, `clock.js`, `chips.js`, `game.js`). `.github/workflows/pages.yml` publishes it to GitHub
+changes on the PC), `site/styles.css`, `site/logo.svg` and its scripts (`release.js`, `clock.js`, `story.js`, `game.js`). `.github/workflows/pages.yml` publishes it to GitHub
 Pages whenever a change to `site/` reaches `main`, so what's merged is live within minutes.
 
-- Plain HTML and CSS, no frameworks, no build step. Four small scripts: `site/clock.js` sets the product shot's
-  taskbar clock and greeting from the visitor's time, `site/chips.js` measures the launcher chips so hovering them
-  gathers them into the logo, `site/game.js` is the hidden game behind the product shot's Play button (the launch
-  toast, 20 seconds of catching the made-up games' covers, then "Welcome back" with the score; nothing runs until
-  Play is pressed; reduced motion: covers appear in place) (all three without network), and `site/release.js` asks GitHub's API
+- Plain HTML and CSS, no frameworks, no build step. Four small scripts: `site/clock.js` sets the desktop story's
+  taskbar clock and the shelf's greeting from the visitor's time, `site/story.js` runs the desktop story (below),
+  `site/game.js` is the hidden game behind the shelf's Play button (the launch toast, 20 seconds of catching the
+  made-up games' covers, then "Welcome back" with the score; nothing runs until Play is pressed; reduced motion:
+  covers appear in place) (all three without network), and `site/release.js` asks GitHub's API
   (`api.github.com`, this repository's latest release) for the download link, the version line and the VirusTotal
   box, which `index.html` also holds as fallback values. That fetch, for things directly about Binder's releases,
   is the only one allowed (owner, 2026-11-16); it applies to the website only, not to the app. No inline scripts
@@ -88,27 +88,33 @@ Pages whenever a change to `site/` reaches `main`, so what's merged is live with
 - Nothing loaded from other servers: no web fonts, CDNs, analytics, embeds or tracking pixels. The page promises
   privacy, so it must keep it. Links to other sites (`<a href="https://…">`) are fine. `check.ps1` enforces this.
 - Colours only through the variables at the top of `styles.css` (`var(--text)`, `var(--accent)`, …), which
-  have light and dark values. The product shot in the hero (`.stage`, `.mock-*`), the step and feature pictures
-  and the Game mode pill are pictures of the app and keep its own fixed colours.
-- Layout is in classes in `styles.css`, grouped by section, with each section's phone values (up to 600 px)
-  right after it. Reuse the existing pieces (`.section`, `.section-head`, `.h2`, `.lead`, `.button`,
-  `.tile`, `.stat`, `.faq-item`, `.note`) instead of new styles; no inline `style="…"` except a `--c`/`--h`
-  value on a picture's parts.
-- The look: Windows-native type and colours, plus Binder's own touches: pill buttons, the bloom in the logo's
-  blues, the logo's fanned cover stack (download panel), a quiet wallpaper behind the hero's product shot, launcher chips like the app's filter chips, the
-  deep blue privacy and download panels. Keep them; no small labels above headings, and don't add stock illustrations, emoji or other fonts.
-- "What happens when you play a game" is a scroll story in pure CSS (scroll-driven animations on `.how-scroll`,
-  keyframes `how-*`): the three steps stay pinned and the picture changes as the page scrolls. Without support or
-  with reduced motion it's three cards; check both after changing a step.
+  have light and dark values. The desktop story (`.stage`, `.ico`, `.mock-*`, `.procs`, `.game-scene`) and the
+  feature pictures are pictures of a PC and of the app and keep their own fixed colours.
+- Layout is in classes in `styles.css`, grouped by section, with each section's phone values right after it.
+  Reuse the existing pieces (`.section`, `.split`, `.h2`, `.h3`, `.lead`, `.button`, `.feature`, `.usage`,
+  `.faq-item`, `.note`) instead of new styles; no inline `style="…"` except a `--c`/`--h` value on a picture's
+  parts.
+- The look (owner, 2026-11-17, "the desktop story"): plain Windows. Segoe UI Variable, neutral greys, the Windows
+  accent only for actions and links, 4 px corners on controls and 8 px on cards, no blooms, glass, pill buttons or
+  decorative shapes; the colour comes from the pictures. The one exception is the download panel in Binder's blue
+  with the logo's fanned cover stack, kept by the owner. No small labels above headings, and don't add stock
+  illustrations, emoji or other fonts.
+- The page opens with the desktop story: one Windows desktop (`.stage`) pinned while five captions
+  (`.story-step`, `data-step` 0–4) scroll over it: a desktop full of game shortcuts with the headline in a window,
+  the shortcuts flying into Binder's shelf, the shelf, a game with Binder gone (the process list), and "Welcome
+  back". `story.js` sets the step from the caption in the middle of the window (on narrow windows, just under the
+  picture) and measures where each shortcut flies; `styles.css` moves the scene. Without scripts it shows the open
+  shelf; with reduced motion the steps change at once. After changing it, check every step at full width, at
+  390 px, in dark mode and with reduced motion.
 - The header and footer are the same on both pages (`docs.html` links back with `index.html#…`). The "Binder is
   an app for Windows PCs" note (`touch-hint`) shows only on touch screens.
 - The text is factual and plain: only what the app really does, numbers only from the card, no marketing words
   ("amazing", "seamless", "blazing fast"). Placeholders in square brackets (`[DOWNLOAD LINK]`) stay until a card
   gives the real value.
-  The product shot's shelf shows made-up games (Starfall Drift, Ember Keep, …) with covers drawn in CSS
-  (`.mock-grid .g1`–`.g12`), and the step and crash pictures use the same names; they stay made up: never a
-  real game's name or look.
-- The numbers in "How much it uses" (and the helper's "About … MB") sit between `<!-- n:key -->` and
+  The desktop story shows made-up games (Starfall Drift, Ember Keep, …) with covers drawn in CSS (`.g1`–`.g12`,
+  on the shelf, the desktop icons and the hidden game), and the feature pictures use the same names; they stay
+  made up: never a real game's name or look.
+- The numbers in "How much it uses" (and the helper's memory in the story's process list) sit between `<!-- n:key -->` and
   `<!-- /n -->` markers. A workflow writes them for each release (`scripts/site-numbers.ps1`); don't edit the text
   between the markers or remove them.
 - Keep the "Before you download" section (the AI disclaimer and "Not affiliated") as it is.
