@@ -208,6 +208,8 @@ function Get-PrivateWorkingSetMB($process) {
     $p = Get-CimInstance Win32_PerfFormattedData_PerfProc_Process -Filter "IDProcess=$($process.Id)" -ErrorAction SilentlyContinue
     if ($p) { [math]::Round($p.WorkingSetPrivate / 1MB, 1) }
 }
+# The first query of that class takes seconds (Windows loads its counters); not during the short fake game.
+Get-PrivateWorkingSetMB (Get-Process -Id $PID) | Out-Null
 
 function Assert-Running($process, [string] $when) {
     $process.Refresh()
@@ -538,16 +540,19 @@ try {
     $watcher = Wait-Until { Get-Process Binder.Watcher -ErrorAction SilentlyContinue } 10 'watcher running'
     Start-Sleep -Seconds 4   # past detection: the watcher should now be blocked in a kernel wait
     $watcher.Refresh()
+    # Memory first, while the fake game (15 s) surely still runs.
+    $watcherWs = $watcher.WorkingSet64
+    $watcherPrivate = $watcher.PrivateMemorySize64
+    $watcherPws = Get-PrivateWorkingSetMB $watcher
     $w0 = $watcher.TotalProcessorTime
     Start-Sleep -Seconds 5
     $watcher.Refresh()
     $watcherCpu = [int]($watcher.TotalProcessorTime - $w0).TotalMilliseconds
-    $watcherPws = Get-PrivateWorkingSetMB $watcher
-    $metrics += "Watcher while game runs: $([math]::Round($watcher.WorkingSet64 / 1MB, 1)) MB working set, $([math]::Round($watcher.PrivateMemorySize64 / 1MB, 1)) MB private, $watcherPws MB private working set, CPU over 5 s: $watcherCpu ms ($watcherBuild build)"
+    $metrics += "Watcher while game runs: $([math]::Round($watcherWs / 1MB, 1)) MB working set, $([math]::Round($watcherPrivate / 1MB, 1)) MB private, $watcherPws MB private working set, CPU over 5 s: $watcherCpu ms ($watcherBuild build)"
     if ($watcherBuild -eq 'Native AOT') { $siteNumbers.watcherMB = $watcherPws; $siteNumbers.watcherCpuMs = $watcherCpu }
-    if ($watcherBuild -eq 'Native AOT' -and $watcher.PrivateMemorySize64 -gt 3MB) {
+    if ($watcherBuild -eq 'Native AOT' -and $watcherPrivate -gt 3MB) {
         # Private bytes: the watcher's own memory. Working set also counts shared Windows DLL pages.
-        Write-Host "::warning::Watcher private memory is $([math]::Round($watcher.PrivateMemorySize64 / 1MB, 1)) MB (budget: ~3 MB)"
+        Write-Host "::warning::Watcher private memory is $([math]::Round($watcherPrivate / 1MB, 1)) MB (budget: ~3 MB)"
     }
     Shot '4-during-game'
 
