@@ -218,6 +218,12 @@ try {
     ConvertTo-Json -InputObject @(@{ StoredPath = $stored; OriginalPath = $original; Copied = $false }) |
         Set-Content -Encoding UTF8 (Join-Path $dataDir 'imported-shortcuts.json')
     Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' 'Binder' ('"' + (Join-Path $installDir 'Binder.exe') + '" --background')
+    # "Add my games to Start search" (spec 22 c): its folder and a game shortcut in it go with the app.
+    $startGames = Join-Path ([Environment]::GetFolderPath('Programs')) 'Binder games'
+    New-Item -ItemType Directory -Force $startGames | Out-Null
+    $wsh = New-Object -ComObject WScript.Shell
+    $lnk = $wsh.CreateShortcut((Join-Path $startGames 'Setup Test Game.lnk'))
+    $lnk.TargetPath = Join-Path $installDir 'Binder.exe'; $lnk.Arguments = '--play steam:1'; $lnk.Save()
 
     # --- 3. Uninstall through the dialogs, deleting the data too. ---
     $proc = Start-Process (Join-Path $installDir 'Uninstall.exe') -ArgumentList '/uninstall' -PassThru
@@ -245,6 +251,7 @@ try {
     Wait-Until { -not (Test-Path $installDir) } 15 'install folder removed' | Out-Null
     if (Test-Path $uninstallKey) { Fail 'The Settings -> Apps entry is still there' }
     if (Test-Path $startMenuLink) { Fail 'The Start menu shortcut is still there' }
+    if (Test-Path $startGames) { Fail 'The Start menu''s "Binder games" folder is still there' }
     if ((Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -ErrorAction SilentlyContinue).'Binder') { Fail 'Start with Windows is still set' }
     if (-not (Test-Path $original)) { Fail 'The imported shortcut did not go back on the desktop' }
     if ((Test-Path $dataDir) -or (Test-Path $cacheDir)) { Fail 'Binder data is still there after "delete my data"' }
@@ -252,7 +259,7 @@ try {
     Wait-Until { -not (Get-ChildItem ([IO.Path]::GetTempPath()) -Directory -Filter 'Binder-uninstall-*') } 15 'temporary uninstaller removed' | Out-Null
     Wait-Until { -not (Test-Path $log) } 15 'setup log removed after the uninstall' | Out-Null
     Remove-Item $original -ErrorAction SilentlyContinue
-    $metrics += 'Uninstall: files, Start menu, Settings -> Apps entry, Run key, data, cache and setup log gone; imported shortcut back on the desktop; temp copy removed'
+    $metrics += 'Uninstall: files, Start menu (and "Binder games"), Settings -> Apps entry, Run key, data, cache and setup log gone; imported shortcut back on the desktop; temp copy removed'
 }
 finally {
     try { Dump-SetupWindows } catch { }

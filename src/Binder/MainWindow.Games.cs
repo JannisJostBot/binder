@@ -128,6 +128,7 @@ public sealed partial class MainWindow
         bool on = settings.StartMenuGames;
         var shelf = _games.Where(g => !g.Hidden && settings.IsSourceEnabled(g.Source)).ToList();
         var last = settings.StartMenuStamp;
+        _startMenuShelfKey = StartMenuShelfKey();
         _ = Task.Run(() =>
         {
             if (!on)
@@ -148,6 +149,18 @@ public sealed partial class MainWindow
             SaveSettings();
         }, TaskScheduler.FromCurrentSynchronizationContext());
     }
+
+    /// <summary>The shelf's games as the Start folder sees them (id and name), to tell when a library save needs a sync.</summary>
+    private string StartMenuShelfKey()
+    {
+        var settings = App.Settings;
+        var key = new System.Text.StringBuilder();
+        foreach (var g in _games)
+            if (!g.Hidden && settings.IsSourceEnabled(g.Source)) key.Append(g.Id).Append('|').Append(g.Name).Append('\n');
+        return key.ToString();
+    }
+
+    private string? _startMenuShelfKey;
 
     /// <summary>Puts every imported shortcut back on the desktop and removes the games made from them.</summary>
     private void RestoreShortcuts()
