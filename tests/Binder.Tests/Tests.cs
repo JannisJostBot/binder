@@ -168,7 +168,9 @@ static partial class Tests
             new() { Id = "man1", Source = GameSource.Manual, ExePath = P("Tools", "game.exe") },
             new() { Id = "xbox1", Source = GameSource.Xbox, StoreId = "fam" },
             new() { Id = "ubi1", Source = GameSource.Ubisoft, StoreId = "4553" },
-            new() { Id = "none", Source = GameSource.Ea, InstallDir = P("EA", "Other") },
+            new() { Id = "none", Source = GameSource.Ea, Name = "Other game", InstallDir = P("EA", "Other") },
+            new() { Id = "sc1", Source = GameSource.Shortcut, Name = "Anno 1800", ExePath = P("Binder", "Shortcuts", "Anno 1800.url") },
+            new() { Id = "sc2", Source = GameSource.Shortcut, Name = "Mirage", ExePath = P("Binder", "Shortcuts", "Mirage.url") },
         };
         var entries = new List<ShortcutFile>
         {
@@ -178,11 +180,12 @@ static partial class Tests
             new("d.lnk", "Game", P("Tools", "game.exe"), null),
             new("e.url", "Other game", null, "steam://rungameid/999"),
             new("f.lnk", "EA app", P("EA", "EADesktop.exe"), null), // the launcher, beside the game's folder
+            new("g.url", "anno 1800", null, "uplay://launch/9999/0"), // the launcher's own entry of an imported shortcut
         };
         var found = StartMenuMatch.GamesWithEntry(entries, games);
-        Check(found.SetEquals(["steam1", "epic1", "gog1", "man1", "xbox1"]),
-            "start menu: matched by store link, exe and install folder; Xbox games are Start apps; others not");
-        Check(StartMenuMatch.CountMissing(entries, games) == 2 && StartMenuMatch.CountMissing([], games) == 6, "start menu: the games it doesn't find");
+        Check(found.SetEquals(["steam1", "epic1", "gog1", "man1", "xbox1", "sc1"]),
+            "start menu: matched by store link, exe and install folder, imported shortcuts by name; Xbox games are Start apps; others not");
+        Check(StartMenuMatch.CountMissing(entries, games) == 3 && StartMenuMatch.CountMissing([], games) == 8, "start menu: the games it doesn't find");
 
         var shelf = new List<Game>
         {

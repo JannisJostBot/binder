@@ -18,6 +18,9 @@ public static class StartMenuMatch
         var ubisoft = new Dictionary<string, string>(StringComparer.Ordinal);
         var exes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var folders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        // An imported desktop shortcut is named as the launcher named it, and so is that launcher's Start entry
+        // ("Anno 1800.url" in both, uplay:// inside); the stored copy's link isn't read here (pure code).
+        var shortcutNames = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
         foreach (var game in games)
         {
             if (game.Source == GameSource.Xbox)
@@ -25,6 +28,7 @@ public static class StartMenuMatch
                 found.Add(game.Id);
                 continue;
             }
+            if (game.Source == GameSource.Shortcut && game.Name.Length > 0) shortcutNames.TryAdd(game.Name, game.Id);
             if (game.StoreId is { Length: > 0 } id)
             {
                 if (game.Source == GameSource.Steam) steam.TryAdd(id, game.Id);
@@ -49,6 +53,7 @@ public static class StartMenuMatch
                         folders.TryGetValue(Path.TrimEndingDirectorySeparator(dir), out id);
             }
             if (id is not null) found.Add(id);
+            if (shortcutNames.TryGetValue(entry.Name, out var named)) found.Add(named);
         }
         return found;
     }

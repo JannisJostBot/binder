@@ -89,15 +89,34 @@ public static class StartMenuGames
 
     private static bool IsLink(string path) => File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint);
 
-    /// <summary>The game's own icon where Binder knows one (an .exe or .ico it found), else Binder's.</summary>
+    /// <summary>
+    /// The game's own icon where Binder knows one (an .exe or .ico it found, or for an imported shortcut its
+    /// IconFile or target), else Binder's. Shortcuts are only read, never resolved or run.
+    /// </summary>
     private static string IconFor(Game game, string binderExe)
     {
         foreach (var candidate in new[] { game.IconPath, game.ExePath })
-            if (candidate is { } path && Path.IsPathFullyQualified(path) &&
-                (path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".ico", StringComparison.OrdinalIgnoreCase)) &&
-                File.Exists(path))
-                return path;
+        {
+            if (candidate is not { } path || !Path.IsPathFullyQualified(path)) continue;
+            if (IsIconFile(path)) return path;
+            try
+            {
+                var inner = Path.GetExtension(path).ToLowerInvariant() switch
+                {
+                    ".url" => ShortcutFile.ReadUrlValue(path, "IconFile"),
+                    ".lnk" => Library.ShellLink.ReadTarget(path),
+                    _ => null,
+                };
+                if (inner is not null && Path.IsPathFullyQualified(inner) && IsIconFile(inner)) return inner;
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or
+                                          System.Runtime.InteropServices.COMException or InvalidCastException) { }
+        }
         return binderExe;
+
+        static bool IsIconFile(string path) =>
+            (path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".ico", StringComparison.OrdinalIgnoreCase)) &&
+            File.Exists(path);
     }
 
 

@@ -72,9 +72,13 @@ public sealed record ShortcutFile(string Path, string Name, string? TargetPath, 
     }
 
     /// <summary>The URL= line of the [InternetShortcut] section.</summary>
-    public static string? ReadUrlFile(string path)
+    public static string? ReadUrlFile(string path) => ReadUrlValue(path, "URL");
+
+    /// <summary>A key of the [InternetShortcut] section (URL, IconFile), or null. Bounded like <see cref="ReadUrlFile"/>.</summary>
+    public static string? ReadUrlValue(string path, string key)
     {
         if (new FileInfo(path).Length > MaxUrlFileBytes) return null;
+        var prefix = key + "=";
         bool inSection = false;
         foreach (var raw in File.ReadLines(path))
         {
@@ -84,10 +88,10 @@ public sealed record ShortcutFile(string Path, string Name, string? TargetPath, 
                 inSection = line.Equals("[InternetShortcut]", StringComparison.OrdinalIgnoreCase);
                 continue;
             }
-            if (inSection && line.StartsWith("URL=", StringComparison.OrdinalIgnoreCase))
+            if (inSection && line.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
-                var url = line[4..].Trim();
-                return url.Length is > 0 and <= 2048 ? url : null;
+                var value = line[prefix.Length..].Trim();
+                return value.Length is > 0 and <= 2048 ? value : null;
             }
         }
         return null;
