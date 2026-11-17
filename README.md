@@ -30,15 +30,19 @@ comes back when the game closes.
   options (with suggestions for the game's engine), an anti-cheat check, per-game hide delay, process to watch
   and custom cover.
 - **Crash detection:** when a game crashes, Binder says so when it comes back, with the likely cause and
-  what to try, read from Windows' own event log.
+  what to try, read from Windows' own event log. Per game, it can also start the game again after a crash (at
+  most twice in a row).
+- **Game mode** (off by default): puts Windows in its best performance mode while you play and puts everything
+  back afterwards (see [Status](#status) for the details).
 - **Free up space:** type the size of a game you want to install, and it suggests which games to remove on
   which drive (the ones you play least first), shown as a map of what takes up the space. Each game is removed
   through its own launcher, which asks first. Binder never deletes game files itself.
 - **Light on your PC:** no background timers or polling. While it waits in the tray, it uses about 12 MB of
   memory and no CPU.
 
-Dark and light mode, your Windows accent color, keyboard navigation, screen-reader names, per-monitor DPI and
-"Animation effects off" are all respected.
+Dark and light mode, your Windows accent color, keyboard and Xbox controller navigation, screen-reader names,
+per-monitor DPI and "Animation effects off" are all respected. Binder speaks English, German and French, following
+your Windows display language.
 
 ## Install
 
@@ -108,7 +112,9 @@ Steam settings with test data, and are meant for CI only.
 | `src/Binder.Elevated/` | Game mode's optional admin helper (Native AOT). |
 | `scripts/` | Publish, the pre-commit check and the icon generators (PowerShell). |
 | `tests/` | Unit tests, the stand-in game and the CI UI tests. |
-| `docs/proposals.md` | Planned features. |
+| `site/` | The website, published with GitHub Pages. |
+| `docs/proposals.md` | Feature specs, the progress table and the owner's decisions. |
+| `docs/releases/` | Each release's notes, shown under "What's new". |
 | `docs/installer.md` | Building, installing, updating and how the installer works. |
 | `docs/manual-testing.md` | The checklist for testing a build on a real PC. |
 | `CLAUDE.md` | The project brief and rules the code is written against. |
@@ -119,18 +125,22 @@ Working:
 - Steam, Epic, GOG, EA app, Ubisoft Connect, Xbox app, Rockstar Games Launcher and Hytale Launcher; shortcut import and manual
   add.
 - Launch → hide → return, with playtime tracking.
-- Shelf, details (playtime charts, launch options, anti-cheat check) and settings.
-- Crash detection and Free up space.
+- Shelf, details (playtime charts, launch options, anti-cheat check) and settings; the "…" menu and tray items
+  for quick actions, and opening a launcher from its filter chip or the tray menu.
+- Crash detection, restarting a game after a crash, and Free up space.
 - Multi-monitor, the flyout with tray icon and shortcut, first-run setup, and the installer.
+- Xbox controllers (XInput).
+- Updates from this repository's GitHub releases, signed by the owner.
+- English, German and French.
 - Game mode (off by default): Best performance power mode, the game at Above normal priority, Game Bar
   background recording paused and chosen apps closed, all put back when the game closes. With admin rights
   allowed once: Windows Search, SysMain, telemetry and (optionally) Print Spooler paused, the game and voice
-  chat marked as urgent on the network, cloud uploads slowed down and Windows Update downloads limited. Not
-  yet tested with admin rights on a real PC.
+  chat marked as urgent on the network, cloud uploads slowed down and Windows Update downloads limited.
 
 Planned (see `docs/proposals.md`):
 - More launchers (Battle.net, Riot, Amazon, itch.io, Humble, Meta).
-- Controller support.
+- PlayStation and Switch controllers.
+- Faster starts from the search box, and smaller speed-ups (see milestones 18, 23 and 24 there).
 
 ## Contributing
 
@@ -141,7 +151,7 @@ the launcher are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Binder is free software under the GNU General Public License, version 3, with an additional permission for
 the libraries it bundles ([LICENSE](LICENSE), [LICENSE-EXCEPTION.txt](LICENSE-EXCEPTION.txt)). It includes parts of
-Microsoft's .NET and Windows App SDK, which stay under their own licenses
+Microsoft's .NET, Windows App SDK and Win2D, which stay under their own licenses
 ([THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt)); by installing Binder you also agree to the Windows App
 SDK's license terms. All the licenses are in the `licenses` folder of the install folder.
 
@@ -160,6 +170,6 @@ Rockstar Games, Hypixel Studios, Microsoft or any other
 company whose launchers it works with. Their names and icons belong to their owners.
 
 Binder is licensed under the GNU GPL, version 3, with an additional permission for the libraries it bundles. It
-includes parts of Microsoft's .NET and Windows App SDK, which stay under their own licenses; by installing Game
-Shelf you also agree to the Windows App SDK's license terms. The licenses are in the "licenses" folder of the
+includes parts of Microsoft's .NET, Windows App SDK and Win2D, which stay under their own licenses; by installing
+Binder you also agree to the Windows App SDK's license terms. The licenses are in the "licenses" folder of the
 install folder.
