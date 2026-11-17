@@ -40,6 +40,15 @@ public static class Storage
     public static List<Game> LoadLibrary() => Load(LibraryPath, StorageJsonContext.Default.ListGame) ?? [];
     public static void SaveLibrary(List<Game> games) => Save(LibraryPath, games, StorageJsonContext.Default.ListGame);
 
+    /// <summary>
+    /// Whether two libraries would be saved as the same file: a rescan that found nothing new then needs no save
+    /// and no redraw. A few hundred games serialize in about a millisecond.
+    /// </summary>
+    public static bool SameLibrary(List<Game> a, List<Game> b) =>
+        a.Count == b.Count &&
+        JsonSerializer.SerializeToUtf8Bytes(a, StorageJsonContext.Default.ListGame).AsSpan()
+            .SequenceEqual(JsonSerializer.SerializeToUtf8Bytes(b, StorageJsonContext.Default.ListGame));
+
     public static Settings LoadSettings() => Load(SettingsPath, StorageJsonContext.Default.Settings) ?? new Settings();
     public static void SaveSettings(Settings s) => Save(SettingsPath, s, StorageJsonContext.Default.Settings);
 

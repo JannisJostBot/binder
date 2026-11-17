@@ -198,11 +198,19 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         // Bring the result up to date with what changed while the scan ran: settings (a favorite set meanwhile isn't
         // lost), games removed meanwhile stay removed, games added meanwhile stay.
         var games = LibraryScanner.Reconcile(result.Games, before, _games);
+        bool iconChanged = false;
         foreach (var game in games)
-            if (game.IconChanged) CoverCache.ForgetIcon(game);
+        {
+            if (!game.IconChanged) continue;
+            iconChanged = true;
+            CoverCache.ForgetIcon(game);
+        }
 
-        _games = games;
         App.State.Scanned = true;
+        // The usual case: nothing changed. Keep the games already shown (their objects, so nothing on screen goes
+        // stale), with no save and no redraw of the grid.
+        if (!iconChanged && result.Dropped.Count == 0 && Storage.SameLibrary(games, _games)) return;
+        _games = games;
         SaveLibrary();
         if (IsClosing)
         {
