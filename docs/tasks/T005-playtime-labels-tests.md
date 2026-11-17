@@ -1,5 +1,5 @@
 # T005 · Tests for the playtime chart labels and `WeekStart`
-Status: ready
+Status: done (2026-11-17)
 Depends on: none
 Branch: agent/T005
 

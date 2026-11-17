@@ -121,6 +121,13 @@ static partial class Tests
         Check(CoverColors.Initials("The Lantern Tide") == "LT", "initials skip a leading The");
         Check(CoverColors.Initials("Northwatch") == "N", "one-word title gives one initial");
         Check(CoverColors.Initials("half-life: alyx") == "HL", "initials are upper case, split on punctuation");
+        Check(CoverColors.Initials("The") == "T", "Initials: The alone is kept");
+        Check(CoverColors.Initials("the witcher") == "W", "Initials: lower-case the is skipped");
+        Check(CoverColors.Initials("Age of Empires II") == "AO", "Initials: only the first two words");
+        Check(CoverColors.Initials("2077 Chronicles") == "2C", "Initials: digits count as initials");
+        Check(CoverColors.Initials("Star_Wars") == "SW", "Initials: underscore splits words");
+        Check(CoverColors.Initials("(Untitled)") == "?", "Initials: no letter or digit first gives ?");
+        Check(CoverColors.Initials("") == "?", "Initials: empty title gives ?");
         Check(CoverColors.MonogramTone("Quiet Harbor") == CoverColors.MonogramTone("quiet harbor") &&
               CoverColors.MonogramTones.Contains(CoverColors.MonogramTone("Quiet Harbor")), "monogram tone is stable");
 
@@ -828,6 +835,15 @@ static partial class Tests
         Check(months[^1].Time == TimeSpan.FromHours(3.5) && months[^2].Time == TimeSpan.FromHours(3), "monthly buckets");
         Check(PlaytimeStats.WeekLabel(new DateTime(2026, 9, 14)) == "Sep 14" && PlaytimeStats.DayLetter(new DateTime(2026, 11, 2)) == "M",
             "chart labels are English whatever the locale");
+        Check(PlaytimeStats.DayName(new DateTime(2026, 11, 2)) == "Monday", "Labels: day name");
+        Check(PlaytimeStats.DayLetter(new DateTime(2026, 11, 5)) == "T", "Labels: Thursday letter");
+        Check(PlaytimeStats.DayLetter(new DateTime(2026, 11, 8)) == "S", "Labels: Sunday letter");
+        Check(PlaytimeStats.WeekLabel(new DateTime(2026, 1, 5)) == "Jan 5", "Labels: week label without a leading zero");
+        Check(PlaytimeStats.MonthLabel(new DateTime(2026, 9, 1)) == "Sep", "Labels: short month");
+        Check(PlaytimeStats.MonthName(new DateTime(2026, 9, 1)) == "September 2026", "Labels: month and year");
+        Check(PlaytimeStats.WeekStart(new DateTime(2026, 11, 2, 8, 30, 0)) == new DateTime(2026, 11, 2), "WeekStart: a Monday keeps its date, without the time");
+        Check(PlaytimeStats.WeekStart(new DateTime(2026, 12, 1)) == new DateTime(2026, 11, 30), "WeekStart: across a month end");
+        Check(PlaytimeStats.WeekStart(new DateTime(2027, 1, 1)) == new DateTime(2026, 12, 28), "WeekStart: across a year end");
     }
     /// <summary>Milestone 14: Game mode's restore result, journal and the apps it may close.</summary>
     static void GameModeTests()
@@ -1102,6 +1118,28 @@ static partial class Tests
         Check(Format.Playtime(new TimeSpan(9, 59, 0)) == "9 h 59 min", "Playtime: 9 h 59 min");
         Check(Format.Playtime(TimeSpan.FromHours(10)) == "10 h", "Playtime: from 10 h only hours");
         Check(Format.Playtime(new TimeSpan(123, 45, 0)) == "123 h", "Playtime: 123 h 45 min shows 123 h");
+        Check(Format.Duration(TimeSpan.Zero) == "< 1 min", "Duration: 0 shows < 1 min");
+        Check(Format.Duration(TimeSpan.FromSeconds(59)) == "< 1 min", "Duration: 59 s shows < 1 min");
+        Check(Format.Duration(TimeSpan.FromSeconds(60)) == "1 min", "Duration: 60 s shows 1 min");
+        Check(Format.Duration(TimeSpan.FromSeconds(3599)) == "59 min", "Duration: 59 min 59 s rounds down");
+        Check(Format.Duration(TimeSpan.FromHours(1)) == "1 h 00 min", "Duration: 1 h pads the minutes");
+        Check(Format.Duration(new TimeSpan(2, 5, 0)) == "2 h 05 min", "Duration: 2 h 5 min pads the minutes");
+        Check(Format.Duration(new TimeSpan(25, 30, 0)) == "25 h 30 min", "Duration: over a day stays in hours");
+        Check(Format.Delay(-5) == "Instantly", "Delay: negative shows Instantly");
+        Check(Format.Delay(0) == "Instantly", "Delay: 0 shows Instantly");
+        Check(Format.Delay(5) == "5 s", "Delay: 5 s");
+        Check(Format.Delay(30) == "30 s", "Delay: 30 s");
+        Check(Format.Greeting(new DateTime(2026, 1, 1, 0, 0, 0)) == "Good evening", "Greeting: midnight is evening");
+        Check(Format.Greeting(new DateTime(2026, 1, 1, 11, 59, 0)) == "Good morning", "Greeting: 11:59 is morning");
+        Check(Format.Greeting(new DateTime(2026, 1, 1, 17, 59, 0)) == "Good afternoon", "Greeting: 17:59 is afternoon");
+        Check(Format.Greeting(new DateTime(2026, 1, 1, 23, 59, 0)) == "Good evening", "Greeting: 23:59 is evening");
+        DateTimeOffset DaysAgo(int days) => new(DateTime.Today.AddDays(-days).AddHours(10));
+        Check(Format.RelativeDay(DaysAgo(0)) == "Today", "RelativeDay: today");
+        Check(Format.RelativeDay(DaysAgo(-1)) == "Today", "RelativeDay: tomorrow also shows Today");
+        Check(Format.RelativeDay(DaysAgo(1)) == "Yesterday", "RelativeDay: yesterday");
+        Check(Format.RelativeDay(DaysAgo(3)) == "3 days ago", "RelativeDay: 3 days ago");
+        Check(Format.RelativeDay(DaysAgo(6)) == "6 days ago", "RelativeDay: 6 days ago");
+        Check(Format.RelativeDay(DaysAgo(7)) == DaysAgo(7).LocalDateTime.ToString("M", System.Globalization.CultureInfo.CurrentCulture), "RelativeDay: from 7 days a short date");
     }
 
     static void PayloadTests()

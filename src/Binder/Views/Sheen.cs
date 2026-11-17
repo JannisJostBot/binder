@@ -13,9 +13,9 @@ namespace Binder.Views;
 /// <summary>
 /// The shiny sleeve on favourite covers (proposals §13 d, prototype "Medium"). It has a faint diagonal rainbow
 /// foil, a soft white glare and a thin light edge, all plain alpha composition layers clipped to the cover's
-/// corners; blend modes would need Win2D, which isn't approved. At rest the foil and glare sit still in the top
-/// left. While the pointer moves over the cover they follow it (<see cref="Follow"/>, set from the tile's
-/// PointerMoved). On leave they ease back to rest in 0.5 s. No timers: composition animations run only on leave.
+/// corners; blend modes would need Win2D, which is approved only for the Game mode toast. At rest the foil and
+/// glare sit still in the top left. While the pointer moves over the cover they follow it (<see cref="Follow"/>,
+/// set from the tile's PointerMoved). On leave they ease back to rest in 0.5 s. No timers: composition animations run only on leave.
 /// Created on first use and kept, so a tile recycled to a non-favourite just collapses it.
 /// </summary>
 public sealed partial class Sheen : Grid
