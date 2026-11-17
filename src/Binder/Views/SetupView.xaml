@@ -138,8 +138,96 @@
             </ScrollViewer>
             <Grid Grid.Row="2">
                 <Button HorizontalAlignment="Left" Content="{x:Bind s:Strings.Back}" Command="{x:Bind ViewModel.BackToStep2Command}" />
-                <Button Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Right" Padding="22,6" Content="{x:Bind s:Strings.Done}"
-                        Command="{x:Bind ViewModel.DoneCommand}" AutomationProperties.Name="{x:Bind s:Strings.Done}" />
+                <Button Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Right" Padding="22,6" Content="{x:Bind s:Strings.Next}"
+                        Command="{x:Bind ViewModel.ToStep4Command}" AutomationProperties.Name="{x:Bind s:Strings.Next}" />
+            </Grid>
+        </Grid>
+
+        <!-- Step 4: Game mode, with its admin helper (one UAC prompt, only for "All items"). Opens on Off. -->
+        <Grid x:Name="Step4" RowSpacing="18" Visibility="{x:Bind ViewModel.IsStep4, Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel>
+                <TextBlock Style="{StaticResource StepLabel}" Text="{x:Bind s:Strings.Step4}" />
+                <TextBlock Style="{StaticResource StepTitle}" Text="{x:Bind s:Strings.SetupStep4Title}" />
+                <TextBlock Style="{StaticResource StepText}" Text="{x:Bind s:Strings.SetupStep4Text}" />
+            </StackPanel>
+            <ScrollViewer Grid.Row="1">
+                <StackPanel Spacing="14">
+                    <InfoBar IsOpen="{x:Bind ViewModel.AllowDeclined, Mode=OneWay}" IsClosable="False" Severity="Warning"
+                             Message="{x:Bind s:Strings.SetupGmDeclined}" />
+                    <InfoBar IsOpen="{x:Bind ViewModel.AllowFailed, Mode=OneWay}" IsClosable="False" Severity="Error"
+                             Title="{x:Bind s:Strings.SetupGmCouldntAllow}" Message="{x:Bind ViewModel.AllowError, Mode=OneWay}" />
+
+                    <Border Style="{StaticResource Card}" Margin="0">
+                        <StackPanel Spacing="4" AutomationProperties.Name="{x:Bind s:Strings.SetupGmChoice}">
+                            <RadioButton GroupName="SetupGameMode" IsChecked="{x:Bind ViewModel.GameModeOff, Mode=TwoWay}"
+                                         Content="{x:Bind s:Strings.SetupGmOff}" AutomationProperties.Name="{x:Bind s:Strings.SetupGmOff}" />
+                            <RadioButton GroupName="SetupGameMode" IsChecked="{x:Bind ViewModel.GameModeNoAdmin, Mode=TwoWay}"
+                                         Content="{x:Bind s:Strings.SetupGmNoAdmin}" AutomationProperties.Name="{x:Bind s:Strings.SetupGmNoAdmin}" />
+                            <RadioButton GroupName="SetupGameMode" IsChecked="{x:Bind ViewModel.GameModeAll, Mode=TwoWay}"
+                                         Visibility="{x:Bind ViewModel.ShowAllOption, Mode=OneWay}"
+                                         AutomationProperties.Name="{x:Bind s:Strings.SetupGmAll}"
+                                         AutomationProperties.HelpText="{x:Bind ViewModel.AllText, Mode=OneWay}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="{x:Bind s:Strings.SetupGmAll}" />
+                                        <FontIcon Glyph="&#xEA18;" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                  AutomationProperties.AccessibilityView="Raw" />
+                                    </StackPanel>
+                                    <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.AllText, Mode=OneWay}" />
+                                </StackPanel>
+                            </RadioButton>
+                            <TextBlock Style="{StaticResource RowDetail}" Margin="0,6,0,2" TextWrapping="Wrap"
+                                       Visibility="{x:Bind ViewModel.ShowNeedsAdmin, Mode=OneWay}" Text="{x:Bind s:Strings.GmHelperNeedsAdmin}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}" Margin="0">
+                        <StackPanel Spacing="8">
+                            <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind s:Strings.SetupGmChangesTitle}" />
+                            <StackPanel x:Name="GameModeList" Spacing="6" AutomationProperties.Name="{x:Bind s:Strings.SetupGmChangesTitle}" />
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel>
+                        <Border x:Name="HelperCard" Style="{StaticResource SettingCard}" Margin="0,0,0,6">
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xEA18;" />
+                                <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" VerticalAlignment="Center"
+                                           Text="{x:Bind s:Strings.SetupGmHelperTitle}" />
+                                <Button x:Name="HelperChevron" Grid.Column="2" Style="{StaticResource DisclosureButton}" />
+                            </Grid>
+                        </Border>
+                        <Border x:Name="HelperBody" Style="{StaticResource SettingCardBody}">
+                            <TextBlock Style="{StaticResource BodyTextBlockStyle}" TextWrapping="Wrap"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind s:Strings.SetupGmHelperText}" />
+                        </Border>
+                    </StackPanel>
+
+                    <TextBlock Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind s:Strings.SetupGmChangeLater}" />
+                </StackPanel>
+            </ScrollViewer>
+            <Grid Grid.Row="2">
+                <Button HorizontalAlignment="Left" Content="{x:Bind s:Strings.Back}" Command="{x:Bind ViewModel.BackToStep3Command}" />
+                <Button Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Right" Padding="22,6"
+                        Command="{x:Bind ViewModel.DoneCommand}" IsEnabled="{x:Bind ViewModel.DoneEnabled, Mode=OneWay}"
+                        AutomationProperties.Name="{x:Bind ViewModel.DoneText, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xEA18;" FontSize="14" Visibility="{x:Bind ViewModel.DoneNeedsAdmin, Mode=OneWay}"
+                                  AutomationProperties.AccessibilityView="Raw" />
+                        <TextBlock Text="{x:Bind ViewModel.DoneText, Mode=OneWay}" />
+                    </StackPanel>
+                </Button>
             </Grid>
         </Grid>
 

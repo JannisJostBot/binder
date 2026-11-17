@@ -13,8 +13,14 @@ public sealed class SetupLauncherRow(GameSource source, string name, string coun
     public bool Enabled { get; set; } = enabled;
 }
 
+/// <summary>Step 4: Game mode off, on with only the items that need no admin rights, or on with all (the helper allowed).</summary>
+public enum SetupGameMode { Off, NoAdmin, All }
+
 /// <summary>The setup's answers, applied by the window.</summary>
-public sealed record SetupChoices(DisplayMode Mode, bool StartWithWindows);
+public sealed record SetupChoices(DisplayMode Mode, bool StartWithWindows, SetupGameMode GameMode = SetupGameMode.Off);
+
+/// <summary>One line of step 4's "what it changes" list; <see cref="NeedsAdmin"/> lines get the shield.</summary>
+public sealed record SetupGameModeItem(string Text, bool NeedsAdmin);
 
 /// <summary>What first-run setup asks its owner to do.</summary>
 public interface ISetupActions
@@ -28,11 +34,21 @@ public interface ISetupActions
     /// <summary>Moves the picked shortcuts onto the shelf; <see cref="SetupViewModel.ImportDone"/> goes on to step 3.</summary>
     void Import(IReadOnlyList<ShortcutFile> picked);
     void Finish(SetupChoices choices);
+    /// <summary>This account can allow Game mode's admin helper (it's in the Administrators group).</summary>
+    bool CanAllowHelper { get; }
+    /// <summary>The helper is installed for this user and current (allowing it again would ask for nothing).</summary>
+    bool HelperReady { get; }
+    /// <summary>
+    /// Installs or updates the helper, as Settings › Game mode › Allow… does (one UAC prompt). Returns its exit code:
+    /// 0 done, 1223 the prompt was declined, anything else failed.
+    /// </summary>
+    Task<int> AllowHelperAsync();
 }
 
 /// <summary>
-/// First-run setup, three steps (spec §6, board 10): which launchers, tidy the desktop (the shortcut picker,
-/// embedded in the view), how it opens. Shown once; Settings can run it again.
+/// First-run setup, four steps (spec §6, board 10): which launchers, tidy the desktop (the shortcut picker,
+/// embedded in the view), how it opens, Game mode (with its admin helper, one UAC prompt). Shown once; Settings can
+/// run it again.
 /// </summary>
 public sealed partial class SetupViewModel : ObservableObject
 {
@@ -50,7 +66,9 @@ public sealed partial class SetupViewModel : ObservableObject
         NotNowCommand = new(() => ShowStep(3));
         BackToStep2Command = new(() => ShowStep(2));
         MoveCommand = new(Move);
-        DoneCommand = new(Done);
+        ToStep4Command = new(() => ShowStep(4));
+        BackToStep3Command = new(() => ShowStep(3));
+        DoneCommand = new(() => _ = DoneAsync());
     }
 
     public RelayCommand SkipCommand { get; }
@@ -59,6 +77,8 @@ public sealed partial class SetupViewModel : ObservableObject
     public RelayCommand NotNowCommand { get; }
     public RelayCommand BackToStep2Command { get; }
     public RelayCommand MoveCommand { get; }
+    public RelayCommand ToStep4Command { get; }
+    public RelayCommand BackToStep3Command { get; }
     public RelayCommand DoneCommand { get; }
 
     /// <summary>Starts at step 1 with the library as found so far (the scan may still be running).</summary>
@@ -77,6 +97,14 @@ public sealed partial class SetupViewModel : ObservableObject
         Desktop = settings.DisplayMode == DisplayMode.Desktop;
         StartWithWindows = startWithWindows;
         HotkeyText = Format.HotkeyLabel(settings.Hotkey);
+        // Step 4 opens on Off while Game mode is off (owner, 2026-11-17): turning it on, and above all the UAC
+        // prompt, is the user's own choice. A run with Game mode already on starts from what's set.
+        _allowing = false;
+        _allowFailed = null;
+        _allowDeclined = false;
+        _gameMode = !settings.GameModeEnabled ? SetupGameMode.Off
+            : _actions.HelperReady ? SetupGameMode.All : SetupGameMode.NoAdmin;
+        GameModeItems = [.. BuildGameModeItems()];
         FillSelection();
         Step = 0; // so step 1 counts as a change
         ShowStep(1);
@@ -85,12 +113,13 @@ public sealed partial class SetupViewModel : ObservableObject
 
     // ---- Steps -----------------------------------------------------------------------------------------------
 
-    private static readonly string[] StepNames = [nameof(Step), nameof(IsStep1), nameof(IsStep2), nameof(IsStep3)];
+    private static readonly string[] StepNames = [nameof(Step), nameof(IsStep1), nameof(IsStep2), nameof(IsStep3), nameof(IsStep4)];
 
     public int Step { get; private set; }
     public bool IsStep1 => Step == 1;
     public bool IsStep2 => Step == 2;
     public bool IsStep3 => Step == 3;
+    public bool IsStep4 => Step == 4;
 
     private void ShowStep(int step)
     {
@@ -230,6 +259,115 @@ public sealed partial class SetupViewModel : ObservableObject
     public bool StartWithWindows { get => _startWithWindows; set => SetProperty(ref _startWithWindows, value); }
     public string HotkeyText { get; private set; } = "";
 
-    private void Done() =>
-        _actions.Finish(new SetupChoices(Desktop == true ? DisplayMode.Desktop : DisplayMode.Flyout, StartWithWindows));
+    // ---- Step 4: Game mode ------------------------------------------------------------------------------------
+
+    private static readonly string[] GameModeNames =
+    [
+        nameof(GameModeOff), nameof(GameModeNoAdmin), nameof(GameModeAll), nameof(DoneText), nameof(DoneNeedsAdmin),
+        nameof(DoneEnabled), nameof(AllowDeclined), nameof(AllowFailed), nameof(AllowError), nameof(ShowAllOption),
+        nameof(AllText), nameof(ShowNeedsAdmin),
+    ];
+
+    private SetupGameMode _gameMode;
+    private bool _allowing, _allowDeclined;
+    private int? _allowFailed;
+
+    public SetupGameMode GameMode
+    {
+        get => _gameMode;
+        set
+        {
+            if (_gameMode == value) return;
+            _gameMode = value;
+            _allowDeclined = false; // a message about the last try no longer fits another choice
+            _allowFailed = null;
+            OnPropertiesChanged(GameModeNames);
+        }
+    }
+
+    // bool? because a RadioButton's IsChecked is; unchecking one (another got checked) changes nothing.
+    public bool? GameModeOff { get => _gameMode == SetupGameMode.Off; set { if (value == true) GameMode = SetupGameMode.Off; } }
+    public bool? GameModeNoAdmin { get => _gameMode == SetupGameMode.NoAdmin; set { if (value == true) GameMode = SetupGameMode.NoAdmin; } }
+    public bool? GameModeAll { get => _gameMode == SetupGameMode.All; set { if (value == true) GameMode = SetupGameMode.All; } }
+
+    /// <summary>"All items" only where the helper can be allowed (an administrator account); else a note says why.</summary>
+    public bool ShowAllOption => _actions.CanAllowHelper;
+    public bool ShowNeedsAdmin => !_actions.CanAllowHelper;
+    /// <summary>All items' second line: Windows asks once, or nothing to ask (the helper is already there).</summary>
+    public string AllText => _actions.HelperReady ? Strings.SetupGmAllReady : Strings.SetupGmAllText;
+
+    /// <summary>What Game mode changes while a game runs: its default items, the admin ones marked.</summary>
+    public SetupGameModeItem[] GameModeItems { get; private set; } = [];
+
+    private static IEnumerable<SetupGameModeItem> BuildGameModeItems()
+    {
+        bool services = false;
+        foreach (var id in Shared.GameModeInfo.DefaultItems)
+        {
+            bool admin = Shared.GameModeInfo.IsElevatedItem(id);
+            string? text = id switch
+            {
+                Shared.GameModeInfo.Power => Strings.GmPowerTitle,
+                Shared.GameModeInfo.Priority => Strings.GmPriorityTitle,
+                Shared.GameModeInfo.Smooth => Strings.GmSmoothTitle,
+                Shared.GameModeInfo.Uploads => Strings.GmUploadsTitle,
+                Shared.GameModeInfo.Updates => Strings.GmUpdatesTitle,
+                _ when Shared.ElevatedPart.ServiceFor(id) is not null && !services => Strings.GmServicesTitle,
+                _ => null, // the other services share the one line
+            };
+            if (Shared.ElevatedPart.ServiceFor(id) is not null) services = true;
+            if (text is not null) yield return new SetupGameModeItem(text, admin);
+        }
+    }
+
+    /// <summary>"Allow and finish…" (with the shield) when Done asks Windows; else "Done".</summary>
+    public string DoneText => NeedsPrompt ? Strings.SetupAllowAndFinish : Strings.Done;
+    public bool DoneNeedsAdmin => NeedsPrompt;
+    public bool DoneEnabled => !_allowing;
+    private bool NeedsPrompt => _gameMode == SetupGameMode.All && _actions.CanAllowHelper && !_actions.HelperReady;
+
+    /// <summary>After a declined prompt: nothing was turned on; choose again or try again.</summary>
+    public bool AllowDeclined => _allowDeclined;
+    /// <summary>After a failed install: the error, with its code and the helper's log.</summary>
+    public bool AllowFailed => _allowFailed is not null;
+    public string AllowError => _allowFailed is { } code
+        ? Strings.Format(Strings.GmAllowFailed, code, @"ProgramData\Binder\elevated.log")
+        : "";
+
+    private void OnPropertiesChanged(string[] names)
+    {
+        foreach (var name in names) OnPropertyChanged(name);
+    }
+
+    private async Task DoneAsync()
+    {
+        if (_allowing) return; // Enter again while Windows asks
+        var choice = _gameMode;
+        if (choice == SetupGameMode.All && !_actions.CanAllowHelper) choice = SetupGameMode.NoAdmin;
+        if (choice == SetupGameMode.All && !_actions.HelperReady)
+        {
+            _allowing = true;
+            _allowDeclined = false;
+            _allowFailed = null;
+            OnPropertiesChanged(GameModeNames);
+            int code;
+            try
+            {
+                code = await _actions.AllowHelperAsync();
+            }
+            finally
+            {
+                _allowing = false;
+            }
+            if (code != 0)
+            {
+                // Stay on the step: the user didn't get what they picked, so nothing is turned on.
+                if (code == 1223) _allowDeclined = true;
+                else _allowFailed = code;
+                OnPropertiesChanged(GameModeNames);
+                return;
+            }
+        }
+        _actions.Finish(new SetupChoices(Desktop == true ? DisplayMode.Desktop : DisplayMode.Flyout, StartWithWindows, choice));
+    }
 }

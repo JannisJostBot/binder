@@ -614,6 +614,10 @@ static partial class Tests
         public void LoadShortcuts() => Calls.Add("load");
         public void Import(IReadOnlyList<ShortcutFile> picked) => Calls.Add($"import {picked.Count}");
         public void Finish(SetupChoices choices) { Calls.Add("finish"); Finished = choices; }
+        public bool CanAllowHelper { get; set; } = true;
+        public bool HelperReady { get; set; }
+        public int AllowCode;
+        public Task<int> AllowHelperAsync() { Calls.Add("allow"); return Task.FromResult(AllowCode); }
     }
 
     static void SetupViewModelTests()
@@ -667,14 +671,54 @@ static partial class Tests
         vm.Flyout = false;
         vm.Desktop = true;
         vm.StartWithWindows = false;
+        vm.ToStep4Command.Execute(null);
+        Check(vm.IsStep4 && !vm.IsStep3, "setup: step 3's Next goes on to Game mode");
+        Check(vm.GameModeOff == true && vm.GameModeNoAdmin == false && vm.GameModeAll == false && vm.DoneText == "Done" &&
+              !vm.DoneNeedsAdmin && vm.ShowAllOption && !vm.ShowNeedsAdmin, "setup: Game mode opens on Off, nothing to ask");
+        Check(vm.GameModeItems.Length == 6 && vm.GameModeItems.Count(i => i.NeedsAdmin) == 4 &&
+              !vm.GameModeItems[0].NeedsAdmin && vm.GameModeItems.Select(i => i.Text).Distinct().Count() == 6,
+            "setup: Game mode's default items, services on one line, the admin ones marked");
+
+        vm.GameModeAll = true;
+        Check(vm.GameMode == SetupGameMode.All && vm.GameModeOff == false && vm.DoneNeedsAdmin && vm.DoneText == "Allow and finish…" &&
+              vm.AllText == "Windows asks for permission once", "setup: All items asks Windows on Done");
+        spy.AllowCode = 1223;
         vm.DoneCommand.Execute(null);
-        Check(spy.Finished == new SetupChoices(DisplayMode.Desktop, false), "setup: Done hands over the choices");
+        Check(spy.Calls[^1] == "allow" && spy.Calls.Count(c => c == "finish") == 0 && vm.IsStep4 && vm.AllowDeclined && !vm.AllowFailed && vm.DoneEnabled,
+            "setup: a declined prompt stays on the step, nothing turned on");
+        spy.AllowCode = 5;
+        vm.DoneCommand.Execute(null);
+        Check(!vm.AllowDeclined && vm.AllowFailed && vm.AllowError.Contains("5") && vm.AllowError.Contains("elevated.log") && spy.Finished is null,
+            "setup: a failed install says so and stays");
+        vm.GameModeNoAdmin = true;
+        Check(!vm.AllowFailed && !vm.DoneNeedsAdmin && vm.DoneText == "Done", "setup: another choice clears the message");
+        vm.GameModeAll = true;
+        spy.AllowCode = 0;
+        vm.DoneCommand.Execute(null);
+        Check(spy.Finished == new SetupChoices(DisplayMode.Desktop, false, SetupGameMode.All), "setup: Done hands over the choices");
         vm.SkipCommand.Execute(null);
         Check(spy.Calls[^1] == "skip", "setup: Skip reaches the owner");
 
         vm.Start(new Settings(), [], startWithWindows: false);
         Check(vm.IsStep1 && vm.FoundTitle == "Set up your shelf" && vm.NothingFound && vm.SelectionText == "Nothing selected",
             "setup: a new run starts over, nothing found");
+        Check(vm.GameModeOff == true && !vm.AllowDeclined && !vm.AllowFailed, "setup: a new run opens Game mode on Off again");
+
+        // Run again with Game mode on and the helper there: starts from what's set, and Done asks nothing.
+        spy.HelperReady = true;
+        int allows = spy.Calls.Count(c => c == "allow");
+        vm.Start(new Settings { GameModeEnabled = true }, [], startWithWindows: false);
+        Check(vm.GameModeAll == true && !vm.DoneNeedsAdmin && vm.AllText == "The admin helper is already installed", "setup: helper already allowed");
+        vm.DoneCommand.Execute(null);
+        Check(spy.Calls.Count(c => c == "allow") == allows && spy.Finished?.GameMode == SetupGameMode.All, "setup: nothing to ask when it's there");
+
+        // A standard account: no "All items"; a note says why.
+        spy.HelperReady = false;
+        spy.CanAllowHelper = false;
+        vm.Start(new Settings { GameModeEnabled = true }, [], startWithWindows: false);
+        Check(vm.GameModeNoAdmin == true && !vm.ShowAllOption && vm.ShowNeedsAdmin, "setup: standard account, Game mode without the helper");
+        vm.GameModeNoAdmin = false; // the radio button unchecked by another: changes nothing
+        Check(vm.GameMode == SetupGameMode.NoAdmin, "setup: unchecking a radio button keeps the choice");
     }
 
     sealed class ShelfActionsSpy : IShelfActions

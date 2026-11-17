@@ -13,6 +13,22 @@ public sealed partial class MainWindow
     void ISetupActions.Skip() => FinishSetup(null);
     void ISetupActions.LoadShortcuts() => _ = LoadSetupShortcutsAsync();
     void ISetupActions.Finish(SetupChoices choices) => FinishSetup(choices);
+    bool ISetupActions.CanAllowHelper => GameModeService.CanAllow;
+    bool ISetupActions.HelperReady => GameModeService.Allowed && !GameModeService.AllowedButOutdated;
+
+    /// <summary>Step 4's "Allow and finish…": the same UAC prompt as Settings › Game mode › Allow….</summary>
+    async Task<int> ISetupActions.AllowHelperAsync()
+    {
+        App.ModalDepth++; // the UAC prompt takes the focus: click-away must not close the flyout
+        try
+        {
+            return await GameModeService.AllowAsync();
+        }
+        finally
+        {
+            App.ModalDepth--;
+        }
+    }
 
     void ISetupActions.Import(IReadOnlyList<ShortcutFile> picked)
     {
@@ -71,6 +87,8 @@ public sealed partial class MainWindow
             if (choices.StartWithWindows != Autostart.IsEnabled() && !Autostart.TrySet(choices.StartWithWindows))
                 ShowToast(Strings.AutostartFailed, Strings.AutostartFailedDetail, Strings.Ok);
             settings.StartWithWindows = Autostart.IsEnabled();
+            // Step 4. The admin items are in GameModeItems by default; without the helper the watcher skips them.
+            settings.GameModeEnabled = choices.GameMode != SetupGameMode.Off;
         }
         settings.SetupDone = true;
         SaveSettings();

@@ -1261,15 +1261,15 @@
     <comment>Screen-reader name of the first-time setup page.</comment>
   </data>
   <data name="Step1" xml:space="preserve">
-    <value>Step 1 of 3</value>
+    <value>Step 1 of 4</value>
     <comment>Small label above the title of the first setup step.</comment>
   </data>
   <data name="Step2" xml:space="preserve">
-    <value>Step 2 of 3</value>
+    <value>Step 2 of 4</value>
     <comment>Small label above the title of the second setup step.</comment>
   </data>
   <data name="Step3" xml:space="preserve">
-    <value>Step 3 of 3</value>
+    <value>Step 3 of 4</value>
     <comment>Small label above the title of the third setup step.</comment>
   </data>
   <data name="SetupTitleEmpty" xml:space="preserve">
@@ -3216,5 +3216,77 @@ Calm: efficiency mode while you play</value>
   <data name="BinderOnGitHubToolTip" xml:space="preserve">
     <value>Open the source code and releases in your browser</value>
     <comment>Tooltip of the "Binder on GitHub" card in Settings › About.</comment>
+  </data>
+  <data name="Step4" xml:space="preserve">
+    <value>Step 4 of 4</value>
+    <comment>Small label above the title of the fourth (last) setup step.</comment>
+  </data>
+  <data name="SetupStep4Title" xml:space="preserve">
+    <value>Use Game mode?</value>
+    <comment>Title of the last setup step. "Game mode" is Binder's own feature (same term as the Game mode settings page).</comment>
+  </data>
+  <data name="SetupStep4Text" xml:space="preserve">
+    <value>While a game runs, Binder can set Windows up for gaming. Everything is put back when the game closes.</value>
+    <comment>Text under the title of the last setup step: what Game mode does.</comment>
+  </data>
+  <data name="SetupGmAll" xml:space="preserve">
+    <value>All items</value>
+    <comment>Choice (radio button) on the last setup step: turn on Game mode with every item, including those that need administrator rights.</comment>
+  </data>
+  <data name="SetupGmAllText" xml:space="preserve">
+    <value>Windows asks for permission once</value>
+    <comment>Second line of the "All items" choice: choosing it shows the Windows administrator prompt one time.</comment>
+  </data>
+  <data name="SetupGmAllReady" xml:space="preserve">
+    <value>The admin helper is already installed</value>
+    <comment>Second line of the "All items" choice when Game mode's admin helper was allowed before (nothing to ask).</comment>
+  </data>
+  <data name="SetupGmNoAdmin" xml:space="preserve">
+    <value>Only items that don't need administrator rights</value>
+    <comment>Choice (radio button) on the last setup step: turn on Game mode without the items that need administrator rights.</comment>
+  </data>
+  <data name="SetupGmOff" xml:space="preserve">
+    <value>Off</value>
+    <comment>Choice (radio button) on the last setup step: leave Game mode off. Use the word Windows Settings uses for a switch that is off.</comment>
+  </data>
+  <data name="SetupGmChoice" xml:space="preserve">
+    <value>Game mode</value>
+    <comment>Screen-reader name of the group of three choices on the last setup step. Same term as the Game mode settings page.</comment>
+  </data>
+  <data name="SetupGmChangesTitle" xml:space="preserve">
+    <value>What it changes while you play</value>
+    <comment>Card title on the last setup step, above the list of Game mode's changes.</comment>
+  </data>
+  <data name="SetupGmAdminMark" xml:space="preserve">
+    <value>Needs the admin helper</value>
+    <comment>Tooltip and screen-reader name of the shield icon next to a Game mode change that needs administrator rights.</comment>
+  </data>
+  <data name="SetupGmHelperTitle" xml:space="preserve">
+    <value>What the admin helper does</value>
+    <comment>Title of a card on the last setup step that opens to explain Game mode's admin helper.</comment>
+  </data>
+  <data name="DisclosureHelper" xml:space="preserve">
+    <value>details about the admin helper</value>
+    <comment>Fills {0} of DisclosureShow/DisclosureHide ("Show details about the admin helper"); in the form your language needs there.</comment>
+  </data>
+  <data name="SetupGmHelperText" xml:space="preserve">
+    <value>Windows asks for permission once. Binder then copies a small helper to Program Files and adds two scheduled tasks for your account. The helper can only make the changes marked with the shield. It records each one first and puts it back when the game closes. To remove it, use Settings › Game mode or uninstall Binder.</value>
+    <comment>Body of the "What the admin helper does" card on the last setup step. "Program Files" is the Windows folder; use its name as File Explorer shows it. "Settings › Game mode" = Binder's own settings page, not Windows'. "Scheduled tasks" as Windows Task Scheduler calls them.</comment>
+  </data>
+  <data name="SetupGmChangeLater" xml:space="preserve">
+    <value>You can change this later in Settings › Game mode.</value>
+    <comment>Small print under the choices on the last setup step. "Settings › Game mode" = Binder's own settings page, not Windows'.</comment>
+  </data>
+  <data name="SetupGmDeclined" xml:space="preserve">
+    <value>Windows didn't get permission, so nothing was turned on. Choose another option or try again.</value>
+    <comment>Notice on the last setup step after the user said no to the Windows administrator prompt.</comment>
+  </data>
+  <data name="SetupAllowAndFinish" xml:space="preserve">
+    <value>Allow and finish…</value>
+    <comment>Last button of the setup when "All items" is chosen: shows the Windows administrator prompt, then finishes the setup. Keep the ellipsis (a prompt follows). Short, button text.</comment>
+  </data>
+  <data name="SetupGmCouldntAllow" xml:space="preserve">
+    <value>Couldn't allow the admin helper</value>
+    <comment>Title of the error notice on the last setup step when installing the admin helper failed.</comment>
   </data>
 </root>

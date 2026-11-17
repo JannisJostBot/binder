@@ -92,7 +92,7 @@
         </ul>
 
         <h3 id="gm-helper" class="docs-h3">The admin helper</h3>
-        <p>Pausing services and the network items need administrator rights; everything else works without them. <strong>Allow…</strong> on the Game mode page asks once, with the usual Windows prompt, and then:</p>
+        <p>Pausing services and the network items need administrator rights; everything else works without them. <strong>Allow…</strong> on the Game mode page, or <strong>All items</strong> on the last step of Binder's first-run setup, asks once, with the usual Windows prompt, and then:</p>
         <ul class="docs-list">
           <li>copies a small helper, <code>Binder.Elevated.exe</code>, to <code>%ProgramFiles%\Binder\</code>, a folder only administrators can change;</li>
           <li>creates two scheduled tasks for your account, <code>Binder Apply</code> and <code>Binder Restore</code> (followed by your account's ID). They run that helper with administrator rights, only while you're signed in. You can start them, but changing them needs administrator rights;</li>

@@ -40,6 +40,7 @@ Every item follows the project brief: zero cost while idle or gaming, no third-p
 | Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
 | Setup: shortcuts into the logo | §6 step 2 | Built 2026-11-16 (`Views/LogoMerge`, as on the website): after Move, the moved shortcuts' rows turn into pills and fly into the logo's covers, the rest of the page fades, then step 3. At most seven fly, ~1.5 s on the compositor, no timer; skipped with Animation effects off or in high contrast. A second Move while it runs does nothing (unit test). To try on the real PC |
+| Setup: Game mode step | §6 step 4 | Built 2026-11-17: step 4 with Off (the default) / without admin rights / All items (the helper's UAC prompt from setup), the list of changes with shields, "What the admin helper does", "change this later". View model tests; to try on the real PC (prompt approved, declined, standard account) |
 | Debug panel | `CLAUDE.md`, "Working rules" | Built 2026-11-16: `Binder.exe --dev` in Debug builds shows every toast, card and pill through the real code with made-up data (`src/Binder/Dev`, left out of Release; `publish.ps1` stops if its marker ships). CI builds Debug too |
 | Releases and website | §25 "Making a release" | 0.2.0 and 0.2.1 published (2026-11-15). The website (`site/`, GitHub Pages) follows the latest release through GitHub's API (owner, 2026-11-16, website only) and shows its VirusTotal result |
 
@@ -226,6 +227,12 @@ The build order is at the end of this file. The ideas under "Not decided" at the
 - A debug panel for Debug builds (`Binder.exe --dev`), never in a release (rules in `CLAUDE.md`).
 - Setup step 2: the moved shortcuts fly into Binder's logo, as on the website.
 
+**2026-11-17**
+- First-run setup gets a fourth step, Game mode (§6), so the full feature set is there right after setup without
+  looking for it in Settings. Off / Only items that don't need administrator rights / All items (the helper, one
+  UAC prompt through the same `GameModeService.AllowAsync` as Settings › Game mode › Allow…). It opens on **Off**:
+  Game mode stays opt-in. A line says it can be changed later in Settings › Game mode.
+
 ---
 
 ## 1. App icon (board 1)
@@ -369,7 +376,7 @@ switch needs the owner's OK.
 
 ## 6. First-run setup (board 10)
 
-Three steps, shown once (Settings has "Run first-time setup again"):
+Four steps, shown once (Settings has "Run first-time setup again"):
 
 1. **We found N games:** launchers with game counts, each with a checkbox.
 2. **Tidy up your desktop?** The existing shortcut picker, embedded; moves are reversible as today.
@@ -378,6 +385,18 @@ Three steps, shown once (Settings has "Run first-time setup again"):
    - Start with Windows.
    - The shortcut.
    - A tip about the tray icon (and pinning as an option).
+4. **Use Game mode?** (added 2026-11-17, §11): what it does in one line, then
+   - three choices: **Off** (selected when the step opens; a run with Game mode already on starts from what's set),
+     **Only items that don't need administrator rights**, **All items** ("Windows asks for permission once"; only on
+     an administrator account, else `GmHelperNeedsAdmin` says why; "already installed" when the helper is current);
+   - "What it changes while you play": the default items (`GameModeInfo.DefaultItems`, the services on one line),
+     a shield on the ones that need the helper;
+   - a closed card "What the admin helper does" (`Disclosure`): the prompt, Program Files, the two scheduled tasks,
+     only the shielded changes, put back after the game, how to remove it;
+   - "You can change this later in Settings › Game mode."
+   - Done turns Game mode on or off. With All items it reads "Allow and finish…" with the shield and shows the UAC
+     prompt first: approved, setup ends with Game mode on; declined, the step stays with a notice and nothing turned
+     on; failed, an error with the code and `elevated.log`. Skip setup leaves Game mode off.
 
 ## 7. Shelf additions (boards 7 and 11)
 

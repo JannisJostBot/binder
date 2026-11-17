@@ -807,4 +807,22 @@ public sealed partial class Strings
     public static string HelperUpdateNote => Get(nameof(HelperUpdateNote));
     public static string UpdateWaits => Get(nameof(UpdateWaits));
     public static string UpdateWaitsDetail => Get(nameof(UpdateWaitsDetail));
+    public static string Step4 => Get(nameof(Step4));
+    public static string SetupStep4Title => Get(nameof(SetupStep4Title));
+    public static string SetupStep4Text => Get(nameof(SetupStep4Text));
+    public static string SetupGmAll => Get(nameof(SetupGmAll));
+    public static string SetupGmAllText => Get(nameof(SetupGmAllText));
+    public static string SetupGmAllReady => Get(nameof(SetupGmAllReady));
+    public static string SetupGmNoAdmin => Get(nameof(SetupGmNoAdmin));
+    public static string SetupGmOff => Get(nameof(SetupGmOff));
+    public static string SetupGmChoice => Get(nameof(SetupGmChoice));
+    public static string SetupGmChangesTitle => Get(nameof(SetupGmChangesTitle));
+    public static string SetupGmAdminMark => Get(nameof(SetupGmAdminMark));
+    public static string SetupGmHelperTitle => Get(nameof(SetupGmHelperTitle));
+    public static string DisclosureHelper => Get(nameof(DisclosureHelper));
+    public static string SetupGmHelperText => Get(nameof(SetupGmHelperText));
+    public static string SetupGmChangeLater => Get(nameof(SetupGmChangeLater));
+    public static string SetupGmDeclined => Get(nameof(SetupGmDeclined));
+    public static string SetupAllowAndFinish => Get(nameof(SetupAllowAndFinish));
+    public static string SetupGmCouldntAllow => Get(nameof(SetupGmCouldntAllow));
 }

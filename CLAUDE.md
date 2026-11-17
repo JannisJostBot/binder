@@ -270,7 +270,7 @@ Errors: unexpected UI errors go to `%LOCALAPPDATA%\Binder\error.log` (1 MB rotat
 ## Security rules
 
 The widget and watcher run as the normal user and never ask for admin rights. The one exception (owner, spec §11):
-Game mode's "Allow…" starts `Binder.Elevated.exe` once with a UAC prompt. Untrusted input: every launcher's
+Game mode's "Allow…" (or "All items" on first-run setup's Game mode step, the same call) starts `Binder.Elevated.exe` once with a UAC prompt. Untrusted input: every launcher's
 manifests, config files and registry entries (library folders can be on drives others can write to), desktop
 shortcuts, downloaded images, and the places typed in Settings › Advanced.
 
