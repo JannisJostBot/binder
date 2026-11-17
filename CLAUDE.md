@@ -115,7 +115,8 @@ site/                     the website: HTML + CSS, nothing loaded from other ser
                           network rules below don't change), clock.js sets the story's clock, story.js runs the
                           desktop story at the top of index.html (a cluttered desktop tidied into Binder, a game,
                           welcome back), game.js is the hidden game behind the shelf's Play (catch the covers, then
-                          "Welcome back"); index.html,
+                          "Welcome back"), nav.js marks the header's current section and closes the phone menu;
+                          index.html,
                           docs.html (what Binder changes on the PC: every Game mode item, autostart, updates, …)
 licenses/                 license texts kept here because a package carries none (Win2D); publish.ps1 copies them
 docs/proposals.md         approved feature specs, progress table (§0), decisions log, "Not decided"
