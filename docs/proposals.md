@@ -28,7 +28,7 @@ Every item follows the project brief: zero cost while idle or gaming, no third-p
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | **In progress.** Done: a, the logo on banners (`ArtKind.Logo`, `BannerLogo`; Steam keeps `librarycache\{appid}\logo.png`, 188 of 400 games on the owner's PC, the rest downloaded once; shadow from the logo's alpha via `Image.GetAlphaMask`; in Detail it sits right of the cover, which overlaps the banner's bottom left). Built: b–e, to try on the real PC.<br>b (the cover growing into details) was built and then removed on 2026-11-09, owner's choice: it looked bad.<br>c and e are `Library/Moments`, picked each time the panel opens; tested live with a session written into the sessions file. With a crash, the crash card still takes the slot.<br>d is `Views/Sheen`, plain alpha layers tuned below the prototype's "Medium", since blend modes would need Win2D (approved for the Game mode toast only). The rest look was checked on screen; following the pointer couldn't be tested here, because injected mouse input didn't reach the panel |
 | 17 Advanced: sources and artwork | §14 | Built: `Library/SourceDefaults` (every default, `Validate` per kind, `Use` at start and after a change; invalid or unknown values fall back), read by the Steam, Epic, GOG, Ubisoft and Rockstar sources and `CoverCache` (cover names tried in order, the first downloaded; `ForgetSteamLookups` after an artwork change drops resolved paths and `.none` markers). Settings › Advanced: one card at the bottom (closed), per launcher a Check (`Services/SourceCheck`, no downloads) and a text box per entry with Reset and its error, Reset all, the host named when the address differs. Values take effect from the next scan. Unit-tested (each kind's validation, the view model); network and validation rules in `CLAUDE.md`. Still to try on the real PC: the page on screen, Check per launcher |
-| 18 Performance | §15 | To do |
+| 18 Performance | §15 | **In progress.** Built 2026-11-17 (§15 g), not yet measured on the real PC: a rescan with nothing new skips the save and the grid redraw; pages other than the shelf built on first visit (`MainWindow.Pages`, `x:Load`, so the page-level part of c); tile hover parts built on first raise; the watcher rests while the game runs and opens only new processes while detecting; sessions read incrementally after a game. To do: a, b, the rest of c, d, e; f is proposed, waiting for measurements and the owner's go |
 | 19 Quick actions | §16 | Done (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); tried on the real PC |
 | 20 Restart after a crash | §17 | Built: the Detail toggle, `CrashAnalysis.ShouldRestart` (in a row from `crashes.json`, at most 2), the watcher's `--restart` / `--crashed`, the restart pill (Game mode's pill with a 5 s countdown, bar and Cancel, owner's change) and the crash card's "Restarted twice already" line; unit-tested. To try on the real PC with a game that crashes (or a test exe that exits with 0xC0000005 after a minute) |
 | 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
@@ -940,6 +940,44 @@ smooth scrolling through the grid, and the published size. Report the numbers in
 - CsWinRT connects .NET to WinUI. Version 3.0 rewrites it for Native AOT (smaller and faster) but is only a preview
   so far (3.0.0-preview in 2026-03). Move to it once there's a stable 3.0 that the stable Windows App SDK supports,
   and only through the Windows App SDK's own version (no separate package).
+
+### f. Start in the tray without WinUI (proposed 2026-11-17, waiting for measurements and the owner's go)
+
+- Today a start with Windows (`--background`) brings up all of WinUI (the XAML framework, `App.xaml`'s resources
+  and theme), reads `library.json`, every sessions file and `crashes.json`, then shrinks (`Footprint.Shrink`) and
+  waits in the tray. Trimming gives back the working set, not the committed memory WinUI keeps.
+- Proposal: in a `--background` start, run only the tray icon, the shortcut and the single-instance window
+  (`MessageWindow`, plain Win32 on the main thread) with a message loop of its own, and start WinUI and read the
+  data at the first open. Later closes work as today (Stay ready keeps WinUI loaded).
+- What it costs: the first open after signing in becomes a cold start (the ~1 s budget, with the panel's
+  covers-first reveal) instead of a warm one. Every other open is unchanged. The crash check for sessions that
+  ended while Binder wasn't running moves to that first open.
+- Measure first, on the real PC (Task Manager › Details, "Memory (private working set)", and Commit size):
+  the tray state after `--background` today, the same with WinUI not started (a quick prototype), and the first
+  open's time both ways. Build it only if the saving is worth the slower first open; the owner decides.
+- Touches: `Program.cs` (a message loop before WinUI), `MessageWindow`, `App.OnLaunched` (data read at first
+  open), `Autostart` (unchanged argument).
+
+### g. Built 2026-11-17 (measure on the real PC)
+
+- **Rescan without changes:** `MainWindow.RescanAsync` compares the merged library with the shown one
+  (`Storage.SameLibrary`, as saved); when nothing changed (no game dropped, no icon changed), the games on screen
+  stay, with no save of `library.json` and no rebuild of the grid.
+- **Pages on first visit:** every page but the shelf is `x:Load="False"` (`…Slot` fields) and built and
+  initialized when first shown (`MainWindow.Pages`); `Shown(…Slot)` checks without building. Check on the PC:
+  every page's first opening (focus, layout, Esc, the controller), the smoke test.
+- **Tile hover parts:** `GameTile`'s scrim, edge, high contrast outline and Play mark are `x:Load` and built when
+  the tile first rises. The Details button stays in the tree (UI Automation). Check: the first hover of a tile
+  fades in like the next ones; keyboard, controller, high contrast.
+- **Watcher:** while blocked on the game it's compacted, trimmed and in efficiency mode with very low memory
+  priority (`Footprint`), undone when the game exits or Windows ends the session; built without a background GC
+  thread or EventSource, size-optimized, `ConserveMemory`. Detection takes the process list in one call
+  (`ProcessList`, `NtQuerySystemInformation`) and opens only processes it hasn't turned down before (by id and
+  start time; crash reporters and processes it couldn't open are always looked at again); without that list it
+  falls back to opening every process. Measure: the watcher's memory during a game (budget ~3 MB), detection of a
+  Steam game started with Steam closed.
+- **Smaller things:** after a game only the appended session lines are read (`Storage.ReloadSessions`); the
+  imported shortcut count is read once; the crash check looks games up by id; data files are saved compact.
 
 ## 16. Quick actions (board 18, milestone 19)
 
