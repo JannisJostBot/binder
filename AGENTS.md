@@ -78,7 +78,7 @@ Pages whenever a change to `site/` reaches `main`, so what's merged is live with
 
 - Plain HTML and CSS, no frameworks, no build step. Seven small scripts: `site/download.js` opens a dialog once a
   setup download has started (it isn't code-signed yet, so Defender may warn; that version's VirusTotal result,
-  read from the link's data attributes; don't install it if that isn't acceptable), `site/nav.js` marks the header link of the
+  read from the link's data attributes; don't install it if that isn't acceptable; styled as the website's own, never like a Windows dialog), `site/nav.js` marks the header link of the
   part being read and closes the phone Menu flyout after a tap, `site/usage.js` draws the "How much it uses" bars to
   scale from the figures on the page, `site/clock.js` sets the desktop story's
   taskbar clock and the shelf's greeting from the visitor's time, `site/story.js` runs the desktop story (below),

@@ -1,6 +1,7 @@
 // Binder website: after a download starts, a dialog says what to expect before running the setup. The setup isn't
 // code-signed yet, so Microsoft Defender SmartScreen or an antivirus may warn about it; the dialog shows that
-// version's VirusTotal result and says not to install Binder if that isn't acceptable.
+// version's VirusTotal result and says not to install Binder if that isn't acceptable. It's styled as part of the
+// website (styles.css, .dl-dialog), never like a Windows dialog, so it can't be taken for a message from Windows.
 //
 // Each setup link carries its version and scan as data attributes (data-version, and data-flagged, data-engines,
 // data-scanned, data-sha256 once VirusTotal has scanned it): written into releases.html by
@@ -64,8 +65,8 @@
       // After the click has gone through, so the download starts first.
       setTimeout(function () { if (!dialog.open) dialog.showModal(); }, 0);
     });
-    var close = dialog.querySelector('[data-part="close"]');
-    if (close) close.addEventListener('click', function () { dialog.close(); });
+    var closers = dialog.querySelectorAll('[data-part="close"]');
+    for (var i = 0; i < closers.length; i++) closers[i].addEventListener('click', function () { dialog.close(); });
     // A click on the dimmed page around the dialog closes it too.
     dialog.addEventListener('click', function (e) { if (e.target === dialog) dialog.close(); });
   }

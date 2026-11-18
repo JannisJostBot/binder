@@ -437,23 +437,27 @@
       <span class="footer-copy">© 2026 Jannis Jost</span>
     </div>
   </footer>
-  <!-- Shown by download.js once a download has started (download.js fills in the version and its VirusTotal result). -->
-  <dialog class="dialog" id="download-dialog" aria-labelledby="download-dialog-title" aria-describedby="download-dialog-text">
-    <div class="dialog-body">
-      <h2 class="dialog-title" id="download-dialog-title">Before you run the setup</h2>
-      <p id="download-dialog-text">Binder <span data-part="version">0.2.1</span> is downloading. Its setup isn't code-signed yet, so Microsoft Defender SmartScreen may stop it with "Windows protected your PC", and your antivirus app may warn about it or remove it. To run it anyway, select More info, then Run anyway.</p>
-      <div class="dialog-scan">
-        <span class="dialog-scan-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg></span>
-        <div class="dialog-scan-text">
-          <p class="dialog-scan-title" data-part="scan-title">VirusTotal</p>
+  <!-- Shown by download.js once a download has started (download.js fills in the version and its VirusTotal result).
+       Styled as part of this website (the download panel's blue, the logo), not like a Windows dialog, so it can't be
+       taken for a message from Windows. -->
+  <dialog class="dl-dialog" id="download-dialog" aria-labelledby="download-dialog-title" aria-describedby="download-dialog-text">
+    <div class="dl-dialog-head">
+      <span class="dl-dialog-logo"><svg aria-hidden="true" width="44" height="44" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
+      <h2 class="dl-dialog-title" id="download-dialog-title">Binder <span data-part="version">0.2.1</span> is downloading</h2>
+      <button type="button" class="dl-dialog-x" data-part="close" aria-label="Close"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+    </div>
+    <div class="dl-dialog-body">
+      <p id="download-dialog-text">Before you run it: Binder's setup isn't code-signed yet, so Windows may show its own warning, "Windows protected your PC" from Microsoft Defender SmartScreen, and your antivirus app may warn about the file or remove it. To run it anyway, select More info, then Run anyway.</p>
+      <div class="dl-dialog-scan">
+        <span class="dl-dialog-scan-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg></span>
+        <div class="dl-dialog-scan-text">
+          <p class="dl-dialog-scan-title" data-part="scan-title">VirusTotal</p>
           <p data-part="scan-detail"></p>
-          <p class="dialog-scan-hash">SHA-256 <code data-part="scan-hash"></code></p>
+          <p class="dl-dialog-scan-hash">SHA-256 <code data-part="scan-hash"></code></p>
         </div>
       </div>
-      <p class="dialog-caution"><strong>If you're not comfortable with that, don't install Binder.</strong> Delete the downloaded file instead: nothing has been installed yet.</p>
-    </div>
-    <div class="dialog-footer">
-      <button type="button" class="button button-primary" data-part="close" autofocus>OK</button>
+      <p class="dl-dialog-caution"><strong>If you're not comfortable with that, don't install Binder.</strong> Delete the downloaded file instead: nothing has been installed yet.</p>
+      <button type="button" class="button button-primary dl-dialog-ok" data-part="close" autofocus>Got it</button>
     </div>
   </dialog>
 </div>
