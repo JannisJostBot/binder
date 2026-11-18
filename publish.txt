@@ -1,0 +1,20 @@
+  Determining projects to restore...
+  Restored D:\a\binder\binder\src\Binder\Binder.csproj (in 3.88 sec).
+  Binder -> D:\a\binder\binder\obj\publish-widget\Binder.dll
+  Generating native code
+  Binder -> D:\a\binder\binder\publish\app\
+  Determining projects to restore...
+  Restored D:\a\binder\binder\src\Binder.Watcher\Binder.Watcher.csproj (in 378 ms).
+  Binder.Watcher -> D:\a\binder\binder\obj\publish-watcher\Binder.Watcher.dll
+  Generating native code
+  Binder.Watcher -> D:\a\binder\binder\publish\app\
+  Determining projects to restore...
+  Restored D:\a\binder\binder\src\Binder.Elevated\Binder.Elevated.csproj (in 383 ms).
+  Binder.Elevated -> D:\a\binder\binder\obj\publish-elevated\Binder.Elevated.dll
+  Generating native code
+  Binder.Elevated -> D:\a\binder\binder\publish\app\
+  Determining projects to restore...
+  Restored D:\a\binder\binder\src\Binder.Setup\Binder.Setup.csproj (in 389 ms).
+  Binder.Setup -> D:\a\binder\binder\obj\publish-setup\BinderSetup.dll
+  Generating native code
+  Binder.Setup -> D:\a\binder\binder\obj\setup-out\
