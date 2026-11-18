@@ -564,61 +564,184 @@ summary::-webkit-details-marker { display: none; }
   box-shadow: 0 0 12px rgba(200, 200, 255, 0.25);
 }
 
-/* Asteroids tumbling from right to left. */
-.sf-rock { left: 100%; width: 5cqw; min-width: 34px; animation: sf-rock linear infinite; }
-.sf-rock svg { display: block; width: 100%; height: auto; animation: sf-spin linear infinite; }
-.sf-r1 { top: 62cqh; animation-duration: 11s; animation-delay: -2s; }
-.sf-r1 svg { animation-duration: 7s; }
-.sf-r2 { top: 24cqh; width: 3cqw; min-width: 22px; animation-duration: 16s; animation-delay: -9s; opacity: 0.85; }
-.sf-r2 svg { animation-duration: 11s; animation-direction: reverse; }
-.sf-r3 { top: 44cqh; width: 7.5cqw; min-width: 48px; animation-duration: 9s; animation-delay: -5.5s; }
-.sf-r3 svg { animation-duration: 6s; }
-@keyframes sf-rock { to { transform: translateX(calc(-100cqw - 140%)); } }
+/* The gameplay: one 9-second piece, every part on the same clock (they all start together and pause together), so
+   things meet: 1.6 s the ship fires, 2.2 s the shot hits the big asteroid (a burst, +250); 3.8 s it climbs over a
+   second one; 6.3 s it flies into a shield crystal (the bar refills, +50); 7.2 s it fires again, 7.7 s the small
+   asteroid bursts (+100). Positions are in the scene's own units (cqw, cqh). The ship is 14cqw long and its nose
+   3cqw below its top, so a shot at the ship's height + 3cqw is level with the nose. Each burst's start is the hit:
+   story.js adds its data-points to the score then. */
+.game-scene { --loop: 9s; }
+/* The action plays in front of the planet; only the far rock passes behind it. */
+.sf-rock, .sf-crystal, .sf-shot, .sf-boom, .sf-ship { z-index: 3; }
+.sf-far-rock { z-index: 0; }
+.sf-rock { left: 0; top: 0; width: 7cqw; }
+.sf-rock svg { display: block; width: 100%; height: auto; animation: sf-spin 6s linear infinite; }
 @keyframes sf-spin { to { transform: rotate(360deg); } }
+/* Far away and harmless: drifts by behind everything. */
+.sf-far-rock { width: 2.6cqw; opacity: 0.45; filter: blur(0.5px); transform: translate(70cqw, 18cqh); animation: sf-far 26s linear infinite; }
+.sf-far-rock svg { animation-duration: 14s; }
+@keyframes sf-far { from { transform: translate(105cqw, 18cqh); } to { transform: translate(-10cqw, 26cqh); } }
+/* The big asteroid, on the ship's line: hit at 2.2 s, its left edge at 62cqw. */
+.sf-a { transform: translate(70cqw, 40cqh); animation: sf-a var(--loop) linear infinite; }
+@keyframes sf-a {
+  0% { transform: translate(105cqw, 40cqh); opacity: 1; }
+  24.4% { transform: translate(62cqw, 40cqh); opacity: 1; }
+  24.5%, 100% { transform: translate(62cqw, 40cqh); opacity: 0; }
+}
+/* The second one comes low; the ship climbs over it. */
+.sf-b { width: 6cqw; transform: translate(80cqw, 46cqh); animation: sf-b var(--loop) linear infinite; }
+.sf-b svg { animation-direction: reverse; animation-duration: 8s; }
+@keyframes sf-b {
+  0%, 24.9% { transform: translate(105cqw, 54cqh); opacity: 0; }
+  25% { transform: translate(105cqw, 54cqh); opacity: 1; }
+  60% { transform: translate(-12cqw, 44cqh); opacity: 1; }
+  60.1%, 100% { transform: translate(-12cqw, 44cqh); opacity: 0; }
+}
+/* The small one: hit at 7.7 s, its left edge at 55cqw. */
+.sf-c { width: 4cqw; opacity: 0; animation: sf-c var(--loop) linear infinite; }
+.sf-c svg { animation-duration: 4s; }
+@keyframes sf-c {
+  0%, 61.9% { transform: translate(105cqw, calc(46cqh + 1.27cqw)); opacity: 0; }
+  62% { transform: translate(105cqw, calc(46cqh + 1.27cqw)); opacity: 1; }
+  85.5% { transform: translate(55cqw, calc(46cqh + 1.27cqw)); opacity: 1; }
+  85.6%, 100% { transform: translate(55cqw, calc(46cqh + 1.27cqw)); opacity: 0; }
+}
+/* The shield crystal, caught at 6.3 s at the ship's middle. */
+.sf-crystal {
+  left: 0;
+  top: 0;
+  width: 2.6cqw;
+  height: 2.6cqw;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #FFFFFF, #9BE7FF 40%, #2B86C5);
+  box-shadow: 0 0 14px rgba(155, 231, 255, 0.9), 0 0 30px rgba(76, 194, 255, 0.5);
+  opacity: 0;
+  animation: sf-crystal var(--loop) linear infinite;
+}
+@keyframes sf-crystal {
+  0%, 47.9% { transform: translate(105cqw, 30cqh) rotate(45deg); opacity: 0; }
+  48% { transform: translate(105cqw, 30cqh) rotate(45deg); opacity: 1; }
+  70% { transform: translate(22.7cqw, calc(28cqh + 1.7cqw)) rotate(225deg); opacity: 1; }
+  70.1%, 100% { transform: translate(22.7cqw, calc(28cqh + 1.7cqw)) rotate(225deg); opacity: 0; }
+}
 
-/* The ship: bobbing, its flame flickering. */
-.sf-ship { left: 16cqw; top: 46cqh; width: clamp(110px, 15cqw, 230px); animation: sf-bob 6s ease-in-out infinite; }
+/* The ship: holds its line to fire, climbs and banks over the second asteroid, flies into the crystal, dives to
+   the small one's line, fires, and comes back round. */
+.sf-ship { left: 16cqw; top: 0; width: 14cqw; transform: translate(0, 40cqh); animation: sf-fly var(--loop) ease-in-out infinite; }
 .sf-ship svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5)); }
+@keyframes sf-fly {
+  0%, 25% { transform: translate(0, 40cqh) rotate(0deg); }
+  31% { transform: translate(0.6cqw, 33cqh) rotate(-8deg); }
+  37% { transform: translate(1cqw, 26cqh) rotate(-2deg); }
+  48% { transform: translate(1cqw, 26cqh) rotate(0deg); }
+  60% { transform: translate(1.6cqw, 29cqh) rotate(1.5deg); }
+  70% { transform: translate(1cqw, 28cqh) rotate(0deg); }
+  74% { transform: translate(0.5cqw, 37cqh) rotate(8deg); }
+  78%, 88% { transform: translate(0, 46cqh) rotate(0deg); }
+  95% { transform: translate(0, 43cqh) rotate(-4deg); }
+  100% { transform: translate(0, 40cqh) rotate(0deg); }
+}
 .sf-flame {
-  right: 96%;
-  top: 41%;
-  width: 46%;
-  height: 18%;
+  right: 97%;
+  top: 44%;
+  width: 34%;
+  height: 16%;
   border-radius: 50%;
   background: radial-gradient(ellipse at 100% 50%, #FFFFFF 0, #9BE7FF 22%, rgba(76, 194, 255, 0.7) 45%, rgba(76, 194, 255, 0) 72%);
   transform-origin: 100% 50%;
   animation: sf-flame 0.12s ease-in-out infinite alternate;
 }
-@keyframes sf-bob {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  30% { transform: translate(1.5cqw, -6cqh) rotate(-3deg); }
-  65% { transform: translate(-1cqw, 5cqh) rotate(2.5deg); }
-}
 @keyframes sf-flame { from { transform: scaleX(0.8); opacity: 0.85; } to { transform: scaleX(1.1); opacity: 1; } }
+/* A flash at the nose as it fires. */
+.sf-muzzle {
+  left: 94%;
+  top: 41%;
+  width: 18%;
+  height: 20%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #FFFFFF 0, #9BE7FF 35%, rgba(76, 194, 255, 0) 70%);
+  opacity: 0;
+  animation: sf-muzzle var(--loop) linear infinite;
+}
+@keyframes sf-muzzle { 0%, 17.6%, 18.9%, 79.8%, 81.1%, 100% { opacity: 0; } 17.8%, 80% { opacity: 1; } }
 
-/* Shots from the nose, following the ship's bob. */
+/* The two shots, level with the nose, each ending on its asteroid's front edge. */
 .sf-shot {
-  left: calc(16cqw + clamp(110px, 15cqw, 230px) * 0.9);
-  top: calc(46cqh + clamp(110px, 15cqw, 230px) * 0.24);
+  left: 0;
+  top: 0;
   width: 3.4cqw;
   height: 3px;
   border-radius: 2px;
   background: linear-gradient(90deg, rgba(155, 231, 255, 0), #9BE7FF 60%, #FFFFFF);
   box-shadow: 0 0 8px #4CC2FF;
   opacity: 0;
-  animation: sf-shot 6s linear infinite;
 }
-.sf-s2 { animation-delay: 0.35s; }
-.sf-s3 { animation-delay: 2.9s; }
-@keyframes sf-shot {
-  0% { opacity: 0; transform: translate(0, 0); }
-  1% { opacity: 1; transform: translate(0, 0); }
-  14% { opacity: 1; transform: translate(70cqw, -3cqh); }
-  15%, 100% { opacity: 0; transform: translate(72cqw, -3cqh); }
+.sf-s1 { opacity: 1; transform: translate(44cqw, calc(40cqh + 3cqw - 1.5px)); animation: sf-s1 var(--loop) linear infinite; }
+@keyframes sf-s1 {
+  0%, 17.7% { transform: translate(29.6cqw, calc(40cqh + 3cqw - 1.5px)); opacity: 0; }
+  17.8% { transform: translate(29.6cqw, calc(40cqh + 3cqw - 1.5px)); opacity: 1; }
+  24.3% { transform: translate(58.6cqw, calc(40cqh + 3cqw - 1.5px)); opacity: 1; }
+  24.4%, 100% { transform: translate(58.6cqw, calc(40cqh + 3cqw - 1.5px)); opacity: 0; }
+}
+.sf-s2 { animation: sf-s2 var(--loop) linear infinite; }
+@keyframes sf-s2 {
+  0%, 79.9% { transform: translate(29.6cqw, calc(46cqh + 3cqw - 1.5px)); opacity: 0; }
+  80% { transform: translate(29.6cqw, calc(46cqh + 3cqw - 1.5px)); opacity: 1; }
+  85.4% { transform: translate(51.6cqw, calc(46cqh + 3cqw - 1.5px)); opacity: 1; }
+  85.5%, 100% { transform: translate(51.6cqw, calc(46cqh + 3cqw - 1.5px)); opacity: 0; }
 }
 
-/* The HUD: title and a score that counts up, shield and sector. */
-@property --score { syntax: "<integer>"; inherits: false; initial-value: 24180; }
+/* Bursts: a flash, fragments flying out and the points floating up, starting at their hit (--at) and every loop. */
+.sf-boom { width: 0; height: 0; animation: sf-hit var(--loop) linear var(--at) infinite; }
+.sf-boom-a { --at: 2.2s; left: 65.5cqw; top: calc(40cqh + 3cqw); }
+.sf-boom-c { --at: 7.7s; left: 57cqw; top: calc(46cqh + 3cqw); }
+.sf-boom-pick { --at: 6.3s; left: 24cqw; top: calc(28cqh + 3cqw); }
+@keyframes sf-hit { from { visibility: visible; } to { visibility: visible; } }
+.sf-flash {
+  left: -4.5cqw;
+  top: -4.5cqw;
+  width: 9cqw;
+  height: 9cqw;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFFFFF 0, #FFE1A0 18%, rgba(255, 150, 70, 0.75) 38%, rgba(255, 90, 60, 0) 70%);
+  opacity: 0;
+  animation: sf-flash var(--loop) ease-out var(--at) infinite;
+}
+.sf-boom-pick .sf-flash { background: radial-gradient(circle, #FFFFFF 0, #9BE7FF 25%, rgba(76, 194, 255, 0.5) 45%, rgba(76, 194, 255, 0) 70%); }
+@keyframes sf-flash { 0% { opacity: 1; transform: scale(0.2); } 3% { opacity: 1; transform: scale(1); } 9%, 100% { opacity: 0; transform: scale(1.5); } }
+.sf-shard {
+  left: -0.8cqw;
+  top: -0.6cqw;
+  width: 1.6cqw;
+  height: 1.2cqw;
+  clip-path: polygon(20% 0, 100% 30%, 70% 100%, 0 70%);
+  background: #6E6286;
+  opacity: 0;
+  animation: sf-shard var(--loop) ease-out var(--at) infinite;
+}
+.sf-shard:nth-of-type(2) { --x: 5cqw; --y: -4cqw; }
+.sf-shard:nth-of-type(3) { --x: 6cqw; --y: 3cqw; background: #4B4060; }
+.sf-shard:nth-of-type(4) { --x: -3cqw; --y: -5cqw; background: #8A7FA3; }
+.sf-shard:nth-of-type(5) { --x: -2cqw; --y: 4.5cqw; }
+@keyframes sf-shard { 0% { opacity: 1; transform: translate(0, 0) rotate(0deg); } 11%, 100% { opacity: 0; transform: translate(var(--x, 4cqw), var(--y, 0)) rotate(220deg); } }
+.sf-pop {
+  left: 0;
+  top: -3cqw;
+  position: absolute;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  color: #FFE1A0;
+  text-shadow: 0 0 10px rgba(255, 150, 70, 0.8);
+  opacity: 0;
+  transform: translateX(-50%);
+  animation: sf-pop var(--loop) ease-out var(--at) infinite;
+}
+.sf-boom-pick .sf-pop { color: #9BE7FF; text-shadow: 0 0 10px rgba(76, 194, 255, 0.8); }
+@keyframes sf-pop { 0% { opacity: 0; transform: translate(-50%, 0); } 2% { opacity: 1; } 12% { opacity: 1; transform: translate(-50%, -4cqh); } 15%, 100% { opacity: 0; transform: translate(-50%, -5cqh); } }
+
+/* The HUD: title and the score (story.js adds each hit's points), shield and sector. */
 .sf-hud {
   left: 3cqw;
   right: 3cqw;
@@ -636,12 +759,11 @@ summary::-webkit-details-marker { display: none; }
 .sf-hud-right { align-items: flex-end; }
 .sf-title { font-size: 13px; letter-spacing: 0.32em; color: rgba(255, 255, 255, 0.75); }
 .sf-score { color: #9BE7FF; }
-.sf-score b { counter-reset: score var(--score); animation: sf-score 24s steps(40) infinite; }
-.sf-score b::after { content: counter(score); margin-left: 8px; color: #FFFFFF; font-size: 16px; letter-spacing: 0.06em; }
-@keyframes sf-score { to { --score: 26420; } }
+.sf-score b { margin-left: 8px; color: #FFFFFF; font-size: 16px; letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
 .sf-shield { display: flex; align-items: center; gap: 10px; color: #9BE7FF; }
+@keyframes sf-shield { 0% { width: 82%; } 69.9% { width: 64%; } 70.3% { width: 100%; } 100% { width: 82%; } }
 .sf-shield i { position: relative; width: 120px; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.15); overflow: hidden; }
-.sf-shield b { position: absolute; inset: 0 22% 0 0; border-radius: 4px; background: linear-gradient(90deg, #4CC2FF, #9BE7FF); box-shadow: 0 0 8px rgba(76, 194, 255, 0.8); }
+.sf-shield b { position: absolute; left: 0; top: 0; bottom: 0; width: 82%; animation: sf-shield var(--loop) linear infinite; border-radius: 4px; background: linear-gradient(90deg, #4CC2FF, #9BE7FF); box-shadow: 0 0 8px rgba(76, 194, 255, 0.8); }
 .sf-sector { color: rgba(255, 255, 255, 0.6); font-size: 11px; }
 @media (max-width: 600px) {
   .sf-hud { font-size: 10px; }
@@ -723,17 +845,30 @@ summary::-webkit-details-marker { display: none; }
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
 }
 .cursor svg { display: block; width: 100%; height: auto; }
-.stage[data-from="0"]:not([data-step="0"]) .cursor { animation: cursor-click 1.5s cubic-bezier(0.3, 0, 0.2, 1) both; }
+.stage[data-from="0"]:not([data-step="0"]) .cursor { animation: cursor-click 1.5s linear both; }
+/* The pointer moves as a hand does (cursor-click): a smooth start and a gentle landing (a minimum-jerk profile)
+   along a slight arc, a small overshoot it corrects, a short pause, the click, then it drifts away. */
 @keyframes cursor-click {
   0% { opacity: 0; transform: translate(-190px, -230px); }
-  12% { opacity: 1; transform: translate(-170px, -205px); }
+  6% { opacity: 1; transform: translate(-190px, -230px); }
+  9.4% { opacity: 1; transform: translate(-187.4px, -229.6px) scale(1); }
+  12.8% { opacity: 1; transform: translate(-173.0px, -226.5px) scale(1); }
+  16.2% { opacity: 1; transform: translate(-143.9px, -217.0px) scale(1); }
+  19.6% { opacity: 1; transform: translate(-105.4px, -195.7px) scale(1); }
+  23.0% { opacity: 1; transform: translate(-66.5px, -159.2px) scale(1); }
+  26.4% { opacity: 1; transform: translate(-34.6px, -110.6px) scale(1); }
+  29.8% { opacity: 1; transform: translate(-13.2px, -60.0px) scale(1); }
+  33.2% { opacity: 1; transform: translate(-1.5px, -20.5px) scale(1); }
+  36.6% { opacity: 1; transform: translate(3.2px, -0.5px) scale(1); }
+  40.0% { opacity: 1; transform: translate(4.0px, 3.0px) scale(1); }
   44% { opacity: 1; transform: translate(-2px, -3px) scale(1); }
-  47% { transform: translate(-2px, -3px) scale(0.86); }
-  52% { transform: translate(-2px, -3px) scale(1); }
-  78% { opacity: 1; transform: translate(-60px, -70px); }
-  100% { opacity: 0; transform: translate(-80px, -90px); }
+  46% { opacity: 1; transform: translate(-2px, -3px) scale(1); }
+  48% { opacity: 1; transform: translate(-2px, -3px) scale(0.86); }
+  52% { opacity: 1; transform: translate(-2px, -3px) scale(1); }
+  62% { opacity: 1; transform: translate(-6px, -9px) scale(1); }
+  100% { opacity: 0; transform: translate(-70px, -84px) scale(1); }
 }
-.stage[data-from="0"]:not([data-step="0"]) .mock-tray { animation: tray-press 0.18s ease-out 0.66s; }
+.stage[data-from="0"]:not([data-step="0"]) .mock-tray { animation: tray-press 0.18s ease-out 0.7s; }
 @keyframes tray-press { 50% { background-color: rgba(0, 0, 0, 0.16); } }
 .mock-panel {
   position: absolute;
@@ -1027,10 +1162,9 @@ summary::-webkit-details-marker { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .ico, .ico i, .ico span, .mock-panel, .mock-grid span, .game-scene, .game-scene *, .procs, .story-cue, .window, .mock-tray { transition: none !important; animation: none !important; }
   .cursor { display: none; }
-  /* The game as a still frame: the asteroids in view. */
-  .sf-r1 { transform: translateX(-42cqw); }
-  .sf-r2 { transform: translateX(-58cqw); }
-  .sf-r3 { transform: translateX(-22cqw); }
+  /* The game as a still frame: the first shot on its way to the big asteroid. */
+  .sf-a { transform: translate(66cqw, 40cqh); }
+  .sf-b { transform: translate(84cqw, 58cqh); }
   .stage:not([data-step="0"]) .ico[data-tile] { opacity: 0; }
   .stage:not([data-step="0"]) .mock-grid span { opacity: 1; }
 }

@@ -107,6 +107,18 @@
     window.addEventListener('resize', function () { if (!pending) pending = requestAnimationFrame(resized); });
     window.addEventListener('load', function () { observe(); measure(); });
     measure();
+    // The game's score: each burst (styles.css, .sf-boom) starts as its shot lands or the crystal is caught, and
+    // again every loop; its points are added then, so the score only ever moves on a hit.
+    var points = stage.querySelector('.sf-points'), score = 24180;
+    function scored(e) {
+      if (e.animationName !== 'sf-hit' || !points) return;
+      var n = parseInt(e.target.getAttribute('data-points'), 10);
+      if (!(n > 0)) return;
+      score += n;
+      points.textContent = score.toLocaleString('en-US');
+    }
+    stage.addEventListener('animationstart', scored);
+    stage.addEventListener('animationiteration', scored);
     stage.classList.add('is-live');
   }
 
