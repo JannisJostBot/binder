@@ -57,6 +57,23 @@ $list = foreach ($line in Get-Content -LiteralPath $Releases) {
     if (-not $asset) { continue }
     $digest = [string]$asset.digest
     $sha = if ($digest -match '^sha256:([0-9a-f]{64})$') { $Matches[1] } else { $null }
+    # The VirusTotal result .github/workflows/virustotal.yml wrote into the release's description, read the way
+    # site/release.js reads it; kept only when it names this setup and its hash is GitHub's hash of the file.
+    $scan = $null
+    if ([string]$r.body -match '(?s)<!-- virustotal -->(.*?)<!-- /virustotal -->') {
+        $section = $Matches[1]
+        $counts = [regex]::Match($section, '\b(\d{1,3}) of (\d{1,3}) engines flagged\b')
+        $day = [regex]::Match($section, '\b(20\d\d-[01]\d-[0-3]\d)\b')
+        $hash = [regex]::Match($section, 'SHA-256 `([0-9a-f]{64})`')
+        if ($section.Contains('`' + $name + '`') -and $counts.Success -and $day.Success -and $hash.Success) {
+            $flagged = [int]$counts.Groups[1].Value
+            $engines = [int]$counts.Groups[2].Value
+            $scannedSha = $hash.Groups[1].Value
+            if ($engines -ge 1 -and $flagged -le $engines -and (-not $sha -or $sha -eq $scannedSha)) {
+                $scan = [pscustomobject]@{ Flagged = $flagged; Engines = $engines; Date = $day.Groups[1].Value; Sha = $scannedSha }
+            }
+        }
+    }
     # PowerShell 7 already reads the ISO time as a date; otherwise it's the text.
     $when = $r.published_at
     $published = if ($when -is [datetime]) { $when.ToUniversalTime() } else { ([datetimeoffset]::Parse([string]$when, $inv)).UtcDateTime }
@@ -69,6 +86,7 @@ $list = foreach ($line in Get-Content -LiteralPath $Releases) {
         File       = $name
         Bytes      = [long]$asset.size
         Sha        = $sha
+        Scan       = $scan
         Notes      = Read-Notes $version
     }
 }
@@ -107,9 +125,19 @@ foreach ($r in $list) {
     }
     $button = if ($isLatest) { 'button-primary' } else { 'button-secondary' }
     [void]$cards.Append("        <div class=""release-download"">`n")
-    [void]$cards.Append("          <a class=""button button-small $button"" href=""$download"">Download $(Html $r.Version)</a>`n")
+    # The data attributes are for the dialog shown once the download starts (site/download.js).
+    $data = "data-version=""$($r.Version)"""
+    if ($r.Scan) {
+        $data += " data-flagged=""$($r.Scan.Flagged)"" data-engines=""$($r.Scan.Engines)"" data-scanned=""$($r.Scan.Date)"" data-sha256=""$($r.Scan.Sha)"""
+    }
+    [void]$cards.Append("          <a class=""button button-small $button"" href=""$download"" $data>Download $(Html $r.Version)</a>`n")
     [void]$cards.Append("          <p class=""release-file"">$(Html $r.File) · $(Size $r.Bytes) · <a href=""$base/tag/$($r.Tag)"">On GitHub</a></p>`n")
     if ($r.Sha) { [void]$cards.Append("          <p class=""release-sha"">SHA-256 <code>$($r.Sha)</code></p>`n") }
+    if ($r.Scan) {
+        [void]$cards.Append("          <p class=""release-scan"">VirusTotal: $($r.Scan.Flagged) of $($r.Scan.Engines) engines flagged it · <a href=""https://www.virustotal.com/gui/file/$($r.Scan.Sha)"">Full report</a></p>`n")
+    } else {
+        [void]$cards.Append("          <p class=""release-scan"">VirusTotal: not scanned</p>`n")
+    }
     [void]$cards.Append("        </div>`n")
     [void]$cards.Append("      </article>`n")
 }

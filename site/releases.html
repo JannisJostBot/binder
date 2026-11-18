@@ -13,6 +13,7 @@
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <script src="nav.js" defer></script>
+  <script src="download.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -86,9 +87,10 @@
           <li>Settings › About links to Binder on GitHub.</li>
         </ul>
         <div class="release-download">
-          <a class="button button-small button-primary" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe">Download 0.2.1</a>
+          <a class="button button-small button-primary" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe" data-version="0.2.1" data-flagged="1" data-engines="69" data-scanned="2026-11-16" data-sha256="e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5">Download 0.2.1</a>
           <p class="release-file">BinderSetup-0.2.1.exe · 34 MB · <a href="https://github.com/JannisJostBot/binder/releases/tag/v0.2.1">On GitHub</a></p>
           <p class="release-sha">SHA-256 <code>e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5</code></p>
+          <p class="release-scan">VirusTotal: 1 of 69 engines flagged it · <a href="https://www.virustotal.com/gui/file/e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5">Full report</a></p>
         </div>
       </article>
       <article class="release" id="v0-2-0" aria-labelledby="v0-2-0-title">
@@ -102,9 +104,10 @@
           <li>An update replaces all files together, or none if something goes wrong.</li>
         </ul>
         <div class="release-download">
-          <a class="button button-small button-secondary" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.0/BinderSetup-0.2.0.exe">Download 0.2.0</a>
+          <a class="button button-small button-secondary" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.0/BinderSetup-0.2.0.exe" data-version="0.2.0">Download 0.2.0</a>
           <p class="release-file">BinderSetup-0.2.0.exe · 34 MB · <a href="https://github.com/JannisJostBot/binder/releases/tag/v0.2.0">On GitHub</a></p>
           <p class="release-sha">SHA-256 <code>a941e5c4f142987863c779285a71a3a7247a929df6c087f8a90bf9821dedeb2b</code></p>
+          <p class="release-scan">VirusTotal: not scanned</p>
         </div>
       </article>
       <!-- /releases -->
@@ -133,6 +136,25 @@
       <span class="footer-copy">© 2026 Jannis Jost</span>
     </div>
   </footer>
+  <!-- Shown by download.js once a download has started (download.js fills in the version and its VirusTotal result). -->
+  <dialog class="dialog" id="download-dialog" aria-labelledby="download-dialog-title" aria-describedby="download-dialog-text">
+    <div class="dialog-body">
+      <h2 class="dialog-title" id="download-dialog-title">Before you run the setup</h2>
+      <p id="download-dialog-text">Binder <span data-part="version">0.2.1</span> is downloading. Its setup isn't code-signed yet, so Microsoft Defender SmartScreen may stop it with "Windows protected your PC", and your antivirus app may warn about it or remove it. To run it anyway, select More info, then Run anyway.</p>
+      <div class="dialog-scan">
+        <span class="dialog-scan-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg></span>
+        <div class="dialog-scan-text">
+          <p class="dialog-scan-title" data-part="scan-title">VirusTotal</p>
+          <p data-part="scan-detail"></p>
+          <p class="dialog-scan-hash">SHA-256 <code data-part="scan-hash"></code></p>
+        </div>
+      </div>
+      <p class="dialog-caution"><strong>If you're not comfortable with that, don't install Binder.</strong> Delete the downloaded file instead: nothing has been installed yet.</p>
+    </div>
+    <div class="dialog-footer">
+      <button type="button" class="button button-primary" data-part="close" autofocus>OK</button>
+    </div>
+  </dialog>
 </div>
 </body>
 </html>

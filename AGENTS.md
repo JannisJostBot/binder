@@ -68,21 +68,23 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
 | `src/Binder/Services/` | Launching, storage, Windows integration |
 | `src/Binder/Views/` | The UI (XAML + code-behind); `Format.cs` has the text formatting |
 | `tests/Binder.Tests/Tests.cs` | All unit tests: one console program, `Check(condition, "description")` per check |
-| `site/` | The website: `index.html`, `docs.html`, `releases.html`, `styles.css`, `logo.svg`, `release.js`, `clock.js`, `story.js`, `game.js`, `nav.js`, `usage.js` (see "The website" below) |
+| `site/` | The website: `index.html`, `docs.html`, `releases.html`, `styles.css`, `logo.svg`, `release.js`, `clock.js`, `story.js`, `game.js`, `nav.js`, `usage.js`, `download.js` (see "The website" below) |
 
 ## The website (`site/`)
 
 The project's website: `site/index.html` (the home page), `site/docs.html` (the documentation: what Binder
-changes on the PC), `site/releases.html` (every version: notes, date, setup download), `site/styles.css`, `site/logo.svg` and its scripts (`release.js`, `clock.js`, `story.js`, `game.js`, `nav.js`, `usage.js`). `.github/workflows/pages.yml` publishes it to GitHub
+changes on the PC), `site/releases.html` (every version: notes, date, setup download), `site/styles.css`, `site/logo.svg` and its scripts (`release.js`, `clock.js`, `story.js`, `game.js`, `nav.js`, `usage.js`, `download.js`). `.github/workflows/pages.yml` publishes it to GitHub
 Pages whenever a change to `site/` reaches `main`, so what's merged is live within minutes.
 
-- Plain HTML and CSS, no frameworks, no build step. Six small scripts: `site/nav.js` marks the header link of the
+- Plain HTML and CSS, no frameworks, no build step. Seven small scripts: `site/download.js` opens a dialog once a
+  setup download has started (it isn't code-signed yet, so Defender may warn; that version's VirusTotal result,
+  read from the link's data attributes; don't install it if that isn't acceptable), `site/nav.js` marks the header link of the
   part being read and closes the phone Menu flyout after a tap, `site/usage.js` draws the "How much it uses" bars to
   scale from the figures on the page, `site/clock.js` sets the desktop story's
   taskbar clock and the shelf's greeting from the visitor's time, `site/story.js` runs the desktop story (below),
   `site/game.js` is the hidden game behind the shelf's Play button (the launch toast, 20 seconds of catching the
   made-up games' covers, then "Welcome back" with the score; nothing runs until Play is pressed; reduced motion:
-  covers appear in place) (all five without network), and `site/release.js` asks GitHub's API
+  covers appear in place) (all six without network), and `site/release.js` asks GitHub's API
   (`api.github.com`, this repository's latest release) for the download link, the version line and the VirusTotal
   box, which `index.html` also holds as fallback values. That fetch, for things directly about Binder's releases,
   is the only one allowed (owner, 2026-11-16); it applies to the website only, not to the app. No inline scripts

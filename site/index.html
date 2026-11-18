@@ -18,6 +18,7 @@
   <script src="story.js" defer></script>
   <script src="game.js" defer></script>
   <script src="nav.js" defer></script>
+  <script src="download.js" defer></script>
   <script src="usage.js" defer></script>
 </head>
 <body>
@@ -398,7 +399,7 @@
         <span class="download-logo"><svg aria-hidden="true" width="80" height="80" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
         <h2 class="h2">Download Binder</h2>
         <p class="touch-hint touch-hint-download" role="note"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5"></rect><path d="M8 20h8M12 16v4"></path></svg><span>Binder is an app for Windows PCs. To install it, open this page on your PC.</span></p>
-        <a class="button button-light download-button" id="download-link" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe">
+        <a class="button button-light download-button" id="download-link" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe" data-version="0.2.1" data-flagged="1" data-engines="69" data-scanned="2026-11-16" data-sha256="e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5">
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download for Windows
         </a>
         <p class="download-meta"><span id="download-version">Version 0.2.1 · 34 MB</span> · Windows 10 and 11, 64-bit · <a href="releases.html">Release notes and earlier versions</a> · <a href="https://github.com/JannisJostBot/binder">Source code</a></p>
@@ -436,6 +437,25 @@
       <span class="footer-copy">© 2026 Jannis Jost</span>
     </div>
   </footer>
+  <!-- Shown by download.js once a download has started (download.js fills in the version and its VirusTotal result). -->
+  <dialog class="dialog" id="download-dialog" aria-labelledby="download-dialog-title" aria-describedby="download-dialog-text">
+    <div class="dialog-body">
+      <h2 class="dialog-title" id="download-dialog-title">Before you run the setup</h2>
+      <p id="download-dialog-text">Binder <span data-part="version">0.2.1</span> is downloading. Its setup isn't code-signed yet, so Microsoft Defender SmartScreen may stop it with "Windows protected your PC", and your antivirus app may warn about it or remove it. To run it anyway, select More info, then Run anyway.</p>
+      <div class="dialog-scan">
+        <span class="dialog-scan-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg></span>
+        <div class="dialog-scan-text">
+          <p class="dialog-scan-title" data-part="scan-title">VirusTotal</p>
+          <p data-part="scan-detail"></p>
+          <p class="dialog-scan-hash">SHA-256 <code data-part="scan-hash"></code></p>
+        </div>
+      </div>
+      <p class="dialog-caution"><strong>If you're not comfortable with that, don't install Binder.</strong> Delete the downloaded file instead: nothing has been installed yet.</p>
+    </div>
+    <div class="dialog-footer">
+      <button type="button" class="button button-primary" data-part="close" autofocus>OK</button>
+    </div>
+  </dialog>
 </div>
 </body>
 </html>

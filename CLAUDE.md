@@ -117,7 +117,8 @@ site/                     the website: HTML + CSS, nothing loaded from other ser
                           desktop story at the top of index.html (a cluttered desktop tidied into Binder, a game,
                           welcome back), game.js is the hidden game behind the shelf's Play (catch the covers, then
                           "Welcome back"), nav.js marks the header's current section and closes the phone menu,
-                          usage.js draws the "How much it uses" bars to scale from the measured figures;
+                          usage.js draws the "How much it uses" bars to scale from the measured figures,
+                          download.js the dialog once a download starts (Defender may warn, the VirusTotal result);
                           index.html,
                           docs.html (what Binder changes on the PC: every Game mode item, autostart, updates, …),
                           releases.html (every version's notes and setup; its list written by

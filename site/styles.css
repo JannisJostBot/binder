@@ -1709,8 +1709,8 @@ summary::-webkit-details-marker { display: none; }
   padding-top: 16px;
   border-top: 1px solid var(--divider);
 }
-.release-download .button { grid-row: span 2; }
-.release-file, .release-sha { margin: 0 !important; font-size: 14px; color: var(--text-2); line-height: 1.5; }
+.release-download .button { grid-row: span 3; }
+.release-file, .release-sha, .release-scan { margin: 0 !important; font-size: 14px; color: var(--text-2); line-height: 1.5; }
 .release-sha code { font-size: 12px !important; }
 .release-earlier {
   margin-top: 40px;
@@ -1730,3 +1730,32 @@ summary::-webkit-details-marker { display: none; }
 }
 .release-download .button-secondary { background: var(--surface-2); color: var(--text); border-color: var(--border); border-bottom-color: var(--border-strong); font-weight: 400; }
 .release-download .button-secondary:hover { background: var(--bg-alt); color: var(--text); }
+
+/* ---- The dialog after a download starts (download.js), like a Windows ContentDialog ------------------------ */
+.dialog {
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.28), 0 2px 21px rgba(0, 0, 0, 0.22);
+  overflow: auto;
+}
+.dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
+.dialog[open] { animation: dialog-in 0.2s cubic-bezier(0.1, 0.9, 0.2, 1); }
+@keyframes dialog-in { from { opacity: 0; transform: scale(1.05); } }
+@media (prefers-reduced-motion: reduce) { .dialog[open] { animation: none; } }
+.dialog-body { padding: 24px; font-size: 14px; line-height: 1.55; }
+.dialog-body p { margin: 0 0 14px; }
+.dialog-title { margin: 0 0 12px; font-family: var(--display); font-size: 20px; font-weight: 600; line-height: 1.3; }
+.dialog-scan { display: flex; gap: 12px; align-items: flex-start; margin: 0 0 14px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); }
+.dialog-scan-icon { width: 32px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--accent-tint); color: var(--accent); }
+.dialog-scan-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--text-2); }
+.dialog-scan-text p { margin: 0 !important; }
+.dialog-scan-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.dialog-scan-hash code { font-family: 'Cascadia Mono', Consolas, ui-monospace, monospace; font-size: 11.5px; overflow-wrap: anywhere; }
+.dialog-caution { margin-bottom: 0 !important; }
+.dialog-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 20px 24px; border-top: 1px solid var(--border); background: var(--bg-alt); }
+.dialog-footer .button { min-width: 120px; justify-content: center; }
