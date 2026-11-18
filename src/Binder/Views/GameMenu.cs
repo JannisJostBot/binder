@@ -15,9 +15,11 @@ namespace Binder.Views;
 public static class GameMenu
 {
     /// <summary>Opens the game menu at <paramref name="point"/> in <paramref name="target"/>, or under it when null.</summary>
-    public static void Show(FrameworkElement target, Point? point, Game game, bool includePlayAndDetails, Action<GameAction> onAction)
+    /// <param name="onGameKey">With it, a "Shortcut" submenu gives the game a number (spec §26): 1–9, or null for None.</param>
+    public static void Show(FrameworkElement target, Point? point, Game game, bool includePlayAndDetails, Action<GameAction> onAction,
+        Action<int?>? onGameKey = null)
     {
-        var menu = Build(game, includePlayAndDetails, onAction);
+        var menu = Build(game, includePlayAndDetails, onAction, onGameKey);
         Open(menu, target, point);
     }
 
@@ -32,7 +34,7 @@ public static class GameMenu
             : new FlyoutShowOptions { Placement = FlyoutPlacementMode.BottomEdgeAlignedRight });
     }
 
-    private static MenuFlyout Build(Game game, bool includePlayAndDetails, Action<GameAction> onAction)
+    private static MenuFlyout Build(Game game, bool includePlayAndDetails, Action<GameAction> onAction, Action<int?>? onGameKey)
     {
         var menu = new MenuFlyout();
         var usedKeys = new HashSet<char>();
@@ -67,10 +69,30 @@ public static class GameMenu
         if (!includePlayAndDetails && SpacePlanner.DriveOf(game) is not null)
             Add(Strings.FreeUpSpaceMenu, "", GameAction.FreeUpSpace);
         menu.Items.Add(new MenuFlyoutSeparator());
+        if (onGameKey is not null) menu.Items.Add(GameKeyMenu(game, onGameKey));
         Add(game.Favorite ? Strings.RemoveFavorite : Strings.AddFavorite, game.Favorite ? "" : "",
             GameAction.ToggleFavorite);
         Add(Strings.HideFromShelf, "", GameAction.Hide);
         return menu;
+    }
+
+    /// <summary>
+    /// "Shortcut ›": None and 1–9, each naming the game that has it, the game's own checked (spec §26). Taking a number
+    /// another game has moves it here; the toast says so.
+    /// </summary>
+    private static MenuFlyoutSubItem GameKeyMenu(Game game, Action<int?> onGameKey)
+    {
+        var sub = new MenuFlyoutSubItem { Text = Strings.GameKeyMenu, Icon = new FontIcon { Glyph = "\uE765" } };
+        var choices = ViewModels.GameKeyChoices.For(game, App.Settings.GameKeySlots, App.State.Games);
+        foreach (var choice in choices)
+        {
+            var item = new RadioMenuFlyoutItem { Text = choice.Label, GroupName = "GameKey", IsChecked = choice.IsCurrent };
+            int? number = choice.Number;
+            item.Click += (_, _) => { if (!choice.IsCurrent) onGameKey(number); };
+            sub.Items.Add(item);
+            if (number is null) sub.Items.Add(new MenuFlyoutSeparator());
+        }
+        return sub;
     }
 
     /// <summary>The first letter of the label that no earlier item uses, so access keys work in every language.</summary>

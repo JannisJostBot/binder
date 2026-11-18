@@ -102,6 +102,7 @@ static partial class Tests
         ShelfViewModelTests();
         ShelfUpdateTests();
         GameSearchTests();
+        GameKeysTests();
         StartMenuTests();
         FormatTests();
         LocalizationTests();

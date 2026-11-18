@@ -34,6 +34,8 @@ public interface IShelfActions
     void OpenLauncher(GameSource source);
     /// <summary>"Update to 0.2.0" / "Restart to update" in the "…" menu (spec §25): downloads or installs, and shows Settings › About.</summary>
     void StartUpdate();
+    /// <summary>Gives the game a number for its game shortcut (1–9), or none (null); spec §26.</summary>
+    void SetGameKey(string gameId, int? number);
 }
 
 /// <summary>
@@ -75,6 +77,32 @@ public sealed partial class ShelfViewModel : ObservableObject
 
     public void Play(Game game) => _actions.Play(game);
     public void OpenDetails(Game game) => _actions.OpenDetails(game);
+    /// <summary>The cover menu's "Shortcut" or a cover dropped on a number (spec §26).</summary>
+    public void SetGameKey(Game game, int? number) => _actions.SetGameKey(game.Id, number);
+
+    /// <summary>
+    /// What each number 0–9 plays now, for the row of numbers shown while a cover is dragged (spec §26): 0 the last
+    /// game played, 1–9 the user's; null where there's none.
+    /// </summary>
+    public Game?[] GamesOnKeys()
+    {
+        var byId = new Dictionary<string, Game>(_games.Count);
+        foreach (var game in _games) byId.TryAdd(game.Id, game);
+        var keys = new Game?[10];
+        DateTimeOffset newest = DateTimeOffset.MinValue;
+        foreach (var (id, when) in _lastPlayed)
+            if (when > newest && byId.TryGetValue(id, out var game))
+            {
+                newest = when;
+                keys[GameKeys.LastPlayed] = game;
+            }
+        foreach (int number in GameKeys.UserSlots)
+            keys[number] = GameKeys.IdOn(_settings.GameKeySlots, number) is { } id && byId.TryGetValue(id, out var game) ? game : null;
+        return keys;
+    }
+
+    /// <summary>A game shortcut as it's pressed with the current shortcut: "Win+Shift+G, 3".</summary>
+    public string GameKeyLabel(int number) => Format.GameKeyLabel(_settings.Hotkey, number);
     public void Act(Game game, GameAction action) => _actions.Act(game, action);
 
     /// <summary>The library, sessions and settings, when the panel gets its data (it opens, a session ends).</summary>

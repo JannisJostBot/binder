@@ -38,6 +38,10 @@ public interface IDetailActions
     void ClearCover(Game game);
     /// <summary>Engine, anti-cheat and the PC checks, off the UI thread; null when the look failed.</summary>
     Task<DetailScan?> ScanAsync(Game game);
+    /// <summary>The games in the library, to name the ones that have the other numbers (spec §26).</summary>
+    IReadOnlyList<Game> Library { get; }
+    /// <summary>Gives the game a number for its game shortcut (1–9), or none (null); the owner saves and shows it again.</summary>
+    void SetGameKey(string gameId, int? number);
 }
 
 /// <summary>One recent session as its row shows it.</summary>
@@ -284,6 +288,7 @@ public sealed partial class DetailViewModel : ObservableObject
     [
         nameof(HideDelayChoices), nameof(SelectedHideDelay), nameof(GameModeChoices), nameof(SelectedGameMode),
         nameof(ProcessText), nameof(ProcessToolTip), nameof(HasCustomProcess), nameof(CoverText), nameof(HasCustomCover),
+        nameof(GameKeyLabels), nameof(SelectedGameKey), nameof(GameKeyText), nameof(HasGameKey),
     ];
 
     /// <summary>"Default (10 s)", then the choices. A new array only when its text changes (the selection is bound by item).</summary>
@@ -296,7 +301,34 @@ public sealed partial class DetailViewModel : ObservableObject
         if (!delays.SequenceEqual(HideDelayChoices)) HideDelayChoices = delays;
         string[] modes = [Strings.Format(Strings.DefaultChoice, Strings.LowerFirst(_settings.GameModeEnabled ? Strings.On : Strings.Off)), Strings.On, Strings.Off];
         if (!modes.SequenceEqual(GameModeChoices)) GameModeChoices = modes;
+        _gameKeyChoices = Game is null ? [] : GameKeyChoices.For(Game, _settings.GameKeySlots, _actions.Library);
+        string[] keys = [.. _gameKeyChoices.Select(c => c.Label)];
+        if (!keys.SequenceEqual(GameKeyLabels)) GameKeyLabels = keys;
     }
+
+    // ---- Game shortcut (spec §26) ----
+
+    private List<GameKeyChoice> _gameKeyChoices = [];
+
+    /// <summary>None, then "1 · Hades II" … "9 · Free". A new array only when its text changes (the selection is bound by item).</summary>
+    public string[] GameKeyLabels { get; private set; } = [];
+
+    /// <summary>The game's number; picking one gives it to this game (one that had it has none then).</summary>
+    public string? SelectedGameKey
+    {
+        get => _gameKeyChoices.FirstOrDefault(c => c.IsCurrent)?.Label;
+        set
+        {
+            int index = value is null ? -1 : Array.IndexOf(GameKeyLabels, value);
+            if (Game is not { } game || index < 0 || index >= _gameKeyChoices.Count || _gameKeyChoices[index].IsCurrent) return;
+            _actions.SetGameKey(game.Id, _gameKeyChoices[index].Number);
+        }
+    }
+
+    /// <summary>The second line of the shortcut card: "Win+Shift+G, 3", or nothing without a number.</summary>
+    public string GameKeyText => Game is not null && GameKeys.SlotOf(_settings.GameKeySlots, Game.Id) is { } number
+        ? Format.GameKeyLabel(_settings.Hotkey, number) : "";
+    public bool HasGameKey => GameKeyText.Length > 0;
 
     /// <summary>The game's hide delay; an unknown value shows as the default.</summary>
     public string? SelectedHideDelay

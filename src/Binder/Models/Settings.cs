@@ -68,6 +68,13 @@ public sealed class Settings
     public bool KeepPanelLoaded { get; set; }
     public bool CloseOnClickAway { get; set; } = true;
     public Hotkey Hotkey { get; set; } = Hotkey.WinShiftG;
+    /// <summary>
+    /// Game shortcuts (spec §26): with the shortcut's modifiers still held, a number after its letter plays a game
+    /// without opening the panel. On by default; 0 (the last game played) works before any game has a number.
+    /// </summary>
+    public bool GameKeysOn { get; set; } = true;
+    /// <summary>The numbers 1–9 the user gave games ("3" → game id; <c>Library.GameKeys</c>). Checked on every use.</summary>
+    public Dictionary<string, string> GameKeySlots { get; set; } = [];
     public bool SetupDone { get; set; }
 
     public bool StayOnDesktop { get; set; } = true;

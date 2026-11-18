@@ -195,6 +195,25 @@
                               SelectedItem="{x:Bind ViewModel.SelectedHideDelay, Mode=TwoWay}" />
                 </Grid>
             </Border>
+            <!-- Spec §26: the game's number for its game shortcut (the panel's shortcut, then the number). -->
+            <Border Style="{StaticResource SettingCard}">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.GameKeyToolTip}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE765;" />
+                    <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.GameKeyMenu}" />
+                        <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.GameKeyText, Mode=OneWay}"
+                                   Visibility="{x:Bind ViewModel.HasGameKey, Mode=OneWay}" />
+                    </StackPanel>
+                    <ComboBox Grid.Column="2" VerticalAlignment="Center" MinWidth="150" MaxWidth="220"
+                              AutomationProperties.Name="{x:Bind s:Strings.GameKeyName}" ItemsSource="{x:Bind ViewModel.GameKeyLabels, Mode=OneWay}"
+                              SelectedItem="{x:Bind ViewModel.SelectedGameKey, Mode=TwoWay}" />
+                </Grid>
+            </Border>
             <Border Style="{StaticResource SettingCard}">
                 <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.GameModeForGameToolTip}">
                     <Grid.ColumnDefinitions>

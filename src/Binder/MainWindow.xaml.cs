@@ -234,6 +234,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         foreach (var game in RemovedGames.Remember(removed, dropped)) CoverCache.Forget(game, customToo: true);
         foreach (var game in dropped) CoverCache.Forget(game, customToo: !game.HasUserData);
         App.State.SetRemovedGames(removed);
+        ForgetGameKeys(dropped); // their numbers are free again
         if (!changed) return; // nothing restored or added
         try { Storage.SaveRemovedGames(removed); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }

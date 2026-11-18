@@ -29,6 +29,9 @@ static partial class Tests
         public void InstallUpdate() => Calls.Add("install update");
         public void SkipUpdate() => Calls.Add("skip update");
         public void OpenRepository() => Calls.Add("repository");
+        public void SetGameKey(string gameId, int? number) => Calls.Add($"key {gameId} {number}");
+        public Game? LastPlayed;
+        public Game? LastPlayedGame() => LastPlayed;
     }
 
     static void SettingsViewModelTests()
@@ -280,6 +283,9 @@ static partial class Tests
         }
         public void ClearCover(Game game) => game.CustomCover = null;
         public Task<DetailScan?> ScanAsync(Game game) => Task.FromResult<DetailScan?>(null);
+        public List<Game> Games = [];
+        public IReadOnlyList<Game> Library => Games;
+        public void SetGameKey(string gameId, int? number) => Calls.Add($"key {gameId} {number}");
     }
 
     static void DetailViewModelTests()
@@ -767,6 +773,7 @@ static partial class Tests
         public bool CanOpenLauncher(GameSource source) => Installed.Contains(source);
         public void OpenLauncher(GameSource source) => Calls.Add("open " + source);
         public void StartUpdate() => Calls.Add("update");
+        public void SetGameKey(string gameId, int? number) => Calls.Add($"key {gameId} {number}");
     }
 
     /// <summary>The "…" button's update dot and first menu item (spec §25).</summary>

@@ -22,6 +22,7 @@ public sealed partial class SettingsView : UserControl
         // The parts that open from their card (board 19). They start closed.
         _ = new Disclosure(ModeChevron, ModeCard, ModeBody, Strings.DisclosureModes);
         _ = new Disclosure(StayReadyChevron, StayReadyCard, StayReadyBody, Strings.DisclosureStayReady);
+        _ = new Disclosure(GameKeysChevron, GameKeysCard, GameKeysBody, Strings.DisclosureGameKeys);
         _ = new Disclosure(SourcesChevron, SourcesCard, SourcesBody, Strings.DisclosureSources);
         _ = new Disclosure(ShortcutsChevron, ShortcutsCard, ShortcutsBody, Strings.DisclosureShortcuts);
         _ = new Disclosure(HiddenChevron, HiddenCard, HiddenBody, Strings.DisclosureHidden);
@@ -54,6 +55,7 @@ public sealed partial class SettingsView : UserControl
     private void OnViewModelChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == nameof(SettingsViewModel.HiddenGames)) FillHidden();
+        if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == nameof(SettingsViewModel.GameKeyRows)) FillGameKeys();
         // New data draws the launchers' entries again; a change to one updates them in place, so focus stays put.
         if (string.IsNullOrEmpty(e.PropertyName)) FillSourcePaths();
         else if (e.PropertyName == nameof(SettingsViewModel.SourceGroups)) UpdateSourcePaths();
@@ -89,6 +91,78 @@ public sealed partial class SettingsView : UserControl
             row.Children.Add(show);
             HiddenList.Children.Add(row);
         }
+    }
+
+    // ---- Game shortcuts (spec §26) -------------------------------------------------------------------------
+
+    private int _focusGameKey = -1; // the number whose list was just changed: its new list gets focus back
+
+    /// <summary>
+    /// One row per number: its key, then for 0 the last game played (fixed), for 1–9 a list of the shelf's games.
+    /// Drawn again when the numbers change (the page is filled again), keeping focus on the list that changed.
+    /// </summary>
+    private void FillGameKeys()
+    {
+        var rows = ViewModel?.GameKeyRows ?? [];
+        var names = ViewModel?.GameKeyGameNames ?? [];
+        GameKeysList.Children.Clear();
+        ComboBox? focus = null;
+        foreach (var row in rows)
+        {
+            if (GameKeysList.Children.Count > 0)
+                GameKeysList.Children.Add(new Border { Style = (Style)Application.Current.Resources["RowDivider"], Margin = new Thickness(0, 0, -16, 0) });
+            var grid = new Grid { Style = (Style)Application.Current.Resources["SettingRow"], MinHeight = 48, ColumnSpacing = 14 };
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            string number = row.Number.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var key = new Border { Style = (Style)Application.Current.Resources["KeyCap"], MinWidth = 22 };
+            key.Child = new TextBlock { Text = number, Style = (Style)Application.Current.Resources["KeyCapText"], HorizontalAlignment = HorizontalAlignment.Center };
+            AutomationProperties.SetAccessibilityView(key, Microsoft.UI.Xaml.Automation.Peers.AccessibilityView.Raw);
+            grid.Children.Add(key);
+            string label = ViewModel!.GameKeyLabel(row.Number);
+            if (row.Number == Library.GameKeys.LastPlayed)
+            {
+                var text = new StackPanel { Style = (Style)Application.Current.Resources["RowText"] };
+                text.Children.Add(new TextBlock { Text = Strings.GameKeyLastPlayed, Style = (Style)Application.Current.Resources["RowTitle"] });
+                text.Children.Add(new TextBlock
+                {
+                    Text = row.GameName ?? Strings.NoGamePlayedYet,
+                    Style = (Style)Application.Current.Resources["RowDetail"],
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                });
+                Grid.SetColumn(text, 1);
+                grid.Children.Add(text);
+                ToolTipService.SetToolTip(grid, label);
+                AutomationProperties.SetName(text, Strings.Format(Strings.GameKeyRowName, label, row.GameName ?? Strings.NoGamePlayedYet));
+            }
+            else
+            {
+                var box = new ComboBox
+                {
+                    ItemsSource = names,
+                    SelectedIndex = row.ChoiceIndex,
+                    MinWidth = 200,
+                    MaxWidth = 260,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
+                AutomationProperties.SetName(box, label);
+                ToolTipService.SetToolTip(box, label);
+                int n = row.Number;
+                box.SelectionChanged += (_, _) =>
+                {
+                    if (box.SelectedIndex < 0 || box.SelectedIndex == row.ChoiceIndex) return;
+                    _focusGameKey = n;
+                    ViewModel?.PickGameKey(n, box.SelectedIndex);
+                };
+                Grid.SetColumn(box, 2);
+                grid.Children.Add(box);
+                if (n == _focusGameKey) focus = box;
+            }
+            GameKeysList.Children.Add(grid);
+        }
+        _focusGameKey = -1;
+        focus?.Focus(FocusState.Programmatic);
     }
 
     // ---- Advanced: where games and pictures are found (spec §14) ----------------------------------------------

@@ -31,6 +31,9 @@ public sealed partial class MainWindow
             case SettingChange.Hotkey:
                 App.Current.ApplyHotkey();
                 break;
+            case SettingChange.GameKeys:
+                App.Current.ApplyGameKeys();
+                break;
             case SettingChange.TrayIcon:
                 App.Current.ApplyTrayIcon();
                 break;

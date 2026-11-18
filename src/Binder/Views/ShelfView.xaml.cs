@@ -454,7 +454,7 @@ public sealed partial class ShelfView : UserControl
                 case GameAction.Details: vm.OpenDetails(game); break;
                 default: vm.Act(game, action); break;
             }
-        });
+        }, number => vm.SetGameKey(game, number));
     }
 
     private static SelectorItem? FindContainer(DependencyObject? element)

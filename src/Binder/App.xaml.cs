@@ -135,6 +135,7 @@ public sealed partial class App : Application
         _messages.HotkeyPressed += TogglePanel;
         _messages.ShowTrayIcon(Settings.TrayIcon);
         ApplyHotkey();
+        InitGameKeys(); // a number after the shortcut plays a game (spec §26)
 
         HandleCommand(StartArgs, firstStart: true);
     }
@@ -361,6 +362,7 @@ public sealed partial class App : Application
     public void OpenPanel()
     {
         _reopenAfterClose = false;
+        CloseFlash(); // a game shortcut's wait gives way to the panel
         Footprint.Wake();
         if (_panel is null)
         {
@@ -489,6 +491,7 @@ public sealed partial class App : Application
     {
         var (modifiers, key) = HotkeyKeys(Settings.Hotkey);
         HotkeyFree = _messages?.RegisterHotkey(modifiers, key) ?? false;
+        ApplyGameKeys(); // they follow the shortcut (none while it's off)
         return HotkeyFree;
     }
 
@@ -584,6 +587,7 @@ public sealed partial class App : Application
     {
         _quitting = true;
         CancelCountdown();
+        CloseFlash();
         _panel?.Close();
         _gameModeToast?.Close();
         _restartToast?.Close();

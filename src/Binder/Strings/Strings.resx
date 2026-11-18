@@ -3341,4 +3341,116 @@ Calm: efficiency mode while you play</value>
     <value>Games Start doesn't find get a Start shortcut that plays them through Binder</value>
     <comment>Tooltip of the "Add my games to Start search" setting. "Start" = the Windows Start menu.</comment>
   </data>
+  <data name="GameKeys" xml:space="preserve">
+    <value>Game shortcuts</value>
+    <comment>Setting card title (Settings › Opening Binder) and screen-reader name of the shelf's row of numbers: the panel's keyboard shortcut, then a number, plays a game.</comment>
+  </data>
+  <data name="GameKeysToolTip" xml:space="preserve">
+    <value>Hold the shortcut's keys and press a number to play a game without opening Binder</value>
+    <comment>Tooltip of the Game shortcuts setting card. "Shortcut" = the panel's keyboard shortcut, e.g. Win+Shift+G.</comment>
+  </data>
+  <data name="DisclosureGameKeys" xml:space="preserve">
+    <value>game shortcuts</value>
+    <comment>{0} in DisclosureShow/DisclosureHide: the list of numbers on the Game shortcuts card.</comment>
+  </data>
+  <data name="GameKeyMenu" xml:space="preserve">
+    <value>Shortcut</value>
+    <comment>Game menu item (opens a submenu of numbers) and Game detail card title: the number that plays this game after the panel's keyboard shortcut. Noun.</comment>
+  </data>
+  <data name="GameKeyName" xml:space="preserve">
+    <value>Number for this game's shortcut</value>
+    <comment>Screen-reader name of the choice box on Game detail's Shortcut card.</comment>
+  </data>
+  <data name="GameKeyToolTip" xml:space="preserve">
+    <value>Hold the shortcut's keys and press this number to play the game</value>
+    <comment>Tooltip of Game detail's Shortcut card.</comment>
+  </data>
+  <data name="GameKeyChoice" xml:space="preserve">
+    <value>{0} · {1}</value>
+    <comment>A choice in the Shortcut list or menu. {0} = a number 1 to 9; {1} = the game that has it, GameKeyFree or GameKeyThisGame.</comment>
+  </data>
+  <data name="GameKeyFree" xml:space="preserve">
+    <value>Free</value>
+    <comment>In the Shortcut list and the shelf's row of numbers: no game has this number. Adjective.</comment>
+  </data>
+  <data name="GameKeyThisGame" xml:space="preserve">
+    <value>This game</value>
+    <comment>In the Shortcut list: the game whose menu or page this is has this number.</comment>
+  </data>
+  <data name="GameKeyCombo" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>A game shortcut as it's pressed. {0} = the panel's keyboard shortcut, e.g. Win+Shift+G; {1} = a number 0 to 9.</comment>
+  </data>
+  <data name="GameKeyGiven" xml:space="preserve">
+    <value>{0} is on {1}</value>
+    <comment>Toast title after giving a game a number. {0} = game name; {1} = the number 1 to 9.</comment>
+  </data>
+  <data name="GameKeyTaken" xml:space="preserve">
+    <value>{0} has none now</value>
+    <comment>Toast detail when the number was taken from another game. {0} = that game's name.</comment>
+  </data>
+  <data name="GameKeyLastPlayed" xml:space="preserve">
+    <value>Last played</value>
+    <comment>Row of the number 0 on the Game shortcuts card and the shelf's row of numbers: 0 always plays the last game played.</comment>
+  </data>
+  <data name="GameKeyRowName" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>Screen-reader name of a number. {0} = the game shortcut, e.g. Win+Shift+G, 3; {1} = the game on it, Free or Last played.</comment>
+  </data>
+  <data name="GameKeyZeroToolTip" xml:space="preserve">
+    <value>Always the last game played</value>
+    <comment>Tooltip of the number 0 in the shelf's row of numbers: no game can be put there.</comment>
+  </data>
+  <data name="GameKeyZeroHint" xml:space="preserve">
+    <value>0 is always the last game played</value>
+    <comment>Second part of the line above the shelf's row of numbers while a cover is dragged, after a middle dot.</comment>
+  </data>
+  <data name="GameKeyDropHint" xml:space="preserve">
+    <value>Drop {0} on a number</value>
+    <comment>Line above the shelf's row of numbers while a cover is dragged. {0} = game name.</comment>
+  </data>
+  <data name="GameKeyPut" xml:space="preserve">
+    <value>Put {0} on {1}</value>
+    <comment>Line above the row of numbers, and the drag caption, while a cover is over a number. {0} = game name; {1} = the number.</comment>
+  </data>
+  <data name="GameKeyReplaces" xml:space="preserve">
+    <value>replaces {0}</value>
+    <comment>After GameKeyPut and a middle dot: the number has another game, which loses it. {0} = that game's name. Starts lowercase.</comment>
+  </data>
+  <data name="GameKeyAlreadyThere" xml:space="preserve">
+    <value>already there</value>
+    <comment>After GameKeyPut and a middle dot: the dragged game already has this number. Starts lowercase.</comment>
+  </data>
+  <data name="Starting" xml:space="preserve">
+    <value>Starting</value>
+    <comment>Game shortcut's flash, bold, before "Esc to cancel": the game will start in a moment.</comment>
+  </data>
+  <data name="EscToCancel" xml:space="preserve">
+    <value>Esc to cancel</value>
+    <comment>Game shortcut's flash, after "Starting" and a middle dot. Esc = the Escape key as printed on keyboards.</comment>
+  </data>
+  <data name="GameKeyStartingName" xml:space="preserve">
+    <value>Starting {0}. Press Esc to cancel.</value>
+    <comment>Screen-reader announcement of the game shortcut's flash. {0} = game name.</comment>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+    <comment>Game shortcut's flash after Esc, bold: the game wasn't started.</comment>
+  </data>
+  <data name="GameDidntStart" xml:space="preserve">
+    <value>{0} didn't start</value>
+    <comment>Game shortcut's flash after Esc, after "Cancelled" and a middle dot. {0} = game name.</comment>
+  </data>
+  <data name="NoGamePlayedYet" xml:space="preserve">
+    <value>No game played yet</value>
+    <comment>Pill after the shortcut and 0 when no game was played yet; also the number 0's row on the Game shortcuts card.</comment>
+  </data>
+  <data name="NothingOnNumber" xml:space="preserve">
+    <value>Nothing on {0}</value>
+    <comment>Pill after the shortcut and a number no game has. {0} = the number 1 to 9.</comment>
+  </data>
+  <data name="NothingOnNumberDetail" xml:space="preserve">
+    <value>right-click a game in Binder</value>
+    <comment>After NothingOnNumber and a middle dot: how to give a game a number. Starts lowercase.</comment>
+  </data>
 </root>

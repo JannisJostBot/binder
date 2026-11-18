@@ -2507,4 +2507,88 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   <data name="StartMenuGamesToolTip" xml:space="preserve">
     <value>Spiele, die Start nicht findet, erhalten eine Startverknüpfung, die sie über Binder startet</value>
   </data>
+  <data name="GameKeys" xml:space="preserve">
+    <value>Tastenkombinationen für Spiele</value>
+  </data>
+  <data name="GameKeysToolTip" xml:space="preserve">
+    <value>Halten Sie die Tasten der Tastenkombination gedrückt und drücken Sie eine Zahl, um ein Spiel zu starten, ohne Binder zu öffnen</value>
+  </data>
+  <data name="DisclosureGameKeys" xml:space="preserve">
+    <value>Tastenkombinationen für Spiele</value>
+  </data>
+  <data name="GameKeyMenu" xml:space="preserve">
+    <value>Tastenkombination</value>
+  </data>
+  <data name="GameKeyName" xml:space="preserve">
+    <value>Zahl für die Tastenkombination dieses Spiels</value>
+  </data>
+  <data name="GameKeyToolTip" xml:space="preserve">
+    <value>Halten Sie die Tasten der Tastenkombination gedrückt und drücken Sie diese Zahl, um das Spiel zu starten</value>
+  </data>
+  <data name="GameKeyChoice" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="GameKeyFree" xml:space="preserve">
+    <value>Frei</value>
+  </data>
+  <data name="GameKeyThisGame" xml:space="preserve">
+    <value>Dieses Spiel</value>
+  </data>
+  <data name="GameKeyCombo" xml:space="preserve">
+    <value>{0}, {1}</value>
+  </data>
+  <data name="GameKeyGiven" xml:space="preserve">
+    <value>{0} liegt auf {1}</value>
+  </data>
+  <data name="GameKeyTaken" xml:space="preserve">
+    <value>{0} hat jetzt keine</value>
+  </data>
+  <data name="GameKeyLastPlayed" xml:space="preserve">
+    <value>Zuletzt gespielt</value>
+  </data>
+  <data name="GameKeyRowName" xml:space="preserve">
+    <value>{0}, {1}</value>
+  </data>
+  <data name="GameKeyZeroToolTip" xml:space="preserve">
+    <value>Immer das zuletzt gespielte Spiel</value>
+  </data>
+  <data name="GameKeyZeroHint" xml:space="preserve">
+    <value>0 ist immer das zuletzt gespielte Spiel</value>
+  </data>
+  <data name="GameKeyDropHint" xml:space="preserve">
+    <value>{0} auf eine Zahl ziehen</value>
+  </data>
+  <data name="GameKeyPut" xml:space="preserve">
+    <value>{0} auf {1} legen</value>
+  </data>
+  <data name="GameKeyReplaces" xml:space="preserve">
+    <value>ersetzt {0}</value>
+  </data>
+  <data name="GameKeyAlreadyThere" xml:space="preserve">
+    <value>schon dort</value>
+  </data>
+  <data name="Starting" xml:space="preserve">
+    <value>Wird gestartet</value>
+  </data>
+  <data name="EscToCancel" xml:space="preserve">
+    <value>Esc zum Abbrechen</value>
+  </data>
+  <data name="GameKeyStartingName" xml:space="preserve">
+    <value>{0} wird gestartet. Drücken Sie Esc zum Abbrechen.</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Abgebrochen</value>
+  </data>
+  <data name="GameDidntStart" xml:space="preserve">
+    <value>{0} wurde nicht gestartet</value>
+  </data>
+  <data name="NoGamePlayedYet" xml:space="preserve">
+    <value>Noch kein Spiel gespielt</value>
+  </data>
+  <data name="NothingOnNumber" xml:space="preserve">
+    <value>Nichts auf {0}</value>
+  </data>
+  <data name="NothingOnNumberDetail" xml:space="preserve">
+    <value>Spiel in Binder mit der rechten Maustaste anklicken</value>
+  </data>
 </root>

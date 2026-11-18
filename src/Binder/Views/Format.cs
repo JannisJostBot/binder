@@ -148,4 +148,11 @@ public static class Format
         Models.Hotkey.CtrlAltG => "Ctrl+Alt+G",
         _ => Strings.Off,
     };
+
+    /// <summary>The shortcut's letter, on the game shortcut flash's key: "G".</summary>
+    public static string HotkeyLetter(Models.Hotkey hotkey) => hotkey == Models.Hotkey.WinShiftJ ? "J" : "G";
+
+    /// <summary>A game shortcut as it's pressed: "Win+Shift+G, 3" (spec §26).</summary>
+    public static string GameKeyLabel(Models.Hotkey hotkey, int number) =>
+        Strings.Format(Strings.GameKeyCombo, HotkeyLabel(hotkey), number);
 }
