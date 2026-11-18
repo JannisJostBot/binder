@@ -231,30 +231,45 @@
     <div class="wrap">
       <div class="features">
         <article class="feature">
-          <div class="feature-picture drive" aria-hidden="true">
-            <p class="drive-head"><span>Local Disk (C:)</span><span>Needed: 60 GB</span></p>
-            <p class="drive-bar"><span class="used"></span><span class="pick"></span><span class="pick2"></span><span class="rest"></span></p>
-            <p class="drive-row"><span>Dune Runners · last played in March</span><span>42 GB</span></p>
-            <p class="drive-row"><span>Iron Courier · not played yet</span><span>27 GB</span></p>
+          <!-- Each picture is a slice of the story's desktop with Binder showing that feature. -->
+          <div class="feature-picture scene" aria-hidden="true">
+            <div class="pc-window pc-space">
+              <p class="pc-title"><svg width="14" height="14" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg><span>Free up space</span></p>
+              <p class="pc-need"><span>Space needed</span><b>60 GB</b></p>
+              <p class="pc-drive"><span>Local Disk (C:)</span><span>48 of 60 GB found</span></p>
+              <p class="pc-bar"><i class="used"></i><i class="pick"></i><i class="pick2"></i></p>
+              <p class="pc-row"><i class="pc-thumb g9"></i><span>Dune Runners<small>Last played in March</small></span><b>42 GB</b></p>
+              <p class="pc-row"><i class="pc-thumb g7"></i><span>Iron Courier<small>Not played yet</small></span><b>27 GB</b></p>
+            </div>
+            <p class="scene-taskbar"><span class="scene-tray"><svg width="14" height="14" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span><span class="scene-clock">21:14</span></p>
           </div>
           <h2 class="h3">Make room for a new game</h2>
           <p>Enter the size of the game you want to install. Binder suggests what you could remove on each drive, the games you play least first. Each one is uninstalled by its own launcher; Binder never deletes game files itself.</p>
         </article>
         <article class="feature">
-          <div class="feature-picture" aria-hidden="true">
-            <div class="crash-card">
-              <strong><svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#C42B1C"></circle><path d="M12 7v6.5M12 16.5v.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"></path></svg>Neon Circuit crashed</strong>
-              <span>Likely cause: the graphics driver stopped responding.</span>
-              <span>Try updating the driver, then lower the graphics preset.</span>
+          <div class="feature-picture scene" aria-hidden="true">
+            <div class="pc-window pc-crash">
+              <i class="pc-thumb g4"></i>
+              <div>
+                <p class="pc-crash-title"><svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#E5484D"></circle><path d="M12 7v6.5M12 16.5v.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"></path></svg>Neon Circuit crashed</p>
+                <p>Likely cause: the graphics driver stopped responding.</p>
+                <p class="pc-try">Try updating the driver, then lower the graphics preset.</p>
+              </div>
             </div>
+            <p class="scene-taskbar"><span class="scene-tray"><svg width="14" height="14" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span><span class="scene-clock">21:14</span></p>
           </div>
           <h2 class="h3">See why a game crashed</h2>
           <p>If a game crashes, Binder shows what Windows recorded about it, with a likely cause and things to try. It's a best guess from Windows' event log, not a guaranteed diagnosis.</p>
         </article>
         <article class="feature">
-          <div class="feature-picture week" aria-hidden="true">
-            <p class="week-bars"><span style="--h: 30%"></span><span style="--h: 55%"></span><span style="--h: 10%"></span><span style="--h: 70%"></span><span style="--h: 40%"></span><span class="now" style="--h: 100%"></span><span style="--h: 4%"></span></p>
-            <p class="week-days"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span class="now">S</span><span>S</span></p>
+          <div class="feature-picture scene" aria-hidden="true">
+            <div class="pc-window pc-week">
+              <p class="pc-week-head"><span>This week</span><b>9 h 40 min</b></p>
+              <p class="pc-week-bars"><i style="--h: 30%"></i><i style="--h: 55%"></i><i style="--h: 12%"></i><i style="--h: 70%"></i><i style="--h: 40%"></i><i class="now" style="--h: 100%"></i><i style="--h: 4%"></i></p>
+              <p class="pc-week-days"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span class="now">S</span><span>S</span></p>
+              <p class="pc-week-top"><i class="pc-thumb g1"></i><span>Most played: Starfall Drift</span></p>
+            </div>
+            <p class="scene-taskbar"><span class="scene-tray"><svg width="14" height="14" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span><span class="scene-clock">21:14</span></p>
           </div>
           <h2 class="h3">See your playtime</h2>
           <p>See how long you've played each game, by week and month. Binder counts the sessions you start from Binder.</p>
