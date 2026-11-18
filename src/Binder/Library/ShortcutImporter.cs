@@ -168,11 +168,45 @@ public static class ShortcutImporter
         if (shortcut.TargetPath is { } target)
         {
             game.IconPath = target.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? target : null;
-            // Watch the target's folder; if that's a shared folder (e.g. System32), watch the program by name.
+            // A shortcut that starts the game through a launcher or a Windows program (explorer.exe shell:…) has
+            // nothing of its own to watch: the launcher keeps running after the game. "Process to watch" says what.
+            if (IsLauncher(target) || IsWindowsProgram(target)) return game;
+            // Watch the target's folder; if that's a shared folder, watch the program by name.
             game.InstallDir = InstallFolder.Validate(Path.GetDirectoryName(target));
             if (game.InstallDir is null) game.ProcessName = Path.GetFileName(target);
         }
         return game;
+    }
+
+    /// <summary>
+    /// Game launchers that shortcuts start games through (Riot Client's "--launch-product", GOG Galaxy's
+    /// "/command=runGame", Battle.net, "steam.exe -applaunch", …). They stay running after the game, so their folder
+    /// can't tell when it closed.
+    /// </summary>
+    private static readonly HashSet<string> LauncherExes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "RiotClientServices.exe", "Riot Client.exe", "GalaxyClient.exe", "Battle.net.exe", "Battle.net Launcher.exe",
+        "steam.exe", "EpicGamesLauncher.exe", "EADesktop.exe", "Origin.exe", "upc.exe", "UbisoftConnect.exe", "Uplay.exe",
+        "Amazon Games.exe", "Amazon Games UI.exe", "itch.exe", "Playnite.DesktopApp.exe", "Playnite.FullscreenApp.exe",
+        "hytale-launcher.exe",
+    };
+
+    /// <summary>True when <paramref name="exe"/> is a game launcher (by file name; Rockstar's generic Launcher.exe by its folder).</summary>
+    public static bool IsLauncher(string? exe)
+    {
+        if (string.IsNullOrEmpty(exe)) return false;
+        var name = Path.GetFileName(exe);
+        if (LauncherExes.Contains(name)) return true;
+        return name.Equals("Launcher.exe", StringComparison.OrdinalIgnoreCase) &&
+               Path.GetDirectoryName(exe) is { } dir && dir.EndsWith(@"Rockstar Games\Launcher", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>A program inside the Windows folder (explorer.exe, cmd.exe, rundll32.exe, …).</summary>
+    public static bool IsWindowsProgram(string? exe)
+    {
+        var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        return !string.IsNullOrEmpty(exe) && !string.IsNullOrEmpty(windows) && Path.IsPathFullyQualified(exe) &&
+               InstallFolder.IsSameOrInside(exe, Path.TrimEndingDirectorySeparator(windows));
     }
 
     /// <summary>A game for an .exe the user picked.</summary>
@@ -193,17 +227,18 @@ public static class ShortcutImporter
 
     /// <summary>
     /// Settings → "Restore shortcuts to desktop" and uninstall: puts every imported shortcut back, removes the
-    /// games made from the restored ones from <paramref name="games"/>, and saves the list of the ones left.
-    /// The caller saves the library. Returns how many went back and how many couldn't.
+    /// games made from the restored ones from <paramref name="games"/> (into <paramref name="removedGames"/>, so the
+    /// caller can keep their settings for a later import), and saves the list of the ones left. The caller saves the
+    /// library. Returns how many went back and how many couldn't.
     /// </summary>
-    public static (int Restored, int Failed) RestoreAll(List<Game> games)
+    public static (int Restored, int Failed) RestoreAll(List<Game> games, List<Game>? removedGames = null)
     {
         var records = Storage.LoadImportedShortcuts();
         records.AddRange(Unrecorded(records, games));
         if (records.Count == 0) return (0, 0);
         var failed = Restore(records);
         var restored = records.Except(failed).Select(r => r.StoredPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        games.RemoveAll(g => g.Source == GameSource.Shortcut && g.ExePath is { } path && restored.Contains(path));
+        RemoveGamesOf(restored, games, removedGames);
         try { Storage.SaveImportedShortcuts(failed); }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         ShellNotify.DesktopsChanged();
@@ -212,9 +247,11 @@ public static class ShortcutImporter
 
     /// <summary>
     /// The import toast's Undo (spec §22 d): puts back only the shortcuts of that import (by their stored paths),
-    /// removes the games made from them and keeps the records of the rest. The caller saves the library.
+    /// removes the games made from them (into <paramref name="removedGames"/>) and keeps the records of the rest. The
+    /// caller saves the library.
     /// </summary>
-    public static (int Restored, int Failed) RestoreBatch(IReadOnlyCollection<string> storedPaths, List<Game> games)
+    public static (int Restored, int Failed) RestoreBatch(IReadOnlyCollection<string> storedPaths, List<Game> games,
+        List<Game>? removedGames = null)
     {
         var batch = storedPaths.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var records = Storage.LoadImportedShortcuts();
@@ -222,12 +259,20 @@ public static class ShortcutImporter
         if (mine.Count == 0) return (0, 0);
         var failed = Restore(mine);
         var restored = mine.Except(failed).Select(r => r.StoredPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        games.RemoveAll(g => g.Source == GameSource.Shortcut && g.ExePath is { } path && restored.Contains(path));
+        RemoveGamesOf(restored, games, removedGames);
         records.RemoveAll(r => restored.Contains(r.StoredPath));
         try { Storage.SaveImportedShortcuts(records); }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         ShellNotify.DesktopsChanged();
         return (restored.Count, failed.Count);
+    }
+
+    /// <summary>The shortcut games launching one of these stored files leave <paramref name="games"/> (into <paramref name="removed"/>).</summary>
+    private static void RemoveGamesOf(HashSet<string> storedPaths, List<Game> games, List<Game>? removed)
+    {
+        bool Of(Game g) => g.Source == GameSource.Shortcut && g.ExePath is { } path && storedPaths.Contains(path);
+        removed?.AddRange(games.Where(Of));
+        games.RemoveAll(Of);
     }
 
     /// <summary>
@@ -244,9 +289,11 @@ public static class ShortcutImporter
                 // The paths come from imported-shortcuts.json: only a shortcut in our own folder is moved, and only
                 // back onto a desktop (the one it came from if that's still a desktop, else the user's).
                 if (StoredShortcut(record.StoredPath) is not { } stored) continue;
-                if (record.Copied && File.Exists(record.OriginalPath))
+                if (record.Copied)
                 {
-                    File.Delete(stored); // only a copy of ours; the original never left
+                    // Only a copy of ours; the original never left. One deleted since stays deleted: the user
+                    // removed it, so the copy doesn't put it back.
+                    File.Delete(stored);
                     continue;
                 }
                 var original = RestoreTarget(record.OriginalPath, Path.GetFileName(stored));

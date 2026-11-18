@@ -175,8 +175,11 @@ public sealed partial class App : Application
 
         if (notice is null && restored is not null)
         {
-            // Game mode was put back: with "Come back" off (first start) only the toast shows, then we exit.
-            ShowRestored(restored, exitWhenClosed: firstStart);
+            // Game mode was put back: with "Come back" off (first start) only the toast shows, then we exit. With it
+            // on, the watcher's "--returned" was started first but this start can still win the race to become the
+            // instance: then it's forwarded here next, so stay.
+            _startedForRestore = firstStart && Settings.ComeBackOnClose;
+            ShowRestored(restored, exitWhenClosed: firstStart && !Settings.ComeBackOnClose);
             return;
         }
         // "--crashed": the watcher brought us back only for a possible restart ("Come back" off, spec §17).
@@ -196,13 +199,20 @@ public sealed partial class App : Application
         {
             // A game ended (the watcher brought us back): pick up the session it wrote.
             State.Sessions = Storage.LoadSessions();
-            if (firstStart) State.ClosedDuringGame = notice.GameId;
+            bool cameBack = firstStart || _startedForRestore; // Binder wasn't running while the game was
+            _startedForRestore = false;
+            if (cameBack) State.ClosedDuringGame = notice.GameId;
             if (!_crashedOnly) // else only the restart pill (or the crash card), after the check
             {
+                // A panel that was up shows the new session (and on the desktop, one opened now does that itself).
+                bool shown = _panel is not null;
                 if (Settings.DisplayMode == DisplayMode.Desktop) OpenPanel();
-                else _panel?.Returned(notice.GameId);
+                if (shown) _panel?.Returned(notice.GameId);
             }
-            if (firstStart && _panel is null) Footprint.Shrink();
+            // The game ended before its countdown did: stay, also while the flyout is closed (the game took the
+            // foreground), so the crash check and Welcome back aren't cut off.
+            if (CountdownRunning && CountdownGameId == notice.GameId) CancelCountdown();
+            if (cameBack && _panel is null) Footprint.Shrink();
             _ = CheckCrashesAsync(returnedGame: notice.GameId);
             return;
         }
@@ -225,6 +235,9 @@ public sealed partial class App : Application
     }
 
     private Views.GameModeToast? _gameModeToast;
+
+    /// <summary>This process started for Game mode's result while "Come back" is on: the "--returned" follows.</summary>
+    private bool _startedForRestore;
 
     /// <summary>The debug panel's slow motion for the toast; only Debug builds have a body for it (App.Dev.cs).</summary>
     partial void DevToastSpeed(ref float slow);
@@ -290,29 +303,47 @@ public sealed partial class App : Application
     /// </summary>
     private async Task CheckCrashesAsync(string? returnedGame)
     {
-        var known = State.Crashes;
-        var sessions = State.Sessions;
-        var games = State.Games;
-        _checkingCrashes = true;
+        // One check at a time, in order: two games ending close together must not check from the same list and
+        // overwrite each other's results.
+        var previous = _crashCheck;
+        var done = new TaskCompletionSource();
+        _crashCheck = done.Task;
+        _crashChecks++;
         try
         {
-            State.Crashes = await Task.Run(() => CrashStore.Update(known, sessions, games));
+            await previous;
+            await CheckCrashesNowAsync(returnedGame);
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ExternalException)
+        catch (Exception e)
         {
+            // A background check: whatever went wrong, it's logged and the app carries on (and can still exit).
             ErrorLog.Write(e, "crash check");
-            _checkingCrashes = false;
-            if (_crashedOnly) QuitIfIdle();
-            return;
         }
-        _checkingCrashes = false;
+        finally
+        {
+            _crashChecks--;
+            done.SetResult();
+        }
+        if (_crashedOnly) QuitIfIdle(); // nothing to restart or show: gone again, as with "Come back" off
+    }
+
+    private Task _crashCheck = Task.CompletedTask;
+    /// <summary>Crash checks running or waiting their turn.</summary>
+    private int _crashChecks;
+
+    private async Task CheckCrashesNowAsync(string? returnedGame)
+    {
+        // Copies: the library and the records change on the UI thread while the check reads them.
+        var known = State.Crashes.ToList();
+        var sessions = State.Sessions;
+        var games = State.Games.ToList();
+        State.Crashes = await Task.Run(() => CrashStore.Update(known, sessions, games));
         if (_quitting) return;
         var last = returnedGame is null ? null : State.Sessions.Where(s => s.GameId == returnedGame).MaxBy(s => s.Start);
         if (last is not null && TryRestart(CrashStore.For(State.Crashes, last), returnedGame)) return;
         var unseen = CrashStore.Unseen(State.Crashes, State.Sessions);
         if (unseen is not null && unseen.GameId == returnedGame) OpenPanel();
         _panel?.CrashesChecked(unseen);
-        if (_crashedOnly) QuitIfIdle(); // nothing to restart or show: gone again, as with "Come back" off
     }
 
     /// <summary>
@@ -614,20 +645,26 @@ public sealed partial class App : Application
         CountdownRemaining = seconds;
         CountdownTotal = seconds;
         CountdownTitle = title;
-        _countdown = _dispatcher.CreateTimer();
-        _countdown.Interval = TimeSpan.FromSeconds(1);
-        _countdown.Tick += (_, _) =>
+        var timer = _countdown = _dispatcher.CreateTimer();
+        timer.Interval = TimeSpan.FromSeconds(1);
+        timer.Tick += (_, _) =>
         {
-            if (--CountdownRemaining <= 0)
+            if (--CountdownRemaining > 0)
             {
-                CancelCountdown();
-                // Exit completely: during the game only the watcher remains.
-                Quit();
+                CountdownTick?.Invoke(CountdownRemaining);
                 return;
             }
-            CountdownTick?.Invoke(CountdownRemaining);
+            timer.Stop();
+            // Exit completely: during the game only the watcher remains. Commands forwarded just now run first
+            // (they're queued ahead): the watcher's "--returned" for a game that closed at once cancels this.
+            _dispatcher.TryEnqueue(DispatcherQueuePriority.Low, () =>
+            {
+                if (!ReferenceEquals(_countdown, timer)) return; // cancelled meanwhile
+                CancelCountdown();
+                Quit();
+            });
         };
-        _countdown.Start();
+        timer.Start();
     }
 
     public void CancelCountdown()

@@ -91,7 +91,9 @@ public sealed partial class MainWindow
         var paths = result.StoredPaths;
         ShowToast(title, detail, Strings.Undo, () =>
         {
-            var (restored, stillHere) = ShortcutImporter.RestoreBatch(paths, _games);
+            var left = new List<Game>();
+            var (restored, stillHere) = ShortcutImporter.RestoreBatch(paths, _games, left);
+            ForgetGames(left, new List<Game>(App.State.RemovedGames)); // their settings come back with a new import
             SaveLibrary();
             RefreshViews();
             ShowToast(stillHere == 0 ? Strings.RestoredShortcuts : Strings.RestoreShortcutsFailed,
@@ -165,7 +167,9 @@ public sealed partial class MainWindow
     /// <summary>Puts every imported shortcut back on the desktop and removes the games made from them.</summary>
     private void RestoreShortcuts()
     {
-        var (restored, failed) = ShortcutImporter.RestoreAll(_games);
+        var left = new List<Game>();
+        var (restored, failed) = ShortcutImporter.RestoreAll(_games, left);
+        ForgetGames(left, new List<Game>(App.State.RemovedGames)); // their settings come back with a new import
         SaveLibrary();
         RefreshViews();
         ShowToast(failed == 0 ? Strings.RestoredShortcuts : Strings.RestoreShortcutsFailed,

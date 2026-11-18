@@ -62,16 +62,17 @@ public static class LibraryScanner
             scanned.AddRange(ScanOne(source));
             scannedSources.Add(source);
         }
-        return Merge(stored, scanned, scannedSources, removed, DateTimeOffset.Now, GameFiles.IsGone);
+        return Merge(stored, scanned, scannedSources, removed, DateTimeOffset.Now, GameFiles.IsGone, GameFiles.IsOffline);
     }
 
     /// <summary>
     /// The merge, without the scan (unit-tested). A scanned store's games are what it found now; its stored games
-    /// it didn't find are dropped. Manual adds and shortcuts stay unless their program is gone; games of stores
-    /// turned off stay as they are.
+    /// it didn't find are dropped, unless their drive isn't there (<paramref name="isOffline"/>: an unplugged drive
+    /// or an offline share never removes anything). Manual adds and shortcuts stay unless their program is gone;
+    /// games of stores turned off stay as they are.
     /// </summary>
     public static RescanResult Merge(List<Game> stored, List<Game> scanned, HashSet<GameSource> scannedSources,
-        List<Game> removed, DateTimeOffset now, Func<Game, bool> isGone)
+        List<Game> removed, DateTimeOffset now, Func<Game, bool> isGone, Func<Game, bool>? isOffline = null)
     {
         var byId = new Dictionary<string, Game>(stored.Count);
         foreach (var game in stored) byId.TryAdd(game.Id, game);
@@ -91,7 +92,9 @@ public static class LibraryScanner
         {
             if (scannedSources.Contains(game.Source))
             {
-                if (!found.Contains(game.Id)) dropped.Add(game);
+                if (found.Contains(game.Id)) continue;
+                if (isOffline?.Invoke(game) == true) scanned.Add(game); // its drive isn't there: kept as it was
+                else dropped.Add(game);
             }
             else if ((game.Source is GameSource.Manual or GameSource.Shortcut) && isGone(game))
                 dropped.Add(game);
@@ -102,6 +105,27 @@ public static class LibraryScanner
 
         scanned.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.CurrentCultureIgnoreCase));
         return new RescanResult(scanned, dropped);
+    }
+
+    /// <summary>
+    /// The same for the kept settings of removed games: the scan updated its own copy of the list
+    /// (<paramref name="scanned"/>, made from <paramref name="before"/>), while the panel may have changed the list
+    /// meanwhile (<paramref name="current"/>: a game added back took its entry, a game found gone added one). Those
+    /// changes are applied to the scan's list too. Entries are compared by reference (each change makes a new list
+    /// with the same entries). Unit-tested.
+    /// </summary>
+    public static void ReconcileRemoved(List<Game> scanned, IReadOnlyList<Game> before, IReadOnlyList<Game> current)
+    {
+        if (ReferenceEquals(before, current)) return;
+        var was = new HashSet<Game>(before, ReferenceEqualityComparer.Instance);
+        var now = new HashSet<Game>(current, ReferenceEqualityComparer.Instance);
+        scanned.RemoveAll(g => was.Contains(g) && !now.Contains(g)); // taken back meanwhile
+        foreach (var g in current)
+        {
+            if (was.Contains(g)) continue;
+            scanned.RemoveAll(r => r.Id == g.Id); // kept meanwhile: the newer entry wins
+            scanned.Add(g);
+        }
     }
 
     /// <summary>

@@ -233,6 +233,24 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   UAC prompt through the same `GameModeService.AllowAsync` as Settings › Game mode › Allow…). It opens on **Off**:
   Game mode stays opt-in. A line says it can be changed later in Settings › Game mode.
 
+**2026-11-18** (fixes from a review of the whole launch → hide → return path)
+- **One watcher per game** (`Local\Binder.Watcher.<hash>`): a second Play of a game that's starting or running
+  (Keep open, its Start entry) starts no second watcher, so its playtime isn't saved twice. Released once the
+  session is saved, so a crash restart gets its own while Game mode is still put back.
+- A session starts when the game's process did (not when detection or Game mode's changes finished), never before
+  the watcher. A game already up is held before Game mode applies, so a quick crash is still seen.
+- Shutdown: the second save waits for the first to finish writing; a shutdown that's cancelled carries on as after any
+  game (Game mode put back, the widget back). Modern Standby sleep is registered for
+  (`RegisterSuspendResumeNotification`). The last part of a session is kept however short; parts after a sleep carry
+  `Resumed` (never "closed right after starting", may be restarted).
+- A rescan keeps store games whose drive isn't there (unplugged, BitLocker-locked, offline share), as decided on
+  2026-11-12. Steam games stay while Steam updates them (bit 4 cleared, installed depots kept).
+- Shortcuts that start a launcher (Riot Client, GOG Galaxy, Battle.net, `steam.exe -applaunch`, …) or a Windows
+  program (`explorer.exe shell:…`) watch nothing: the game stays open with the "Process to watch" toast instead of
+  "running" as long as the launcher. Restore to desktop and Undo keep the games' settings for a later import; a copied
+  shortcut whose original was deleted doesn't come back.
+- A data file another program holds at start is read from its `.bak` and never saved over in that run.
+
 ---
 
 ## 1. App icon (board 1)

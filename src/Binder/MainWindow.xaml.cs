@@ -178,7 +178,8 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         var stored = _games.ToList();
         var before = stored.Select(g => g.Id).ToHashSet();
         var settings = App.Settings;
-        var removed = new List<Game>(App.State.RemovedGames); // the scan's own copy
+        var removedBefore = App.State.RemovedGames;
+        var removed = new List<Game>(removedBefore); // the scan's own copy
         LibraryScanner.RescanResult result;
         try
         {
@@ -193,6 +194,8 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
             App.State.Scanning = false; // also after an unexpected error: Refresh must keep working
             if (!IsClosing) RefreshSettingsPage();
         }
+        // Kept settings changed while the scan ran (a game added back, one found gone on Play) aren't lost.
+        LibraryScanner.ReconcileRemoved(removed, removedBefore, App.State.RemovedGames);
         ForgetGames(result.Dropped, removed);
 
         // Bring the result up to date with what changed while the scan ran: settings (a favorite set meanwhile isn't
@@ -230,7 +233,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     /// </summary>
     private static void ForgetGames(List<Game> dropped, List<Game> removed)
     {
-        bool changed = removed.Count != App.State.RemovedGames.Count || dropped.Count > 0;
+        bool changed = dropped.Count > 0 || !removed.SequenceEqual(App.State.RemovedGames, ReferenceEqualityComparer.Instance);
         foreach (var game in RemovedGames.Remember(removed, dropped)) CoverCache.Forget(game, customToo: true);
         foreach (var game in dropped) CoverCache.Forget(game, customToo: !game.HasUserData);
         App.State.SetRemovedGames(removed);

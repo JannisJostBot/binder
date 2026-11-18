@@ -13,4 +13,6 @@ public sealed class Session
     public string? Exe { get; set; }
     /// <summary>An engine crash reporter was still running after the game exited.</summary>
     public bool CrashReporter { get; set; }
+    /// <summary>A part of a game session after the PC slept (it didn't start with the game).</summary>
+    public bool Resumed { get; set; }
 }

@@ -7,7 +7,7 @@ namespace Binder.Services;
 /// "Stay ready" at the lowest footprint (spec §5): after the panel closes, compact once, give the memory back
 /// to Windows, and run in efficiency mode until it opens again.
 /// </summary>
-internal static class Footprint
+internal static partial class Footprint
 {
     /// <summary>Call after the window and its views are gone.</summary>
     public static void Shrink()
@@ -77,7 +77,7 @@ internal static class Footprint
         SetProcessInformation(process, ProcessPowerThrottling, ref throttling, Marshal.SizeOf<PROCESS_POWER_THROTTLING_STATE>());
 
         var priority = new MEMORY_PRIORITY_INFORMATION { MemoryPriority = on ? MEMORY_PRIORITY_VERY_LOW : MEMORY_PRIORITY_NORMAL };
-        SetProcessInformation(process, ProcessMemoryPriority, ref priority, Marshal.SizeOf<MEMORY_PRIORITY_INFORMATION>());
+        SetMemoryPriority(process, ProcessMemoryPriority, ref priority, Marshal.SizeOf<MEMORY_PRIORITY_INFORMATION>());
     }
 
     private const int ProcessMemoryPriority = 0, ProcessPowerThrottling = 4;
@@ -90,18 +90,18 @@ internal static class Footprint
     [StructLayout(LayoutKind.Sequential)]
     private struct MEMORY_PRIORITY_INFORMATION { public uint MemoryPriority; }
 
-    [DllImport("kernel32.dll")]
-    private static extern IntPtr GetCurrentProcess();
+    [LibraryImport("kernel32.dll")]
+    private static partial IntPtr GetCurrentProcess();
 
-    [DllImport("kernel32.dll")]
+    [LibraryImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool SetProcessWorkingSetSizeEx(IntPtr process, nint minimum, nint maximum, uint flags);
+    private static partial bool SetProcessWorkingSetSizeEx(IntPtr process, nint minimum, nint maximum, uint flags);
 
-    [DllImport("kernel32.dll")]
+    [LibraryImport("kernel32.dll", EntryPoint = "SetProcessInformation")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool SetProcessInformation(IntPtr process, int infoClass, ref PROCESS_POWER_THROTTLING_STATE info, int size);
+    private static partial bool SetProcessInformation(IntPtr process, int infoClass, ref PROCESS_POWER_THROTTLING_STATE info, int size);
 
-    [DllImport("kernel32.dll")]
+    [LibraryImport("kernel32.dll", EntryPoint = "SetProcessInformation")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool SetProcessInformation(IntPtr process, int infoClass, ref MEMORY_PRIORITY_INFORMATION info, int size);
+    private static partial bool SetMemoryPriority(IntPtr process, int infoClass, ref MEMORY_PRIORITY_INFORMATION info, int size);
 }

@@ -156,13 +156,17 @@ public static class Storage
     /// Reads a data file. A damaged one (cut short by a power loss, edited by hand) is kept aside as ".bad" and the
     /// copy from the save before is used (".bak", see <see cref="Save"/>), so a broken file never turns into an empty
     /// library or default settings that the next save would make permanent. A file another program holds for a
-    /// moment is tried again briefly. Null only when there's no file, or neither copy can be read.
+    /// moment is tried again briefly; if it stays held, the copy from before is used, and this run never saves over
+    /// the file it couldn't read (<see cref="Save"/> refuses), so its newer contents aren't replaced by older ones or
+    /// by defaults. Null only when there's no file, or neither copy can be read.
     /// </summary>
     internal static T? Load<T>(string path, JsonTypeInfo<T> info) where T : class
     {
-        if (TryRead(path, info, out var value)) return value;
+        var read = TryRead(path, info, out var value);
+        if (read == ReadResult.Read) return value;
+        if (read == ReadResult.Held) Protect(path);
         if (!File.Exists(path) && !File.Exists(path + BackupSuffix)) return null;
-        if (TryRead(path + BackupSuffix, info, out var backup))
+        if (TryRead(path + BackupSuffix, info, out var backup) == ReadResult.Read)
         {
             ErrorLog.Note($"{Path.GetFileName(path)} couldn't be read; the copy from the save before was used");
             return backup;
@@ -172,7 +176,19 @@ public static class Storage
 
     private const string BackupSuffix = ".bak";
 
-    private static bool TryRead<T>(string path, JsonTypeInfo<T> info, out T? value) where T : class
+    private enum ReadResult { Read, Missing, Damaged, Held }
+
+    // Files this run couldn't read although they're there: never saved over until the next start reads them.
+    private static readonly HashSet<string> Protected = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Lock ProtectedLock = new();
+
+    private static void Protect(string path)
+    {
+        lock (ProtectedLock) Protected.Add(Path.GetFullPath(path));
+        ErrorLog.Note($"{Path.GetFileName(path)} is held by another program; it isn't saved over until Binder starts again");
+    }
+
+    private static ReadResult TryRead<T>(string path, JsonTypeInfo<T> info, out T? value) where T : class
     {
         value = null;
         for (int attempt = 1; ; attempt++)
@@ -181,11 +197,11 @@ public static class Storage
             {
                 using var stream = File.OpenRead(path);
                 value = JsonSerializer.Deserialize(stream, info);
-                return value is not null;
+                return value is not null ? ReadResult.Read : ReadResult.Damaged;
             }
             catch (Exception e) when (e is FileNotFoundException or DirectoryNotFoundException)
             {
-                return false;
+                return ReadResult.Missing;
             }
             catch (JsonException)
             {
@@ -193,11 +209,11 @@ public static class Storage
                 try { File.Move(path, path + ".bad", overwrite: true); }
                 catch (Exception moveError) when (moveError is IOException or UnauthorizedAccessException) { }
                 ErrorLog.Note($"{Path.GetFileName(path)} is damaged; kept as {Path.GetFileName(path)}.bad");
-                return false;
+                return ReadResult.Damaged;
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException)
             {
-                if (attempt >= 10) return false; // held by another program (a virus scanner, a sync tool)
+                if (attempt >= 10) return ReadResult.Held; // held by another program (a virus scanner, a sync tool)
                 Thread.Sleep(100);
             }
         }
@@ -209,6 +225,11 @@ public static class Storage
     /// </summary>
     internal static void Save<T>(string path, T value, JsonTypeInfo<T> info)
     {
+        lock (ProtectedLock)
+        {
+            if (Protected.Contains(Path.GetFullPath(path)))
+                throw new IOException($"{Path.GetFileName(path)} wasn't read at start; not saved over");
+        }
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var tmp = path + ".tmp";
         using (var stream = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough))

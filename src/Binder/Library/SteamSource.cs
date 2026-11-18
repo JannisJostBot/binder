@@ -154,6 +154,21 @@ public static class SteamSource
         return folders;
     }
 
+    private const int FullyInstalled = 4, Uninstalling = 2048;
+
+    /// <summary>
+    /// Whether a manifest's game is installed and playable: StateFlags bit 4 (fully installed, also set while an
+    /// update is pending). While Steam downloads or applies an update it clears that bit (1026: update required
+    /// and started), so a game whose depots were installed before still counts; a first install (no installed
+    /// depots yet) and an uninstall don't.
+    /// </summary>
+    internal static bool IsInstalled(int flags, VdfObject app)
+    {
+        if ((flags & Uninstalling) != 0) return false;
+        if ((flags & FullyInstalled) != 0) return true;
+        return app.Obj("InstalledDepots") is { Count: > 0 };
+    }
+
     private static Game? ReadManifest(string manifestPath, string steamapps)
     {
         VdfObject? app;
@@ -172,8 +187,7 @@ public static class SteamSource
         foreach (var part in ExcludedNameParts)
             if (name.Contains(part, StringComparison.OrdinalIgnoreCase)) return null;
 
-        // StateFlags bit 4 = fully installed (also set while an update is pending).
-        if (int.TryParse(app.Str("StateFlags"), out var flags) && (flags & 4) == 0) return null;
+        if (int.TryParse(app.Str("StateFlags"), out var flags) && !IsInstalled(flags, app)) return null;
 
         long.TryParse(app.Str("SizeOnDisk"), out var size);
         // Unix seconds; 0 when never played. Free up space counts games played through Steam directly too.
