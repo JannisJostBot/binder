@@ -423,35 +423,222 @@ summary::-webkit-details-marker { display: none; }
   to { transform: none; opacity: 1; }
 }
 
-/* The game: Starfall Drift fills the screen, taskbar and all. */
+/* The game: Starfall Drift fills the screen, taskbar and all, and plays while this step is on screen: stars drift
+   past in three layers (parallax), the ringed planet from its cover turns slowly, asteroids tumble by, the ship bobs
+   and fires, and the HUD's score counts up. Sizes follow the scene (container units), so it fits a phone too.
+   Every animation is paused outside step 3, and there is none with reduced motion (a still frame). */
 .game-scene {
   position: absolute;
   inset: 0;
   z-index: 6;
+  overflow: hidden;
+  container-type: size;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.5s, visibility 0s 0.5s;
   background:
-    radial-gradient(circle at 66% 40%, #F2C78C 0, #C9773F 110px, #8A3F25 160px, rgba(138, 63, 37, 0) 166px),
-    radial-gradient(520px 84px at 66% 42%, rgba(242, 199, 140, 0) 58%, rgba(242, 199, 140, 0.5) 62%, rgba(242, 199, 140, 0) 70%),
-    radial-gradient(2px 2px at 12% 20%, #FFFFFF 99%, transparent), radial-gradient(2px 2px at 28% 70%, #FFFFFF 99%, transparent),
-    radial-gradient(3px 3px at 40% 12%, #FFFFFF 99%, transparent), radial-gradient(2px 2px at 88% 78%, #DCE6FF 99%, transparent),
-    radial-gradient(2px 2px at 92% 18%, #FFFFFF 99%, transparent), radial-gradient(2px 2px at 52% 88%, #FFFFFF 99%, transparent),
-    radial-gradient(60% 80% at 20% 0%, #3B2A6E, rgba(59, 42, 110, 0) 70%),
-    linear-gradient(180deg, #070A22, #1D1645);
-}
-.game-scene span {
-  position: absolute;
-  right: 40px;
-  top: calc(var(--header-h) + 28px);
+    radial-gradient(55% 70% at 18% 8%, rgba(88, 60, 170, 0.55), rgba(88, 60, 170, 0) 70%),
+    radial-gradient(45% 55% at 92% 95%, rgba(24, 110, 160, 0.35), rgba(24, 110, 160, 0) 70%),
+    linear-gradient(180deg, #05071A, #120E33 60%, #1A1240);
   font-family: var(--display);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
+  color: #F3F5FF;
 }
 .stage[data-step="3"] .game-scene { opacity: 1; visibility: visible; transition: opacity 0.5s; }
+.game-scene i, .game-scene div { position: absolute; display: block; }
+.game-scene * { animation-play-state: paused !important; }
+.stage[data-step="3"] .game-scene * { animation-play-state: running !important; }
+
+/* Stars: three tiling layers that drift left at different speeds. */
+.sf-stars { inset: 0; background-repeat: repeat; animation: sf-drift linear infinite; }
+.sf-far {
+  background-image:
+    radial-gradient(1px 1px at 165px 77px, rgba(200,215,255,0.5) 99%, transparent),
+    radial-gradient(1px 1px at 24px 37px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 187px 29px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 19px 44px, rgba(200,215,255,0.5) 99%, transparent),
+    radial-gradient(1px 1px at 214px 35px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 46px 217px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 289px 63px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 298px 31px, rgba(200,215,255,0.5) 99%, transparent),
+    radial-gradient(1px 1px at 25px 113px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 285px 68px, rgba(200,215,255,0.5) 99%, transparent),
+    radial-gradient(1px 1px at 214px 73px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 292px 157px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 52px 96px, rgba(200,215,255,0.5) 99%, transparent),
+    radial-gradient(1px 1px at 49px 32px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 316px 105px, rgba(200,215,255,0.5) 99%, transparent),
+    radial-gradient(1px 1px at 272px 218px, rgba(200,215,255,0.5) 99%, transparent);
+  background-size: 320px 260px;
+  animation-duration: 60s;
+  --tile: -320px;
+}
+.sf-mid {
+  background-image:
+    radial-gradient(1.5px 1.5px at 238px 299px, #DCE6FF 99%, transparent),
+    radial-gradient(1.5px 1.5px at 185px 153px, rgba(255,255,255,0.8) 99%, transparent),
+    radial-gradient(1.5px 1.5px at 406px 92px, #FFE9C8 99%, transparent),
+    radial-gradient(1.5px 1.5px at 399px 124px, rgba(255,255,255,0.8) 99%, transparent),
+    radial-gradient(1.5px 1.5px at 294px 153px, #FFE9C8 99%, transparent),
+    radial-gradient(1.5px 1.5px at 253px 175px, #FFE9C8 99%, transparent),
+    radial-gradient(1.5px 1.5px at 229px 147px, #FFE9C8 99%, transparent),
+    radial-gradient(1.5px 1.5px at 37px 60px, #FFE9C8 99%, transparent),
+    radial-gradient(1.5px 1.5px at 214px 84px, #DCE6FF 99%, transparent),
+    radial-gradient(1.5px 1.5px at 77px 250px, #DCE6FF 99%, transparent);
+  background-size: 480px 360px;
+  animation-duration: 30s;
+  --tile: -480px;
+}
+.sf-near {
+  background-image:
+    radial-gradient(2.5px 2.5px at 40px 79px, #CFE6FF 99%, transparent),
+    radial-gradient(2.5px 2.5px at 348px 358px, #CFE6FF 99%, transparent),
+    radial-gradient(2.5px 2.5px at 593px 467px, #FFFFFF 99%, transparent),
+    radial-gradient(2.5px 2.5px at 95px 276px, #CFE6FF 99%, transparent),
+    radial-gradient(2.5px 2.5px at 713px 66px, #FFFFFF 99%, transparent),
+    radial-gradient(2.5px 2.5px at 748px 317px, #CFE6FF 99%, transparent);
+  background-size: 760px 540px;
+  animation-duration: 14s;
+  --tile: -760px;
+}
+@keyframes sf-drift { to { background-position: var(--tile) 0; } }
+.sf-nebula {
+  inset: -10%;
+  background:
+    radial-gradient(30% 22% at 30% 62%, rgba(255, 120, 170, 0.16), rgba(255, 120, 170, 0) 70%),
+    radial-gradient(26% 30% at 52% 30%, rgba(90, 200, 255, 0.12), rgba(90, 200, 255, 0) 70%),
+    radial-gradient(40% 25% at 80% 70%, rgba(170, 110, 255, 0.14), rgba(170, 110, 255, 0) 70%);
+  animation: sf-nebula 40s ease-in-out infinite alternate;
+}
+@keyframes sf-nebula { to { transform: translateX(-4%) scale(1.04); } }
+
+/* The planet from the cover: lit from the upper left, banded, with an atmosphere, a ring that passes behind and in
+   front of it, and a small moon. */
+.sf-planet { --p: min(58cqh, 40cqw); right: 6cqw; top: 14cqh; width: var(--p); height: var(--p); }
+.sf-globe {
+  inset: 0;
+  z-index: 1;
+  border-radius: 50%;
+  transform: rotate(-14deg);
+  background:
+    radial-gradient(circle at 30% 26%, rgba(255, 245, 220, 0.55), rgba(255, 245, 220, 0) 32%),
+    radial-gradient(circle at 70% 76%, rgba(12, 6, 30, 0.85), rgba(12, 6, 30, 0) 62%),
+    radial-gradient(14% 6% at 50% 62%, rgba(255, 236, 200, 0.4), rgba(255, 236, 200, 0) 100%),
+    repeating-linear-gradient(180deg, rgba(255, 240, 210, 0) 0, rgba(255, 240, 210, 0.09) 3%, rgba(255, 240, 210, 0) 6%, rgba(110, 40, 20, 0.14) 9.5%, rgba(110, 40, 20, 0) 13%, rgba(255, 220, 170, 0.06) 15.5%, rgba(255, 220, 170, 0) 18%),
+    radial-gradient(circle at 38% 36%, #F7D7A0 0, #E2A05A 30%, #B4602F 58%, #6E2E1C 82%, #3A1610 100%);
+  background-size: 100% 100%, 100% 100%, 200% 100%, 100% 100%, 100% 100%;
+  background-repeat: no-repeat, no-repeat, repeat-x, no-repeat, no-repeat;
+  box-shadow: 0 0 calc(var(--p) * 0.18) rgba(242, 170, 100, 0.35), inset -10px -12px 30px rgba(10, 4, 24, 0.6);
+  animation: sf-turn 40s linear infinite;
+}
+/* The storm drifts across the face as the planet turns. */
+@keyframes sf-turn { from { background-position: 0 0, 0 0, 100% 0, 0 0, 0 0; } to { background-position: 0 0, 0 0, -100% 0, 0 0, 0 0; } }
+.sf-ring-back, .sf-ring-front {
+  left: -38%;
+  top: 38%;
+  width: 176%;
+  height: 26%;
+  border-radius: 50%;
+  border: calc(var(--p) * 0.035) solid rgba(242, 205, 150, 0.75);
+  box-shadow: 0 0 0 calc(var(--p) * 0.02) rgba(242, 205, 150, 0.25), inset 0 0 0 calc(var(--p) * 0.012) rgba(255, 235, 200, 0.35);
+  transform: rotate(-14deg);
+}
+.sf-ring-back { z-index: 0; clip-path: inset(0 0 50% 0); }
+.sf-ring-front { z-index: 2; clip-path: inset(50% 0 0 0); }
+.sf-moon {
+  z-index: 3;
+  left: -22%;
+  top: -6%;
+  width: 14%;
+  height: 14%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #E6E4F0, #8E8AA6 55%, #3C3852 100%);
+  box-shadow: 0 0 12px rgba(200, 200, 255, 0.25);
+}
+
+/* Asteroids tumbling from right to left. */
+.sf-rock { left: 100%; width: 5cqw; min-width: 34px; animation: sf-rock linear infinite; }
+.sf-rock svg { display: block; width: 100%; height: auto; animation: sf-spin linear infinite; }
+.sf-r1 { top: 62cqh; animation-duration: 11s; animation-delay: -2s; }
+.sf-r1 svg { animation-duration: 7s; }
+.sf-r2 { top: 24cqh; width: 3cqw; min-width: 22px; animation-duration: 16s; animation-delay: -9s; opacity: 0.85; }
+.sf-r2 svg { animation-duration: 11s; animation-direction: reverse; }
+.sf-r3 { top: 44cqh; width: 7.5cqw; min-width: 48px; animation-duration: 9s; animation-delay: -5.5s; }
+.sf-r3 svg { animation-duration: 6s; }
+@keyframes sf-rock { to { transform: translateX(calc(-100cqw - 140%)); } }
+@keyframes sf-spin { to { transform: rotate(360deg); } }
+
+/* The ship: bobbing, its flame flickering. */
+.sf-ship { left: 16cqw; top: 46cqh; width: clamp(110px, 15cqw, 230px); animation: sf-bob 6s ease-in-out infinite; }
+.sf-ship svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5)); }
+.sf-flame {
+  right: 96%;
+  top: 41%;
+  width: 46%;
+  height: 18%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 100% 50%, #FFFFFF 0, #9BE7FF 22%, rgba(76, 194, 255, 0.7) 45%, rgba(76, 194, 255, 0) 72%);
+  transform-origin: 100% 50%;
+  animation: sf-flame 0.12s ease-in-out infinite alternate;
+}
+@keyframes sf-bob {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  30% { transform: translate(1.5cqw, -6cqh) rotate(-3deg); }
+  65% { transform: translate(-1cqw, 5cqh) rotate(2.5deg); }
+}
+@keyframes sf-flame { from { transform: scaleX(0.8); opacity: 0.85; } to { transform: scaleX(1.1); opacity: 1; } }
+
+/* Shots from the nose, following the ship's bob. */
+.sf-shot {
+  left: calc(16cqw + clamp(110px, 15cqw, 230px) * 0.9);
+  top: calc(46cqh + clamp(110px, 15cqw, 230px) * 0.24);
+  width: 3.4cqw;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(155, 231, 255, 0), #9BE7FF 60%, #FFFFFF);
+  box-shadow: 0 0 8px #4CC2FF;
+  opacity: 0;
+  animation: sf-shot 6s linear infinite;
+}
+.sf-s2 { animation-delay: 0.35s; }
+.sf-s3 { animation-delay: 2.9s; }
+@keyframes sf-shot {
+  0% { opacity: 0; transform: translate(0, 0); }
+  1% { opacity: 1; transform: translate(0, 0); }
+  14% { opacity: 1; transform: translate(70cqw, -3cqh); }
+  15%, 100% { opacity: 0; transform: translate(72cqw, -3cqh); }
+}
+
+/* The HUD: title and a score that counts up, shield and sector. */
+@property --score { syntax: "<integer>"; inherits: false; initial-value: 24180; }
+.sf-hud {
+  left: 3cqw;
+  right: 3cqw;
+  top: calc(var(--header-h) + 18px);
+  display: flex !important;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+.sf-hud p { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.sf-hud-right { align-items: flex-end; }
+.sf-title { font-size: 13px; letter-spacing: 0.32em; color: rgba(255, 255, 255, 0.75); }
+.sf-score { color: #9BE7FF; }
+.sf-score b { counter-reset: score var(--score); animation: sf-score 24s steps(40) infinite; }
+.sf-score b::after { content: counter(score); margin-left: 8px; color: #FFFFFF; font-size: 16px; letter-spacing: 0.06em; }
+@keyframes sf-score { to { --score: 26420; } }
+.sf-shield { display: flex; align-items: center; gap: 10px; color: #9BE7FF; }
+.sf-shield i { position: relative; width: 120px; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.15); overflow: hidden; }
+.sf-shield b { position: absolute; inset: 0 22% 0 0; border-radius: 4px; background: linear-gradient(90deg, #4CC2FF, #9BE7FF); box-shadow: 0 0 8px rgba(76, 194, 255, 0.8); }
+.sf-sector { color: rgba(255, 255, 255, 0.6); font-size: 11px; }
+@media (max-width: 600px) {
+  .sf-hud { font-size: 10px; }
+  .sf-shield i { width: 64px; }
+  .sf-sector { display: none; }
+}
 
 /* What's running while the game is: Binder isn't; its helper uses what the release's measurement says. */
 .procs {
@@ -762,7 +949,11 @@ summary::-webkit-details-marker { display: none; }
   .story-cue { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ico, .ico i, .ico span, .mock-panel, .mock-grid span, .game-scene, .procs { transition: none !important; animation: none !important; }
+  .ico, .ico i, .ico span, .mock-panel, .mock-grid span, .game-scene, .game-scene *, .procs { transition: none !important; animation: none !important; }
+  /* The game as a still frame: the asteroids in view. */
+  .sf-r1 { transform: translateX(-42cqw); }
+  .sf-r2 { transform: translateX(-58cqw); }
+  .sf-r3 { transform: translateX(-22cqw); }
   .stage:not([data-step="0"]) .ico[data-tile] { opacity: 0; }
   .stage:not([data-step="0"]) .mock-grid span { opacity: 1; }
 }
@@ -780,7 +971,6 @@ summary::-webkit-details-marker { display: none; }
   .mock-continue { height: 72px; }
   .procs { right: 12px; bottom: 12px; width: calc(100% - 24px); font-size: 13px; }
   .procs-table span { padding: 8px 12px; }
-  .game-scene { background-size: auto; }
   .caption, .window { width: 100%; box-shadow: none; border: 1px solid var(--border); }
   .caption-dark { border-color: #34343A; }
   .window-bar { display: none; }

@@ -105,7 +105,8 @@ Pages whenever a change to `site/` reaches `main`, so what's merged is live with
   (`.story-step`, `data-step` 0–4) scroll over it: a desktop full of game shortcuts with the headline in a window,
   the shortcuts flying into Binder's shelf, the shelf, a game with Binder gone (the process list), and "Welcome
   back". `story.js` sets the step from the caption in the middle of the window (on narrow windows, just under the
-  picture) and measures where each shortcut flies; `styles.css` moves the scene. Without scripts it shows the open
+  picture) and measures where each shortcut flies; `styles.css` moves the scene. The game in step 3 (Starfall Drift: stars,
+  the ringed planet, asteroids, the ship, a HUD) animates only while step 3 is on screen (`animation-play-state`). Without scripts it shows the open
   shelf; with reduced motion the steps change at once. After changing it, check every step at full width, at
   390 px, in dark mode and with reduced motion.
 - The header and footer are the same on both pages (`docs.html` links back with `index.html#…`). The "Binder is

@@ -86,7 +86,25 @@
         <span class="ico" data-tile="9"><i class="g9"></i><span>Dune Runners (2)</span></span>
       </div>
 
-      <div class="game-scene" aria-hidden="true"><span>Starfall Drift</span></div>
+      <!-- The game while it runs: Starfall Drift (made up, like the shelf's games), drawn in CSS and SVG. It moves only
+           while this step is on screen; with reduced motion it's a still frame. -->
+      <div class="game-scene" aria-hidden="true">
+        <i class="sf-stars sf-far"></i><i class="sf-stars sf-mid"></i><i class="sf-stars sf-near"></i>
+        <i class="sf-nebula"></i>
+        <div class="sf-planet"><i class="sf-ring-back"></i><i class="sf-globe"></i><i class="sf-ring-front"></i><i class="sf-moon"></i></div>
+        <div class="sf-rock sf-r1"><svg viewBox="0 0 60 52"><path d="M14 6 L38 2 L54 14 L58 32 L46 48 L22 50 L6 38 L2 18 Z" fill="#4B4060"></path><path d="M14 6 L38 2 L54 14 L40 20 L22 18 Z" fill="#6E6286"></path><path d="M54 14 L58 32 L46 48 L40 20 Z" fill="#3A3150"></path><circle cx="24" cy="32" r="5" fill="#3A3150"></circle><circle cx="40" cy="36" r="3" fill="#3A3150"></circle><circle cx="18" cy="16" r="2.5" fill="#5A4E72"></circle></svg></div>
+        <div class="sf-rock sf-r2"><svg viewBox="0 0 60 52"><path d="M14 6 L38 2 L54 14 L58 32 L46 48 L22 50 L6 38 L2 18 Z" fill="#4B4060"></path><path d="M14 6 L38 2 L54 14 L40 20 L22 18 Z" fill="#6E6286"></path><path d="M54 14 L58 32 L46 48 L40 20 Z" fill="#3A3150"></path><circle cx="24" cy="32" r="5" fill="#3A3150"></circle><circle cx="40" cy="36" r="3" fill="#3A3150"></circle><circle cx="18" cy="16" r="2.5" fill="#5A4E72"></circle></svg></div>
+        <div class="sf-rock sf-r3"><svg viewBox="0 0 60 52"><path d="M14 6 L38 2 L54 14 L58 32 L46 48 L22 50 L6 38 L2 18 Z" fill="#4B4060"></path><path d="M14 6 L38 2 L54 14 L40 20 L22 18 Z" fill="#6E6286"></path><path d="M54 14 L58 32 L46 48 L40 20 Z" fill="#3A3150"></path><circle cx="24" cy="32" r="5" fill="#3A3150"></circle><circle cx="40" cy="36" r="3" fill="#3A3150"></circle><circle cx="18" cy="16" r="2.5" fill="#5A4E72"></circle></svg></div>
+        <div class="sf-ship">
+          <i class="sf-flame"></i>
+          <svg viewBox="0 0 120 60"><defs><linearGradient id="sf-hull" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8EEF8"></stop><stop offset="1" stop-color="#8D9BB5"></stop></linearGradient><linearGradient id="sf-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B8F0FF"></stop><stop offset="1" stop-color="#2B86C5"></stop></linearGradient></defs><path d="M46 21 L68 3 L80 5 L64 24 Z" fill="#5B6680"></path><path d="M46 39 L68 57 L80 55 L64 36 Z" fill="#5B6680"></path><path d="M60 9 L72 6 L66 13 Z" fill="#FF8A4C"></path><path d="M60 51 L72 54 L66 47 Z" fill="#FF8A4C"></path><rect x="4" y="23" width="12" height="14" rx="3" fill="#3A4258"></rect><path d="M12 30 L40 18 L94 23 Q116 30 94 37 L40 42 Z" fill="url(#sf-hull)"></path><path d="M40 30 L94 30" stroke="#6F7D99" stroke-width="1.2"></path><ellipse cx="86" cy="28.5" rx="11" ry="4.5" fill="url(#sf-glass)"></ellipse><rect x="22" y="26" width="10" height="3" rx="1.5" fill="#FF8A4C"></rect></svg>
+        </div>
+        <i class="sf-shot sf-s1"></i><i class="sf-shot sf-s2"></i><i class="sf-shot sf-s3"></i>
+        <div class="sf-hud">
+          <p class="sf-hud-left"><span class="sf-title">Starfall Drift</span><span class="sf-score">Score <b></b></span></p>
+          <p class="sf-hud-right"><span class="sf-shield">Shield <i><b></b></i></span><span class="sf-sector">Sector 7 · Orion Reach</span></p>
+        </div>
+      </div>
 
       <div class="procs" aria-hidden="true">
         <p class="procs-title">Running on this PC</p>
