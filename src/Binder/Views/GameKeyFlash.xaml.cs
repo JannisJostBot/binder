@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Binder.Library;
 using Binder.Models;
 using Binder.Services;
 using Microsoft.UI.Composition;
@@ -8,6 +9,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -81,6 +83,81 @@ public sealed partial class GameKeyFlash : Window
         _closeAfter = NoticeFor;
         Root.SizeChanged += OnFirstLayout;
         Closed += (_, _) => _timer?.Stop();
+    }
+
+    /// <summary>
+    /// The shortcut held for a second (spec §26): which game each number plays, 0 first, then the numbers given. Stays
+    /// until its owner closes it (a number, Esc, or the keys let go).
+    /// </summary>
+    public GameKeyFlash(Game? lastPlayed, IReadOnlyList<(int Number, Game Game)> given)
+    {
+        InitializeComponent();
+        _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        (_animate, _highContrast) = SetUpWindow();
+        Card.Visibility = Visibility.Collapsed;
+        KeyList.Visibility = Visibility.Visible;
+        ListTitle.Text = Strings.GameKeyListTitle;
+        ListDetail.Text = " · " + Strings.GameKeyListDetail;
+        _announce = ListText;
+        ListRows.Children.Add(ListRow(GameKeys.LastPlayed, lastPlayed?.Name ?? Strings.NoGamePlayedYet, Strings.GameKeyLastPlayed, dim: lastPlayed is null));
+        foreach (var (number, game) in given) ListRows.Children.Add(ListRow(number, game.Name, null, dim: false));
+        if (given.Count == 0)
+            ListRows.Children.Add(new TextBlock
+            {
+                Text = Strings.GameKeyListNone,
+                Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 6, 0, 0),
+            });
+        Root.SizeChanged += OnFirstLayout;
+        Closed += (_, _) => _timer?.Stop();
+    }
+
+    /// <summary>One line of the list: the number as a key, the game's name, and for 0 what it always plays.</summary>
+    private static Grid ListRow(int number, string name, string? note, bool dim)
+    {
+        var resources = Application.Current.Resources;
+        var row = new Grid { ColumnSpacing = 10, MinHeight = 30 };
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        row.Children.Add(new Border
+        {
+            Style = (Style)resources["KeyCap"],
+            MinWidth = 22,
+            VerticalAlignment = VerticalAlignment.Center,
+            Child = new TextBlock
+            {
+                Text = number.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                Style = (Style)resources["KeyCapText"],
+                HorizontalAlignment = HorizontalAlignment.Center,
+            },
+        });
+        var title = new TextBlock
+        {
+            Text = name,
+            Style = (Style)resources["BodyTextBlockStyle"],
+            TextWrapping = TextWrapping.NoWrap,
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        if (dim) title.Foreground = (Brush)resources["TextFillColorSecondaryBrush"];
+        Grid.SetColumn(title, 1);
+        row.Children.Add(title);
+        if (note is not null)
+        {
+            var noteText = new TextBlock
+            {
+                Text = note,
+                Style = (Style)resources["CaptionTextBlockStyle"],
+                Foreground = (Brush)resources["TextFillColorSecondaryBrush"],
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            Grid.SetColumn(noteText, 2);
+            row.Children.Add(noteText);
+        }
+        return row;
     }
 
     private (bool Animate, bool HighContrast) SetUpWindow()
@@ -160,10 +237,15 @@ public sealed partial class GameKeyFlash : Window
         }
         int coverWidth = (int)Math.Ceiling(66 * scale);
         if ((CoverCache.TryGetCached(game, coverWidth) ?? await CoverCache.LoadAsync(game, coverWidth)) is { } cover)
-        {
             CoverImage.Source = cover;
-            CoverBox.Visibility = Visibility.Visible;
+        else
+        {
+            // No store art or custom cover: the generated one the shelf shows (its icon, or a monogram).
+            var (background, content) = FallbackArt.Cover(game, fallback);
+            CoverBox.Background = background;
+            CoverBox.Child = content; // scaled to the box; its own faint edge sets it off the banner's color
         }
+        CoverBox.Visibility = Visibility.Visible;
     }
 
     private void OnFirstLayout(object sender, SizeChangedEventArgs e)

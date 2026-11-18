@@ -866,4 +866,7 @@ public sealed partial class Strings
     public static string NoGamePlayedYet => Get(nameof(NoGamePlayedYet));
     public static string NothingOnNumber => Get(nameof(NothingOnNumber));
     public static string NothingOnNumberDetail => Get(nameof(NothingOnNumberDetail));
+    public static string GameKeyListTitle => Get(nameof(GameKeyListTitle));
+    public static string GameKeyListDetail => Get(nameof(GameKeyListDetail));
+    public static string GameKeyListNone => Get(nameof(GameKeyListNone));
 }

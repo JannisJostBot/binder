@@ -293,7 +293,7 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
   ids only. `--play <id>` (the Start menu's game shortcuts, `App.Play`) plays only a game in the library, on the
   shelf; any other id just opens the panel. A game shortcut's number (spec §26) plays only a game on the shelf.
 - **Keyboard.** The only keyboard hook (`MessageWindow.GameKeys.cs`) exists right after the panel's shortcut while
-  its modifiers are held (at most 1 s) and while a game shortcut's flash waits; it takes only 0–9 and Esc, stores
+  its modifiers are held (until they come up, at most 15 s) and while a game shortcut's flash waits; it takes only 0–9 and Esc, stores
   nothing, and does its work after returning. Never a hook at any other time. Arguments via `ProcessStartInfo.ArgumentList`, or quoted by the Windows argv rules.
 - **Native code.** Only Windows system DLLs, from System32 (`DefaultDllImportSearchPaths(System32)` in every
   assembly; the setup and helper also link with `/DEPENDENTLOADFLAG:0x800`, the setup calls

@@ -25,7 +25,32 @@ public sealed partial class App
         if (_messages is null) return;
         _messages.GameKeyPressed += OnGameKey;
         _messages.GameKeyEscape += CancelFlash;
+        _messages.GameKeyList += ShowKeyList;
         ApplyGameKeys();
+    }
+
+    private Views.GameKeyFlash? _keyList;
+
+    /// <summary>The shortcut held past the wait: which game each number plays, until a number, Esc or letting go.</summary>
+    private void ShowKeyList(bool show)
+    {
+        _keyList?.Close();
+        _keyList = null;
+        if (!show || _quitting)
+        {
+            // After what follows has started (the panel on letting go, the flash on a number); Esc leaves nothing.
+            if (!show) _dispatcher.TryEnqueue(RestIfIdle);
+            return;
+        }
+        Footprint.Wake();
+        var shelf = ShelfGames();
+        var list = new Views.GameKeyFlash(GameKeys.LastPlayedGame(shelf, State.Sessions), GameKeys.Given(shelf, Settings.GameKeySlots));
+        list.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_keyList, list)) _keyList = null;
+        };
+        _keyList = list;
+        list.ShowQuietly();
     }
 
     /// <summary>The setting or the shortcut changed.</summary>
@@ -118,6 +143,6 @@ public sealed partial class App
     /// <summary>Back to efficiency mode after a flash, unless the panel is open (it would have woken us anyway).</summary>
     private void RestIfIdle()
     {
-        if (!_quitting && _panel is null && _flash is null) Footprint.Rest();
+        if (!_quitting && _panel is null && _flash is null && _keyList is null) Footprint.Rest();
     }
 }

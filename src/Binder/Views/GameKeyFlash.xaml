@@ -80,6 +80,15 @@
                     <Run x:Name="PillTitle" FontWeight="SemiBold" /><Run x:Name="PillDetail" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </TextBlock>
             </Grid>
+
+            <!-- The shortcut held for a second: which game is on which number (0 and the numbers given), built in code. -->
+            <StackPanel x:Name="KeyList" Width="360" Margin="1" Padding="14,12,14,10" Spacing="2" Visibility="Collapsed">
+                <TextBlock x:Name="ListText" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="NoWrap" Margin="0,0,0,8"
+                           TextTrimming="CharacterEllipsis" AutomationProperties.LiveSetting="Assertive">
+                    <Run x:Name="ListTitle" FontWeight="SemiBold" /><Run x:Name="ListDetail" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </TextBlock>
+                <StackPanel x:Name="ListRows" Spacing="2" AutomationProperties.AccessibilityView="Raw" />
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>

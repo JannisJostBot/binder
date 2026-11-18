@@ -179,7 +179,7 @@ public sealed partial class ShelfView
             return;
         }
         e.AcceptedOperation = DataPackageOperation.Link;
-        e.DragUIOverride.Caption = Strings.Format(Strings.GameKeyPut, game.Name, number);
+        e.DragUIOverride.IsCaptionVisible = false; // the line above the numbers says it, where the eye already is
         e.DragUIOverride.IsGlyphVisible = false;
         SetSlotOver(slot, true);
         ShowSlotHint((number, holder));

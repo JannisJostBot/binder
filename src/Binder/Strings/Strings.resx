@@ -3453,4 +3453,16 @@ Calm: efficiency mode while you play</value>
     <value>right-click a game in Binder</value>
     <comment>After NothingOnNumber and a middle dot: how to give a game a number. Starts lowercase.</comment>
   </data>
+  <data name="GameKeyListTitle" xml:space="preserve">
+    <value>Press a number</value>
+    <comment>Game shortcuts overlay, shown while the panel shortcut stays held: its first line, in bold. Followed by a middle dot and GameKeyListDetail.</comment>
+  </data>
+  <data name="GameKeyListDetail" xml:space="preserve">
+    <value>let go to open Binder</value>
+    <comment>Game shortcuts overlay, after GameKeyListTitle and a middle dot: letting go of the keys opens the panel. Starts lowercase.</comment>
+  </data>
+  <data name="GameKeyListNone" xml:space="preserve">
+    <value>Right-click a game in Binder to give it a number</value>
+    <comment>Game shortcuts overlay, in place of the rows for 1 to 9 when no game has a number yet.</comment>
+  </data>
 </root>

@@ -2591,4 +2591,13 @@ Ralentir : mode efficacité pendant le jeu</value>
   <data name="NothingOnNumberDetail" xml:space="preserve">
     <value>clic droit sur un jeu dans Binder</value>
   </data>
+  <data name="GameKeyListTitle" xml:space="preserve">
+    <value>Appuyez sur un chiffre</value>
+  </data>
+  <data name="GameKeyListDetail" xml:space="preserve">
+    <value>relâchez pour ouvrir Binder</value>
+  </data>
+  <data name="GameKeyListNone" xml:space="preserve">
+    <value>Clic droit sur un jeu dans Binder pour lui donner un chiffre</value>
+  </data>
 </root>

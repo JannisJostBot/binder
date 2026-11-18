@@ -2591,4 +2591,13 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   <data name="NothingOnNumberDetail" xml:space="preserve">
     <value>Spiel in Binder mit der rechten Maustaste anklicken</value>
   </data>
+  <data name="GameKeyListTitle" xml:space="preserve">
+    <value>Zahl drücken</value>
+  </data>
+  <data name="GameKeyListDetail" xml:space="preserve">
+    <value>loslassen, um Binder zu öffnen</value>
+  </data>
+  <data name="GameKeyListNone" xml:space="preserve">
+    <value>Spiel in Binder mit der rechten Maustaste anklicken, um ihm eine Zahl zu geben</value>
+  </data>
 </root>

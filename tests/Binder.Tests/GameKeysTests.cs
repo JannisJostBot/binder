@@ -15,6 +15,10 @@ static partial class Tests
             "game keys: 0–9 on the number row and the number pad");
         Check(GameKeys.DigitOf(0x47) is null && GameKeys.DigitOf(0x1B) is null && GameKeys.DigitOf(0x6A) is null && GameKeys.DigitOf(0x2F) is null,
             "game keys: letters, Esc and the pad's * aren't numbers");
+        Check(GameKeys.DigitOf(0x2D) == 0 && GameKeys.DigitOf(0x23) == 1 && GameKeys.DigitOf(0x0C) == 5 && GameKeys.DigitOf(0x21) == 9,
+            "game keys: the number pad with Shift held (Insert, End, Clear, Page Up) is 0, 1, 5, 9");
+        Check(GameKeys.DigitOf(0x2D, extended: true) is null && GameKeys.DigitOf(0x26, extended: true) is null && GameKeys.DigitOf(0x31, extended: true) == 1,
+            "game keys: the separate Insert and arrow keys aren't numbers");
 
         // A game has one number; taking a number moves it and frees the game that had it.
         var slots = new Dictionary<string, string>();
@@ -51,6 +55,10 @@ static partial class Tests
         var given = new Dictionary<string, string> { ["2"] = "bg3", ["3"] = "hidden" };
         Check(GameKeys.Resolve(2, shelf, given, sessions)?.Id == "bg3" && GameKeys.Resolve(3, shelf, given, sessions) is null &&
               GameKeys.Resolve(4, shelf, given, sessions) is null, "game keys: a number plays its game only while it's on the shelf");
+        given["1"] = "hades";
+        var list = GameKeys.Given(shelf, given);
+        Check(list.Count == 2 && list[0] is (1, { Id: "hades" }) && list[1] is (2, { Id: "bg3" }) && GameKeys.Given(shelf, null).Count == 0,
+            "game keys: the held shortcut's list has the numbers given to games on the shelf, in order");
         GameKeyViewModelTests(shelf);
     }
 

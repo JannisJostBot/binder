@@ -18,11 +18,26 @@ public static class GameKeys
     /// <summary>The numbers a user can give a game, in the order they're listed.</summary>
     public static readonly int[] UserSlots = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    /// <summary>The number of a virtual key: 0–9 on the number row or the number pad; null for any other key.</summary>
-    public static int? DigitOf(uint virtualKey) => virtualKey switch
+    /// <summary>
+    /// The number of a virtual key: 0–9 on the number row or the number pad; null for any other key. With Shift held,
+    /// Windows hands the number pad's keys over as Insert, End, the arrows and so on (as with NumLock off): those count
+    /// too when not <paramref name="extended"/>, since the separate Insert, Home and arrow keys are extended keys.
+    /// </summary>
+    public static int? DigitOf(uint virtualKey, bool extended = false) => virtualKey switch
     {
         >= 0x30 and <= 0x39 => (int)(virtualKey - 0x30), // VK_0 … VK_9
         >= 0x60 and <= 0x69 => (int)(virtualKey - 0x60), // VK_NUMPAD0 … VK_NUMPAD9
+        _ when extended => null,
+        0x2D => 0, // VK_INSERT
+        0x23 => 1, // VK_END
+        0x28 => 2, // VK_DOWN
+        0x22 => 3, // VK_NEXT
+        0x25 => 4, // VK_LEFT
+        0x0C => 5, // VK_CLEAR
+        0x27 => 6, // VK_RIGHT
+        0x24 => 7, // VK_HOME
+        0x26 => 8, // VK_UP
+        0x21 => 9, // VK_PRIOR
         _ => null,
     };
 
@@ -95,5 +110,17 @@ public static class GameKeys
         foreach (var game in shelf)
             if (game.Id == id) return game;
         return null;
+    }
+
+    /// <summary>The numbers 1–9 that play a game on <paramref name="shelf"/>, in order (the held shortcut's list).</summary>
+    public static List<(int Number, Game Game)> Given(IReadOnlyList<Game> shelf, IReadOnlyDictionary<string, string>? slots)
+    {
+        var given = new List<(int, Game)>();
+        if (slots is null || slots.Count == 0) return given;
+        var byId = new Dictionary<string, Game>(shelf.Count);
+        foreach (var game in shelf) byId.TryAdd(game.Id, game);
+        foreach (int number in UserSlots)
+            if (IdOn(slots, number) is { } id && byId.TryGetValue(id, out var game)) given.Add((number, game));
+        return given;
     }
 }
