@@ -363,7 +363,11 @@ summary::-webkit-details-marker { display: none; }
   gap: 6px;
   transform-origin: 50% 23px;
 }
-.ico i { position: relative; display: block; width: 46px; height: 46px; border-radius: 8px; overflow: visible; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); }
+.ico i { position: relative; display: block; width: 46px; height: 46px; border-radius: 8px; overflow: visible; }
+/* At rest an icon is its game's emblem (SVG symbols in index.html), with a soft shadow like Windows' icons. The
+   cover art (.cover, the game's .g class) waits underneath and fades in as the shortcut flies into the shelf. */
+.ico i svg { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35)); }
+.ico i .cover { position: absolute; inset: 0; border-radius: inherit; opacity: 0; }
 .ico[data-tile] i::after {
   content: "";
   position: absolute;
@@ -377,9 +381,6 @@ summary::-webkit-details-marker { display: none; }
   transition: opacity 0.15s;
 }
 .ico span { max-width: 84px; font-size: 12px; line-height: 1.25; color: #FFFFFF; text-align: center; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75); transition: opacity 0.15s; }
-.ico-bin { background: linear-gradient(160deg, #E9EEF5, #B9C4D3); }
-.ico-doc { background: linear-gradient(160deg, #FFFFFF, #DDE3EA); }
-.ico-folder { background: linear-gradient(160deg, #FFD978, #E9A93A); }
 
 /* Tidying up: each game shortcut is picked up (it lifts and grows a little, its label and arrow fade), flies on an
    arc over the shelf while it turns from a square icon into a 3:4 cover, and lands on its own tile, which appears
@@ -392,8 +393,15 @@ summary::-webkit-details-marker { display: none; }
 }
 .stage:not([data-step="0"]) .ico[data-tile] i {
   animation: ico-shape 1s ease-in-out calc(0.15s + var(--d, 0s)) both;
+}
+/* On the way the emblem becomes the cover. */
+.stage:not([data-step="0"]) .ico[data-tile] .cover {
+  animation: ico-cover 1s linear calc(0.15s + var(--d, 0s)) both;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
 }
+.stage:not([data-step="0"]) .ico[data-tile] svg { animation: ico-emblem 1s linear calc(0.15s + var(--d, 0s)) both; }
+@keyframes ico-cover { 0%, 22% { opacity: 0; } 50%, 100% { opacity: 1; } }
+@keyframes ico-emblem { 0%, 22% { opacity: 1; } 50%, 100% { opacity: 0; } }
 .stage:not([data-step="0"]) .ico[data-tile] span,
 .stage:not([data-step="0"]) .ico[data-tile] i::after { opacity: 0; }
 @keyframes ico-fly {
