@@ -15,6 +15,19 @@ static partial class Tests
         var dir = Path.Combine(root, "edge-cases");
         Directory.CreateDirectory(dir);
 
+        // The countdown's end asks the game's watcher whether the game has closed: no watcher, running, closed.
+        var endedId = "test:" + Guid.NewGuid().ToString("N");
+        bool? noWatcher = Binder.Shared.WatcherNames.GameEnded(endedId), running, closed;
+        using (var ended = new EventWaitHandle(false, EventResetMode.ManualReset, Binder.Shared.WatcherNames.Ended(endedId)))
+        {
+            running = Binder.Shared.WatcherNames.GameEnded(endedId);
+            ended.Set();
+            closed = Binder.Shared.WatcherNames.GameEnded(endedId);
+        }
+        Check(noWatcher is null && running == false && closed == true &&
+              Binder.Shared.WatcherNames.Mutex(endedId) != Binder.Shared.WatcherNames.Ended(endedId),
+            "watcher: the game-ended signal reads as no watcher, running, then closed");
+
         // Sleep: the last part carries how the game ended, so it's kept however short; a short middle part isn't.
         var t0 = new DateTimeOffset(2026, 11, 12, 20, 0, 0, TimeSpan.FromHours(1));
         var quick = Binder.Watcher.SystemEvents.Awake(t0, t0.AddMilliseconds(500), []);

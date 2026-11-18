@@ -80,6 +80,8 @@ internal static class Program
         // record the same playtime twice.
         var gameMutex = TakeGameMutex(gameId);
         if (gameMutex is null) return 4;
+        // Set once the game has closed: a widget whose countdown ends meanwhile stays for the return.
+        using var ended = new EventWaitHandle(false, EventResetMode.ManualReset, WatcherNames.Ended(gameId));
 
         // A game that is already up (an exe started directly) is held before Game mode's changes, which can take a
         // while (closing apps, OneDrive, the admin part): a game that crashes meanwhile is still seen ending.
@@ -145,6 +147,7 @@ internal static class Program
             end = DateTimeOffset.Now;
             exit = matcher.ExitOf(handles);
             CloseAll(handles);
+            ended.Set();
 
             // Shutting down or signing out: no time to look for a restart, save now.
             if (SystemEvents.Ending) break;
@@ -159,6 +162,7 @@ internal static class Program
             }
             matcher.NoteReporters = false;
             if (handles.Count == 0) break;
+            ended.Reset();
             gameMode?.GameFound(matcher.NamesOf(handles)); // it restarted itself, maybe as another exe
         }
 
@@ -202,8 +206,7 @@ internal static class Program
     /// </summary>
     private static Mutex? TakeGameMutex(string gameId)
     {
-        var name = @"Local\Binder.Watcher." + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(gameId)), 0, 16);
-        var mutex = new Mutex(false, name);
+        var mutex = new Mutex(false, WatcherNames.Mutex(gameId));
         try
         {
             if (mutex.WaitOne(0)) return mutex;

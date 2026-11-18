@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using Binder.Models;
 using Binder.Services;
+using Binder.Shared;
 using Binder.ViewModels;
 using Binder.Views;
 using Microsoft.UI.Dispatching;
@@ -637,6 +638,8 @@ public sealed partial class App : Application
     /// <summary>The game the countdown is for (another game ending meanwhile doesn't stop it).</summary>
     public string? CountdownGameId { get; private set; }
     private DispatcherQueueTimer? _countdown;
+    /// <summary>How long the countdown's end waits for the watcher's return of a game that just closed.</summary>
+    private const int ReturnWaitSeconds = 8;
 
     public void StartCountdown(int seconds, string title, string gameId)
     {
@@ -647,19 +650,29 @@ public sealed partial class App : Application
         CountdownTitle = title;
         var timer = _countdown = _dispatcher.CreateTimer();
         timer.Interval = TimeSpan.FromSeconds(1);
+        int waited = 0; // seconds waited after the end for a game that closed meanwhile
         timer.Tick += (_, _) =>
         {
-            if (--CountdownRemaining > 0)
+            if (CountdownRemaining > 0 && --CountdownRemaining > 0)
             {
                 CountdownTick?.Invoke(CountdownRemaining);
                 return;
             }
-            timer.Stop();
+            CountdownRemaining = 0;
             // Exit completely: during the game only the watcher remains. Commands forwarded just now run first
             // (they're queued ahead): the watcher's "--returned" for a game that closed at once cancels this.
             _dispatcher.TryEnqueue(DispatcherQueuePriority.Low, () =>
             {
                 if (!ReferenceEquals(_countdown, timer)) return; // cancelled meanwhile
+                // The game closed just before (its watcher looks for a restart for a few seconds, then brings us
+                // back): wait for that "--returned" instead of quitting. A game that came back, or no "--returned"
+                // in time ("Come back" off), ends the wait. A game that hasn't started yet doesn't start it.
+                var ended = WatcherNames.GameEnded(gameId);
+                if (waited == 0 ? ended == true : ended != false && waited < ReturnWaitSeconds)
+                {
+                    waited++;
+                    return;
+                }
                 CancelCountdown();
                 Quit();
             });

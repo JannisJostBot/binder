@@ -140,7 +140,8 @@ moves an old `sessions.json` into the year files at start (kept as `sessions.jso
 2. The in-panel launch toast: "Starting [Game]", a countdown (default 10 s, per-game override) and **Keep open**.
 3. The widget starts `Binder.Watcher.exe` (game id, install folder, optional process name, timeout). One watcher per
    game (`Local\Binder.Watcher.<hash>`): a second one for a game already followed exits at once.
-4. When the countdown ends the widget **exits** (unless Keep open).
+4. When the countdown ends the widget **exits** (unless Keep open). A game that has already closed (the watcher's
+   `WatcherNames.Ended` event is set while it looks for a restart) keeps it up to 8 s more for the `--returned`.
 5. The watcher:
    - Detection: any process whose exe is inside the install folder, or the explicit process name. Polling every
      ~2 s is allowed here only, for up to ~3 min. Never found: relaunch the widget with "Couldn't detect the game".

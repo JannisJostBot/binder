@@ -59,6 +59,7 @@
     <!-- Game mode's ids, files and restore result, shared with the watcher that applies and restores it. -->
     <Compile Include="..\Binder.Watcher\GameModeShared.cs" Link="Shared\GameModeShared.cs" />
     <Compile Include="..\Binder.Watcher\SessionLog.cs" Link="Shared\SessionLog.cs" />
+    <Compile Include="..\Binder.Watcher\WatcherNames.cs" Link="Shared\WatcherNames.cs" />
   </ItemGroup>
 
   <ItemGroup>
