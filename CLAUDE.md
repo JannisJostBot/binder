@@ -109,6 +109,7 @@ scripts/                  publish.ps1 (builds publish\app: widget folder + AOT w
                           sign-release.ps1 (owner only: sign a release with the YubiKeys, spec §25),
                           site-numbers.ps1 (the smoke test's measurements into the website's "How much it uses";
                           run per published release by .github/workflows/site-numbers.yml, which opens a PR),
+                          site-releases.ps1 (the website's Releases page from the published releases and their notes),
                           make-tray-icons.ps1 / make-watcher-icon.ps1 (redraw icons after a logo change)
 site/                     the website: HTML + CSS, nothing loaded from other servers; release.js asks GitHub's API
                           for the latest release (download link, version, VirusTotal box; the website only: the app's
@@ -118,7 +119,9 @@ site/                     the website: HTML + CSS, nothing loaded from other ser
                           "Welcome back"), nav.js marks the header's current section and closes the phone menu,
                           usage.js draws the "How much it uses" bars to scale from the measured figures;
                           index.html,
-                          docs.html (what Binder changes on the PC: every Game mode item, autostart, updates, …)
+                          docs.html (what Binder changes on the PC: every Game mode item, autostart, updates, …),
+                          releases.html (every version's notes and setup; its list written by
+                          scripts/site-releases.ps1 when pages.yml publishes, also on each published release)
 licenses/                 license texts kept here because a package carries none (Win2D); publish.ps1 copies them
 docs/proposals.md         approved feature specs, progress table (§0), decisions log, "Not decided"
 docs/tasks/, AGENTS.md    task cards and rules for cheaper coding agents

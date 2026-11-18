@@ -68,12 +68,12 @@ These need a reviewed change by the owner; `check.ps1 -Task` fails if you change
 | `src/Binder/Services/` | Launching, storage, Windows integration |
 | `src/Binder/Views/` | The UI (XAML + code-behind); `Format.cs` has the text formatting |
 | `tests/Binder.Tests/Tests.cs` | All unit tests: one console program, `Check(condition, "description")` per check |
-| `site/` | The website: `index.html`, `docs.html`, `styles.css`, `logo.svg`, `release.js`, `clock.js`, `story.js`, `game.js`, `nav.js`, `usage.js` (see "The website" below) |
+| `site/` | The website: `index.html`, `docs.html`, `releases.html`, `styles.css`, `logo.svg`, `release.js`, `clock.js`, `story.js`, `game.js`, `nav.js`, `usage.js` (see "The website" below) |
 
 ## The website (`site/`)
 
 The project's website: `site/index.html` (the home page), `site/docs.html` (the documentation: what Binder
-changes on the PC), `site/styles.css`, `site/logo.svg` and its scripts (`release.js`, `clock.js`, `story.js`, `game.js`, `nav.js`, `usage.js`). `.github/workflows/pages.yml` publishes it to GitHub
+changes on the PC), `site/releases.html` (every version: notes, date, setup download), `site/styles.css`, `site/logo.svg` and its scripts (`release.js`, `clock.js`, `story.js`, `game.js`, `nav.js`, `usage.js`). `.github/workflows/pages.yml` publishes it to GitHub
 Pages whenever a change to `site/` reaches `main`, so what's merged is live within minutes.
 
 - Plain HTML and CSS, no frameworks, no build step. Six small scripts: `site/nav.js` marks the header link of the
@@ -122,6 +122,11 @@ Pages whenever a change to `site/` reaches `main`, so what's merged is live with
 - The numbers in "How much it uses" (and the helper's memory in the story's process list) sit between `<!-- n:key -->` and
   `<!-- /n -->` markers. A workflow writes them for each release (`scripts/site-numbers.ps1`); don't edit the text
   between the markers or remove them.
+- `releases.html`'s list of versions (the cards between `<!-- releases -->` and `<!-- /releases -->`, the side
+  navigation between `<!-- releases-nav -->` and `<!-- /releases-nav -->`) is written by `scripts/site-releases.ps1`
+  from the published releases and `docs/releases/*.json`, by `pages.yml` each time it publishes the site (also when
+  a release is published). Change the cards' look in the script and in the committed list together; the notes'
+  wording in `docs/releases/`.
 - Keep the "Before you download" section (the AI disclaimer and "Not affiliated") as it is.
 - `docs.html` is long text, so its parts are `docs-*` / `doc-*` classes in `styles.css`, not inline styles. Every
   sentence must be true of the code. Each Game mode item is one `doc-item` card with `data-item`, `data-default`
