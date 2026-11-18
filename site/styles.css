@@ -1100,19 +1100,43 @@ summary::-webkit-details-marker { display: none; }
   .lead { font-size: 16px; }
 }
 
-/* How much it uses: a plain table; the numbers come from each release's measurement. */
-.usage { border-top: 1px solid var(--rule); }
-.usage-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--divider); }
-.usage-row > span { display: flex; flex-direction: column; gap: 2px; }
-.usage-row strong { font-size: 20px; font-weight: 600; }
-.usage-row small { font-size: 13px; color: var(--text-2); }
-.usage-head { padding: 10px 0; font-size: 13px; color: var(--text-2); }
-.usage-row-game { font-weight: 600; }
-.usage-row-game strong { color: var(--accent); }
+/* How much it uses: one quiet card, a row per state. A large figure, and a thin bar drawn to scale against the open
+   panel (--w, set by usage.js from the numbers; fixed proportions without it), so the last row's sliver says it at a
+   glance. The numbers come from each release's measurement. */
+.usage {
+  margin: 0;
+  padding: 8px 32px;
+  list-style: none;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-1);
+}
+.usage-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px 24px;
+  padding: 24px 0;
+  --w: 100%;
+}
+.usage-item + .usage-item { border-top: 1px solid var(--divider); }
+.usage-item:nth-child(2) { --w: 9%; }
+.usage-item:nth-child(3) { --w: 2.5%; }
+.usage-item p { margin: 0; }
+.usage-when { display: flex; flex-direction: column; gap: 2px; font-size: 16px; font-weight: 600; }
+.usage-when span { font-size: 13px; font-weight: 400; color: var(--text-2); }
+.usage-num { font-family: var(--display); font-size: 15px; font-weight: 600; color: var(--text-2); white-space: nowrap; text-align: right; }
+.usage-num strong { font-size: 44px; line-height: 1; letter-spacing: -0.03em; color: var(--text); font-variant-numeric: tabular-nums; }
+.usage-bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--divider); overflow: hidden; }
+.usage-bar i { display: block; width: var(--w); min-width: 6px; height: 100%; border-radius: 3px; background: var(--border-strong); }
+.usage-note { grid-column: 1 / -1; font-size: 13px; color: var(--text-2); }
+.usage-game .usage-num strong { color: var(--accent); }
+.usage-game .usage-bar i { background: var(--accent); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
 @media (max-width: 600px) {
-  .usage-head { display: none; }
-  .usage-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 16px; }
-  .usage-row > span:first-child { grid-column: 1 / -1; font-weight: 600; }
+  .usage { padding: 4px 20px; }
+  .usage-item { padding: 20px 0; gap: 8px 16px; }
+  .usage-num strong { font-size: 34px; }
 }
 
 /* Features: three with pictures drawn like the app's own screens, then the rest as a list. */

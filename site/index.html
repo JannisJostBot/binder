@@ -18,6 +18,7 @@
   <script src="story.js" defer></script>
   <script src="game.js" defer></script>
   <script src="nav.js" defer></script>
+  <script src="usage.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#top">Skip to content</a>
@@ -201,24 +202,27 @@
         <h2 class="h2" id="usage-title">How much it uses</h2>
         <p class="footnote"><!-- n:measured -->Approximate, measured on [TEST PC]<!-- /n -->. Your numbers will vary with the size of your library.</p>
       </div>
-      <div class="usage" role="table" aria-label="Memory and processor use">
-        <div class="usage-row usage-head" role="row"><span role="columnheader">When</span><span role="columnheader">Memory</span><span role="columnheader">Processor</span></div>
-        <div class="usage-row" role="row">
-          <span role="rowheader">Binder is open</span>
-          <span role="cell"><strong><!-- n:open -->130–230<!-- /n --> MB</strong><small><!-- n:openNote -->More with many covers<!-- /n --></small></span>
-          <span role="cell">Only while you use it</span>
-        </div>
-        <div class="usage-row" role="row">
-          <span role="rowheader">Closed, waiting by the clock</span>
-          <span role="cell"><strong><!-- n:closed -->12<!-- /n --> MB</strong></span>
-          <span role="cell">None</span>
-        </div>
-        <div class="usage-row usage-row-game" role="row">
-          <span role="rowheader">A game is running</span>
-          <span role="cell"><strong><!-- n:watcher -->3<!-- /n --> MB</strong><small>The helper only; Binder is closed</small></span>
-          <span role="cell">None once the game is found</span>
-        </div>
-      </div>
+      <!-- Each bar is drawn to scale against the open panel (usage.js reads the numbers; fixed proportions without it). -->
+      <ul class="usage">
+        <li class="usage-item">
+          <p class="usage-when">Binder is open<span>Processor: only while you use it</span></p>
+          <p class="usage-num"><strong data-mb><!-- n:open -->130–230<!-- /n --></strong> MB</p>
+          <p class="usage-bar" aria-hidden="true"><i></i></p>
+          <p class="usage-note"><!-- n:openNote -->More with many covers<!-- /n --></p>
+        </li>
+        <li class="usage-item">
+          <p class="usage-when">Closed, waiting by the clock<span>Processor: none</span></p>
+          <p class="usage-num"><strong data-mb><!-- n:closed -->12<!-- /n --></strong> MB</p>
+          <p class="usage-bar" aria-hidden="true"><i></i></p>
+          <p class="usage-note">Binder's window is closed, ready to open</p>
+        </li>
+        <li class="usage-item usage-game">
+          <p class="usage-when">A game is running<span>Processor: none once the game is found</span></p>
+          <p class="usage-num"><strong data-mb><!-- n:watcher -->3<!-- /n --></strong> MB</p>
+          <p class="usage-bar" aria-hidden="true"><i></i></p>
+          <p class="usage-note">The helper only; Binder itself is closed</p>
+        </li>
+      </ul>
     </div>
   </section>
 
