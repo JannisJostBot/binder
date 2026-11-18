@@ -1,5 +1,5 @@
 # T004 · Tests for `Format.RelativeDay`
-Status: ready
+Status: done (2026-11-17)
 Depends on: T001
 Branch: agent/T004
 

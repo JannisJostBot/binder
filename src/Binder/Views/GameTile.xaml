@@ -59,7 +59,22 @@
             </Button>
         </Grid>
         <!-- The full name as a tooltip only when it's cut off with "…", like File Explorer. -->
-        <TextBlock x:Name="TitleText" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="NoWrap" IsTextTrimmedChanged="OnTitleTrimmedChanged"
-                   TextTrimming="CharacterEllipsis" />
+        <Grid ColumnSpacing="6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="TitleText" Style="{StaticResource BodyTextBlockStyle}" TextWrapping="NoWrap" IsTextTrimmedChanged="OnTitleTrimmedChanged"
+                       TextTrimming="CharacterEllipsis" />
+            <!-- The search's top match (spec §22 a): Enter in the search box plays it. On a narrow cover the key's
+                 symbol instead of its name, so the title keeps its room ("Eingabe", "Entrée" are longer). -->
+            <Border x:Name="EnterHint" Grid.Column="1" Style="{StaticResource KeyCap}" Visibility="Collapsed">
+                <Grid>
+                    <TextBlock x:Name="EnterHintText" Style="{StaticResource KeyCapText}" />
+                    <FontIcon x:Name="EnterHintGlyph" Glyph="&#xE751;" FontSize="12" Margin="1,3,1,2" Visibility="Collapsed"
+                              Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </Grid>
+            </Border>
+        </Grid>
     </StackPanel>
 </UserControl>

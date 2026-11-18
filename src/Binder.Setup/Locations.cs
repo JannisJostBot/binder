@@ -25,6 +25,10 @@ internal static class Locations
     public static readonly string StartMenuLink =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "Binder.lnk");
 
+    /// <summary>The app's "Add my games to Start search" folder (spec §22 c, <c>Services.StartMenuGames.OwnFolder</c>).</summary>
+    public static readonly string StartMenuGamesDir =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "Binder games");
+
     public const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\Binder";
     public const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
     public const string RunValue = "Binder";

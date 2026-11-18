@@ -4,10 +4,11 @@ Status: **approved specs**; what's built is in the progress table in §0.
 - **Designs:** on the design canvas, https://claude.ai/artifact/9tZEP6HSrETxwGwpSbMg1Q. Pages by area ("Shelf",
   "Game detail", "Window, setup & settings"), plus "Still to build" with the open milestones in build order. Board
   numbers (1–17) are given in each section below and stay in the board titles, with "built" or the milestone.
-- **Baseline:** written against the code at `0eacc65` (branch `milestone-6-sources`: milestones 1–6 done).
+- **Baseline:** first written against the code at `0eacc65` (milestones 1–6 done); the progress table below is
+  what's current.
 
-Every item follows the project brief: zero cost while idle or gaming, no third-party packages, nothing that can
-break the user's system.
+Every item follows the project brief: zero cost while idle or gaming, no third-party packages beyond the ones
+`CLAUDE.md` approves (WinUI, and Win2D for the Game mode toast only), nothing that can break the user's system.
 
 ---
 
@@ -20,55 +21,36 @@ break the user's system.
 | 8 Quick wins | §1 app icon, §2 fallback covers, §3 launcher icons, §7 sort / Favorites chip / cover size | Done |
 | 9 Window behavior | §5 flyout, tray, shortcut, stay ready; §6 first-run setup | Done |
 | 10 Detail additions | §7 "This week", §9 playtime chart, launch options, anti-cheat | Done. "This week" was later merged with "Continue playing" into one switchable slot (board 16, see `CLAUDE.md`) |
-| 11 Crash detection | §10 | Done. With "Come back" off the crash card shows the next time the panel opens instead of a toast (Game mode's "Restored" toast doesn't exist yet); memory is the installed amount (`GetPhysicallyInstalledSystemMemory`) |
+| 11 Crash detection | §10 | Done. With "Come back" off the crash card shows the next time the panel opens; memory is the installed amount (`GetPhysicallyInstalledSystemMemory`) |
 | 12 More launchers | §8 | **In progress.** Done: EA app, Ubisoft Connect, Xbox app (tile logo as the cover picture) and Rockstar (tested with synthetic data only, no Rockstar game installed). Not yet: Battle.net, Riot, Amazon, itch, Humble and Meta |
-| 13 Controller | §4 | Built (`Services/Gamepad`, XInput; the hint bar, LB/RB pills and bold focus ring of board 3, without its "Controller" header pill). B closes menus and dialogs too; A on other controls goes through their UI Automation pattern; Menu toggles Settings. To try with a real pad. `Windows.Gaming.Input` (PlayStation, Switch) not yet |
-| 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Game mode toast ("Game mode is on" after applying, while the widget is still up, and "Windows is back to normal" after the restore; animated badge) and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\Binder\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `Binder.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `Binder Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\Binder\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing). Tested live on the owner's PC on 2026-11-07: the tasks register and run, the Print Spooler is paused and restarted, the QoS policies and the Windows Update limit are applied and restored. Windows keeps ActiveStore policy names lowercased, so ours are matched ignoring case. The shelf shows "Game mode needs an update" with Update… when Game mode uses the helper and it's from another version. Still to check: Delivery Optimization picks up the policy without a restart. Also built: §20 (board 24), the "Windows' own settings" card, Pause OneDrive syncing and Close / Calm per app (efficiency mode) |
-| 19 Quick actions | §16 | Done (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); tried on the real PC |
-| 20 Restart after a crash | §17 | Built: the Detail toggle, `CrashAnalysis.ShouldRestart` (in a row from `crashes.json`, at most 2), the watcher's `--restart` / `--crashed`, the restart pill (Game mode's pill with a 5 s countdown, bar and Cancel, owner's change) and the crash card's "Restarted twice already" line; unit-tested. To try on the real PC with a game that crashes (or a test exe that exits with 0xC0000005 after a minute) |
+| 13 Controller | §4 | Built (`Services/Gamepad`, XInput; the hint bar, LB/RB pills and bold focus ring of board 3, without its "Controller" header pill). B closes menus and dialogs too; A on other controls goes through their UI Automation pattern; Menu toggles Settings. Tried briefly with a real pad on the owner's PC; still to test more thoroughly. `Windows.Gaming.Input` (PlayStation, Switch) not yet |
+| 14 Game mode | §11 | **In progress.** Done, the no-admin part: power mode (overlay, else the High performance plan), Above normal priority, Game Bar background recording, closing chosen apps (WM_CLOSE to visible windows, ~5 s, else left open), the write-ahead journal with recovery on the widget's start and "Restore now", the Game mode toast ("Game mode is on" after applying, while the widget is still up, and "Windows is back to normal" after the restore; since 2026-11-16 the changes melt in, `Views/ToastMelt` with Win2D, board 33) and the Settings page with the per-game Default / On / Off. The watcher applies and restores (the widget is gone while the game runs); journal, log and last result are in `%LOCALAPPDATA%\Binder\`. Tested on the real PC only where it was already at High performance with Game Bar recording off (left as is), so the switch-and-restore path is covered by unit tests, not yet live. Built, the admin part: `Binder.Elevated.exe` (Native AOT), installed to Program Files by Settings › Game mode › Allow… (one UAC prompt; admin accounts only) with per-user tasks `Binder Apply/Restore <SID>`; the four allowlisted services; QoS through WMI over COM in the ActiveStore (DSCP 46 for the game, found voice chat apps and user-added ones; upload throttle 1/5/20 Mbit/s); Windows Update limited to 10% for background downloads (`DOPercentageMaxBackgroundBandwidth`, restored exactly); journal and log in an admin-only `%ProgramData%\Binder\`; "Update…" when the helper's version differs; "Remove it" and removal on uninstall; security rules in `CLAUDE.md`. Game Bar's row moved to the services section. Unit-tested (request and journal parsing). Tested live on the owner's PC on 2026-11-07: the tasks register and run, the Print Spooler is paused and restarted, the QoS policies and the Windows Update limit are applied and restored. Windows keeps ActiveStore policy names lowercased, so ours are matched ignoring case. The shelf shows "Game mode needs an update" with Update… when Game mode uses the helper and it's from another version. Still to check: Delivery Optimization picks up the policy without a restart. Also built: §20 (board 24), the "Windows' own settings" card, Pause OneDrive syncing and Close / Calm per app (efficiency mode) |
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
-| 16 Look and moments | §13 | **In progress.** Done: a, the logo on banners (`ArtKind.Logo`, `BannerLogo`; Steam keeps `librarycache\{appid}\logo.png`, 188 of 400 games on the owner's PC, the rest downloaded once; shadow from the logo's alpha via `Image.GetAlphaMask`; in Detail it sits right of the cover, which overlaps the banner's bottom left). Built: b–e, to try on the real PC.<br>b (the cover growing into details) was built and then removed on 2026-11-09, owner's choice: it looked bad.<br>c and e are `Library/Moments`, picked each time the panel opens; tested live with a session written into `sessions.json`. With a crash, the crash card still takes the slot.<br>d is `Views/Sheen`, plain alpha layers tuned below the prototype's "Medium", since blend modes would need Win2D. The rest look was checked on screen; following the pointer couldn't be tested here, because injected mouse input didn't reach the panel |
-| Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
-| 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
+| 16 Look and moments | §13 | **In progress.** Done: a, the logo on banners (`ArtKind.Logo`, `BannerLogo`; Steam keeps `librarycache\{appid}\logo.png`, 188 of 400 games on the owner's PC, the rest downloaded once; shadow from the logo's alpha via `Image.GetAlphaMask`; in Detail it sits right of the cover, which overlaps the banner's bottom left). Built: b–e, to try on the real PC.<br>b (the cover growing into details) was built and then removed on 2026-11-09, owner's choice: it looked bad.<br>c and e are `Library/Moments`, picked each time the panel opens; tested live with a session written into the sessions file. With a crash, the crash card still takes the slot.<br>d is `Views/Sheen`, plain alpha layers tuned below the prototype's "Medium", since blend modes would need Win2D (approved for the Game mode toast only). The rest look was checked on screen; following the pointer couldn't be tested here, because injected mouse input didn't reach the panel |
 | 17 Advanced: sources and artwork | §14 | Built: `Library/SourceDefaults` (every default, `Validate` per kind, `Use` at start and after a change; invalid or unknown values fall back), read by the Steam, Epic, GOG, Ubisoft and Rockstar sources and `CoverCache` (cover names tried in order, the first downloaded; `ForgetSteamLookups` after an artwork change drops resolved paths and `.none` markers). Settings › Advanced: one card at the bottom (closed), per launcher a Check (`Services/SourceCheck`, no downloads) and a text box per entry with Reset and its error, Reset all, the host named when the address differs. Values take effect from the next scan. Unit-tested (each kind's validation, the view model); network and validation rules in `CLAUDE.md`. Still to try on the real PC: the page on screen, Check per launcher |
 | 18 Performance | §15 | To do |
+| 19 Quick actions | §16 | Done (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); tried on the real PC |
+| 20 Restart after a crash | §17 | Built: the Detail toggle, `CrashAnalysis.ShouldRestart` (in a row from `crashes.json`, at most 2), the watcher's `--restart` / `--crashed`, the restart pill (Game mode's pill with a 5 s countdown, bar and Cancel, owner's change) and the crash card's "Restarted twice already" line; unit-tested. To try on the real PC with a game that crashes (or a test exe that exits with 0xC0000005 after a minute) |
+| 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
 | 22 Open a launcher | §21 | Done; the owner tried it on the real PC on 2026-11-11 and it works. `GameActions.OpenLauncher` / `LauncherTarget` (Free up space's launcher step uses it too), names in `Format.LauncherAppName`, the tray group (`ShelfViewModel.LaunchersByGames`, chip order) and the launcher chips' right-click menu with the launcher's icon; unit-tested. On the owner's PC every launcher with games resolves (Steam, Epic, GOG Galaxy, EA app, Ubisoft Connect, Xbox app, Hytale); Steam, already running, comes to the front without a second copy |
-| 23 Faster than Start | §22 | To do |
+| 23 Faster than Start | §22 | Built 2026-11-17, all five parts; to try on the real PC. a: `Library/GameSearch` (prefix, word start, initials with whole numbers, anywhere; recent first within a rank), Enter in the search box plays the top match, an "Enter" key on its tile or row, the box's help text. b: with nothing typed Enter plays the Continue playing / Welcome back game, and the placeholder says so ("Search 72 games · Enter plays Hades II"). c: `--play <id>` (`App.Play`: plays without opening the panel; a game that's gone, the anti-cheat question or an error open it), "Add my games to Start search" (Settings › Opening and setup step 1, off by default; `Services/StartMenuGames` writes `Programs\Binder games\` after each rescan, only when the stamp in settings changed; off and uninstall delete it). d: setup step 1's "N of them aren't in Start search" (`Library/StartMenuMatch` over the Start menu's shortcuts, read once per run), the import toast "Your desktop has N fewer icons" with Undo for that import, Welcome back's one-time "Binder was closed the whole time you played" (only when the game's end started the process). e: the cover's Play tooltip. Unit-tested (ranking, initials, matching, plan, file names, view models).<br>Tried on the owner's PC 2026-11-17 (published AOT build): search by initials, the Enter key (tile, list row), Enter plays the top match and the Continue playing game, Down into the grid, Esc clears, nothing with This week; the folder written with the games' icons and found by Start search; `--play` from Start with Binder running and closed (no panel, the watcher brings it back), an unknown id opens the panel; off deletes the folder; step 1's count matches the folder; the import toast and Undo of only that import; the closed-time line once (not on the next Welcome back); the Play tooltips. Fixed then: imported shortcuts matched by name (a launcher's own Start entry was duplicated), their own icons, the folder follows imports/Undo/Add/Hide at once, the Return symbol on narrow covers, list rows trim long names, a shorter German closed-time line. Not tried: German/French on screen (no per-app language switch; lengths checked), high contrast and Animation effects off (Windows settings), the uninstaller (CI's setup test checks the folder) |
 | 24 Lean speed-ups | §23 | To do |
 | 25 Weekly chart details | §24 | Proposed (2026-11-12), waiting for the owner's go; two choices open (§24 "To decide") |
-| 26 Updates from GitHub | §25 | **In progress** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; the keys (both YubiKeys' since 2026-11-15, made on the keys with PIN and touch always) and the repository set at build time since 2026-11-15: `build/OfficialRelease.props` for `publish.ps1 -Official` (release.yml), `build/Updates.targets` checks them and generates `Services.UpdateKeys`; other builds and forks without their own keys never check (About says so); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier on Linux with software keys, not yet with a YubiKey or a real draft; notes format in `docs/releases/README.md`. Default decided: Ask before installing (2026-11-14).<br>Built (2026-11-14), not yet tried on the real PC: `.github/workflows/release.yml` (v* tags only, actions pinned, a draft with the setup and its attestation; never run yet); `Services/Updater` (check with redirects only through `IsAllowedAddress`, 15 s, a client per check, no cookies; manifest kept in `%LOCALAPPDATA%\Binder\updates\` and verified again when read; the download hashed while it streams; the setup hashed again through a handle held with read sharing only and started with `/S /update`; waits for a watcher or a Game mode journal); `App.Updates` (check after a panel's first frame at most once a day, download at once with "Install automatically" or urgent, closing the panel cancels it, install when the flyout closes or at a `--background` start, the in-panel toast "Updated to …" with What's new after `--updated`, "couldn't be installed" when `--updated` comes back on the old version); Settings › About (version card with Check for updates / Update / Restart now, progress bar, What's new with Skip this version, the Updates combo); the "…" dot and first item, the tray item; three settings fields plus the mode; 37 strings in EN/DE/FR; view model tests. The pill is the panel's toast, not board 23's separate pill window. Not built: the Authenticode same-publisher check (Binder is unsigned today).<br>Next: Windows has to see the YubiKeys' certificates for `sign-release.ps1` (the inbox PIV driver says "Missing stored keyset"; next try Yubico's minidriver); then a dry run of `release.yml` + `sign-release.ps1 -DryRun`. Built 2026-11-15: the setup's `/update` (the widget comes back with `--updated --background` after a success, a failure or a busy setup) and the all-or-nothing swap (§25 "To decide" 3, owner: yes; `FileSwap`, unit-tested on real files); not yet run through `setup-test.ps1` in CI |
-| 27 Native ARM64 build | §26 | Proposed (2026-11-17), waiting for the owner's go; choices open (§26 "To decide") |
+| 26 Updates from GitHub | §25 | **Built and released** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; the keys (both YubiKeys' since 2026-11-15, made on the keys with PIN and touch always) and the repository set at build time since 2026-11-15: `build/OfficialRelease.props` for `publish.ps1 -Official` (release.yml), `build/Updates.targets` checks them and generates `Services.UpdateKeys`; other builds and forks without their own keys never check (About says so); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier; notes format in `docs/releases/README.md`. Default decided: Ask before installing (2026-11-14).<br>Built 2026-11-14: `.github/workflows/release.yml` (v* tags only, actions pinned, a draft with the setup and its attestation); `Services/Updater` (check with redirects only through `IsAllowedAddress`, 15 s, a client per check, no cookies; manifest kept in `%LOCALAPPDATA%\Binder\updates\` and verified again when read; the download hashed while it streams; the setup hashed again through a handle held with read sharing only and started with `/S /update`; waits for a watcher or a Game mode journal); `App.Updates` (check after a panel's first frame at most once a day, download at once with "Install automatically" or urgent, closing the panel cancels it, install when the flyout closes or at a `--background` start, the in-panel toast "Updated to …" with What's new after `--updated`, "couldn't be installed" when `--updated` comes back on the old version); Settings › About (version card with Check for updates / Update / Restart now, progress bar, What's new with Skip this version, the Updates combo); the "…" dot and first item, the tray item; three settings fields plus the mode; 37 strings in EN/DE/FR; view model tests. The pill is the panel's toast, not board 23's separate pill window. Not built: the Authenticode same-publisher check (Binder is unsigned today).<br>Built 2026-11-15: the setup's `/update` (the widget comes back with `--updated --background` after a success, a failure or a busy setup) and the all-or-nothing swap (§25 "To decide" 3, owner: yes; `FileSwap`, unit-tested on real files), run in CI by `setup-test.ps1`.<br>Released: Windows sees both YubiKeys' certificates and `sign-release.ps1` asks which one signs; after a dry run, 0.2.0 and 0.2.1 were published on 2026-11-15 through `release.yml` and `sign-release.ps1`. Since 2026-11-16 `virustotal.yml` scans each published setup and adds the result to the release notes. An installed copy updated itself through the app on the owner's PC. Not built: the Authenticode same-publisher check (Binder is unsigned today) |
+| 27 Game shortcuts | §26 | Built 2026-11-18 (boards 35 A, 36, 37). Tried on the real PC 2026-11-18 (Debug build, keys and mouse sent with SendInput, one 4K screen with an auto-hide taskbar): Win+Shift, G, a number on the number row shows the flash, the panel stays shut, nothing on the taskbar starts; a quick tap opens the panel at once, holding opens it after 1 s; Esc cancels ("Cancelled · Balatro didn't start", gone after about 1 s) and Esc and letters reach apps normally afterwards; the same number again plays at once (Balatro started, Binder exited, only the watcher stayed, the widget came back when it closed); another number switches; "Nothing on 4"; the switch off lets the number through and opens the panel; dragging a cover or a list row raises the numbers, the line follows the slot under the pointer ("replaces Balatro", "already there"), a drop gives the number and the toast names the game that lost it, 0 refuses, releasing elsewhere removes the row; efficiency mode back on after a flash and a cancel. Fixed: the number pad (Windows lifts Shift around a pad key while Shift is held, which ended the wait, and may hand it over as Insert, End, arrows); a game without store art showed only its name (now its generated cover); the drag's caption repeated the line above the numbers. Added (owner, 2026-11-18): held past 1 s the shortcut lists what each number plays, letting go then opens the panel; and the debug panel's "Game shortcuts" buttons. Not tried: the menu's, Game detail's and Settings' number pickers by hand (their view models are unit-tested), a real keyboard (only sent keys: the Start menu on letting go of Win and the number pad with NumLock need a person), light mode, high contrast, Animation effects off, two screens, Narrator (Windows settings Claude doesn't change), the published AOT build |
+| 28 Native ARM64 build | §27 | Proposed (2026-11-17), waiting for the owner's go; choices open (§27 "To decide") |
+| Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
+| Setup: shortcuts into the logo | §6 step 2 | Built 2026-11-16 (`Views/LogoMerge`, as on the website): after Move, the moved shortcuts' rows turn into pills and fly into the logo's covers, the rest of the page fades, then step 3. At most seven fly, ~1.5 s on the compositor, no timer; skipped with Animation effects off or in high contrast. A second Move while it runs does nothing (unit test). To try on the real PC |
+| Setup: Game mode step | §6 step 4 | Built 2026-11-17: step 4 with Off (the default) / without admin rights / All items (the helper's UAC prompt from setup), the list of changes with shields, "What the admin helper does", "change this later". View model tests.<br>Tried on the owner's PC 2026-11-17: opens on Off with Game mode off; Done with Off leaves `GameModeEnabled` false; All items with the helper installed finishes without a prompt. Fixed then: "Only items that don't need administrator rights" now drops the admin items (an allowed helper ran them), All items puts them back, the step reopens on that choice; card padding and the helper card's width. Not tried: the UAC prompt approved or declined (needs the helper removed and a person at the prompt), a standard account |
+| Debug panel | `CLAUDE.md`, "Working rules" | Built 2026-11-16: `Binder.exe --dev` in Debug builds shows every toast, card and pill through the real code with made-up data (`src/Binder/Dev`, left out of Release; `publish.ps1` stops if its marker ships). CI builds Debug too |
+| Releases and website | §25 "Making a release" | 0.2.0 and 0.2.1 published (2026-11-15). The website (`site/`, GitHub Pages) follows the latest release through GitHub's API (owner, 2026-11-16, website only) and shows its VirusTotal result |
 
 The build order is at the end of this file. The ideas under "Not decided" at the bottom must **not** be built.
 
 ---
 
 ## Decisions log
-
-**2026-11-18**
-- A release depends on its VirusTotal scan (§25, "Making a release", step 4): the draft is scanned before it's
-  signed, and `sign-release.ps1` refuses a setup the release check blocked: flagged by any of the major engines
-  (Microsoft, Kaspersky, ESET-NOD32, BitDefender, Sophos, Symantec, Avast, AVG, Malwarebytes, Trend Micro, McAfee,
-  CrowdStrike) or by 3 or more engines of any kind. The owner can override it only with a reason, which goes into the
-  published notes. Uploading the draft to VirusTotal before release is accepted (it'll be public anyway).
-- The website has a Releases page (every version's notes and setup) and, once a download starts, a dialog in the
-  site's own look (not a Windows dialog's): Defender may warn, the VirusTotal result, don't install if that's not
-  acceptable.
-
-**2026-11-17**
-- The website's new look, "the desktop story" (design canvas https://claude.ai/artifact/9tRqEzXwkccPqmsjQYqWNc):
-  the page opens on a Windows desktop full of game shortcuts that fly into Binder's shelf as you scroll, then a game
-  with Binder gone and only the helper left (its measured memory), then "Welcome back". The rest is plain Windows
-  (4 px controls, neutral greys, the accent only for actions); the blue download panel stays. The launcher chips'
-  merge into the logo and the old "How it works" scroll story went with the old hero.
-
-**2026-11-16**
-- The website may fetch what is directly about Binder's releases: `site/release.js` reads the latest release from
-  GitHub's API (download link, version, VirusTotal result). Website only; the app's rules don't change.
-- The Game mode toast's changes melt in (canvas board 33), drawn with Win2D (`Microsoft.Graphics.Win2D` 1.4.0,
-  approved; MIT source, also named in the license permission). Chosen over the package-free outline version, whose
-  joins had small corners. Its blur runs only while the toast plays.
 
 **2026-11-01**
 - Logo **B** (cover stack).
@@ -123,14 +105,7 @@ The build order is at the end of this file. The ideas under "Not decided" at the
 - **Performance** approved (§15): update WinUI to the newest patch, keep pre-scaled copies of covers, load hidden
   parts of the UI only when they're needed, try the AOT compiler's optimization settings, and move to CsWinRT 3.0
   once it's stable. Ruled out: ReadyToRun (Native AOT already does more), server GC (more memory), Win2D and
-  DirectStorage (extra dependencies for little gain), and newer CPU instruction sets (would crash on older PCs).
-
-**2026-11-11**
-- Engine versions (owner, reverses the 11-03 drop): the engine tag in Detail shows Unity's and Unreal's version
-  ("Unreal Engine 5.4", "Unity 6") when it can be read, and every engine tag gets an icon that suits the engine's
-  name (not its logo). See "Engine detection" in §9.
-- Shelf header (§16 a): Settings moved into the "…" menu as its last item (`Ctrl+,`), no separate gear. Game mode
-  shows as a checked toggle while it's on, instead of a dot on "…" that looked like a notification.
+  DirectStorage (extra dependencies for little gain; Win2D came in on 2026-11-16 for the Game mode toast only), and newer CPU instruction sets (would crash on older PCs).
 
 **2026-11-07**
 - **Quick actions** approved (§16, board 18): a "…" menu in the shelf header with Game mode on/off, Game mode
@@ -175,6 +150,11 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   assistant. The setup's disclaimer stays English.
 
 **2026-11-11**
+- Engine versions (owner, reverses the 11-03 drop): the engine tag in Detail shows Unity's and Unreal's version
+  ("Unreal Engine 5.4", "Unity 6") when it can be read, and every engine tag gets an icon that suits the engine's
+  name (not its logo). See "Engine detection" in §9.
+- Shelf header (§16 a): Settings moved into the "…" menu as its last item (`Ctrl+,`), no separate gear. Game mode
+  shows as a checked toggle while it's on, instead of a dot on "…" that looked like a notification.
 - Sessions are stored as one JSON Lines file per year (`sessions-2026.jsonl`), by the year each session ended.
   The watcher appends one line instead of reading and rewriting the whole history, so its cost and memory stay
   the same after years of play; past years never change. JSON stays (readable, no package); a binary format or
@@ -227,6 +207,48 @@ The build order is at the end of this file. The ideas under "Not decided" at the
 - **Renamed to Binder everywhere** (owner): the name, projects, namespaces and exes (`Binder.exe`,
   `Binder.Watcher.exe`, `Binder.Elevated.exe`, `BinderSetup.exe`), data folders, scheduled tasks, registry entries
   and mutexes. No migration from Game Shelf: it was never released, so an old install is uninstalled first.
+
+**2026-11-14**
+- **Updates from GitHub** approved (§25): signed manifest, the owner's two YubiKeys, the app checks at most once a
+  day when the panel opens. Default: **Ask before installing**.
+
+**2026-11-15**
+- Update keys and repository are set at build time (`build/Updates.targets`, `build/OfficialRelease.props`); only
+  official releases check for updates.
+- The setup writes and checks every file before swapping any (§25 "To decide" 3).
+- First releases: **0.2.0** and **0.2.1**, signed with a YubiKey.
+
+**2026-11-16**
+- The website may fetch what is directly about Binder's releases: `site/release.js` reads the latest release from
+  GitHub's API (download link, version, VirusTotal result). Website only; the app's rules don't change.
+- The Game mode toast's changes melt in (canvas board 33), drawn with Win2D (`Microsoft.Graphics.Win2D` 1.4.0,
+  approved; MIT source, also named in the license permission). Chosen over the package-free outline version, whose
+  joins had small corners. Its blur runs only while the toast plays.
+- Each published setup is scanned by VirusTotal (`virustotal.yml`); the result goes into the release notes and on
+  the website.
+- A debug panel for Debug builds (`Binder.exe --dev`), never in a release (rules in `CLAUDE.md`).
+- Setup step 2: the moved shortcuts fly into Binder's logo, as on the website.
+
+**2026-11-17**
+- First-run setup gets a fourth step, Game mode (§6), so the full feature set is there right after setup without
+  looking for it in Settings. Off / Only items that don't need administrator rights / All items (the helper, one
+  UAC prompt through the same `GameModeService.AllowAsync` as Settings › Game mode › Allow…). It opens on **Off**:
+  Game mode stays opt-in. A line says it can be changed later in Settings › Game mode.
+- The website's new look, "the desktop story" (design canvas https://claude.ai/artifact/9tRqEzXwkccPqmsjQYqWNc):
+  the page opens on a Windows desktop full of game shortcuts that fly into Binder's shelf as you scroll, then a game
+  with Binder gone and only the helper left (its measured memory), then "Welcome back". The rest is plain Windows
+  (4 px controls, neutral greys, the accent only for actions); the blue download panel stays. The launcher chips'
+  merge into the logo and the old "How it works" scroll story went with the old hero.
+
+**2026-11-18**
+- A release depends on its VirusTotal scan (§25, "Making a release", step 4): the draft is scanned before it's
+  signed, and `sign-release.ps1` refuses a setup the release check blocked: flagged by any of the major engines
+  (Microsoft, Kaspersky, ESET-NOD32, BitDefender, Sophos, Symantec, Avast, AVG, Malwarebytes, Trend Micro, McAfee,
+  CrowdStrike) or by 3 or more engines of any kind. The owner can override it only with a reason, which goes into the
+  published notes. Uploading the draft to VirusTotal before release is accepted (it'll be public anyway).
+- The website has a Releases page (every version's notes and setup) and, once a download starts, a dialog in the
+  site's own look (not a Windows dialog's): Defender may warn, the VirusTotal result, don't install if that's not
+  acceptable.
 
 ---
 
@@ -371,7 +393,7 @@ switch needs the owner's OK.
 
 ## 6. First-run setup (board 10)
 
-Three steps, shown once (Settings has "Run first-time setup again"):
+Four steps, shown once (Settings has "Run first-time setup again"):
 
 1. **We found N games:** launchers with game counts, each with a checkbox.
 2. **Tidy up your desktop?** The existing shortcut picker, embedded; moves are reversible as today.
@@ -380,6 +402,20 @@ Three steps, shown once (Settings has "Run first-time setup again"):
    - Start with Windows.
    - The shortcut.
    - A tip about the tray icon (and pinning as an option).
+4. **Use Game mode?** (added 2026-11-17, §11): what it does in one line, then
+   - three choices: **Off** (selected when the step opens; a run with Game mode already on starts from what's set),
+     **Only items that don't need administrator rights** (takes the admin items out of the item list, so an allowed
+     helper doesn't run them), **All items** ("Windows asks for permission once"; only on an administrator account,
+     else `GmHelperNeedsAdmin` says why; "already installed" when the helper is current; puts the default admin items
+     back when none are left; `SetupViewModel.ItemsFor`);
+   - "What it changes while you play": the default items (`GameModeInfo.DefaultItems`, the services on one line),
+     a shield on the ones that need the helper;
+   - a closed card "What the admin helper does" (`Disclosure`): the prompt, Program Files, the two scheduled tasks,
+     only the shielded changes, put back after the game, how to remove it;
+   - "You can change this later in Settings › Game mode."
+   - Done turns Game mode on or off. With All items it reads "Allow and finish…" with the shield and shows the UAC
+     prompt first: approved, setup ends with Game mode on; declined, the step stays with a notice and nothing turned
+     on; failed, an error with the code and `elevated.log`. Skip setup leaves Game mode off.
 
 ## 7. Shelf additions (boards 7 and 11)
 
@@ -826,7 +862,7 @@ record; don't build it again.
   highlight's position). No timers.
 - Built with Composition layers on top of the cover: a diagonal rainbow `CompositionLinearGradientBrush` at low
   opacity, a radial white highlight, and the edge. Blend modes (the prototype's colour-dodge) would need Win2D,
-  which isn't approved; plain alpha layers come close. Compare with the prototype, and if it isn't good enough,
+  which is approved for the Game mode toast only; plain alpha layers come close. Compare with the prototype, and if it isn't good enough,
   ask the owner before adding a package.
 - Settings › Appearance: "Shiny favourites" (on by default). No intensity setting: tune it once to the
   prototype's "Medium".
@@ -2088,7 +2124,58 @@ download's size and hash checks against a local file.
 3. ~~Write and verify every file before swapping any~~: decided 2026-11-15, **yes** (`Binder.Setup/FileSwap.cs`): all
    files are written and checked first, then swapped in; a failed swap puts back what was already swapped.
 
-## 26. Native ARM64 build (milestone 27, proposed 2026-11-17, no board)
+## 26. Game shortcuts (milestone 27, boards 35–37)
+
+The owner's idea (2026-11-18): the panel's shortcut plus a number starts a game without opening the shelf. Built
+with option A of board 35 and a 1.5 s wait (both picked by Claude for a first build; the owner may still change them).
+
+### Keys
+- **Hold the shortcut's modifiers, tap its letter, tap a number** (Win+Shift+G, 3). Windows uses Win+number with
+  every modifier for the taskbar, and Ctrl+Alt+number is AltGr on German and French keyboards, so the number can't be
+  a hotkey of its own.
+- The shortcut's `WM_HOTKEY` starts a wait (`MessageWindow.GameKeys.cs`) only while its modifiers are still down: a
+  low-level keyboard hook (`WH_KEYBOARD_LL`) that takes only 0–9 (number row and pad; with Shift held Windows hands the
+  pad's keys over as Insert, End, arrows, … and lifts Shift around them with a scan code marked 0x200, which isn't a
+  release). Letting the modifiers go without a number opens the panel as before. The hook exists only during that wait
+  and while the flash waits (for Esc and another number); its callback only records the key and returns, the work runs
+  after.
+- **Held for 1 s** (owner, 2026-11-18): instead of opening the panel, the list of what each number plays shows where
+  the flash does (`GameKeyFlash`'s list: "Press a number · let go to open Binder", 0 and its last game, then the
+  numbers given, or how to give one). A number plays as above; letting go closes it and opens the panel; Esc closes
+  it and opens nothing. At most 15 s, should the keys' release never reach the hook.
+- 0 is always the last game played on the shelf (`GameKeys.LastPlayedGame`); 1–9 are the user's
+  (`Settings.GameKeySlots`, number → game id, checked on every use). `Settings.GameKeysOn`, on by default.
+
+### The flash (board 35, A)
+- `Views/GameKeyFlash`: the game's banner (Steam's hero and logo via `BannerLogo`, else the cover beside the name on
+  the cover's color) over a strip "Starting · Esc to cancel" with the keys pressed, centered above the taskbar of the
+  screen with the mouse, without focus. A bar empties over `GameKeys.Wait` (1.5 s).
+- Esc: "Cancelled · [Game] didn't start", gone after 1.2 s. The same number again starts at once; another number
+  (modifiers still held) switches. The panel opening cancels the wait.
+- After the wait the game plays as `--play` does (`App.PlayFromStart`): no panel, the watcher, Game mode.
+- A number without a game: the pill "Nothing on 4 · right-click a game in Binder", or "No game played yet" for 0.
+- Animations off: no rise and fade; the bar still empties (it shows time). High contrast: no art, system colors.
+
+### Giving a game a number (boards 36, 37)
+- The cover's right-click menu: "Shortcut ›" with None and 1–9, each naming the game that has it.
+- Game detail: a Shortcut card under "This game" (second line "Win+Shift+G, 3").
+- Settings › Opening Binder: "Game shortcuts" with a switch and a list of 0–9 (0 fixed, 1–9 a list of the shelf's
+  games).
+- Dragging a cover or row on the shelf raises the numbers 0–9 over the bottom of the grid; dropping it on one gives
+  the game that number (0 refuses). The drag carries only our own format.
+- A number that's taken moves to the new game; the toast says which game has none now. A game that leaves the
+  library frees its number.
+
+### Not chosen
+- More than 10 slots, letters, or a confirmation: search (Win+Shift+G, type, Enter) covers the rest.
+- A badge on covers: the number shows in Game detail and Settings only.
+
+### Touches
+`Library/GameKeys` (tested), `MessageWindow.GameKeys.cs`, `App.GameKeys.cs`, `Views/GameKeyFlash`,
+`MainWindow.GameKeys.cs`, `ViewModels/GameKeyChoices` and `SettingsViewModel.GameKeys.cs` (tested), `GameMenu`,
+`DetailView`, `SettingsView`, `ShelfView.GameKeys.cs`, `site/docs.html` (what the keyboard hook does).
+
+## 27. Native ARM64 build (milestone 28, proposed 2026-11-17, no board)
 
 Binder ships for x64 only. Windows 11 on Arm runs it through emulation (Prism), so it works there today, but every
 start pays for the translation and the emulated watcher sits in memory while a game runs. A native `win-arm64`
@@ -2156,28 +2243,31 @@ in `CLAUDE.md`.
 9. **Window behavior:** flyout, tray icon, shortcut, stay-ready footprint (§5) and first-run setup (§6). *(Done.)*
    Measure and report.
 10. **Detail additions:** playtime chart and weekly card (§7, §9), launch options, anti-cheat (§9). *(Done.)*
-11. **Crash detection** (§10).
-12. **More launchers** (§8). Verify each one on the real PC. *(EA app, Ubisoft Connect, Xbox app and Rockstar done.)*
-13. **Controller** (§4).
+11. **Crash detection** (§10). *(Done.)*
+12. **More launchers** (§8). Verify each one on the real PC. *(EA app, Ubisoft Connect, Xbox app and Rockstar done;
+    Battle.net, Riot, Amazon, itch, Humble and Meta to do.)*
+13. **Controller** (§4). *(Built; tried briefly with a real pad.)*
 14. **Game mode:**
     - First the no-admin part: power, priority, apps, Game Bar, journal, toast.
     - Then the elevated helper, the installer step, the services and the network items.
     - Update the security rules in `CLAUDE.md` in the same milestone.
+    *(Both parts built; see the table.)*
 15. **Free up space** (§12). *(Done.)*
 16. **Look and moments** (§13): logo on banners first (the others reuse it), then the detail animation, "Welcome
-    back" with milestones, and shiny favourites. Check the sheen against the prototype on the real PC.
+    back" with milestones, and shiny favourites. Check the sheen against the prototype on the real PC. *(Built; the
+    detail animation was removed.)*
 17. **Advanced: sources and artwork** (§14): move the defaults into `SourceDefaults` first (no behaviour change,
     covered by the existing tests), then the settings page and the "Check" buttons. Update the network rule in
-    `CLAUDE.md`.
+    `CLAUDE.md`. *(Built.)*
 18. **Performance** (§15): the WinUI patch first, then pre-scaled covers, deferred loading and the AOT settings, each
     measured on its own. CsWinRT 3.0 when it's stable.
-19. **Quick actions** (§16): the header menu first, then the tray items.
+19. **Quick actions** (§16): the header menu first, then the tray items. *(Done.)*
 20. **Restart after a crash** (§17): the in-a-row count and the toggle first, then the toast, then the watcher's
-    relaunch with "Come back" off.
+    relaunch with "Come back" off. *(Built.)*
 21. **Softer sound and cover hover** (§19): the Lullaby sound (compare the C# render with board 25's), then the
-    Media tile hover; check both on the real PC (speakers and headphones; mouse, keyboard and controller).
+    Media tile hover; check both on the real PC (speakers and headphones; mouse, keyboard and controller). *(Built.)*
 22. **Open a launcher** (§21): the shared helper first (Free up space switches to it), then the tray group, then
-    the chip menu. Verify each installed launcher on the real PC.
+    the chip menu. Verify each installed launcher on the real PC. *(Done.)*
 23. **Faster than Start** (§22): a and b first (search ranking with tests, then Enter), then d and e, then c
     (`--play` first, then the Start folder and the setting). Count the "not in Start search" games on the real PC
     and compare with what Start actually finds.
@@ -2185,10 +2275,13 @@ in `CLAUDE.md`.
     first), then b, e and c.
 25. **Weekly chart details** (§24), once approved: `PlaytimeStats.Week` per day and game with tests, then the bar
     tooltips and their automation names, then the card line's top 3, then (optionally) Detail's session counts.
-26. **Updates from GitHub** (§25), once approved: the keys and `scripts/sign-release.ps1` first, then
+26. **Updates from GitHub** (§25): the keys and `scripts/sign-release.ps1` first, then
     `UpdateManifest` with tests, then `release.yml` with a dry run (a draft that's signed but never
     published, checked by the unit tests' verifier), then the app's check, About cards and download, then install on close and the
     pill. Update the rules in `CLAUDE.md`, the README, `docs/installer.md` and the site in the same milestone.
+    *(Built; 0.2.0 and 0.2.1 released.)*
+27. **Game shortcuts** (§26): first check on the real PC that the hook gets the number while Win+Shift is held; then
+    the flash, Esc, and the three ways to give a number. *(Built.)*
 
 ## Not decided (don't build)
 

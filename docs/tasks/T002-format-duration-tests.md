@@ -1,5 +1,5 @@
 # T002 · Tests for `Format.Duration`
-Status: ready
+Status: done (2026-11-17)
 Depends on: T001
 Branch: agent/T002
 

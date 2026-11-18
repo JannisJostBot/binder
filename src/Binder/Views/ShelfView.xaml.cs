@@ -208,7 +208,11 @@ public sealed partial class ShelfView : UserControl
     {
         switch (e.Key)
         {
-            case VirtualKey.Down or VirtualKey.Enter when Visible.Count > 0:
+            // Enter plays the top match, or with nothing typed the "Continue playing" game (spec §22 a, b).
+            case VirtualKey.Enter:
+                e.Handled = ViewModel?.PlayEnterGame() == true;
+                break;
+            case VirtualKey.Down when Visible.Count > 0:
                 FocusIndex(0);
                 e.Handled = true;
                 break;
@@ -331,6 +335,7 @@ public sealed partial class ShelfView : UserControl
         {
             tile.DetailsRequested ??= g => ViewModel?.OpenDetails(g);
             tile.Show(game, _tileWidth, _tileHeight, args.ItemIndex);
+            tile.SetEnterHint(args.ItemIndex == 0 && ViewModel?.Searching == true);
             if (_padMode && args.ItemContainer.FocusState != FocusState.Unfocused) tile.SetPadFocus(true);
         }
         args.ItemContainer.UseSystemFocusVisuals = !_padMode;
@@ -345,6 +350,7 @@ public sealed partial class ShelfView : UserControl
         {
             row.DetailsRequested ??= g => ViewModel?.OpenDetails(g);
             row.Show(game, args.ItemIndex);
+            row.SetEnterHint(args.ItemIndex == 0 && ViewModel?.Searching == true);
         }
         Describe(args.ItemContainer, game);
         args.Handled = true;
@@ -448,7 +454,7 @@ public sealed partial class ShelfView : UserControl
                 case GameAction.Details: vm.OpenDetails(game); break;
                 default: vm.Act(game, action); break;
             }
-        });
+        }, number => vm.SetGameKey(game, number));
     }
 
     private static SelectorItem? FindContainer(DependencyObject? element)

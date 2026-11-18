@@ -84,6 +84,34 @@ internal static class DevPanel
         slow.Click += (_, _) => app.DevSlowToasts = slow.IsChecked == true;
         list.Children.Add(slow);
 
+        Group("Game shortcuts (nothing starts)");
+        Add("Flash · Steam game on 3 (banner and logo)", () =>
+        {
+            if (app.DevSteamGame is { } game) app.DevGameKeyFlash(game, 3, cancel: false);
+        });
+        Add("Flash · other game on 2 (cover and name)", () =>
+        {
+            if (app.DevOtherGame is { } game) app.DevGameKeyFlash(game, 2, cancel: false);
+        });
+        Add("Flash · then Esc (Cancelled)", () =>
+        {
+            if (app.DevSteamGame is { } game) app.DevGameKeyFlash(game, 3, cancel: true);
+        });
+        Add("Shortcut held · the list of numbers (4 s)", () => app.DevGameKeyList(empty: false));
+        Add("Shortcut held · no numbers given yet (4 s)", () => app.DevGameKeyList(empty: true));
+        Add("Nothing on 4 (pill)", () => app.DevGameKeyNothing(4));
+        Add("No game played yet (pill, 0)", () => app.DevGameKeyNothing(0));
+        Add("Given 3 (toast, opens the panel)", () =>
+        {
+            var name = app.DevGame?.Name ?? "Test game";
+            app.DevInPanel(panel => panel.DevGameKeyToast(name, 3, null));
+        });
+        Add("Given 3, another game had it (toast)", () =>
+        {
+            var name = app.DevGame?.Name ?? "Test game";
+            app.DevInPanel(panel => panel.DevGameKeyToast(name, 3, "Other game"));
+        });
+
         Group("Crash card (opens the panel)");
         Crash("Graphics driver (NVIDIA), driver reset", g => Record(g, GameEnding.Crashed, CrashCulprit.NvidiaDriver, 0xC0000005, "nvwgf2umx.dll", driverReset: true));
         Crash("Overlay or mod", g => Record(g, GameEnding.Crashed, CrashCulprit.Overlay, 0xC0000005, "dxgi.dll"));
