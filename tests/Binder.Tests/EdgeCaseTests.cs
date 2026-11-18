@@ -80,7 +80,9 @@ static partial class Tests
 
         // Steam clears "fully installed" while it updates a game: an installed game stays, a first install doesn't.
         var depots = new VdfObject { ["InstalledDepots"] = new VdfObject { ["571"] = new VdfObject { ["manifest"] = "1" } } };
+        // 1030 (installed + update required + update started) was read from a real update on 2026-11-18.
         Check(SteamSource.IsInstalled(4, new VdfObject()) && SteamSource.IsInstalled(1026, depots) &&
+              SteamSource.IsInstalled(1030, depots) &&
               !SteamSource.IsInstalled(1026, new VdfObject()) && !SteamSource.IsInstalled(2052, depots),
             "Steam: updating counts as installed, a first install and an uninstall don't");
 
