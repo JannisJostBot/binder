@@ -2,30 +2,38 @@
 // past; the caption crossing the middle of the window sets the scene's step (data-step: 0 the cluttered desktop,
 // 1 the shortcuts fly into Binder, 2 the shelf, 3 the game with Binder closed, 4 welcome back) and styles.css moves
 // the scene. This script also works out where each game shortcut flies: onto its own cover in the shelf. Nothing
-// is fetched; it only reacts to scrolling (IntersectionObserver) and to the window changing size.
+// is fetched; it only reacts to scrolling (at most once a frame) and to the window changing size.
 (function () {
   'use strict';
 
   function setUp() {
     var stage = document.querySelector('.story .stage');
     var steps = document.querySelectorAll('.story-step');
-    if (!stage || !steps.length || !('IntersectionObserver' in window)) return;
+    if (!stage || !steps.length) return;
 
     // The line a caption crosses to set its step: the middle of the window, or on narrow windows (where the
-    // picture is pinned at the top and the captions scroll below it) a little under the picture.
+    // picture is pinned at the top and the captions scroll below it) a little under the picture. Where each caption
+    // starts on the page is noted once (and again when the window changes size); scrolling then only compares the
+    // scroll position with those numbers, at most once a frame. (Not an IntersectionObserver: inside a frame from
+    // another site, as in a preview, browsers ignore its margins, and the step changed too early or got stuck.)
     var narrow = window.matchMedia('(max-width: 900px)');
-    var observer = null;
-    function observe() {
-      if (observer) observer.disconnect();
-      var line = Math.round(window.innerHeight / 2);
-      if (narrow.matches) line = Math.min(window.innerHeight - 2, Math.round(parseFloat(getComputedStyle(stage).top) + stage.offsetHeight + 80));
-      observer = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) stage.setAttribute('data-step', entry.target.getAttribute('data-step'));
-        });
-      }, { rootMargin: '-' + line + 'px 0px -' + (window.innerHeight - line - 1) + 'px 0px' });
-      for (var i = 0; i < steps.length; i++) observer.observe(steps[i]);
+    var starts = [], line = 0, ticking = 0, measured = false;
+    function place() {
+      var y = window.scrollY || window.pageYOffset;
+      for (var i = 0; i < steps.length; i++) starts[i] = steps[i].getBoundingClientRect().top + y;
+      line = narrow.matches ? stage.offsetHeight + 80 : window.innerHeight / 2;
     }
+    function update() {
+      ticking = 0;
+      var at = (window.scrollY || window.pageYOffset) + line, step = steps[0].getAttribute('data-step');
+      for (var i = 0; i < steps.length; i++) if (at >= starts[i]) step = steps[i].getAttribute('data-step');
+      if (stage.getAttribute('data-step') === step) return;
+      // Measure before the first flight if the page had no size yet when it loaded (a preview's hidden frame).
+      if (!measured) measure();
+      stage.setAttribute('data-step', step);
+    }
+    function observe() { place(); update(); }
+    window.addEventListener('scroll', function () { if (!ticking) ticking = requestAnimationFrame(update); }, { passive: true });
     observe();
 
     // Each shortcut's icon moves onto its cover: the distance between their centres and the scale between them.
@@ -51,6 +59,7 @@
         icons[i].style.setProperty('--dx', ((bx - ax) / k).toFixed(1) + 'px');
         icons[i].style.setProperty('--dy', ((by - ay) / k).toFixed(1) + 'px');
         icons[i].style.setProperty('--s', (tile.offsetWidth / (pic.offsetWidth * k)).toFixed(3));
+        measured = true;
       }
     }
 
@@ -63,7 +72,7 @@
       if (window.innerWidth !== width) { width = window.innerWidth; measure(); }
     }
     window.addEventListener('resize', function () { if (!pending) pending = requestAnimationFrame(resized); });
-    window.addEventListener('load', measure);
+    window.addEventListener('load', function () { observe(); measure(); });
     measure();
     stage.classList.add('is-live');
   }
