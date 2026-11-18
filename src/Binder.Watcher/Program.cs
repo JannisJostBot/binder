@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Binder.Shared;
@@ -45,6 +46,8 @@ internal static class Program
             return GameMode.RecoverPending() is null ? 3 : 0;
         }
 
+        // When this watcher started (just after the game was asked to start): the earliest a session can begin.
+        var launched = DateTimeOffset.Now;
         string? gameId = null, dir = null, processName = null, modeItems = null;
         int timeoutSeconds = 180;
         bool comeBack = true, toast = true, restartOnCrash = false;
@@ -72,20 +75,34 @@ internal static class Program
         }
         if (gameId is null || (dir is null && processName is null)) return 2;
 
+        // One watcher per game. Another one already follows it (Play pressed again while it starts, or its Start
+        // entry clicked while it runs): that one records the session and brings the widget back; a second would
+        // record the same playtime twice.
+        var gameMutex = TakeGameMutex(gameId);
+        if (gameMutex is null) return 4;
+        // Set once the game has closed: a widget whose countdown ends meanwhile stays for the return.
+        using var ended = new EventWaitHandle(false, EventResetMode.ManualReset, WatcherNames.Ended(gameId));
+
+        // A game that is already up (an exe started directly) is held before Game mode's changes, which can take a
+        // while (closing apps, OneDrive, the admin part): a game that crashes meanwhile is still seen ending.
+        var matcher = new Matcher(dir, processName);
+        var handles = new List<IntPtr>();
+        matcher.FindMatches(handles);
+
         // Game mode: applied now, while the game starts; put back once it's closed (or never showed up).
         var gameMode = modeItems is null ? null : GameMode.Begin(gameId, modeItems, closeApps, network,
             calmApps.FindAll(p => dir is null || !p.StartsWith(Path.TrimEndingDirectorySeparator(dir) + "\\", StringComparison.OrdinalIgnoreCase)));
         // "Game mode is on": only for a widget that is still up (the countdown, or Keep open); one that isn't
         // running doesn't start for it, since it's gone while a game runs.
         if (AppliedArgument(gameMode?.Applied, toast) is { } applied) StartWidget("--applied", applied);
-        var matcher = new Matcher(dir, processName) { RaisePriority = gameMode?.RaisePriority == true };
+        matcher.RaisePriority = gameMode?.RaisePriority == true;
+        matcher.RaiseFound(handles); // found before Game mode was applied
 
         // Detection phase: the store app may start first, so poll for a while.
-        var handles = new List<IntPtr>();
         long deadline = Environment.TickCount64 + timeoutSeconds * 1000L;
         while (true)
         {
-            matcher.FindMatches(handles);
+            if (handles.Count == 0) matcher.FindMatches(handles);
             if (handles.Count > 0)
             {
                 gameMode?.GameFound(matcher.NamesOf(handles)); // network priority for the game's own exe
@@ -101,12 +118,24 @@ internal static class Program
             Thread.Sleep(PollIntervalMs);
         }
 
-        var start = DateTimeOffset.Now;
+        // The session starts when the game's process did (detection polls, and Game mode may have taken a while),
+        // but never before this watcher: a game left running from earlier only counts from this Play.
+        var now = DateTimeOffset.Now;
+        var start = matcher.EarliestStart(handles) is { } created ? (created < launched ? launched : created > now ? now : created) : now;
         // Saved once: here after the game, or from the system events thread when Windows shuts down or the user
-        // signs out while the game runs (the watcher would be ended before it got there).
-        int saved = 0;
-        TimeSpan Save(DateTimeOffset until, GameExit how, bool reporter) =>
-            Interlocked.Exchange(ref saved, 1) == 0 ? SaveSession(gameId, start, until, how, reporter) : TimeSpan.Zero;
+        // signs out while the game runs (the watcher would be ended before it got there). The second caller waits
+        // for the first to finish writing: during a shutdown the process may end as soon as either one returns.
+        var saveLock = new Lock();
+        bool saved = false;
+        TimeSpan Save(DateTimeOffset until, GameExit how, bool reporter)
+        {
+            lock (saveLock)
+            {
+                if (saved) return TimeSpan.Zero;
+                saved = true;
+                return SaveSession(gameId, start, until, how, reporter);
+            }
+        }
         SystemEvents.Listen(() => Save(DateTimeOffset.Now, default, false));
 
         DateTimeOffset end;
@@ -122,6 +151,7 @@ internal static class Program
             end = DateTimeOffset.Now;
             exit = matcher.ExitOf(handles);
             CloseAll(handles);
+            ended.Set();
 
             // Shutting down or signing out: no time to look for a restart, save now.
             if (SystemEvents.Ending) break;
@@ -136,13 +166,19 @@ internal static class Program
             }
             matcher.NoteReporters = false;
             if (handles.Count == 0) break;
+            ended.Reset();
             gameMode?.GameFound(matcher.NamesOf(handles)); // it restarted itself, maybe as another exe
         }
 
         var played = Save(end, exit, matcher.ReporterSeen);
+        // The session is saved: a new Play of this game (a crash restart) gets its own watcher, even while this one
+        // still puts Game mode back.
+        gameMutex.ReleaseMutex();
+        gameMutex.Dispose();
         // Shutting down or signing out: nothing comes back now. Game mode's journal is put back at the next start
         // (the widget's, or the admin helper's at logon); reopening closed apps during a shutdown would be wrong.
-        if (SystemEvents.Ending) return 0;
+        // A shutdown that is called off (another app held it up and the user cancelled) carries on as usual.
+        if (SystemEvents.Ending && SystemEvents.WaitForOutcome()) return 0;
         bool crashed = restartOnCrash && MayRestart(exit.Code, played);
 
         if (comeBack)
@@ -166,6 +202,25 @@ internal static class Program
         var result = ToastArgument(gameMode?.End(), toast);
         if (ReturnArguments(gameId, comeBack, crashed, result) is { } widgetArgs) StartWidget(widgetArgs);
         return 0;
+    }
+
+    /// <summary>
+    /// This game's watcher mutex (<c>Local\Binder.Watcher.&lt;hash of the id&gt;</c>), or null when another watcher
+    /// holds it. One left by a watcher that was ended is taken over.
+    /// </summary>
+    private static Mutex? TakeGameMutex(string gameId)
+    {
+        var mutex = new Mutex(false, WatcherNames.Mutex(gameId));
+        try
+        {
+            if (mutex.WaitOne(0)) return mutex;
+        }
+        catch (AbandonedMutexException)
+        {
+            return mutex;
+        }
+        mutex.Dispose();
+        return null;
     }
 
     /// <summary>A session at least this long may be restarted after a crash (spec §17).</summary>
@@ -261,7 +316,30 @@ internal static class Program
         private readonly HashSet<uint> _raised = [];
 
         /// <summary>Game mode: runs each matched game process "Above normal" once, if it's at Normal (never higher).</summary>
-        public bool RaisePriority { get; init; }
+        public bool RaisePriority { get; set; }
+
+        /// <summary>Raises the processes found before <see cref="RaisePriority"/> was known (if it's on).</summary>
+        public void RaiseFound(List<IntPtr> handles)
+        {
+            if (!RaisePriority) return;
+            foreach (var h in handles)
+            {
+                uint pid = Native.GetProcessId(h);
+                if (pid != 0 && _raised.Add(pid)) Raise(pid, _names.GetValueOrDefault(h) ?? "");
+            }
+        }
+
+        /// <summary>When the earliest of these processes started, or null if Windows doesn't say.</summary>
+        public DateTimeOffset? EarliestStart(List<IntPtr> handles)
+        {
+            long earliest = 0;
+            foreach (var h in handles)
+            {
+                long created = Native.CreationTime(h);
+                if (created > 0 && (earliest == 0 || created < earliest)) earliest = created;
+            }
+            return earliest > 0 ? DateTimeOffset.FromFileTime(earliest) : null;
+        }
 
         /// <summary>While set (after the game exited), a matching crash reporter sets <see cref="ReporterSeen"/>.</summary>
         public bool NoteReporters { get; set; }
@@ -356,7 +434,7 @@ internal static class Program
             {
                 try
                 {
-                    AppendSession(gameId, from, to, last ? exit : default, last && crashReporter);
+                    AppendSession(gameId, from, to, last ? exit : default, last && crashReporter, resumed: from > start);
                     break;
                 }
                 catch (Exception e) when (e is IOException or UnauthorizedAccessException)
@@ -393,7 +471,7 @@ internal static class Program
     /// Appends the session as one line to this year's sessions file (<see cref="Shared.SessionLog"/>), without
     /// reading the file or loading a serializer.
     /// </summary>
-    private static void AppendSession(string gameId, DateTimeOffset start, DateTimeOffset end, GameExit exit, bool crashReporter)
+    private static void AppendSession(string gameId, DateTimeOffset start, DateTimeOffset end, GameExit exit, bool crashReporter, bool resumed)
     {
         var dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Binder");
         var buffer = new System.Buffers.ArrayBufferWriter<byte>(256);
@@ -407,6 +485,8 @@ internal static class Program
             w.WriteNumber("ExitCode", exit.Code);
             if (exit.Exe is not null) w.WriteString("Exe", exit.Exe);
             if (crashReporter) w.WriteBoolean("CrashReporter", true);
+            // A part after the PC slept: it didn't start with the game (no "closed right after starting").
+            if (resumed) w.WriteBoolean("Resumed", true);
             w.WriteEndObject();
         }
         Shared.SessionLog.AppendLine(Shared.SessionLog.PathFor(dataDir, end), buffer.WrittenSpan);

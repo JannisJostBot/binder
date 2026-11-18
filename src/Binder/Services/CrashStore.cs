@@ -27,9 +27,11 @@ internal static class CrashStore
             .ToList();
         if (todo.Count == 0) return records;
 
+        var byId = new Dictionary<string, Game>(games.Count);
+        foreach (var g in games) byId.TryAdd(g.Id, g);
         foreach (var session in todo)
         {
-            var game = games.FirstOrDefault(g => g.Id == session.GameId);
+            var game = byId.GetValueOrDefault(session.GameId);
             var folder = game is null ? null : GameActions.InstallFolder(game);
             var events = CrashLog.Read(session.Start - TimeSpan.FromSeconds(5), session.End + CrashAnalysis.EventSlack);
             records.Add(CrashAnalysis.Analyze(session, folder, events));

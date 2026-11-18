@@ -97,12 +97,32 @@ public static class Launcher
     /// The folder the watcher matches processes in: the install folder, or the exe's own folder. Never the
     /// folder of a .lnk/.url (that's our shortcuts folder, which no game runs from).
     /// </summary>
-    public static string? WatchFolder(Game game) =>
-        game.InstallDir ??
-        (game.ExePath is { } exe && exe.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? Path.GetDirectoryName(exe) : null);
+    public static string? WatchFolder(Game game)
+    {
+        // A shortcut or added program that starts a launcher (Riot Client, GOG Galaxy, …; also entries made before
+        // these were known): the launcher's folder would count as the game for as long as the launcher runs.
+        if (game.Source is GameSource.Shortcut or GameSource.Manual && ShortcutImporter.IsLauncher(game.IconPath ?? game.ExePath))
+            return null;
+        return game.InstallDir ??
+            (game.ExePath is { } exe && exe.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? Path.GetDirectoryName(exe) : null);
+    }
+
+    /// <summary>
+    /// The process name the watcher follows, if any. Not a Windows program an older import picked from the
+    /// shortcut's target (explorer.exe for "explorer.exe shell:…" shortcuts is always running); one the user chose
+    /// under Process to watch is kept.
+    /// </summary>
+    public static string? WatchedProcess(Game game)
+    {
+        if (string.IsNullOrEmpty(game.ProcessName)) return null;
+        if (game.Source == GameSource.Shortcut && ShortcutImporter.IsWindowsProgram(game.IconPath) &&
+            string.Equals(Path.GetFileName(game.IconPath), game.ProcessName, StringComparison.OrdinalIgnoreCase))
+            return null;
+        return game.ProcessName;
+    }
 
     /// <summary>True when the watcher can tell that the game closed (a folder or a process name to watch).</summary>
-    public static bool CanWatch(Game game) => WatchFolder(game) is not null || !string.IsNullOrEmpty(game.ProcessName);
+    public static bool CanWatch(Game game) => WatchFolder(game) is not null || WatchedProcess(game) is not null;
 
     /// <summary>Starts the watcher for a launched game. Returns an error message, or null on success.</summary>
     public static string? StartWatcher(Game game, bool comeBack)
@@ -116,10 +136,10 @@ public static class Launcher
             psi.ArgumentList.Add("--dir");
             psi.ArgumentList.Add(dir);
         }
-        if (!string.IsNullOrEmpty(game.ProcessName))
+        if (WatchedProcess(game) is { } process)
         {
             psi.ArgumentList.Add("--process");
-            psi.ArgumentList.Add(game.ProcessName);
+            psi.ArgumentList.Add(process);
         }
         psi.ArgumentList.Add("--timeout");
         psi.ArgumentList.Add(DetectionTimeoutSeconds.ToString());

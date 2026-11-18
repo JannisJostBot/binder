@@ -28,6 +28,8 @@ public sealed class CrashRecord
     public bool Hang { get; set; }
     public bool DriverReset { get; set; }
     public bool CrashReporter { get; set; }
+    /// <summary>The session's part after the PC slept: the game ran longer than <see cref="End"/> - <see cref="Start"/>.</summary>
+    public bool Resumed { get; set; }
     /// <summary>The crash card was dismissed (or played again).</summary>
     public bool Seen { get; set; }
 
