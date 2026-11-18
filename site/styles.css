@@ -967,7 +967,11 @@ summary::-webkit-details-marker { display: none; }
   font-size: 13px;
   transform: translateX(-50%);
   white-space: nowrap;
+  z-index: 3;
+  transition: opacity 0.25s, transform 0.25s, visibility 0s;
 }
+/* Gone once the page scrolls; back at the very top. */
+.stage.is-scrolled .story-cue { opacity: 0; visibility: hidden; transform: translate(-50%, 8px); transition: opacity 0.25s, transform 0.25s, visibility 0s 0.25s; }
 
 /* Without scripts: the desktop as it is with Binder open, no story to move. */
 @media (scripting: none) {
@@ -977,7 +981,7 @@ summary::-webkit-details-marker { display: none; }
   .story-cue { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ico, .ico i, .ico span, .mock-panel, .mock-grid span, .game-scene, .game-scene *, .procs { transition: none !important; animation: none !important; }
+  .ico, .ico i, .ico span, .mock-panel, .mock-grid span, .game-scene, .game-scene *, .procs, .story-cue { transition: none !important; animation: none !important; }
   /* The game as a still frame: the asteroids in view. */
   .sf-r1 { transform: translateX(-42cqw); }
   .sf-r2 { transform: translateX(-58cqw); }

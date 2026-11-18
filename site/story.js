@@ -25,7 +25,10 @@
     }
     function update() {
       ticking = 0;
-      var at = (window.scrollY || window.pageYOffset) + line, step = steps[0].getAttribute('data-step');
+      var y = window.scrollY || window.pageYOffset;
+      // The "Scroll to tidy this desktop" hint goes as soon as the page scrolls.
+      stage.classList.toggle('is-scrolled', y > 24);
+      var at = y + line, step = steps[0].getAttribute('data-step');
       for (var i = 0; i < steps.length; i++) if (at >= starts[i]) step = steps[i].getAttribute('data-step');
       if (stage.getAttribute('data-step') === step) return;
       // Measure before the first flight if the page had no size yet when it loaded (a preview's hidden frame).
