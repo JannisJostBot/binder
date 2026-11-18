@@ -7,7 +7,8 @@
   'use strict';
 
   function setUp() {
-    var stage = document.querySelector('.story .stage');
+    var story = document.querySelector('.story');
+    var stage = story && story.querySelector('.stage');
     var steps = document.querySelectorAll('.story-step');
     if (!stage || !steps.length) return;
 
@@ -35,7 +36,11 @@
       if (!measured) measure();
       // Once the shortcuts have flown, going back to the first step flies them home (styles.css, ico-home).
       if (step !== '0') stage.classList.add('has-flown');
+      // Where it came from (the shelf is clicked open only coming from the cluttered desktop), and the step on
+      // the section too (the headline's window minimises once the story moves on).
+      stage.setAttribute('data-from', stage.getAttribute('data-step'));
       stage.setAttribute('data-step', step);
+      story.setAttribute('data-step', step);
     }
     function observe() { place(); update(); }
     window.addEventListener('scroll', function () { if (!ticking) ticking = requestAnimationFrame(update); }, { passive: true });
