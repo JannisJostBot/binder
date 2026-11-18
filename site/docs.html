@@ -11,6 +11,7 @@
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <script src="nav.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -31,10 +32,23 @@
         <a href="index.html#privacy">Privacy</a>
         <a href="index.html#faq">FAQ</a>
         <a href="docs.html" aria-current="page">Docs</a>
+        <a href="releases.html">Releases</a>
       </nav>
       <div class="header-actions">
         <a href="https://github.com/JannisJostBot/binder" class="header-github" title="Source code on GitHub"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"></path><path d="M16 7l5 5-5 5"></path></svg><span>GitHub</span></a>
         <a href="index.html#download" class="button button-small header-download"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download</a>
+        <details class="header-menu">
+          <summary aria-label="Menu"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></summary>
+          <nav aria-label="Menu" class="header-menu-list">
+            <a href="index.html#how">How it works</a>
+            <a href="index.html#features">Features</a>
+            <a href="index.html#privacy">Privacy</a>
+            <a href="index.html#faq">FAQ</a>
+            <a href="docs.html" aria-current="page">Docs</a>
+            <a href="releases.html">Releases</a>
+            <a href="https://github.com/JannisJostBot/binder">Source code on GitHub</a>
+          </nav>
+        </details>
       </div>
     </div>
   </header>
@@ -317,6 +331,7 @@
         <ul class="docs-list">
           <li>Binder checks GitHub for a new version once a day, when it opens. Settings › About › Updates offers <strong>Install automatically</strong>, <strong>Ask before installing</strong> and <strong>Don't check</strong>; with Don't check, Binder makes no request at all.</li>
           <li>The check downloads a list signed by Binder's author. Binder installs only a newer version whose signature, size and checksum match, and never an older one.</li>
+          <li>Before a version is signed, its setup is scanned with VirusTotal. It isn't released if one of the major antivirus engines (including Microsoft Defender's) or 3 or more engines flag it, unless the author overrides that with a reason, which then appears in that version's release notes.</li>
           <li>It never installs while a game is running or Game mode still has changes applied. With Ask before installing, security fixes still install when you close Binder.</li>
           <li>Downloads are kept in <code>%LOCALAPPDATA%\Binder\updates\</code> and deleted once installed.</li>
           <li>A copy built from the source code checks only if its build names a repository and signing keys. Without them it never checks, and Settings › About says <strong>This build doesn't check for updates</strong>.</li>
@@ -352,6 +367,7 @@
         <a href="index.html#disclaimer">Disclaimer</a>
         <a href="index.html#privacy">Privacy</a>
         <a href="docs.html">Documentation</a>
+        <a href="releases.html">Releases</a>
         <a href="https://github.com/JannisJostBot/binder">Source code</a>
       </nav>
       <span class="footer-copy">© 2026 Jannis Jost</span>

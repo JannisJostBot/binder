@@ -1,52 +1,47 @@
 /* Binder website: index.html and docs.html.
 
-   Look: Windows-native (Segoe UI Variable, the Windows accent for actions, light and dark like the app), with a
-   few things of its own: pill buttons, a soft "bloom" in the logo's blues, a quiet wallpaper behind the product
-   shot, the logo's fanned cover stack behind the download panel, the app's filter chips for the launchers, and a deep Binder-blue
-   privacy panel.
+   Look: plain Windows. Segoe UI Variable, neutral greys, the Windows accent only for actions and links, 4 px corners
+   on controls and 8 px on cards, light and dark like the app. No blooms, glass or decorative shapes: the colour
+   comes from the pictures. The home page opens with one picture that tells the story, a Windows desktop (.stage,
+   story.js), and the rest of the page stays quiet.
 
-   Colours come only from the variables below. The product shot (.stage, .mock-*) and the step and feature
-   pictures are pictures of the app and keep its own colours. Layout is in classes here, not inline styles.
-   Phones: everything up to 600 px is at the end of each part ("@media (max-width: 600px)"). */
+   Colours come only from the variables below. The desktop story (.stage, .mock-*, .ico, .procs) and the feature
+   pictures are pictures of a PC and of the app and keep their own fixed colours. Layout is in classes here, not
+   inline styles. Phones: everything up to 600 px (900 px for the story) comes right after each part. */
 
 :root {
   --accent: #005FB8;              /* Windows' default light-theme accent: buttons, links */
   --accent-hover: #004C99;
   --accent-edge: rgba(0, 0, 0, 0.12);
   --on-accent: #FFFFFF;
-  --accent-tint: #EAF3FC;         /* icon wells, "on" tags */
+  --accent-tint: #EAF3FC;         /* highlighted rows, "on" tags */
   --accent-tint-mid: #D3E5F6;
   --accent-tint-strong: #B9D5F0;
 
-  --brand-light: #7BD8FF;         /* the logo's gradient */
-  --brand: #0C78D2;
-  --brand-deep: #06345F;          /* the privacy and download panels */
-  --brand-deeper: #041E38;
-  --bloom-1: rgba(123, 216, 255, 0.55);
-  --bloom-2: rgba(12, 120, 210, 0.22);
-  --bloom-3: rgba(180, 150, 255, 0.18);
-
   --bg: #FFFFFF;
-  --bg-alt: #F5F7FA;              /* alternating sections */
-  --surface: #FFFFFF;             /* cards */
-  --surface-2: #F2F4F7;           /* small mockups inside cards, code */
-  --text: #12151A;
-  --text-2: #565D68;              /* secondary text, 6.5:1 on white */
-  --border: #E2E6EC;
-  --border-strong: #C9CFD8;
-  --divider: #EBEEF2;
-  --bar: #C8CED6;                 /* chart bars in the "You close the game" card */
-  --track: #D6DBE2;               /* the countdown track */
-  --header-bg: rgba(255, 255, 255, 0.78);
-  --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.05);
-  --shadow-2: 0 18px 40px -16px rgba(16, 24, 40, 0.22), 0 4px 10px -4px rgba(16, 24, 40, 0.08);
+  --bg-alt: #F7F7F7;              /* alternating sections */
+  --surface: #FFFFFF;             /* cards, the hero window */
+  --surface-2: #F3F3F3;           /* pictures, title bars, code */
+  --text: #1B1B1B;
+  --text-2: #5D5D5D;              /* secondary text, 6.5:1 on white */
+  --border: #E5E5E5;
+  --border-strong: #C4C4C4;       /* the bottom edge of standard buttons */
+  --divider: #EBEBEB;
+  --rule: #1B1B1B;                /* the line above a table */
+  --header-bg: #FFFFFF;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.14);
+
+  --brand-deep: #06345F;          /* the download panel */
+  --brand-deeper: #041E38;
 
   --caution-bg: #FFF4CE;          /* the "AI-generated code" notice */
   --caution-border: #F0E3B5;
   --caution-icon: #9D5D00;
 
-  --radius: 12px;                 /* cards */
-  --radius-large: 24px;           /* panels */
+  --radius: 8px;                  /* cards, pictures */
+  --radius-small: 4px;            /* buttons and other controls */
+  --radius-large: 24px;           /* the download panel */
   --wrap: 1200px;
   --gutter: 24px;
   --display: 'Segoe UI Variable Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -63,26 +58,22 @@
     --accent-tint-mid: #1B3650;
     --accent-tint-strong: #24486A;
 
+    --bg: #191919;
+    --bg-alt: #202020;
+    --surface: #2B2B2B;
+    --surface-2: #262626;
+    --text: #F3F3F3;
+    --text-2: #ABABAB;
+    --border: #3A3A3A;
+    --border-strong: #4D4D4D;
+    --divider: #2E2E2E;
+    --rule: #F3F3F3;
+    --header-bg: #202020;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.5);
+
     --brand-deep: #0A3A66;
     --brand-deeper: #061B33;
-    --bloom-1: rgba(76, 194, 255, 0.28);
-    --bloom-2: rgba(12, 120, 210, 0.30);
-    --bloom-3: rgba(150, 120, 255, 0.16);
-
-    --bg: #0F1217;
-    --bg-alt: #14181E;
-    --surface: #1A1E25;
-    --surface-2: #222730;
-    --text: #F3F5F8;
-    --text-2: #A9B0BB;
-    --border: #2A3038;
-    --border-strong: #3A414B;
-    --divider: #232830;
-    --bar: #4A515C;
-    --track: #3A414B;
-    --header-bg: rgba(15, 18, 23, 0.78);
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-2: 0 18px 40px -16px rgba(0, 0, 0, 0.6), 0 4px 10px -4px rgba(0, 0, 0, 0.3);
 
     --caution-bg: #3A2F17;
     --caution-border: #5C4A22;
@@ -106,7 +97,7 @@ body { margin: 0; background: var(--bg); }
 }
 a { color: var(--accent); text-underline-offset: 2px; }
 a:hover { color: var(--accent-hover); }
-a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+a:focus-visible, summary:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--radius-small); }
 summary::-webkit-details-marker { display: none; }
 .defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--gutter); box-sizing: border-box; }
@@ -116,34 +107,35 @@ summary::-webkit-details-marker { display: none; }
 .h1 {
   margin: 0;
   font-family: var(--display);
-  font-size: clamp(40px, 5.4vw, 68px);
+  font-size: clamp(36px, 4.2vw, 56px);
   font-weight: 600;
-  line-height: 1.04;
-  letter-spacing: -0.025em;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 .h2 {
   margin: 0;
   font-family: var(--display);
-  font-size: clamp(30px, 3.6vw, 44px);
+  font-size: clamp(28px, 3vw, 36px);
   font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.02em;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
   text-wrap: balance;
 }
-.h2-small { font-size: clamp(26px, 3vw, 32px); }
-.h3 { margin: 0; font-family: var(--display); font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+.h2-small { font-size: clamp(24px, 2.6vw, 30px); }
+.h3 { margin: 0; font-family: var(--display); font-size: 22px; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; text-wrap: balance; }
 .lead { margin: 0; font-size: 18px; color: var(--text-2); text-wrap: pretty; }
+.footnote { margin: 0; font-size: 13px; line-height: 1.5; color: var(--text-2); }
 
-/* Buttons: pills, like Microsoft's own product pages */
+/* Buttons: Windows' own (4 px corners, a darker bottom edge on standard buttons) */
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 46px;
-  padding: 0 24px;
-  border-radius: 999px;
+  min-height: 40px;
+  padding: 0 20px;
+  border-radius: var(--radius-small);
   font-size: 15px;
   font-weight: 600;
   text-decoration: none;
@@ -151,13 +143,13 @@ summary::-webkit-details-marker { display: none; }
   border: 1px solid transparent;
   transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
-.button-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent-edge); box-shadow: var(--shadow-1); }
+.button-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent-edge); }
 .button-primary:hover { background: var(--accent-hover); color: var(--on-accent); }
-.button-secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
-.button-secondary:hover { color: var(--text); border-color: var(--text-2); }
+.button-secondary { background: var(--surface); color: var(--text); border-color: var(--border); border-bottom-color: var(--border-strong); font-weight: 400; }
+.button-secondary:hover { background: var(--surface-2); color: var(--text); }
 .button-light { background: #FFFFFF; color: #06345F; box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.45); }
 .button-light:hover { background: #E8F6FF; color: #06345F; }
-.button-small { min-height: 36px; padding: 0 18px; font-size: 14px; background: var(--accent); color: var(--on-accent); border-color: var(--accent-edge); }
+.button-small { min-height: 34px; padding: 0 14px; font-size: 14px; background: var(--accent); color: var(--on-accent); border-color: var(--accent-edge); }
 .button-small:hover { background: var(--accent-hover); color: var(--on-accent); }
 @media (prefers-reduced-motion: reduce) { .button { transition: none; } }
 
@@ -167,7 +159,7 @@ summary::-webkit-details-marker { display: none; }
   top: -60px;
   z-index: 30;
   padding: 8px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-small);
   background: var(--accent);
   color: var(--on-accent);
   font-family: var(--text-font);
@@ -176,14 +168,14 @@ summary::-webkit-details-marker { display: none; }
 }
 .skip-link:focus { top: 12px; }
 
-/* ---- Header: a floating bar --------------------------------------------------------------------------------- */
+/* ---- Header: Windows' acrylic, over the page ---------------------------------------------------------------- */
 
-/* The bar floats 12 px below the top of the window, over the page (the hero's bloom shows around it), with the
-   section links in a track in the middle like the app's segmented controls. --header-h is the space it takes:
-   the hero and the docs start below it, anchors scroll clear of it and the "How it works" story pins under it.
-   Below 880 px the links move to a second row, which scrolls sideways if they don't fit. */
-:root { --header-top: 12px; --header-bar-h: 60px; --header-h: calc(var(--header-top) + var(--header-bar-h)); }
-@media (max-width: 879px) { :root { --header-bar-h: 104px; } }
+/* One row, floating over the page in Windows' acrylic (a translucent, blurred surface, as on the app's own panel):
+   the story's desktop shows through it at the top. The section links work like Windows 11's selector bar: the
+   part you're reading (nav.js; on docs.html the page) has a short accent bar under it. On narrow windows the links
+   move into a Menu flyout. --header-h is the space it covers: anchors scroll clear of it, the docs start below it,
+   the story's desktop runs under it. */
+:root { --header-h: 56px; }
 
 .site-header {
   position: sticky;
@@ -191,196 +183,707 @@ summary::-webkit-details-marker { display: none; }
   z-index: 20;
   height: var(--header-h);
   margin-bottom: calc(-1 * var(--header-h));
-  padding: var(--header-top) var(--gutter) 0;
+  background: color-mix(in srgb, var(--header-bg) 72%, transparent);
+  -webkit-backdrop-filter: blur(30px) saturate(1.5);
+  backdrop-filter: blur(30px) saturate(1.5);
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
   box-sizing: border-box;
-  pointer-events: none;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header { background: var(--header-bg); }
 }
 .header-bar {
-  pointer-events: auto;
-  max-width: calc(var(--wrap) - 2 * 24px);
-  height: var(--header-bar-h);
+  max-width: var(--wrap);
+  height: 100%;
   margin: 0 auto;
-  padding: 0 8px 0 18px;
+  padding: 0 var(--gutter);
   box-sizing: border-box;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 16px;
-  background: var(--header-bg);
-  -webkit-backdrop-filter: saturate(1.6) blur(18px);
-  backdrop-filter: saturate(1.6) blur(18px);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  box-shadow: var(--shadow-2);
 }
-.brand { display: flex; align-items: center; gap: 10px; padding: 10px 0; color: var(--text); text-decoration: none; justify-self: start; }
-.brand span { font-family: var(--display); font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 8px 0; color: var(--text); text-decoration: none; justify-self: start; }
+.brand svg { width: 28px; height: 28px; }
+.brand span { font-family: var(--display); font-size: 17px; font-weight: 600; }
 .brand:hover { color: var(--text); }
+.brand-small svg { width: 22px; height: 22px; }
 .brand-small span { font-size: 16px; }
-.header-bar .brand:focus-visible { outline-offset: 4px; }
 
-.header-nav {
-  display: flex;
-  gap: 2px;
-  padding: 4px;
-  border-radius: 999px;
-  background: var(--surface-2);
-  border: 1px solid var(--divider);
-  font-size: 14px;
-}
+.header-nav { display: flex; gap: 2px; font-size: 14px; }
 .header-nav a {
-  padding: 6px 14px;
-  border-radius: 999px;
+  position: relative;
+  padding: 7px 12px;
+  border-radius: var(--radius-small);
   color: var(--text-2);
-  font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
-  transition: background-color 0.15s, color 0.15s;
+  transition: background-color 0.1s, color 0.1s;
 }
-.header-nav a:hover { background: var(--surface); color: var(--text); }
-.header-nav a[aria-current="page"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow-1), inset 0 0 0 1px var(--border); }
+.header-nav a:hover { background: color-mix(in srgb, var(--text) 6%, transparent); color: var(--text); }
+.header-nav a[aria-current] { color: var(--text); font-weight: 600; }
+.header-nav a[aria-current]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 16px;
+  height: 3px;
+  margin-left: -8px;
+  border-radius: 2px;
+  background: var(--accent);
+}
 
-.header-actions { justify-self: end; display: flex; align-items: center; gap: 4px; }
+.header-actions { justify-self: end; display: flex; align-items: center; gap: 6px; }
 .header-github {
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 40px;
-  padding: 0 14px;
+  min-height: 34px;
+  padding: 0 12px;
   box-sizing: border-box;
-  border-radius: 999px;
+  border-radius: var(--radius-small);
   color: var(--text);
   text-decoration: none;
   font-size: 14px;
-  font-weight: 600;
-  transition: background-color 0.15s;
+  transition: background-color 0.1s;
 }
-.header-github:hover { background: var(--surface-2); color: var(--text); }
-.header-download { min-height: 42px; gap: 6px; padding: 0 18px 0 16px; }
+.header-github:hover { background: color-mix(in srgb, var(--text) 6%, transparent); color: var(--text); }
+.header-download { gap: 6px; }
+
+/* The Menu button and its flyout (narrow windows only). */
+.header-menu { position: relative; display: none; }
+.header-menu summary {
+  width: 40px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-small);
+  color: var(--text);
+  cursor: pointer;
+  list-style: none;
+}
+.header-menu summary:hover, .header-menu[open] summary { background: color-mix(in srgb, var(--text) 6%, transparent); }
+.header-menu-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 220px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-2);
+}
+.header-menu-list a { padding: 10px 12px; border-radius: var(--radius-small); color: var(--text); text-decoration: none; font-size: 15px; }
+.header-menu-list a:hover { background: var(--surface-2); }
+.header-menu-list a[aria-current] { box-shadow: inset 3px 0 0 -0.5px var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .header-menu[open] .header-menu-list { animation: menu-in 0.15s cubic-bezier(0.1, 0.9, 0.2, 1); }
+  @keyframes menu-in { from { opacity: 0; transform: translateY(-6px); } }
+}
 @media (prefers-reduced-motion: reduce) { .header-nav a, .header-github { transition: none; } }
 
-/* No backdrop blur: an opaque bar, so text behind it can't show through. */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .header-bar { background: var(--bg); }
-}
-
 @media (max-width: 879px) {
-  .header-bar {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: 52px 40px;
-    row-gap: 2px;
-    padding: 4px 6px 6px 14px;
-    border-radius: 22px;
-  }
-  .header-github { padding: 0 11px; }
-  .header-github span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .header-nav {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    margin-left: -8px;
-    overflow-x: auto;
-    padding: 3px;
-    scrollbar-width: none;
-  }
-  .header-nav::-webkit-scrollbar { display: none; }
-  .header-nav a { flex: 1 0 auto; text-align: center; padding: 5px 12px; }
+  .header-bar { grid-template-columns: minmax(0, 1fr) auto; }
+  .header-nav, .header-github { display: none; }
+  .header-menu { display: block; }
 }
 @media (max-width: 600px) {
-  .site-header { --gutter: 10px; }
-  :root { --header-top: 8px; }
-  .header-nav { font-size: 13px; }
-  .header-nav a { padding: 5px 8px; }
+  .header-bar { --gutter: 16px; }
 }
 @media (max-width: 379px) {
-  .header-nav a { padding: 5px 6px; }
   .header-download svg { display: none; }
 }
 
-/* ---- Hero ------------------------------------------------------------------------------------------------------ */
+/* ---- The desktop story ------------------------------------------------------------------------------------------ */
 
-.hero { position: relative; isolation: isolate; padding: calc(var(--header-h) + 64px) 0 88px; overflow: hidden; }
-.hero-bloom {
-  position: absolute;
-  inset: -20% -10% 0;
-  z-index: -1;
-  background:
-    radial-gradient(40% 50% at 78% 38%, var(--bloom-1), transparent 70%),
-    radial-gradient(45% 55% at 92% 70%, var(--bloom-2), transparent 70%),
-    radial-gradient(35% 40% at 55% 10%, var(--bloom-3), transparent 70%);
-}
-.hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 56px; align-items: center; }
-.hero-text { display: flex; flex-direction: column; gap: 20px; align-items: flex-start; }
-.hero-lead { margin: 0; max-width: 560px; font-size: 20px; line-height: 1.5; color: var(--text-2); text-wrap: pretty; }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
-.hero-facts { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 14px; color: var(--text-2); }
-.hero-facts li { display: flex; align-items: center; gap: 6px; }
-.hero-facts svg { color: var(--accent); flex-shrink: 0; }
-/* Footnote 1: what needs administrator rights (referenced from the hero facts and the privacy list) */
-.fn-ref { line-height: 0; }
-.fn-ref a { margin-left: 2px; padding: 0 2px; font-size: 0.75em; font-weight: 600; text-decoration: none; }
-.fn-ref a:hover { text-decoration: underline; }
-.privacy-list .fn-ref a { color: #9BE2FF; }
-.hero-footnote { margin: 0; max-width: 560px; padding-top: 12px; border-top: 1px solid var(--divider); font-size: 13px; line-height: 1.5; color: var(--text-2); }
-.hero-footnote sup { color: var(--accent); font-weight: 600; }
-.hero-footnote:target { color: var(--text); }
-
-/* The product shot: the app's panel above the taskbar on a quiet desktop wallpaper: soft gradients and two wide,
-   flowing bands, nothing that looks like content, so the eye goes to the panel. */
+/* One Windows desktop (.stage) stays pinned under the header while five captions (.story-step) scroll over it.
+   story.js sets data-step from the caption in the middle of the window:
+     0  a desktop cluttered with game shortcuts, and the page's headline in a window;
+     1  each game shortcut flies onto its own cover in Binder's shelf, which slides in by the clock;
+     2  the shelf, the desktop tidy;
+     3  a game fills the screen: Binder is gone, only its helper is left (the process list);
+     4  the game has closed and the shelf is back with "Welcome back".
+   The shelf moves as the app's flyout does (MainWindow.Flyout.cs: 40 px in from the right over 300 ms on Fluent's
+   entrance curve). Without scripts the picture shows the open shelf; with reduced motion the steps change at once. */
+.story { --stage-h: max(640px, 100vh); position: relative; }
+@supports (height: 100svh) { .story { --stage-h: max(640px, 100svh); } }
+/* The desktop fills the window and runs under the header's acrylic. */
 .stage {
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: var(--stage-h);
   margin: 0;
-  height: 560px;
-  border-radius: var(--radius-large);
-  background:
-    radial-gradient(80% 60% at 10% 0%, #EAF3FC 0%, rgba(234, 243, 252, 0) 65%),
-    radial-gradient(90% 80% at 100% 100%, #2E5E9E 0%, rgba(46, 94, 158, 0) 70%),
-    radial-gradient(60% 50% at 25% 85%, rgba(160, 150, 230, 0.45) 0%, rgba(160, 150, 230, 0) 70%),
-    linear-gradient(160deg, #BCD4EE, #7A9FD0 55%, #4F78B4);
-  box-shadow: var(--shadow-2), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
   overflow: hidden;
   isolation: isolate;
+  font-family: var(--text-font);
+  color: #1B1B1B;
+  line-height: 1.3;
 }
-.stage-wallpaper { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
-.stage-wallpaper::before, .stage-wallpaper::after {
-  content: "";
+
+/* The wallpaper: our own, quiet, nothing that looks like content. */
+.desk-wall {
   position: absolute;
-  border-radius: 50%;
-}
-.stage-wallpaper::before {
-  left: -45%;
-  top: 30%;
-  width: 150%;
-  height: 90%;
-  transform: rotate(-12deg);
-  background: linear-gradient(100deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.08) 60%, rgba(255, 255, 255, 0));
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.45);
-}
-.stage-wallpaper::after {
-  left: -30%;
-  top: 52%;
-  width: 160%;
-  height: 90%;
-  transform: rotate(-8deg);
-  background: linear-gradient(100deg, rgba(36, 80, 150, 0.45), rgba(36, 80, 150, 0.15) 70%);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25);
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(70% 60% at 15% 10%, #DCE8F7 0%, rgba(220, 232, 247, 0) 60%),
+    radial-gradient(80% 70% at 100% 100%, #33558C 0%, rgba(51, 85, 140, 0) 70%),
+    linear-gradient(155deg, #B7CBE6, #7C98C6 55%, #4D6A9E);
 }
 @media (prefers-color-scheme: dark) {
-  .stage {
+  .desk-wall {
     background:
-      radial-gradient(80% 60% at 10% 0%, #36557E 0%, rgba(54, 85, 126, 0) 65%),
-      radial-gradient(90% 80% at 100% 100%, #0B1F3D 0%, rgba(11, 31, 61, 0) 70%),
-      radial-gradient(60% 50% at 25% 85%, rgba(110, 90, 190, 0.35) 0%, rgba(110, 90, 190, 0) 70%),
-      linear-gradient(160deg, #2A4568, #1C3354 55%, #12233E);
-    box-shadow: var(--shadow-2), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+      radial-gradient(70% 60% at 15% 10%, #3C5A82 0%, rgba(60, 90, 130, 0) 60%),
+      radial-gradient(80% 70% at 100% 100%, #0D1F3C 0%, rgba(13, 31, 60, 0) 70%),
+      linear-gradient(155deg, #2C4566, #1D3150 55%, #12223B);
   }
-  .stage-wallpaper::before { background: linear-gradient(100deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03) 60%, rgba(255, 255, 255, 0)); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.18); }
-  .stage-wallpaper::after { background: linear-gradient(100deg, rgba(4, 14, 32, 0.5), rgba(4, 14, 32, 0.2) 70%); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.1); }
 }
+
+/* Desktop icons, in Windows' columns from the top left. Game shortcuts carry the little arrow. */
+.desk {
+  position: absolute;
+  left: 16px;
+  top: calc(var(--header-h) + 16px);
+  display: grid;
+  grid-template-columns: repeat(4, 84px);
+  gap: 16px 8px;
+}
+.ico {
+  --lift: 140px;                 /* how high the arc rises above the straight line */
+  width: 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transform-origin: 50% 23px;
+}
+.ico i { position: relative; display: block; width: 46px; height: 46px; border-radius: 8px; overflow: visible; }
+/* At rest an icon is its game's emblem (SVG symbols in index.html), with a soft shadow like Windows' icons. The
+   cover art (.cover, the game's .g class) waits underneath and fades in as the shortcut flies into the shelf. */
+.ico i svg { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35)); }
+.ico i .cover { position: absolute; inset: 0; border-radius: inherit; opacity: 0; }
+.ico[data-tile] i::after {
+  content: "";
+  position: absolute;
+  left: -3px;
+  bottom: -3px;
+  width: 16px;
+  height: 16px;
+  /* Windows' shortcut mark: a white square with a blue arrow curving up and to the right. */
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='.5' y='.5' width='15' height='15' rx='2.5' fill='%23FFFFFF' stroke='%23B9C0CB'/%3E%3Cpath d='M4.6 12.2c0-3.9 2.1-5.7 5.6-5.7' fill='none' stroke='%231C6DD0' stroke-width='1.9' stroke-linecap='round'/%3E%3Cpath d='M8.4 3.7l2.9 2.8-2.9 2.8' fill='none' stroke='%231C6DD0' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+  transition: opacity 0.15s;
+}
+.ico span { max-width: 84px; font-size: 12px; line-height: 1.25; color: #FFFFFF; text-align: center; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75); transition: opacity 0.15s; }
+
+/* Tidying up: each game shortcut is picked up (it lifts and grows a little, its label and arrow fade), flies on an
+   arc over the shelf while it turns from a square icon into a 3:4 cover, and lands on its own tile, which appears
+   under it with a small bounce and a glow of the accent. They leave one after another in the shelf's order
+   (story.js sets each one's --d), just after the shelf has started to slide in. The arc is drawn as eased points
+   (ico-fly), so the path is a smooth curve; --dx/--dy/--s come from story.js. */
+.stage:not([data-step="0"]) .ico[data-tile] {
+  z-index: 5;
+  animation: ico-fly 1s linear calc(var(--t0) + var(--d, 0s)) both;
+}
+.stage:not([data-step="0"]) .ico[data-tile] i {
+  animation: ico-shape 1s ease-in-out calc(var(--t0) + var(--d, 0s)) both;
+}
+/* On the way the emblem becomes the cover. */
+.stage:not([data-step="0"]) .ico[data-tile] .cover {
+  animation: ico-cover 1s linear calc(var(--t0) + var(--d, 0s)) both;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
+}
+.stage:not([data-step="0"]) .ico[data-tile] svg { animation: ico-emblem 1s linear calc(var(--t0) + var(--d, 0s)) both; }
+@keyframes ico-cover { 0%, 22% { opacity: 0; } 50%, 100% { opacity: 1; } }
+@keyframes ico-emblem { 0%, 22% { opacity: 1; } 50%, 100% { opacity: 0; } }
+/* Labels and arrows go as their icon is picked up, not before. */
+.stage:not([data-step="0"]) .ico[data-tile] span,
+.stage:not([data-step="0"]) .ico[data-tile] i::after { opacity: 0; transition: opacity 0.15s calc(var(--t0) + var(--d, 0s)); }
+@keyframes ico-fly {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  10% { transform: translate(0, -12px) scale(1.12); opacity: 1; }
+  18% { transform: translate(calc(var(--dx, 900px) * 0.004), calc(var(--dy, 0px) * 0.004 - var(--lift) * 0.016 - 11.95px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.004)); opacity: 1; }
+  26% { transform: translate(calc(var(--dx, 900px) * 0.032), calc(var(--dy, 0px) * 0.032 - var(--lift) * 0.124 - 11.62px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.032)); opacity: 1; }
+  34% { transform: translate(calc(var(--dx, 900px) * 0.108), calc(var(--dy, 0px) * 0.108 - var(--lift) * 0.385 - 10.70px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.108)); opacity: 1; }
+  42% { transform: translate(calc(var(--dx, 900px) * 0.256), calc(var(--dy, 0px) * 0.256 - var(--lift) * 0.762 - 8.93px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.256)); opacity: 1; }
+  50% { transform: translate(calc(var(--dx, 900px) * 0.500), calc(var(--dy, 0px) * 0.500 - var(--lift) * 1.000 - 6.00px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.500)); opacity: 1; }
+  58% { transform: translate(calc(var(--dx, 900px) * 0.744), calc(var(--dy, 0px) * 0.744 - var(--lift) * 0.762 - 3.07px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.744)); opacity: 1; }
+  66% { transform: translate(calc(var(--dx, 900px) * 0.892), calc(var(--dy, 0px) * 0.892 - var(--lift) * 0.385 - 1.30px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.892)); opacity: 1; }
+  74% { transform: translate(calc(var(--dx, 900px) * 0.968), calc(var(--dy, 0px) * 0.968 - var(--lift) * 0.124 - 0.38px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.968)); opacity: 1; }
+  82% { transform: translate(calc(var(--dx, 900px) * 0.996), calc(var(--dy, 0px) * 0.996 - var(--lift) * 0.016 - 0.05px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.996)); opacity: 1; }
+  90% { transform: translate(calc(var(--dx, 900px) * 1.000), calc(var(--dy, 0px) * 1.000 - var(--lift) * 0.000 - 0.00px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 1.000)); opacity: 1; }
+  100% { transform: translate(var(--dx, 900px), var(--dy, 0px)) scale(var(--s, 0.5)); opacity: 0; }
+}
+@keyframes ico-shape {
+  0%, 35% { height: 46px; margin: 0; border-radius: 8px; }
+  100% { height: 61.33px; margin: -7.67px 0; border-radius: 6px; }
+}
+/* Scrolling back after they've flown: the shortcuts reappear on the shelf's tiles and fly home together. */
+.stage.has-flown[data-step="0"] .ico[data-tile] { animation: ico-home 0.55s cubic-bezier(0.1, 0.9, 0.2, 1) both; }
+@keyframes ico-home {
+  from { transform: translate(var(--dx, 900px), var(--dy, 0px)) scale(var(--s, 0.5)); opacity: 0; }
+  20% { opacity: 1; }
+  to { transform: none; opacity: 1; }
+}
+
+/* The game: Starfall Drift fills the screen, taskbar and all, and plays while this step is on screen: stars drift
+   past in three layers (parallax), the ringed planet from its cover turns slowly, asteroids tumble by, the ship bobs
+   and fires, and the HUD's score counts up. Sizes follow the scene (container units), so it fits a phone too.
+   Every animation is paused outside step 3, and there is none with reduced motion (a still frame). */
+.game-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  overflow: hidden;
+  container-type: size;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s, visibility 0s 0.5s;
+  background:
+    radial-gradient(55% 70% at 18% 8%, rgba(88, 60, 170, 0.55), rgba(88, 60, 170, 0) 70%),
+    radial-gradient(45% 55% at 92% 95%, rgba(24, 110, 160, 0.35), rgba(24, 110, 160, 0) 70%),
+    linear-gradient(180deg, #05071A, #120E33 60%, #1A1240);
+  font-family: var(--display);
+  color: #F3F5FF;
+}
+.stage[data-step="3"] .game-scene { opacity: 1; visibility: visible; transition: opacity 0.5s; }
+.game-scene i, .game-scene div { position: absolute; display: block; }
+.game-scene * { animation-play-state: paused !important; }
+.stage[data-step="3"] .game-scene * { animation-play-state: running !important; }
+
+/* Stars: three tiling layers that drift left at different speeds. */
+.sf-stars { inset: 0; background-repeat: repeat; animation: sf-drift linear infinite; }
+.sf-far {
+  background-image:
+    radial-gradient(1px 1px at 165px 77px, rgba(200,215,255,0.5) 99%, transparent),
+    radial-gradient(1px 1px at 24px 37px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 187px 29px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 19px 44px, rgba(200,215,255,0.5) 99%, transparent),
+    radial-gradient(1px 1px at 214px 35px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 46px 217px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 289px 63px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 298px 31px, rgba(200,215,255,0.5) 99%, transparent),
+    radial-gradient(1px 1px at 25px 113px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 285px 68px, rgba(200,215,255,0.5) 99%, transparent),
+    radial-gradient(1px 1px at 214px 73px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 292px 157px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 52px 96px, rgba(200,215,255,0.5) 99%, transparent),
+    radial-gradient(1px 1px at 49px 32px, rgba(255,255,255,0.55) 99%, transparent),
+    radial-gradient(1px 1px at 316px 105px, rgba(200,215,255,0.5) 99%, transparent),
+    radial-gradient(1px 1px at 272px 218px, rgba(200,215,255,0.5) 99%, transparent);
+  background-size: 320px 260px;
+  animation-duration: 60s;
+  --tile: -320px;
+}
+.sf-mid {
+  background-image:
+    radial-gradient(1.5px 1.5px at 238px 299px, #DCE6FF 99%, transparent),
+    radial-gradient(1.5px 1.5px at 185px 153px, rgba(255,255,255,0.8) 99%, transparent),
+    radial-gradient(1.5px 1.5px at 406px 92px, #FFE9C8 99%, transparent),
+    radial-gradient(1.5px 1.5px at 399px 124px, rgba(255,255,255,0.8) 99%, transparent),
+    radial-gradient(1.5px 1.5px at 294px 153px, #FFE9C8 99%, transparent),
+    radial-gradient(1.5px 1.5px at 253px 175px, #FFE9C8 99%, transparent),
+    radial-gradient(1.5px 1.5px at 229px 147px, #FFE9C8 99%, transparent),
+    radial-gradient(1.5px 1.5px at 37px 60px, #FFE9C8 99%, transparent),
+    radial-gradient(1.5px 1.5px at 214px 84px, #DCE6FF 99%, transparent),
+    radial-gradient(1.5px 1.5px at 77px 250px, #DCE6FF 99%, transparent);
+  background-size: 480px 360px;
+  animation-duration: 30s;
+  --tile: -480px;
+}
+.sf-near {
+  background-image:
+    radial-gradient(2.5px 2.5px at 40px 79px, #CFE6FF 99%, transparent),
+    radial-gradient(2.5px 2.5px at 348px 358px, #CFE6FF 99%, transparent),
+    radial-gradient(2.5px 2.5px at 593px 467px, #FFFFFF 99%, transparent),
+    radial-gradient(2.5px 2.5px at 95px 276px, #CFE6FF 99%, transparent),
+    radial-gradient(2.5px 2.5px at 713px 66px, #FFFFFF 99%, transparent),
+    radial-gradient(2.5px 2.5px at 748px 317px, #CFE6FF 99%, transparent);
+  background-size: 760px 540px;
+  animation-duration: 14s;
+  --tile: -760px;
+}
+@keyframes sf-drift { to { background-position: var(--tile) 0; } }
+.sf-nebula {
+  inset: -10%;
+  background:
+    radial-gradient(30% 22% at 30% 62%, rgba(255, 120, 170, 0.16), rgba(255, 120, 170, 0) 70%),
+    radial-gradient(26% 30% at 52% 30%, rgba(90, 200, 255, 0.12), rgba(90, 200, 255, 0) 70%),
+    radial-gradient(40% 25% at 80% 70%, rgba(170, 110, 255, 0.14), rgba(170, 110, 255, 0) 70%);
+  animation: sf-nebula 40s ease-in-out infinite alternate;
+}
+@keyframes sf-nebula { to { transform: translateX(-4%) scale(1.04); } }
+
+/* The planet from the cover: lit from the upper left, banded, with an atmosphere, a ring that passes behind and in
+   front of it, and a small moon. */
+.sf-planet { --p: min(58cqh, 40cqw); right: 6cqw; top: 14cqh; width: var(--p); height: var(--p); }
+.sf-globe {
+  inset: 0;
+  z-index: 1;
+  border-radius: 50%;
+  transform: rotate(-14deg);
+  background:
+    radial-gradient(circle at 30% 26%, rgba(255, 245, 220, 0.55), rgba(255, 245, 220, 0) 32%),
+    radial-gradient(circle at 70% 76%, rgba(12, 6, 30, 0.85), rgba(12, 6, 30, 0) 62%),
+    radial-gradient(14% 6% at 50% 62%, rgba(255, 236, 200, 0.4), rgba(255, 236, 200, 0) 100%),
+    repeating-linear-gradient(180deg, rgba(255, 240, 210, 0) 0, rgba(255, 240, 210, 0.09) 3%, rgba(255, 240, 210, 0) 6%, rgba(110, 40, 20, 0.14) 9.5%, rgba(110, 40, 20, 0) 13%, rgba(255, 220, 170, 0.06) 15.5%, rgba(255, 220, 170, 0) 18%),
+    radial-gradient(circle at 38% 36%, #F7D7A0 0, #E2A05A 30%, #B4602F 58%, #6E2E1C 82%, #3A1610 100%);
+  background-size: 100% 100%, 100% 100%, 200% 100%, 100% 100%, 100% 100%;
+  background-repeat: no-repeat, no-repeat, repeat-x, no-repeat, no-repeat;
+  box-shadow: 0 0 calc(var(--p) * 0.18) rgba(242, 170, 100, 0.35), inset -10px -12px 30px rgba(10, 4, 24, 0.6);
+  animation: sf-turn 40s linear infinite;
+}
+/* The storm drifts across the face as the planet turns. */
+@keyframes sf-turn { from { background-position: 0 0, 0 0, 100% 0, 0 0, 0 0; } to { background-position: 0 0, 0 0, -100% 0, 0 0, 0 0; } }
+.sf-ring-back, .sf-ring-front {
+  left: -38%;
+  top: 38%;
+  width: 176%;
+  height: 26%;
+  border-radius: 50%;
+  border: calc(var(--p) * 0.035) solid rgba(242, 205, 150, 0.75);
+  box-shadow: 0 0 0 calc(var(--p) * 0.02) rgba(242, 205, 150, 0.25), inset 0 0 0 calc(var(--p) * 0.012) rgba(255, 235, 200, 0.35);
+  transform: rotate(-14deg);
+}
+.sf-ring-back { z-index: 0; clip-path: inset(0 0 50% 0); }
+.sf-ring-front { z-index: 2; clip-path: inset(50% 0 0 0); }
+.sf-moon {
+  z-index: 3;
+  left: -22%;
+  top: -6%;
+  width: 14%;
+  height: 14%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #E6E4F0, #8E8AA6 55%, #3C3852 100%);
+  box-shadow: 0 0 12px rgba(200, 200, 255, 0.25);
+}
+
+/* The gameplay: one 9-second piece, every part on the same clock (they all start together and pause together), so
+   things meet: 1.6 s the ship fires, 2.2 s the shot hits the big asteroid (a burst, +250); 3.8 s it climbs over a
+   second one; 6.3 s it flies into a shield crystal (the bar refills, +50); 7.2 s it fires again, 7.7 s the small
+   asteroid bursts (+100). Positions are in the scene's own units (cqw, cqh). The ship is 14cqw long and its nose
+   3cqw below its top, so a shot at the ship's height + 3cqw is level with the nose. Each burst's start is the hit:
+   story.js adds its data-points to the score then. */
+.game-scene { --loop: 9s; }
+/* The action plays in front of the planet; only the far rock passes behind it. */
+.sf-rock, .sf-crystal, .sf-shot, .sf-boom, .sf-ship { z-index: 3; }
+.sf-far-rock { z-index: 0; }
+.sf-rock { left: 0; top: 0; width: 7cqw; }
+.sf-rock svg { display: block; width: 100%; height: auto; animation: sf-spin 6s linear infinite; }
+@keyframes sf-spin { to { transform: rotate(360deg); } }
+/* Far away and harmless: drifts by behind everything. */
+.sf-far-rock { width: 2.6cqw; opacity: 0.45; filter: blur(0.5px); transform: translate(70cqw, 18cqh); animation: sf-far 26s linear infinite; }
+.sf-far-rock svg { animation-duration: 14s; }
+@keyframes sf-far { from { transform: translate(105cqw, 18cqh); } to { transform: translate(-10cqw, 26cqh); } }
+/* The big asteroid, on the ship's line: hit at 2.2 s, its left edge at 62cqw. */
+.sf-a { transform: translate(70cqw, 40cqh); animation: sf-a var(--loop) linear infinite; }
+@keyframes sf-a {
+  0% { transform: translate(105cqw, 40cqh); opacity: 1; }
+  24.4% { transform: translate(62cqw, 40cqh); opacity: 1; }
+  24.5%, 100% { transform: translate(62cqw, 40cqh); opacity: 0; }
+}
+/* The second one comes low; the ship climbs over it. */
+.sf-b { width: 6cqw; transform: translate(80cqw, 46cqh); animation: sf-b var(--loop) linear infinite; }
+.sf-b svg { animation-direction: reverse; animation-duration: 8s; }
+@keyframes sf-b {
+  0%, 24.9% { transform: translate(105cqw, 54cqh); opacity: 0; }
+  25% { transform: translate(105cqw, 54cqh); opacity: 1; }
+  60% { transform: translate(-12cqw, 44cqh); opacity: 1; }
+  60.1%, 100% { transform: translate(-12cqw, 44cqh); opacity: 0; }
+}
+/* The small one: hit at 7.7 s, its left edge at 55cqw. */
+.sf-c { width: 4cqw; opacity: 0; animation: sf-c var(--loop) linear infinite; }
+.sf-c svg { animation-duration: 4s; }
+@keyframes sf-c {
+  0%, 61.9% { transform: translate(105cqw, calc(46cqh + 1.27cqw)); opacity: 0; }
+  62% { transform: translate(105cqw, calc(46cqh + 1.27cqw)); opacity: 1; }
+  85.5% { transform: translate(55cqw, calc(46cqh + 1.27cqw)); opacity: 1; }
+  85.6%, 100% { transform: translate(55cqw, calc(46cqh + 1.27cqw)); opacity: 0; }
+}
+/* The shield crystal, caught at 6.3 s at the ship's middle. */
+.sf-crystal {
+  left: 0;
+  top: 0;
+  width: 2.6cqw;
+  height: 2.6cqw;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #FFFFFF, #9BE7FF 40%, #2B86C5);
+  box-shadow: 0 0 14px rgba(155, 231, 255, 0.9), 0 0 30px rgba(76, 194, 255, 0.5);
+  opacity: 0;
+  animation: sf-crystal var(--loop) linear infinite;
+}
+@keyframes sf-crystal {
+  0%, 47.9% { transform: translate(105cqw, 30cqh) rotate(45deg); opacity: 0; }
+  48% { transform: translate(105cqw, 30cqh) rotate(45deg); opacity: 1; }
+  70% { transform: translate(22.7cqw, calc(28cqh + 1.7cqw)) rotate(225deg); opacity: 1; }
+  70.1%, 100% { transform: translate(22.7cqw, calc(28cqh + 1.7cqw)) rotate(225deg); opacity: 0; }
+}
+
+/* The ship: holds its line to fire, climbs and banks over the second asteroid, flies into the crystal, dives to
+   the small one's line, fires, and comes back round. */
+.sf-ship { left: 16cqw; top: 0; width: 14cqw; transform: translate(0, 40cqh); animation: sf-fly var(--loop) ease-in-out infinite; }
+.sf-ship svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5)); }
+@keyframes sf-fly {
+  0%, 25% { transform: translate(0, 40cqh) rotate(0deg); }
+  31% { transform: translate(0.6cqw, 33cqh) rotate(-8deg); }
+  37% { transform: translate(1cqw, 26cqh) rotate(-2deg); }
+  48% { transform: translate(1cqw, 26cqh) rotate(0deg); }
+  60% { transform: translate(1.6cqw, 29cqh) rotate(1.5deg); }
+  70% { transform: translate(1cqw, 28cqh) rotate(0deg); }
+  74% { transform: translate(0.5cqw, 37cqh) rotate(8deg); }
+  78%, 88% { transform: translate(0, 46cqh) rotate(0deg); }
+  95% { transform: translate(0, 43cqh) rotate(-4deg); }
+  100% { transform: translate(0, 40cqh) rotate(0deg); }
+}
+.sf-flame {
+  right: 97%;
+  top: 44%;
+  width: 34%;
+  height: 16%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 100% 50%, #FFFFFF 0, #9BE7FF 22%, rgba(76, 194, 255, 0.7) 45%, rgba(76, 194, 255, 0) 72%);
+  transform-origin: 100% 50%;
+  animation: sf-flame 0.12s ease-in-out infinite alternate;
+}
+@keyframes sf-flame { from { transform: scaleX(0.8); opacity: 0.85; } to { transform: scaleX(1.1); opacity: 1; } }
+/* A flash at the nose as it fires. */
+.sf-muzzle {
+  left: 94%;
+  top: 41%;
+  width: 18%;
+  height: 20%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #FFFFFF 0, #9BE7FF 35%, rgba(76, 194, 255, 0) 70%);
+  opacity: 0;
+  animation: sf-muzzle var(--loop) linear infinite;
+}
+@keyframes sf-muzzle { 0%, 17.6%, 18.9%, 79.8%, 81.1%, 100% { opacity: 0; } 17.8%, 80% { opacity: 1; } }
+
+/* The two shots, level with the nose, each ending on its asteroid's front edge. */
+.sf-shot {
+  left: 0;
+  top: 0;
+  width: 3.4cqw;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(155, 231, 255, 0), #9BE7FF 60%, #FFFFFF);
+  box-shadow: 0 0 8px #4CC2FF;
+  opacity: 0;
+}
+.sf-s1 { opacity: 1; transform: translate(44cqw, calc(40cqh + 3cqw - 1.5px)); animation: sf-s1 var(--loop) linear infinite; }
+@keyframes sf-s1 {
+  0%, 17.7% { transform: translate(29.6cqw, calc(40cqh + 3cqw - 1.5px)); opacity: 0; }
+  17.8% { transform: translate(29.6cqw, calc(40cqh + 3cqw - 1.5px)); opacity: 1; }
+  24.3% { transform: translate(58.6cqw, calc(40cqh + 3cqw - 1.5px)); opacity: 1; }
+  24.4%, 100% { transform: translate(58.6cqw, calc(40cqh + 3cqw - 1.5px)); opacity: 0; }
+}
+.sf-s2 { animation: sf-s2 var(--loop) linear infinite; }
+@keyframes sf-s2 {
+  0%, 79.9% { transform: translate(29.6cqw, calc(46cqh + 3cqw - 1.5px)); opacity: 0; }
+  80% { transform: translate(29.6cqw, calc(46cqh + 3cqw - 1.5px)); opacity: 1; }
+  85.4% { transform: translate(51.6cqw, calc(46cqh + 3cqw - 1.5px)); opacity: 1; }
+  85.5%, 100% { transform: translate(51.6cqw, calc(46cqh + 3cqw - 1.5px)); opacity: 0; }
+}
+
+/* Bursts: a flash, fragments flying out and the points floating up, starting at their hit (--at) and every loop. */
+.sf-boom { width: 0; height: 0; animation: sf-hit var(--loop) linear var(--at) infinite; }
+.sf-boom-a { --at: 2.2s; left: 65.5cqw; top: calc(40cqh + 3cqw); }
+.sf-boom-c { --at: 7.7s; left: 57cqw; top: calc(46cqh + 3cqw); }
+.sf-boom-pick { --at: 6.3s; left: 24cqw; top: calc(28cqh + 3cqw); }
+@keyframes sf-hit { from { visibility: visible; } to { visibility: visible; } }
+.sf-flash {
+  left: -4.5cqw;
+  top: -4.5cqw;
+  width: 9cqw;
+  height: 9cqw;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFFFFF 0, #FFE1A0 18%, rgba(255, 150, 70, 0.75) 38%, rgba(255, 90, 60, 0) 70%);
+  opacity: 0;
+  animation: sf-flash var(--loop) ease-out var(--at) infinite;
+}
+.sf-boom-pick .sf-flash { background: radial-gradient(circle, #FFFFFF 0, #9BE7FF 25%, rgba(76, 194, 255, 0.5) 45%, rgba(76, 194, 255, 0) 70%); }
+@keyframes sf-flash { 0% { opacity: 1; transform: scale(0.2); } 3% { opacity: 1; transform: scale(1); } 9%, 100% { opacity: 0; transform: scale(1.5); } }
+.sf-shard {
+  left: -0.8cqw;
+  top: -0.6cqw;
+  width: 1.6cqw;
+  height: 1.2cqw;
+  clip-path: polygon(20% 0, 100% 30%, 70% 100%, 0 70%);
+  background: #6E6286;
+  opacity: 0;
+  animation: sf-shard var(--loop) ease-out var(--at) infinite;
+}
+.sf-shard:nth-of-type(2) { --x: 5cqw; --y: -4cqw; }
+.sf-shard:nth-of-type(3) { --x: 6cqw; --y: 3cqw; background: #4B4060; }
+.sf-shard:nth-of-type(4) { --x: -3cqw; --y: -5cqw; background: #8A7FA3; }
+.sf-shard:nth-of-type(5) { --x: -2cqw; --y: 4.5cqw; }
+@keyframes sf-shard { 0% { opacity: 1; transform: translate(0, 0) rotate(0deg); } 11%, 100% { opacity: 0; transform: translate(var(--x, 4cqw), var(--y, 0)) rotate(220deg); } }
+.sf-pop {
+  left: 0;
+  top: -3cqw;
+  position: absolute;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  color: #FFE1A0;
+  text-shadow: 0 0 10px rgba(255, 150, 70, 0.8);
+  opacity: 0;
+  transform: translateX(-50%);
+  animation: sf-pop var(--loop) ease-out var(--at) infinite;
+}
+.sf-boom-pick .sf-pop { color: #9BE7FF; text-shadow: 0 0 10px rgba(76, 194, 255, 0.8); }
+@keyframes sf-pop { 0% { opacity: 0; transform: translate(-50%, 0); } 2% { opacity: 1; } 12% { opacity: 1; transform: translate(-50%, -4cqh); } 15%, 100% { opacity: 0; transform: translate(-50%, -5cqh); } }
+
+/* The HUD: title and the score (story.js adds each hit's points), shield and sector. */
+.sf-hud {
+  left: 3cqw;
+  right: 3cqw;
+  top: calc(var(--header-h) + 18px);
+  display: flex !important;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+.sf-hud p { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.sf-hud-right { align-items: flex-end; }
+.sf-title { font-size: 13px; letter-spacing: 0.32em; color: rgba(255, 255, 255, 0.75); }
+.sf-score { color: #9BE7FF; }
+.sf-score b { margin-left: 8px; color: #FFFFFF; font-size: 16px; letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
+.sf-shield { display: flex; align-items: center; gap: 10px; color: #9BE7FF; }
+@keyframes sf-shield { 0% { width: 82%; } 69.9% { width: 64%; } 70.3% { width: 100%; } 100% { width: 82%; } }
+.sf-shield i { position: relative; width: 120px; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.15); overflow: hidden; }
+.sf-shield b { position: absolute; left: 0; top: 0; bottom: 0; width: 82%; animation: sf-shield var(--loop) linear infinite; border-radius: 4px; background: linear-gradient(90deg, #4CC2FF, #9BE7FF); box-shadow: 0 0 8px rgba(76, 194, 255, 0.8); }
+.sf-sector { color: rgba(255, 255, 255, 0.6); font-size: 11px; }
+@media (max-width: 600px) {
+  .sf-hud { font-size: 10px; }
+  .sf-shield i { width: 64px; }
+  .sf-sector { display: none; }
+}
+
+/* What's running while the game is: Binder isn't; its helper uses what the release's measurement says. */
+.procs {
+  position: absolute;
+  right: 32px;
+  bottom: 32px;
+  z-index: 7;
+  width: min(520px, calc(100% - 64px));
+  background: #FFFFFF;
+  border-radius: 8px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  font-size: 14px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: opacity 0.3s, transform 0.3s, visibility 0s 0.3s;
+}
+.stage[data-step="3"] .procs { opacity: 1; visibility: visible; transform: none; transition: opacity 0.3s 0.4s, transform 0.3s 0.4s; }
+.procs-title { margin: 0; padding: 10px 16px; background: #F3F3F3; font-size: 12px; }
+.procs-table { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; }
+.procs-table span { padding: 11px 16px; border-bottom: 1px solid #EBEBEB; text-align: right; white-space: nowrap; }
+.procs-table span:nth-child(3n+1) { text-align: left; white-space: normal; }
+.procs-table .procs-head { padding-top: 8px; padding-bottom: 8px; font-size: 12px; color: #5D5D5D; }
+.procs-dim { color: #6E6E6E; }
+.procs-gone { color: #6E6E6E; text-decoration: line-through; }
+.procs-table .procs-mark { border-bottom: 0; background: #EAF3FC; font-weight: 600; }
+
+/* The taskbar, with Binder's icon by the clock. */
+.mock-taskbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  background: rgba(243, 243, 243, 0.88);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+.mock-apps { position: absolute; left: 50%; display: flex; gap: 6px; transform: translateX(-50%); }
+.mock-apps span { width: 32px; height: 32px; border-radius: 4px; background: rgba(0, 0, 0, 0.08); }
+.mock-tray { position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: background-color 0s 0.87s, box-shadow 0s 0.87s; }
+.stage:not([data-step="0"]):not([data-step="3"]) .mock-tray { background: rgba(0, 0, 0, 0.08); box-shadow: inset 0 -3px 0 -1px #005FB8; }
+.mock-clock { font-size: 12px; line-height: 1.3; color: #1B1B1B; text-align: right; }
+@media (prefers-color-scheme: dark) {
+  .mock-taskbar { background: rgba(28, 28, 32, 0.92); border-top-color: rgba(255, 255, 255, 0.08); }
+  .mock-apps span { background: rgba(255, 255, 255, 0.1); }
+  .mock-clock { color: #F3F3F5; }
+  .stage:not([data-step="0"]):not([data-step="3"]) .mock-tray { background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 -3px 0 -1px #4CC2FF; }
+}
+
+/* Binder's shelf: the app's own dark panel. */
+/* Opening the shelf as in Windows: coming from the cluttered desktop, a pointer moves to Binder's icon by the clock
+   and clicks it (0.7 s); the button shows it's pressed, and only then does the shelf slide in, exactly as the app's
+   flyout does (MainWindow.Flyout.cs: 40 px in from the screen's right edge over 300 ms on Fluent's entrance curve,
+   cut off by the edge, no fade). The shortcuts fly once it's open (--t0). After a game the app reopens by itself:
+   no click, no wait. */
+.stage { --t0: 1.15s; }
+.cursor {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 9;
+  width: 17px;
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+}
+.cursor svg { display: block; width: 100%; height: auto; }
+.stage[data-from="0"]:not([data-step="0"]) .cursor { animation: cursor-click 1.5s linear both; }
+/* The pointer rests on the desktop while the headline shows, then moves as a hand does (cursor-click): a quick
+   move along a slight wrist arc, fastest early, that stops a little short and off the line; a short, slower
+   correction onto the icon; a beat of hovering; press and release (the shelf opens on release, as Windows opens
+   tray flyouts); it stays a moment, then fades. Not on touch screens' widths. */
+.stage[data-step="0"] .cursor { opacity: 1; transform: translate(-210px, -270px); transition: opacity 0.3s; }
+@keyframes cursor-click {
+  0.00% { opacity: 1; transform: translate(-210.0px, -270.0px); }
+  6.00% { opacity: 1; transform: translate(-210.0px, -270.0px); }
+  8.53% { opacity: 1; transform: translate(-204.7px, -260.1px); }
+  11.07% { opacity: 1; transform: translate(-187.7px, -230.0px); }
+  13.60% { opacity: 1; transform: translate(-161.2px, -187.5px); }
+  16.13% { opacity: 1; transform: translate(-128.9px, -141.7px); }
+  18.67% { opacity: 1; transform: translate(-95.3px, -99.3px); }
+  21.20% { opacity: 1; transform: translate(-65.0px, -65.0px); }
+  23.73% { opacity: 1; transform: translate(-41.6px, -40.6px); }
+  26.27% { opacity: 1; transform: translate(-27.0px, -26.2px); }
+  28.80% { opacity: 1; transform: translate(-20.7px, -20.2px); }
+  31.33% { opacity: 1; transform: translate(-19.7px, -19.2px); }
+  34.33% { opacity: 1; transform: translate(-17.9px, -17.6px); }
+  37.33% { opacity: 1; transform: translate(-10.9px, -11.1px); }
+  40.33% { opacity: 1; transform: translate(-3.8px, -4.7px); }
+  43.33% { opacity: 1; transform: translate(-2.0px, -3.0px); }
+  48.00% { opacity: 1; transform: translate(-2.0px, -3.0px); }
+  50.67% { opacity: 1; transform: translate(-2.0px, -3.0px) scale(0.88); }
+  54.67% { opacity: 1; transform: translate(-2.0px, -3.0px) scale(0.88); }
+  58.00% { opacity: 1; transform: translate(-2.0px, -3.0px); }
+  76.67% { opacity: 1; transform: translate(-2.0px, -3.0px); }
+  100.00% { opacity: 0; transform: translate(-8.0px, -10.0px); }
+}
+.stage[data-from="0"]:not([data-step="0"]) .mock-tray { animation: tray-press 0.12s ease-out 0.76s; }
+@keyframes tray-press { 50% { background-color: rgba(0, 0, 0, 0.16); } }
+@media (max-width: 900px) { .cursor { display: none; } }
 .mock-panel {
   position: absolute;
-  top: 12px;
+  top: calc(var(--header-h) + 12px);
   right: 12px;
   bottom: 60px;
+  z-index: 4;
   width: 330px;
   max-width: calc(100% - 24px);
   box-sizing: border-box;
@@ -394,8 +897,13 @@ summary::-webkit-details-marker { display: none; }
   border-radius: 8px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
   color: #F3F3F5;
-  font-family: var(--text-font);
-  line-height: 1.3;
+  transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+.stage[data-from="0"]:not([data-step="0"]) .mock-panel { transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1) 0.87s, visibility 0s 0.87s; }
+.stage[data-step="0"] .mock-panel, .stage[data-step="3"] .mock-panel, .stage.playing .mock-panel {
+  transform: translateX(40px);
+  visibility: hidden;
+  transition: none;
 }
 .mock-greeting { font-family: var(--display); font-size: 19px; font-weight: 600; }
 .mock-search { height: 30px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-radius: 4px; background: #2A2A2F; border: 1px solid #34343A; border-bottom: 2px solid #4CC2FF; font-size: 12px; color: #A9A9B2; }
@@ -411,19 +919,34 @@ summary::-webkit-details-marker { display: none; }
     radial-gradient(60% 120% at 20% 0%, #3B2A6E, rgba(59, 42, 110, 0) 70%),
     linear-gradient(180deg, #0B1030, #1D1645);
 }
-.mock-continue-text { flex-grow: 1; display: flex; flex-direction: column; }
-.mock-continue-text span { font-size: 10px; color: #C8C8D0; }
-.mock-continue-text strong { font-size: 15px; font-weight: 600; }
-.mock-play { height: 26px; display: flex; align-items: center; padding: 0 12px; border-radius: 4px; background: #4CC2FF; color: #0A1A24; font-size: 11px; font-weight: 600; }
+.mock-continue-text, .mock-welcome { flex-grow: 1; display: flex; flex-direction: column; }
+.mock-continue-text span, .mock-welcome span { font-size: 10px; color: #C8C8D0; }
+.mock-continue-text strong, .mock-welcome strong { font-size: 15px; font-weight: 600; }
+.mock-welcome small { font-size: 10px; color: #A9A9B2; }
+.mock-welcome { display: none; }
+.stage[data-step="4"] .mock-welcome { display: flex; }
+.stage[data-step="4"] .mock-continue-text { display: none; }
+.stage[data-step="4"] .mock-continue { box-shadow: 0 0 0 2px #4CC2FF; }
+.mock-play { height: 26px; display: flex; align-items: center; padding: 0 12px; border-radius: 4px; background: #4CC2FF; color: #0A1A24; font-size: 11px; font-weight: 600; font-family: inherit; border: 0; margin: 0; flex-shrink: 0; cursor: pointer; }
 .mock-chips { display: flex; gap: 6px; font-size: 11px; }
 .mock-chips span { padding: 3px 10px; border-radius: 12px; border: 1px solid #3C3C43; color: #E4E4E8; white-space: nowrap; }
 .mock-chips span.on { background: #4CC2FF; border-color: #4CC2FF; color: #0A1A24; font-weight: 600; }
 .mock-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .mock-grid span { aspect-ratio: 3 / 4; border-radius: 6px; position: relative; overflow: hidden; background: #3A3A42; }
 .mock-grid span::before { content: ""; position: absolute; z-index: 1; left: 4px; top: 4px; width: 12px; height: 12px; border-radius: 4px; background: rgba(0, 0, 0, 0.55); }
-.mock-grid span.focus { box-shadow: 0 0 0 2px #4CC2FF; overflow: visible; }
-/* The made-up games' covers: a title over a little picture drawn with gradients. */
-.mock-grid b {
+.stage[data-step="0"] .mock-grid span { opacity: 0; }
+/* Each tile appears as its shortcut lands on it (the flight's last tenth), with a small bounce and a glow. */
+.stage:not([data-step="0"]) .mock-grid span { animation: tile-land 0.45s ease-out calc(var(--t0) + var(--d, 0s) + 0.9s) both; }
+@keyframes tile-land {
+  from { opacity: 0; transform: scale(0.9); box-shadow: 0 0 0 0 rgba(76, 194, 255, 0); }
+  40% { opacity: 1; transform: scale(1.07); box-shadow: 0 0 0 2px #4CC2FF, 0 0 22px rgba(76, 194, 255, 0.65); }
+  to { opacity: 1; transform: none; box-shadow: 0 0 0 0 rgba(76, 194, 255, 0); }
+}
+
+
+/* The made-up games' covers: a title over a little picture drawn with gradients (shelf tiles, desktop icons, the
+   hidden game's covers). */
+.mock-grid b, .mock-fly b {
   position: absolute;
   left: 0;
   right: 0;
@@ -440,7 +963,7 @@ summary::-webkit-details-marker { display: none; }
   color: #FFFFFF;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
-.mock-grid .g1 { /* Starfall Drift: a ringed planet among stars */
+.mock-grid .g1, .mock-fly.g1, .ico .g1, .pc-thumb.g1 { /* Starfall Drift: a ringed planet among stars */
   background:
     radial-gradient(circle at 62% 38%, #F2C78C 0, #C9773F 9px, #8A3F25 13px, rgba(138, 63, 37, 0) 14px),
     radial-gradient(34px 7px at 62% 40%, rgba(242, 199, 140, 0) 60%, rgba(242, 199, 140, 0.6) 64%, rgba(242, 199, 140, 0) 72%),
@@ -448,7 +971,7 @@ summary::-webkit-details-marker { display: none; }
     radial-gradient(1.5px 1.5px at 82% 14%, #FFFFFF 99%, transparent), radial-gradient(1px 1px at 76% 66%, #DCE6FF 99%, transparent),
     linear-gradient(180deg, #0B1030, #2A1B4F);
 }
-.mock-grid .g2 { /* Ember Keep: a keep on a hill at sunset */
+.mock-grid .g2, .mock-fly.g2, .ico .g2, .pc-thumb.g2 { /* Ember Keep: a keep on a hill at sunset */
   background:
     linear-gradient(#2A1410, #2A1410) 50% 58% / 26% 26% no-repeat,
     linear-gradient(#2A1410, #2A1410) 33% 50% / 9% 26% no-repeat,
@@ -457,13 +980,13 @@ summary::-webkit-details-marker { display: none; }
     radial-gradient(circle at 50% 46%, #FFE1A0 0, #FFB25C 18px, rgba(255, 178, 92, 0) 30px),
     linear-gradient(180deg, #F59E4B, #B8402A);
 }
-.mock-grid .g3 { /* Tidebreak: a wave breaking */
+.mock-grid .g3, .mock-fly.g3, .ico .g3, .pc-thumb.g3 { /* Tidebreak: a wave breaking */
   background:
     radial-gradient(70% 22% at 35% 62%, #E8F7FF 0 40%, rgba(232, 247, 255, 0) 42%),
     radial-gradient(90% 30% at 70% 66%, #2B86C5 0 55%, rgba(43, 134, 197, 0) 57%),
     linear-gradient(180deg, #8FD6F2 0 48%, #2B86C5 48% 68%, #13507F 68%);
 }
-.mock-grid .g4 { /* Neon Circuit: a road into a striped sun */
+.mock-grid .g4, .mock-fly.g4, .ico .g4, .pc-thumb.g4 { /* Neon Circuit: a road into a striped sun */
   background:
     repeating-linear-gradient(90deg, rgba(255, 110, 210, 0.55) 0 1px, rgba(0, 0, 0, 0) 1px 9px) 0 100% / 100% 42% no-repeat,
     repeating-linear-gradient(180deg, rgba(255, 110, 210, 0.55) 0 1px, rgba(0, 0, 0, 0) 1px 7px) 0 100% / 100% 42% no-repeat,
@@ -471,14 +994,14 @@ summary::-webkit-details-marker { display: none; }
     radial-gradient(circle at 50% 58%, #FFD36E 0, #FF6FA8 20px, rgba(255, 111, 168, 0) 21px),
     linear-gradient(180deg, #1A0B3A, #5A1A6E 58%, #22073A 58%);
 }
-.mock-grid .g5 { /* Frostline: icy peaks */
+.mock-grid .g5, .mock-fly.g5, .ico .g5, .pc-thumb.g5 { /* Frostline: icy peaks */
   background:
     conic-gradient(from 135deg at 66% 40%, #E6F4FF 0 90deg, rgba(0, 0, 0, 0) 0) 0 0 / 100% 100% no-repeat,
     conic-gradient(from 140deg at 30% 30%, #FFFFFF 0 80deg, rgba(0, 0, 0, 0) 0),
     conic-gradient(from 135deg at 30% 30%, #9CC6E6 0 90deg, rgba(0, 0, 0, 0) 0),
     linear-gradient(180deg, #CDEBFA, #7FB3DD);
 }
-.mock-grid .g6 { /* Hollow Pines: a pine forest */
+.mock-grid .g6, .mock-fly.g6, .ico .g6, .pc-thumb.g6 { /* Hollow Pines: a pine forest */
   background:
     conic-gradient(from 155deg at 50% 0%, #163D22 0 50deg, rgba(0, 0, 0, 0) 0) 15% 100% / 34% 70% no-repeat,
     conic-gradient(from 155deg at 50% 0%, #1E4D2B 0 50deg, rgba(0, 0, 0, 0) 0) 85% 100% / 34% 62% no-repeat,
@@ -486,27 +1009,27 @@ summary::-webkit-details-marker { display: none; }
     radial-gradient(circle at 70% 22%, #FFF6D8 0 5px, rgba(255, 246, 216, 0) 6px),
     linear-gradient(180deg, #DDEBC6, #8DB48A);
 }
-.mock-grid .g7 { /* Iron Courier: hazard stripes on steel */
+.mock-grid .g7, .mock-fly.g7, .ico .g7, .pc-thumb.g7 { /* Iron Courier: hazard stripes on steel */
   background:
     linear-gradient(#F08A24, #F08A24) 0 60% / 100% 9% no-repeat,
     repeating-linear-gradient(135deg, #2E3239 0 7px, #F0B429 7px 14px) 0 30% / 100% 12% no-repeat,
     repeating-linear-gradient(135deg, #3A3F47 0 9px, #454B55 9px 18px);
 }
-.mock-grid .g8 { /* Glowmoth: one light in the dark */
+.mock-grid .g8, .mock-fly.g8, .ico .g8, .pc-thumb.g8 { /* Glowmoth: one light in the dark */
   background:
     radial-gradient(circle at 50% 44%, #FFF6C8 0 3px, rgba(255, 226, 130, 0.7) 5px, rgba(255, 226, 130, 0) 26px),
     radial-gradient(14px 8px at 40% 44%, rgba(180, 255, 230, 0.35) 99%, transparent),
     radial-gradient(14px 8px at 60% 44%, rgba(180, 255, 230, 0.35) 99%, transparent),
     radial-gradient(120% 90% at 50% 40%, #134046, #071A1F);
 }
-.mock-grid .g9 { /* Dune Runners: dunes under a low sun */
+.mock-grid .g9, .mock-fly.g9, .ico .g9, .pc-thumb.g9 { /* Dune Runners: dunes under a low sun */
   background:
     radial-gradient(90% 32% at 25% 100%, #B86E26 99%, rgba(184, 110, 38, 0)),
     radial-gradient(100% 30% at 85% 86%, #D99140 99%, rgba(217, 145, 64, 0)),
     radial-gradient(circle at 70% 36%, #FFF1C8 0 7px, rgba(255, 241, 200, 0) 8px),
     linear-gradient(180deg, #F7DDA6, #F0B060);
 }
-.mock-grid .g10 { /* Skyward Isles: a floating island */
+.mock-grid .g10, .mock-fly.g10, .ico .g10, .pc-thumb.g10 { /* Skyward Isles: a floating island */
   background:
     radial-gradient(42% 9% at 50% 46%, #4FA35A 99%, rgba(79, 163, 90, 0)),
     conic-gradient(from -30deg at 50% 100%, #6B4B32 0 60deg, rgba(0, 0, 0, 0) 0) 50% 52% / 70% 28% no-repeat,
@@ -514,11 +1037,11 @@ summary::-webkit-details-marker { display: none; }
     radial-gradient(24% 6% at 80% 74%, rgba(255, 255, 255, 0.85) 99%, rgba(255, 255, 255, 0)),
     linear-gradient(180deg, #9ED8FF, #5BAFE8);
 }
-.mock-grid .g11 { /* Rift Tactics: a red split */
+.mock-grid .g11, .mock-fly.g11, .ico .g11, .pc-thumb.g11 { /* Rift Tactics: a red split */
   background:
     linear-gradient(115deg, #1B1B22 0 46%, #FF5A4E 46% 49%, #FFD2C8 49% 50%, #5A1620 50%);
 }
-.mock-grid .g12 { /* Little Lantern: a lantern at night */
+.mock-grid .g12, .mock-fly.g12, .ico .g12, .pc-thumb.g12 { /* Little Lantern: a lantern at night */
   background:
     linear-gradient(#3A2414, #3A2414) 50% 34% / 10% 5% no-repeat,
     linear-gradient(#FFD27A, #F59A3C) 50% 46% / 20% 22% no-repeat,
@@ -526,80 +1049,251 @@ summary::-webkit-details-marker { display: none; }
     radial-gradient(1px 1px at 20% 18%, #FFFFFF 99%, transparent), radial-gradient(1px 1px at 82% 26%, #FFFFFF 99%, transparent),
     linear-gradient(180deg, #2B1F4A, #4A2D5E);
 }
-.mock-taskbar { position: absolute; left: 0; right: 0; bottom: 0; height: 48px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 0 16px; box-sizing: border-box; background: rgba(240, 243, 247, 0.9); border-top: 1px solid rgba(0, 0, 0, 0.06); }
-.mock-tray { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: rgba(0, 0, 0, 0.06); }
-.mock-clock { font-size: 12px; line-height: 1.25; color: #1B1B1B; text-align: right; }
 
-/* Opening and closing the shelf: the tray icon is a switch (a checkbox laid over it), and the desktop behind the
-   open shelf is a label for it, so clicking the desktop closes the shelf like the real flyout. No script: the
-   closed look needs :has(), and without it the shelf simply stays open. It moves as the app's flyout does
-   (MainWindow.Flyout.cs, Placement.cs): the work area's full height 12 px from the edges, sliding in 40 px from
-   the screen's right edge over 300 ms on Fluent's entrance curve, cut off by the edge rather than faded; closing
-   hides it at once. With reduced motion it just appears, like the app with "Animation effects" off. */
-.mock-taskbar { z-index: 2; }
-.mock-tray { position: relative; transition: background-color 0.15s; }
-.shelf-toggle {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  opacity: 0;
-  cursor: pointer;
+/* The captions that scroll over the desktop. */
+.story-steps { position: relative; z-index: 2; margin-top: calc(-1 * var(--stage-h)); pointer-events: none; }
+/* A pause after the last caption, so "welcome back" stays a moment before the page moves on. */
+.story-steps::after { content: ""; display: block; height: 30vh; }
+.story-step {
+  min-height: var(--stage-h);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 40px 40px 96px;
 }
-.mock-tray:hover { background: rgba(0, 0, 0, 0.1); }
-.mock-tray:has(.shelf-toggle:checked) { background: rgba(0, 0, 0, 0.1); box-shadow: inset 0 -3px 0 -1px #005FB8; }
-.mock-tray:has(.shelf-toggle:focus-visible) { outline: 2px solid #1B1B1B; outline-offset: 2px; }
-.stage-desktop { position: absolute; inset: 0 0 48px; z-index: 0; cursor: default; }
-.mock-panel { z-index: 1; transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
-.stage:has(.shelf-toggle:not(:checked)) .mock-panel { transform: translateX(40px); visibility: hidden; transition: none; }
-.stage:has(.shelf-toggle:not(:checked)) .stage-desktop { pointer-events: none; }
-.mock-hint {
-  margin-right: auto;
-  display: none;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  font-size: 12px;
-  color: #3B3F45;
+.story-step > * { pointer-events: auto; }
+.story-step-hero { position: relative; justify-content: center; padding-top: calc(var(--header-h) + 40px); padding-left: clamp(24px, calc(100% - 780px), 420px); padding-right: 24px; }
+/* Captions with friction (wider windows): each one rises into place as its step becomes current, then stays pinned
+   near the middle of the window for half a screen of scrolling (position: sticky in a taller step), and makes way
+   only when the next one takes over: it moves up and fades as the next rises in, so one is on screen at a time.
+   story.js marks the steps is-current and is-past (has-steps on the section); without it they all simply show. */
+@media (min-width: 901px) {
+  .story-step:not(.story-step-hero) { min-height: calc(var(--stage-h) * 1.5); justify-content: flex-start; padding: 0 40px; }
+  /* The negative bottom margin lets a caption stay pinned to the very end of its step (sticky stops at its step's
+     edge otherwise, and the caption then scrolled away at full speed); by then it has faded (below). */
+  .story-step:not(.story-step-hero) .caption { position: sticky; top: max(calc(var(--header-h) + 24px), calc(50vh - 130px)); margin-bottom: -100vh; }
+  /* The way out follows the scrolling: over the last quarter of its step (--p from story.js, 0.75 to 1) the caption
+     drifts up and fades as you scroll (--out 0 to 1), so you see it go; once the next step takes over, what's left of
+     it settles out gently. Scrolling back brings it back the same way. */
+  .story.has-steps .story-step:not(.story-step-hero) .caption {
+    --out: clamp(0, (var(--p, 0) - 0.75) * 4, 1);
+    opacity: 0;
+    transform: translateY(32px) scale(0.98);
+    translate: 0 calc(var(--out) * -56px);
+    pointer-events: none;
+    transition: opacity 0.45s ease-out, transform 0.6s cubic-bezier(0.2, 0, 0, 1), translate 0.12s linear;
+  }
+  .story.has-steps .story-step.is-past .caption { transform: translateY(-24px) scale(0.98); }
+  /* The last caption ("Welcome back") stays, and leaves with the story. */
+  .story-step:not(.story-step-hero):last-child .caption { margin-bottom: 0; }
+  .story.has-steps .story-step:last-child .caption { --out: 0; }
+  .story.has-steps .story-step.is-current .caption {
+    opacity: calc(1 - var(--out) * 0.8);
+    transform: none;
+    pointer-events: auto;
+    transition: opacity 0.12s linear, transform 0.7s cubic-bezier(0.1, 0.9, 0.2, 1), translate 0.12s linear;
+  }
 }
-.mock-hint svg { flex-shrink: 0; }
-.mock-hint span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mock-hint-closed { display: none; }
-.stage:has(.shelf-toggle) .mock-hint { display: flex; }
-.stage:has(.shelf-toggle:not(:checked)) .mock-hint-open { display: none; }
-.stage:has(.shelf-toggle:not(:checked)) .mock-hint-closed { display: inline; }
-/* Dark mode: a dark taskbar, as Windows has in dark mode. */
+/* The captions and the hero window are Windows 11 windows in Mica: a translucent surface tinted by what's behind
+   it (a heavy blur of the desktop, then the theme's base colour), a hairline edge with a faint highlight along the
+   top, and Windows' layered window shadow. Over the game the tint is dark. Without backdrop blur, and on narrow
+   windows (where the captions sit on the page, not the desktop), they're solid. */
+:root {
+  --mica: rgba(243, 243, 243, 0.74);
+  --mica-edge: rgba(0, 0, 0, 0.09);
+  --mica-light: rgba(255, 255, 255, 0.7);
+  --mica-shadow: 0 32px 64px rgba(0, 0, 0, 0.22), 0 2px 21px rgba(0, 0, 0, 0.14);
+}
 @media (prefers-color-scheme: dark) {
-  .mock-taskbar { background: rgba(28, 28, 32, 0.92); border-top-color: rgba(255, 255, 255, 0.08); }
-  .mock-clock { color: #F3F3F5; }
-  .mock-hint { color: #C8C8D0; }
-  .mock-tray { background: rgba(255, 255, 255, 0.06); }
-  .mock-tray:hover, .mock-tray:has(.shelf-toggle:checked) { background: rgba(255, 255, 255, 0.1); }
-  .mock-tray:has(.shelf-toggle:checked) { box-shadow: inset 0 -3px 0 -1px #4CC2FF; }
-  .mock-tray:has(.shelf-toggle:focus-visible) { outline-color: #FFFFFF; }
+  :root {
+    --mica: rgba(32, 32, 32, 0.72);
+    --mica-edge: rgba(255, 255, 255, 0.09);
+    --mica-light: rgba(255, 255, 255, 0.08);
+    --mica-shadow: 0 32px 64px rgba(0, 0, 0, 0.5), 0 2px 21px rgba(0, 0, 0, 0.35);
+  }
+}
+.caption, .window {
+  background: var(--mica);
+  -webkit-backdrop-filter: blur(60px) saturate(1.7);
+  backdrop-filter: blur(60px) saturate(1.7);
+  border: 1px solid var(--mica-edge);
+  border-radius: var(--radius);
+  box-shadow: inset 0 1px 0 var(--mica-light), var(--mica-shadow);
+  color: var(--text);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .caption, .window { background: var(--surface); }
+}
+.caption {
+  width: min(480px, 100%);
+  box-sizing: border-box;
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.caption .h3 { font-size: 24px; }
+.caption p { margin: 0; color: var(--text-2); }
+.caption .button { margin-top: 6px; }
+.caption-list { padding-top: 12px; border-top: 1px solid var(--mica-edge); color: var(--text) !important; font-size: 14px; line-height: 1.7; }
+.caption-dark {
+  background: rgba(22, 18, 44, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 32px 64px rgba(0, 0, 0, 0.5), 0 2px 21px rgba(0, 0, 0, 0.35);
+  color: #F3F3F5;
+}
+.caption-dark p { color: #CFCCE0; }
+/* Where the story is: four segments, one per step. The steps already read are full; the current one fills as the
+   page scrolls through its step (story.js sets --p, 0 to 1), so the scroll wheel always visibly moves something
+   while the captions rest. */
+.caption-progress { align-self: stretch; display: flex; gap: 4px; margin: 6px 0 0 !important; }
+.caption-progress i { position: relative; flex: 1; height: 3px; border-radius: 2px; overflow: hidden; background: var(--mica-edge); }
+.caption-progress i::after { content: ""; position: absolute; inset: 0; border-radius: 2px; background: var(--accent); transform-origin: left; transform: scaleX(0); }
+.story-step[data-step="2"] .caption-progress i:nth-child(-n+1)::after,
+.story-step[data-step="3"] .caption-progress i:nth-child(-n+2)::after,
+.story-step[data-step="4"] .caption-progress i:nth-child(-n+3)::after { transform: none; }
+.story-step[data-step="1"] .caption-progress i:nth-child(1)::after,
+.story-step[data-step="2"] .caption-progress i:nth-child(2)::after,
+.story-step[data-step="3"] .caption-progress i:nth-child(3)::after,
+.story-step[data-step="4"] .caption-progress i:nth-child(4)::after { transform: scaleX(var(--p, 0)); }
+.caption-dark .caption-progress i { background: rgba(255, 255, 255, 0.14); }
+.caption-dark .caption-progress i::after { background: #4CC2FF; }
+
+/* The hero: the page's headline in a Mica window on the desktop; the title bar is part of the same surface. */
+.window {
+  width: min(680px, 100%);
+  overflow: hidden;
+  transform-origin: 50% 100%;
+  transition: opacity 0.25s, transform 0.35s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+/* Once the story moves on, the headline's window minimises like a Windows window (down and smaller, fading), so
+   the shelf never opens over it; scrolling back restores it. */
+.story:not([data-step="0"]) .story-step-hero .window { opacity: 0; transform: translateY(60px) scale(0.86); transition: opacity 0.2s ease-in, transform 0.25s cubic-bezier(0.7, 0, 1, 0.5); pointer-events: none; }
+.window-bar { height: 40px; display: flex; align-items: center; gap: 10px; padding-left: 14px; font-size: 12px; }
+.window-bar span { flex-grow: 1; }
+.window-bar i { width: 46px; height: 40px; position: relative; }
+.window-bar i::before { content: ""; position: absolute; left: 18px; top: 15px; width: 10px; height: 10px; box-sizing: border-box; }
+.window-min::before { height: 6px !important; border-bottom: 1px solid var(--text); }
+.window-max::before { border: 1px solid var(--text); }
+.window-close::before { background: linear-gradient(45deg, transparent 46%, var(--text) 46% 54%, transparent 54%), linear-gradient(-45deg, transparent 46%, var(--text) 46% 54%, transparent 54%); }
+.window-body { padding: 44px 48px 44px; display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
+.hero-lead { margin: 0; font-size: 19px; line-height: 1.5; color: var(--text-2); text-wrap: pretty; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.hero-facts { margin: 0; font-size: 13px; color: var(--text-2); }
+.fn-ref { line-height: 0; }
+.fn-ref a { margin-left: 2px; padding: 0 2px; font-size: 0.75em; font-weight: 600; text-decoration: none; }
+.fn-ref a:hover { text-decoration: underline; }
+.story-cue {
+  position: absolute;
+  left: 50%;
+  bottom: 64px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-small);
+  background: rgba(255, 255, 255, 0.8);
+  color: #1B1B1B;
+  font-size: 13px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 3;
+  transition: opacity 0.25s, transform 0.25s, visibility 0s;
+}
+/* Gone once the page scrolls; back at the very top. */
+.stage.is-scrolled .story-cue { opacity: 0; visibility: hidden; transform: translate(-50%, 8px); transition: opacity 0.25s, transform 0.25s, visibility 0s 0.25s; }
+
+/* Without scripts: the desktop as it is with Binder open, no story to move. */
+@media (scripting: none) {
+  .stage .ico[data-tile] { display: none; }
+  .stage[data-step="0"] .mock-panel { transform: none; visibility: visible; }
+  .stage[data-step="0"] .mock-grid span { opacity: 1; }
+  .story-cue { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .mock-panel, .mock-tray { transition: none; }
-}
-@media (forced-colors: active) {
-  .mock-tray:has(.shelf-toggle:checked) { outline: 2px solid Highlight; }
+  .ico, .ico i, .ico span, .mock-panel, .mock-grid span, .game-scene, .game-scene *, .procs, .story-cue, .window, .mock-tray, .caption { transition: none !important; animation: none !important; }
+  .story.has-steps .story-step .caption { transform: none !important; translate: none !important; }
+  .cursor { display: none; }
+  /* The game as a still frame: the first shot on its way to the big asteroid. */
+  .sf-a { transform: translate(66cqw, 40cqh); }
+  .sf-b { transform: translate(84cqw, 58cqh); }
+  .stage:not([data-step="0"]) .ico[data-tile] { opacity: 0; }
+  .stage:not([data-step="0"]) .mock-grid span { opacity: 1; }
 }
 
-@media (max-width: 960px) {
-  .hero { padding: calc(var(--header-h) + 40px) 0 64px; }
-  .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
-  .stage { height: 520px; }
+/* Narrow windows and phones: the desktop is a picture pinned at the top, the captions scroll below it. */
+@media (max-width: 900px) {
+  .story:not([data-step="0"]) .story-step-hero .window { opacity: 1; transform: none; pointer-events: auto; }
+  .story { --stage-h: calc(var(--header-h) + clamp(300px, 46vh, 440px)); }
+  .stage { z-index: 3; }
+  .story-steps { margin-top: 0; }
+  .story-steps::after { height: 0; }
+  /* One caption fills the space under the picture; story.js switches the step as a caption reaches the picture. */
+  .story-step, .story-step-hero { min-height: calc(100vh - var(--stage-h)); justify-content: flex-start; padding: 24px 16px 40px; }
+  .desk { transform: scale(0.72); transform-origin: top left; }
+  .mock-panel { width: 62%; min-width: 236px; padding: 12px; gap: 8px; }
+  .mock-continue { height: 72px; }
+  .procs { right: 12px; bottom: 12px; width: calc(100% - 24px); font-size: 13px; }
+  .procs-table span { padding: 8px 12px; }
+  .caption, .window { width: 100%; box-shadow: none; border: 1px solid var(--border); background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .caption-dark { background: #201C36; border-color: #34343A; }
+  .window-bar { display: none; }
+  .window-body { padding: 4px 0 0; border: 0; }
+  .window { border: 0; background: transparent; }
+  .story-cue { display: none; }
 }
 @media (max-width: 600px) {
-  .hero { padding: calc(var(--header-h) + 24px) 0 48px; }
-  .hero-text { gap: 16px; }
-  .h1 { font-size: 38px; }
   .hero-lead { font-size: 17px; }
-  .hero-actions { align-self: stretch; flex-direction: column; margin-top: 4px; }
-  .stage { height: 420px; border-radius: 18px; }
-  .mock-taskbar { gap: 8px; padding: 0 10px 0 12px; }
-  .mock-hint { font-size: 11px; gap: 4px; }
+  .hero-actions { align-self: stretch; flex-direction: column; }
+  .caption { padding: 20px; }
+}
+
+/* The hidden game behind the shelf's Play (game.js): Binder's launch toast counts down, the shelf slides away as
+   when a game starts, covers drift up the desktop to be caught, and the shelf comes back with "Welcome back".
+   Nothing moves until Play is pressed; with reduced motion the covers appear in place and fade. */
+.mock-play:hover { background: #47B1E8; }
+.mock-play:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
+.mock-play:disabled { cursor: default; }
+.mock-toast {
+  position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 2;
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: #2C2C31; border: 1px solid #3C3C43; border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-size: 12px; color: #F3F3F5;
+}
+.mock-toast-text { flex-grow: 1; }
+.mock-toast-count { min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 11px; background: #4CC2FF; color: #0A1A24; font-weight: 600; }
+.mock-game { position: absolute; inset: 0 0 48px; z-index: 8; overflow: hidden; container-type: size; }
+.mock-score {
+  position: absolute; left: 12px; top: 12px; padding: 4px 12px; border-radius: 14px;
+  background: rgba(20, 20, 24, 0.75); color: #F3F3F5; font-size: 13px; font-weight: 600; font-family: var(--text-font);
+}
+.mock-fly {
+  position: absolute; left: var(--x); bottom: -100px; width: 64px; aspect-ratio: 3 / 4; padding: 0; border: 0;
+  border-radius: 6px; overflow: hidden; background: #3A3A42; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  cursor: pointer; text-align: left; font: inherit;
+  animation: cover-rise var(--d) linear forwards;
+}
+.mock-fly:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
+.mock-fly.caught { animation: caught-pop 0.25s ease-out forwards; pointer-events: none; }
+@keyframes cover-rise {
+  from { transform: translateY(0) rotate(var(--r)); }
+  to { transform: translateY(calc(-100cqh - 220px)) rotate(calc(var(--r) * -1)); }
+}
+@keyframes caught-pop {
+  to { transform: scale(1.35); opacity: 0; }
+}
+.mock-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) {
+  .mock-fly { bottom: auto; top: var(--y); animation: cover-blink var(--d) linear forwards; }
+  .mock-fly.caught { animation: cover-fade 0.25s linear forwards; }
+  @keyframes cover-blink { 0% { opacity: 0; } 15%, 80% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes cover-fade { to { opacity: 0; } }
+}
+@media (forced-colors: active) {
+  .mock-fly { border: 2px solid ButtonText; }
 }
 
 /* On phones and tablets: Binder installs on a Windows PC, so say so next to the download buttons. */
@@ -613,401 +1307,234 @@ summary::-webkit-details-marker { display: none; }
     margin: 0;
     padding: 12px 14px;
     box-sizing: border-box;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    background: var(--surface-2);
+    border-radius: var(--radius-small);
     color: var(--text);
     font-size: 14px;
     line-height: 1.45;
     text-align: left;
   }
   .touch-hint svg { flex-shrink: 0; color: var(--accent); }
-  .touch-hint-download { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.25); color: #FFFFFF; }
+  .touch-hint-download { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.25); color: #FFFFFF; }
   .touch-hint-download svg { color: #FFFFFF; }
-}
-@media (max-width: 600px) {
-  .touch-hint { align-self: stretch; }
-}
-
-/* ---- Launchers: the app's filter chips ------------------------------------------------------------------------ */
-
-.launchers { border-top: 1px solid var(--divider); border-bottom: 1px solid var(--divider); background: var(--bg); }
-.launchers-inner { padding-top: 32px; padding-bottom: 32px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
-.launchers-label, .launchers-note { margin: 0; font-size: 14px; color: var(--text-2); }
-.chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.chips li { padding: 7px 16px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface); font-size: 15px; font-weight: 600; box-shadow: var(--shadow-1); }
-
-/* Hovering the chips (with a mouse, motion allowed, chips.js on) turns them into Binder's logo: each chip flies to
-   one of the logo's three covers (chips.js sets where: --dx/--dy, the cover's angle --r, the scale that makes the
-   pill a cover's size --sx/--sy, its corner radius --rx/--ry, its blue --tint and stacking --z), one after another
-   (--i), and turns into that cover on the way. As the last one lands the real logo fades in exactly on top and the
-   play mark appears. Leaving runs it backwards. */
-.chips-merge { position: relative; }
-.chips li {
-  position: relative;
-  transition:
-    transform 0.55s cubic-bezier(0.65, 0, 0.35, 1) calc((6 - var(--i, 0)) * 0.025s),
-    border-radius 0.55s cubic-bezier(0.65, 0, 0.35, 1) calc((6 - var(--i, 0)) * 0.025s),
-    background-color 0.4s calc((6 - var(--i, 0)) * 0.025s),
-    border-color 0.4s calc((6 - var(--i, 0)) * 0.025s),
-    box-shadow 0.4s,
-    color 0.2s 0.4s,
-    opacity 0.12s;
-}
-.chips-merge.is-merged .chips li {
-  z-index: var(--z, 1);
-  transform: translate(var(--dx, 0), var(--dy, 0)) rotate(var(--r, 0deg)) scale(var(--sx, 0.4), var(--sy, 0.4));
-  border-radius: var(--rx, 4px) / var(--ry, 4px);
-  background-color: var(--tint, #1E8BDB);
-  border-color: transparent;
-  box-shadow: none;
-  color: transparent;
-  opacity: 0;
-  transition:
-    transform 0.6s cubic-bezier(0.65, 0, 0.35, 1) calc(var(--i, 0) * 0.03s),
-    border-radius 0.6s cubic-bezier(0.65, 0, 0.35, 1) calc(var(--i, 0) * 0.03s),
-    background-color 0.45s ease calc(0.1s + var(--i, 0) * 0.03s),
-    border-color 0.3s calc(var(--i, 0) * 0.03s),
-    box-shadow 0.3s,
-    color 0.12s,
-    opacity 0.2s 0.95s;
-}
-.chips-logo {
-  position: absolute;
-  z-index: 10;
-  left: 50%;
-  top: 50%;
-  width: 64px;
-  height: 64px;
-  margin: -32px 0 0 -32px;
-  line-height: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s, filter 0.2s;
-}
-.chips-merge.is-merged .chips-logo {
-  opacity: 1;
-  filter: drop-shadow(0 10px 18px rgba(12, 120, 210, 0.35));
-  transition: opacity 0.3s ease 0.72s, filter 0.5s ease 0.8s;
-}
-.chips-logo .logo-play { transform-box: view-box; transform-origin: 25px 24px; transform: scale(0); opacity: 0; transition: transform 0.12s, opacity 0.1s; }
-.chips-merge.is-merged .logo-play {
-  transform: none;
-  opacity: 1;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.95s, opacity 0.2s 0.95s;
-}
-@media (prefers-reduced-motion: reduce) {
-  .chips li, .chips-logo, .chips-logo .logo-play { transition: none; }
-}
-@media (max-width: 600px) {
-  .launchers-inner { padding-top: 24px; padding-bottom: 24px; gap: 12px; }
-  .chips { gap: 6px; }
-  .chips li { padding: 5px 12px; font-size: 14px; }
 }
 
 /* ---- Sections ------------------------------------------------------------------------------------------------- */
 
-.section { padding: 104px 0; }
+.section { padding: 96px 0; }
 .section-alt { background: var(--bg-alt); }
 .section-tight { padding-bottom: 0; }
-.section-head { display: flex; flex-direction: column; gap: 12px; max-width: 720px; margin-bottom: 48px; }
+.section-head { display: flex; flex-direction: column; gap: 12px; max-width: 720px; margin-bottom: 40px; }
+/* A heading on the left, its content on the right. */
+.split { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 24px 64px; align-items: start; }
+.split-head { display: flex; flex-direction: column; gap: 10px; }
+@media (max-width: 900px) {
+  .split { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 600px) {
   .wrap { --gutter: 16px; }
   .section { padding: 64px 0; }
   .section-tight { padding-bottom: 0; }
-  .section-head { margin-bottom: 32px; }
-  .h2 { font-size: 30px; }
-  .h2-small { font-size: 25px; }
+  .section-head { margin-bottom: 28px; }
   .lead { font-size: 16px; }
 }
 
-/* How it works */
-.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; counter-reset: none; }
-.step { display: flex; flex-direction: column; gap: 16px; padding: 20px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-1); }
-.step-text { display: flex; flex-direction: column; gap: 10px; }
-.step-text p { margin: 0; color: var(--text-2); font-size: 15px; }
-.step-picture { height: 132px; box-sizing: border-box; padding: 16px 18px; display: flex; flex-direction: column; justify-content: center; gap: 8px; border-radius: 8px; background: var(--surface-2); font-size: 15px; }
-.step-picture strong { font-weight: 600; }
-.step-picture .muted { font-size: 13px; }
-.step-picture-rows { gap: 0; font-size: 14px; }
-.step-picture-rows div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; }
-.step-picture-rows div + div { border-top: 1px solid var(--border); }
-.countdown { display: flex; align-items: center; gap: 10px; }
-.countdown .track { flex-grow: 1; height: 3px; border-radius: 2px; background: var(--track); position: relative; overflow: hidden; }
-.countdown .track span { position: absolute; inset: 0 60% 0 0; background: var(--accent); }
-.mini-button { padding: 3px 10px; border-radius: 4px; background: var(--surface); border: 1px solid var(--border); border-bottom-color: var(--border-strong); font-size: 12px; }
-.bars { display: flex; align-items: flex-end; gap: 6px; height: 30px; }
-.bars span { width: 12%; height: var(--h); border-radius: 3px; background: var(--bar); }
-.bars span.now { background: var(--accent); }
-.step-title { display: flex; align-items: center; gap: 10px; }
-.step-title h3 { margin: 0; font-family: var(--display); font-size: 20px; font-weight: 600; }
-.step-number { width: 28px; height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: linear-gradient(135deg, var(--brand-light), var(--brand)); color: #FFFFFF; font-size: 14px; font-weight: 700; }
-
-/* "What happens when you play a game" as a scroll story: the steps stay pinned below the header while the page
-   scrolls through .how-scroll, and the picture changes from step to step. Pure CSS (scroll-driven animations);
-   without support, or with reduced motion, the three cards above stay as they are. */
-@keyframes how-show-1 { 0%, 27% { opacity: 1; transform: none; } 33%, 100% { opacity: 0; transform: translateY(-18px) scale(0.97); } }
-@keyframes how-show-2 { 0%, 27% { opacity: 0; transform: translateY(18px) scale(0.97); } 33%, 60% { opacity: 1; transform: none; } 66%, 100% { opacity: 0; transform: translateY(-18px) scale(0.97); } }
-@keyframes how-show-3 { 0%, 60% { opacity: 0; transform: translateY(18px) scale(0.97); } 66%, 100% { opacity: 1; transform: none; } }
-@keyframes how-lit-1 { 0%, 27% { opacity: 1; } 33%, 100% { opacity: 0.38; } }
-@keyframes how-lit-2 { 0%, 27% { opacity: 0.38; } 33%, 60% { opacity: 1; } 66%, 100% { opacity: 0.38; } }
-@keyframes how-lit-3 { 0%, 60% { opacity: 0.38; } 66%, 100% { opacity: 1; } }
-@keyframes how-rail-1 { 0%, 27% { transform: scaleY(1); } 33%, 100% { transform: scaleY(0); } }
-@keyframes how-rail-2 { 0%, 27% { transform: scaleY(0); } 33%, 60% { transform: scaleY(1); } 66%, 100% { transform: scaleY(0); } }
-@keyframes how-rail-3 { 0%, 60% { transform: scaleY(0); } 66%, 100% { transform: scaleY(1); } }
-@keyframes how-count { 0% { transform: scaleX(1); } 27%, 100% { transform: scaleX(0.04); } }
-@keyframes how-grow { 0%, 62% { transform: scaleY(0.15); } 72%, 100% { transform: scaleY(1); } }
-
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .how-scroll { height: 300vh; view-timeline: --how block; }
-    .how-scroll .steps {
-      position: sticky;
-      top: var(--header-h);
-      height: calc(100vh - var(--header-h));
-      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-      grid-template-rows: 1fr auto auto auto 1fr;
-      gap: 6px 64px;
-      align-items: center;
-    }
-    .how-scroll .step { display: contents; }
-    .how-scroll .steps::before {
-      content: "";
-      grid-column: 2;
-      grid-row: 2 / 5;
-      align-self: stretch;
-      min-height: min(560px, 70vh);
-      border-radius: var(--radius-large);
-      background:
-        radial-gradient(60% 60% at 25% 20%, var(--bloom-1), transparent 70%),
-        radial-gradient(60% 70% at 85% 90%, var(--bloom-2), transparent 70%),
-        var(--bg-alt);
-      border: 1px solid var(--border);
-    }
-    .how-scroll .step-picture {
-      grid-column: 2;
-      grid-row: 2 / 5;
-      justify-self: center;
-      width: min(460px, calc(100% - 64px));
-      height: auto;
-      min-height: 220px;
-      padding: 30px 32px;
-      gap: 14px;
-      border-radius: var(--radius);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-2);
-      font-size: 20px;
-    }
-    .how-scroll .step-picture .muted { font-size: 16px; }
-    .how-scroll .step-picture-rows { font-size: 16px; }
-    .how-scroll .step-picture-rows div { padding: 14px 0; }
-    .how-scroll .bars { height: 56px; }
-    .how-scroll .step-text { grid-column: 1; position: relative; padding: 18px 0 18px 26px; }
-    .how-scroll .step-text::before, .how-scroll .step-text::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 2px; background: var(--border); }
-    .how-scroll .step-text::after { background: var(--accent); transform-origin: top; }
-    .how-scroll .step-text p { font-size: 16px; }
-    .how-scroll .step:nth-child(1) .step-text { grid-row: 2; }
-    .how-scroll .step:nth-child(2) .step-text { grid-row: 3; }
-    .how-scroll .step:nth-child(3) .step-text { grid-row: 4; }
-
-    .how-scroll .step-picture, .how-scroll .step-text, .how-scroll .step-text::after,
-    .how-scroll .countdown .track span, .how-scroll .bars span.now {
-      animation-duration: 1ms;  /* ignored by the scroll timeline; some browsers need a value */
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: --how;
-      animation-range: contain 0% contain 100%;
-    }
-    .how-scroll .step:nth-child(1) .step-picture { animation-name: how-show-1; }
-    .how-scroll .step:nth-child(2) .step-picture { animation-name: how-show-2; }
-    .how-scroll .step:nth-child(3) .step-picture { animation-name: how-show-3; }
-    .how-scroll .step:nth-child(1) .step-text { animation-name: how-lit-1; }
-    .how-scroll .step:nth-child(2) .step-text { animation-name: how-lit-2; }
-    .how-scroll .step:nth-child(3) .step-text { animation-name: how-lit-3; }
-    .how-scroll .step:nth-child(1) .step-text::after { animation-name: how-rail-1; }
-    .how-scroll .step:nth-child(2) .step-text::after { animation-name: how-rail-2; }
-    .how-scroll .step:nth-child(3) .step-text::after { animation-name: how-rail-3; }
-    .how-scroll .countdown .track span { inset: 0; transform-origin: left; animation-name: how-count; }
-    .how-scroll .bars span.now { transform-origin: bottom; animation-name: how-grow; }
-
-    /* Phones and narrow windows: the picture on top, one step's text at a time below it. */
-    @media (max-width: 900px) {
-      .how-scroll { height: 280vh; }
-      .how-scroll .steps { grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto auto 1fr; gap: 20px; }
-      .how-scroll .steps::before { grid-column: 1; grid-row: 2; min-height: 250px; border-radius: 18px; }
-      .how-scroll .step-picture { grid-column: 1; grid-row: 2; width: min(360px, calc(100% - 40px)); min-height: 160px; padding: 20px 22px; font-size: 16px; }
-      .how-scroll .step:nth-child(n) .step-text { grid-row: 3; align-self: start; padding: 0; }
-      .how-scroll .step-text::before, .how-scroll .step-text::after { display: none; }
-      .how-scroll .step:nth-child(1) .step-text { animation-name: how-show-1; }
-      .how-scroll .step:nth-child(2) .step-text { animation-name: how-show-2; }
-      .how-scroll .step:nth-child(3) .step-text { animation-name: how-show-3; }
-    }
-  }
-}
-
-/* How much it uses: three spec cards whose rows line up across the cards (subgrid). */
-.usage { margin-top: 72px; display: flex; flex-direction: column; gap: 20px; }
-.usage-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 32px; }
-.usage-head .footnote { max-width: 560px; }
-.stats { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: auto; column-gap: 16px; row-gap: 0; }
-.stat {
-  grid-row: span 3;
-  display: grid;
-  grid-template-rows: subgrid;
-  row-gap: 0;
-  border-radius: var(--radius);
+/* How much it uses: one quiet card, a row per state. A large figure, and a thin bar drawn to scale against the open
+   panel (--w, set by usage.js from the numbers; fixed proportions without it), so the last row's sliver says it at a
+   glance. The numbers come from each release's measurement. */
+.usage {
+  padding: 20px 32px 8px;
+  border-radius: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-1);
-  overflow: hidden;
 }
-.stat-head { display: flex; align-items: center; gap: 12px; padding: 18px 22px; }
-.stat-icon { width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: var(--accent-tint); color: var(--accent); }
-.stat-when { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.35; }
-.stat-row { display: flex; flex-direction: column; gap: 6px; padding: 18px 22px; border-top: 1px solid var(--divider); }
-.stat-label { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); }
-.stat-value { display: flex; align-items: baseline; gap: 6px; font-size: 40px; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; }
-.stat-unit { font-size: 18px; font-weight: 600; letter-spacing: 0; color: var(--text-2); }
-.stat-note { font-size: 14px; color: var(--text-2); }
-.stat-row-cpu { gap: 4px; }
-.stat-cpu { font-size: 15px; font-weight: 600; }
-.stat-accent { border-color: var(--accent-tint-strong); background: linear-gradient(170deg, var(--accent-tint), var(--surface) 55%); }
-.stat-accent .stat-icon { background: linear-gradient(135deg, var(--brand-light), var(--brand)); color: #FFFFFF; }
-.stat-accent .stat-value { color: var(--accent); }
-.stat-accent .stat-row { border-top-color: var(--accent-tint-mid); }
-.footnote { margin: 0; font-size: 13px; color: var(--text-2); }
-
-@media (max-width: 900px) {
-  .steps { grid-template-columns: minmax(0, 1fr); }
-  .stats { grid-template-columns: minmax(0, 1fr); row-gap: 12px; }
-  .stat { grid-row: auto; grid-template-rows: none; }
-}
-@media (max-width: 600px) {
-  .steps { gap: 12px; }
-  .step { padding: 16px; gap: 12px; }
-  .step-picture { height: 112px; }
-  .usage { margin-top: 48px; }
-  .stats { row-gap: 10px; }
-  .stat-head { padding: 14px 16px; }
-  .stat-row { padding: 14px 16px; }
-  .stat-value { font-size: 34px; }
-  .stat-row-cpu { flex-direction: row; align-items: baseline; justify-content: space-between; gap: 12px; }
-  .stat-cpu { text-align: right; }
-}
-
-/* Features: a bento grid */
-.bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }
-.tile { border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-1); overflow: hidden; }
-.tile h3 { margin: 0; font-family: var(--display); font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
-.tile p { margin: 0; color: var(--text-2); text-wrap: pretty; }
-.tile-wide { grid-column: span 7; display: flex; flex-direction: column; }
-.tile-narrow { grid-column: span 5; display: flex; flex-direction: column; }
-.tile-text { padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 10px; }
-.tile-picture { height: 220px; box-sizing: border-box; padding: 28px 36px; display: flex; align-items: center; background: linear-gradient(160deg, var(--accent-tint), var(--accent-tint-mid)); }
-.treemap { display: grid; grid-template-columns: 5fr 3fr 2fr; grid-template-rows: 3fr 2fr; align-items: stretch; gap: 6px; }
-.treemap span { border-radius: 6px; }
-.treemap .a { grid-row: 1 / 3; background: linear-gradient(135deg, var(--brand-light), var(--brand)); }
-.treemap .b { background: var(--brand); opacity: 0.85; }
-.treemap .c, .treemap .d { background: var(--accent-tint-strong); }
-.treemap .e { background: var(--surface); opacity: 0.8; }
-.crash-card { width: 100%; display: flex; flex-direction: column; gap: 6px; padding: 16px; box-sizing: border-box; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-2); font-size: 13px; color: var(--text-2); }
-.crash-card strong { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text); }
-.crash-card span:last-child { color: var(--text); }
-.tile-gamemode { position: relative; padding: 28px; gap: 18px; justify-content: flex-start; background: linear-gradient(150deg, var(--accent-tint), var(--surface) 60%); }
-.tile-gamemode .tile-text { padding: 0; }
-.tile-icon { width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--accent-tint); color: var(--accent); }
-.tile-gamemode .tile-icon { background: linear-gradient(135deg, var(--brand-light), var(--brand)); color: #FFFFFF; }
-/* The app's "Game mode on" pill (a picture of the app: its own dark colours) */
-.gm-pill { margin-top: auto; align-self: flex-start; display: flex; align-items: center; gap: 10px; padding: 10px 16px 10px 12px; border-radius: 999px; background: #202024; border: 1px solid #34343A; color: #F3F3F5; font-size: 13px; box-shadow: var(--shadow-2); }
-.gm-pill-dot { width: 20px; height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #6CCB5F; color: #0B2A07; }
-.gm-pill strong { font-weight: 600; white-space: nowrap; }
-@media (max-width: 600px) { .gm-pill { border-radius: 16px; align-items: flex-start; flex-wrap: wrap; gap: 4px 10px; } .gm-pill span:last-child { flex-basis: 100%; padding-left: 30px; } }
-.gm-pill span:last-child { color: #A9A9B2; }
-.tile-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-weight: 600; text-decoration: none; }
-.tile-link:hover { text-decoration: underline; }
-.tile-group { grid-column: span 7; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.tile-small { padding: 24px; display: flex; flex-direction: column; gap: 10px; }
-.tile-small h3 { font-size: 17px; margin-top: 6px; }
-.tile-small p { font-size: 15px; }
-
-@media (max-width: 900px) {
-  .tile-wide, .tile-narrow, .tile-group { grid-column: 1 / -1; }
-}
-@media (max-width: 600px) {
-  .bento, .tile-group { gap: 12px; }
-  .tile-group { grid-template-columns: minmax(0, 1fr); }
-  .tile-picture { height: 150px; padding: 20px; }
-  .tile-text { padding: 18px 20px 22px; }
-  .tile h3 { font-size: 20px; }
-  .tile-gamemode { padding: 20px; gap: 14px; }
-  .tile-small { padding: 16px 18px; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 4px 14px; }
-  .tile-small .tile-icon { grid-row: 1 / 3; width: 40px; height: 40px; border-radius: 10px; }
-  .tile-small h3 { margin-top: 0; font-size: 17px; }
-}
-
-/* Privacy: a deep Binder-blue panel (the same in light and dark) */
-.privacy-panel {
-  position: relative;
+/* What the bars mean, at the top of the card: each one is that state's memory compared with Binder open. */
+.usage-scale { margin: 0 0 4px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-2); }
+.usage-scale i { width: 28px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--border-strong) 0 60%, var(--divider) 60%); }
+.usage-list { margin: 0; padding: 0; list-style: none; }
+.usage-item {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  gap: 48px;
-  align-items: center;
-  padding: 64px;
-  border-radius: var(--radius-large);
-  background:
-    radial-gradient(60% 80% at 100% 0%, rgba(123, 216, 255, 0.35), transparent 60%),
-    radial-gradient(50% 70% at 0% 100%, rgba(12, 120, 210, 0.45), transparent 60%),
-    linear-gradient(140deg, var(--brand-deep), var(--brand-deeper));
-  color: #FFFFFF;
-  overflow: hidden;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px 24px;
+  padding: 24px 0;
+  --w: 100%;
 }
-.privacy-text { display: flex; flex-direction: column; gap: 14px; }
-.privacy-text p { margin: 0; font-size: 18px; color: rgba(255, 255, 255, 0.82); }
-.privacy-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.privacy-list li { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: var(--radius); background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.14); font-size: 15px; }
-.privacy-icon { width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(123, 216, 255, 0.18); color: #9BE2FF; }
-@media (max-width: 900px) {
-  .privacy-panel { grid-template-columns: minmax(0, 1fr); padding: 40px 32px; gap: 32px; }
-}
+.usage-item + .usage-item { border-top: 1px solid var(--divider); }
+.usage-item:nth-child(2) { --w: 9%; }
+.usage-item:nth-child(3) { --w: 2.5%; }
+.usage-item p { margin: 0; }
+.usage-when { display: flex; flex-direction: column; gap: 2px; font-size: 16px; font-weight: 600; }
+.usage-when span { font-size: 13px; font-weight: 400; color: var(--text-2); }
+.usage-num { font-family: var(--display); font-size: 15px; font-weight: 600; color: var(--text-2); white-space: nowrap; text-align: right; }
+.usage-num strong { font-size: 44px; line-height: 1; letter-spacing: -0.03em; color: var(--text); font-variant-numeric: tabular-nums; }
+.usage-bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--divider); overflow: hidden; }
+.usage-bar i { display: block; width: var(--w); min-width: 6px; height: 100%; border-radius: 3px; background: var(--border-strong); }
+.usage-note { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 16px; font-size: 13px; color: var(--text-2); }
+.usage-share { flex-shrink: 0; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+.usage-share:empty { display: none; }
+.usage-game .usage-num strong { color: var(--accent); }
+.usage-game .usage-bar i { background: var(--accent); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
 @media (max-width: 600px) {
-  .privacy-panel { padding: 28px 20px; border-radius: 18px; gap: 24px; }
-  .privacy-text p { font-size: 16px; }
-  .privacy-list li { padding: 12px; gap: 12px; font-size: 14px; }
+  .usage { padding: 16px 20px 4px; }
+  .usage-item { padding: 20px 0; gap: 8px 16px; }
+  .usage-num strong { font-size: 34px; }
 }
+
+/* Features: three with pictures drawn like the app's own screens, then the rest as a list. */
+.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 32px; }
+.feature { display: flex; flex-direction: column; gap: 14px; }
+.feature p { margin: 0; color: var(--text-2); font-size: 15px; text-wrap: pretty; }
+/* Each feature picture is a slice of the story's desktop (its wallpaper and a sliver of taskbar with Binder by the
+   clock) with Binder showing that feature in the app's own dark panel style: pictures of the app, fixed colours. */
+.feature-picture {
+  position: relative;
+  height: 270px;
+  box-sizing: border-box;
+  padding: 16px 20px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: var(--radius);
+  overflow: hidden;
+  isolation: isolate;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.scene {
+  background:
+    radial-gradient(70% 60% at 15% 10%, #DCE8F7 0%, rgba(220, 232, 247, 0) 60%),
+    radial-gradient(80% 70% at 100% 100%, #33558C 0%, rgba(51, 85, 140, 0) 70%),
+    linear-gradient(155deg, #B7CBE6, #7C98C6 55%, #4D6A9E);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+@media (prefers-color-scheme: dark) {
+  .scene {
+    background:
+      radial-gradient(70% 60% at 15% 10%, #3C5A82 0%, rgba(60, 90, 130, 0) 60%),
+      radial-gradient(80% 70% at 100% 100%, #0D1F3C 0%, rgba(13, 31, 60, 0) 70%),
+      linear-gradient(155deg, #2C4566, #1D3150 55%, #12223B);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+}
+.feature .scene p { margin: 0; color: inherit; font-size: inherit; text-wrap: wrap; }
+.scene-taskbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 10px;
+  background: rgba(243, 243, 243, 0.86);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 11px;
+  color: #1B1B1B;
+}
+.scene-tray { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: rgba(0, 0, 0, 0.08); box-shadow: inset 0 -2px 0 -0.5px #005FB8; }
+@media (prefers-color-scheme: dark) {
+  .scene-taskbar { background: rgba(28, 28, 32, 0.92); border-top-color: rgba(255, 255, 255, 0.08); color: #F3F3F5; }
+  .scene-tray { background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 -2px 0 -0.5px #4CC2FF; }
+}
+
+/* Binder's panels, as on the story's shelf. */
+.pc-window {
+  position: relative;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: rgba(32, 32, 36, 0.96);
+  border: 1px solid #34343A;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.25);
+  color: #F3F3F5;
+}
+.pc-window p { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pc-thumb { flex-shrink: 0; width: 26px; aspect-ratio: 3 / 4; border-radius: 4px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); }
+.feature .scene .pc-title { justify-content: flex-start; gap: 8px; margin: -2px 0 4px; font-size: 12px; color: #C8C8D0; }
+
+/* Free up space: what's needed, the drive, the games suggested to remove. */
+.pc-space { display: flex; flex-direction: column; gap: 6px; }
+.pc-need { padding: 5px 10px; border-radius: 4px; background: #2A2A2F; border: 1px solid #34343A; border-bottom: 2px solid #4CC2FF; color: #A9A9B2; }
+.pc-need b { color: #F3F3F5; font-weight: 600; }
+.feature .scene .pc-drive { color: #C8C8D0; }
+.pc-drive span:last-child { color: #A9A9B2; }
+.pc-bar { height: 8px; justify-content: flex-start !important; gap: 0 !important; border-radius: 4px; overflow: hidden; background: #3A3A42; }
+.pc-bar i { height: 100%; }
+.pc-bar .used { width: 46%; background: #6E6E78; }
+.pc-bar .pick { width: 22%; background: #4CC2FF; }
+.pc-bar .pick2 { width: 14%; background: #4CC2FF; opacity: 0.6; }
+.pc-row { justify-content: flex-start !important; }
+.pc-row span { flex-grow: 1; display: flex; flex-direction: column; font-weight: 600; }
+.pc-row small { font-size: 11px; font-weight: 400; color: #A9A9B2; }
+.pc-row b { font-weight: 600; color: #C8C8D0; }
+
+/* A crash: Binder's card, as a notification above the taskbar. */
+.pc-crash { align-self: flex-end; width: min(100%, 300px); margin-top: auto; display: flex; gap: 12px; align-items: flex-start; }
+.pc-crash .pc-thumb { width: 34px; }
+.pc-crash div { display: flex; flex-direction: column; gap: 4px; color: #A9A9B2; }
+.feature .scene .pc-crash div p { color: #A9A9B2; }
+.feature .scene .pc-crash-title { justify-content: flex-start !important; gap: 6px !important; font-size: 13px; font-weight: 600; color: #F3F3F5; }
+.feature .scene .pc-try { color: #F3F3F5; }
+
+/* Playtime: the shelf's "This week" slot. */
+.pc-week { display: flex; flex-direction: column; gap: 8px; }
+.feature .scene .pc-week-head { color: #C8C8D0; }
+.pc-week-head b { font-size: 15px; font-weight: 600; color: #F3F3F5; }
+.pc-week-bars { height: 72px; align-items: flex-end !important; gap: 8px !important; }
+.pc-week-bars i { flex: 1; height: var(--h); border-radius: 3px; background: #4A4A54; }
+.pc-week-bars .now { background: #4CC2FF; box-shadow: 0 0 10px rgba(76, 194, 255, 0.5); }
+.pc-week-days { gap: 8px !important; }
+.pc-week-days span { flex: 1; text-align: center; color: #A9A9B2; }
+.pc-week-days .now { color: #F3F3F5; font-weight: 600; }
+.feature .scene .pc-week-top { justify-content: flex-start !important; gap: 8px !important; padding-top: 8px; border-top: 1px solid #34343A; color: #C8C8D0; }
+.pc-week-top .pc-thumb { width: 18px; }
+.also { margin-top: 72px; padding-top: 40px; border-top: 1px solid var(--border); }
+.also-list { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 48px; color: var(--text-2); font-size: 15px; }
+.also-list strong { color: var(--text); font-weight: 600; }
+@media (max-width: 900px) {
+  .features { grid-template-columns: minmax(0, 1fr); }
+  .feature-picture { height: auto; min-height: 230px; }
+  .also-list { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Privacy */
+.privacy { display: flex; flex-direction: column; gap: 20px; }
+.privacy-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--divider); }
+.privacy-list li { position: relative; padding: 12px 0 12px 28px; border-bottom: 1px solid var(--divider); font-size: 15px; }
+.privacy-list li::before { content: ""; position: absolute; left: 4px; top: 19px; width: 10px; height: 5px; border-left: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(-45deg); }
+#fn-admin:target { color: var(--text); }
+#fn-admin sup { color: var(--accent); font-weight: 600; }
 
 /* FAQ */
-.faq-grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 56px; align-items: start; }
-.faq-head { position: sticky; top: 96px; margin-bottom: 0; }
-.faq-list { display: flex; flex-direction: column; gap: 10px; }
-.faq-item { border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); }
-.faq-item[open] { box-shadow: var(--shadow-1); }
-.faq-item summary { min-height: 64px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-size: 16px; font-weight: 600; list-style: none; }
-.faq-icon { flex-shrink: 0; color: var(--accent); transition: transform 0.25s ease; }
+.faq-grid { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 24px 64px; align-items: start; }
+.faq-head { margin-bottom: 0; }
+.faq-list { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+.faq-item { border-bottom: 1px solid var(--divider); }
+.faq-item summary { min-height: 56px; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-size: 16px; font-weight: 600; list-style: none; }
+.faq-icon { flex-shrink: 0; color: var(--text-2); transition: transform 0.2s ease; }
 .faq-item[open] .faq-icon { transform: rotate(45deg); }
 @media (prefers-reduced-motion: reduce) { .faq-icon { transition: none; } }
-.faq-item p { margin: 0; padding: 0 20px 20px; color: var(--text-2); font-size: 15px; }
+.faq-item p { margin: 0; padding: 0 4px 18px; color: var(--text-2); font-size: 15px; }
 /* Opening and closing slide the answer in and out: CSS only, where the browser can animate <details> (its
    ::details-content and interpolate-size). Elsewhere, or with reduced motion, it opens at once. */
 @supports selector(::details-content) {
   @media (prefers-reduced-motion: no-preference) {
-    .faq-item { interpolate-size: allow-keywords; transition: box-shadow 0.25s ease; }
+    .faq-item { interpolate-size: allow-keywords; }
     .faq-item::details-content {
       height: 0;
       overflow: clip;
       opacity: 0;
-      transition: height 0.28s ease, opacity 0.2s ease, content-visibility 0.28s allow-discrete;
+      transition: height 0.25s ease, opacity 0.2s ease, content-visibility 0.25s allow-discrete;
     }
     .faq-item[open]::details-content { height: auto; opacity: 1; }
   }
 }
 @media (max-width: 900px) {
-  .faq-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
-  .faq-head { position: static; }
-}
-@media (max-width: 600px) {
-  .faq-item summary { min-height: 56px; padding: 0 16px; font-size: 15px; }
-  .faq-item p { padding: 0 16px 16px; }
+  .faq-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Before you download */
@@ -1020,12 +1547,11 @@ summary::-webkit-details-marker { display: none; }
 .note-text strong { font-size: 15px; }
 .accent-fill { fill: var(--accent); }
 .caution-fill { fill: var(--caution-icon); }
-#disclaimer .h2 { text-align: center; }
 @media (max-width: 600px) {
   .note { padding: 14px 16px; gap: 12px; }
 }
 
-/* Download: the logo's cover stack on Binder's blue */
+/* Download: the logo's cover stack on Binder's blue, the page's one colourful panel (the same in light and dark). */
 .download-panel {
   position: relative;
   isolation: isolate;
@@ -1101,6 +1627,24 @@ summary::-webkit-details-marker { display: none; }
 .docs-toc a { display: block; padding: 5px 0; color: var(--text); text-decoration: none; }
 .docs-toc ol ol a { color: var(--text-2); }
 .docs-toc a:hover { color: var(--accent); }
+/* The part being read (nav.js): accent text and a short accent bar on the left, like the selection in Windows' side
+   navigation; its parent, when it's in a sub-list, in bold. */
+.docs-toc a { position: relative; transition: color 0.15s; }
+.docs-toc a[aria-current] { color: var(--accent); font-weight: 600; }
+.docs-toc a[aria-current]::before {
+  content: "";
+  position: absolute;
+  left: -13.5px;
+  top: 50%;
+  width: 3px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.docs-toc > ol > li > a[aria-current]::before { left: -12px; }
+.docs-toc a.is-within { font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .docs-toc a { transition: none; } }
 .docs-content { max-width: 760px; min-width: 0; line-height: 1.6; }
 .docs-content p { margin: 0 0 14px; }
 .docs-part + .docs-part { margin-top: 72px; padding-top: 56px; border-top: 1px solid var(--divider); }
@@ -1148,4 +1692,104 @@ summary::-webkit-details-marker { display: none; }
   .doc-facts, .doc-facts-plain { grid-template-columns: minmax(0, 1fr); gap: 2px; font-size: 15px; }
   .doc-facts dd { margin-bottom: 10px; }
   .doc-facts dd:last-child { margin-bottom: 0; }
+}
+
+/* ---- Releases (releases.html; the cards are written by scripts/site-releases.ps1) ------------------------- */
+.release {
+  margin: 0 0 16px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  scroll-margin-top: calc(var(--header-h) + 16px);
+}
+.release-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-bottom: 14px; }
+.release-title { margin: 0; font-family: var(--display); font-size: 24px; font-weight: 600; line-height: 1.25; }
+.release-tags { display: flex; gap: 6px; margin: 0 !important; }
+.release-date { flex-basis: 100%; margin: 0 !important; color: var(--text-2); font-size: 14px; }
+.release-notes { margin: 0 0 20px; padding-left: 22px; }
+.release-notes li { margin-bottom: 6px; }
+.release-notes-none { color: var(--text-2); }
+.release-download {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 16px;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--divider);
+}
+.release-download .button { grid-row: span 3; }
+.release-file, .release-sha, .release-scan { margin: 0 !important; font-size: 14px; color: var(--text-2); line-height: 1.5; }
+.release-sha code { font-size: 12px !important; }
+.release-earlier {
+  margin-top: 40px;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+  font-size: 15px;
+}
+.release-earlier p:last-child { margin-bottom: 0; }
+@media (max-width: 600px) {
+  .release { padding: 18px 16px; }
+  .release-title { font-size: 21px; }
+  .release-download { grid-template-columns: minmax(0, 1fr); }
+  .release-download .button { grid-row: auto; justify-self: start; margin-bottom: 4px; }
+  .release-earlier { padding: 16px; }
+}
+.release-download .button-secondary { background: var(--surface-2); color: var(--text); border-color: var(--border); border-bottom-color: var(--border-strong); font-weight: 400; }
+.release-download .button-secondary:hover { background: var(--bg-alt); color: var(--text); }
+
+/* ---- The dialog after a download starts (download.js). Deliberately this website's own look (the download panel's
+   blue, the logo, large radius), not a Windows dialog's, so it can't be mistaken for a message from Windows. ------ */
+.dl-dialog {
+  width: min(540px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  overflow: auto;
+}
+.dl-dialog::backdrop { background: rgba(4, 30, 56, 0.55); }
+.dl-dialog[open] { animation: dl-dialog-in 0.25s ease-out; }
+@keyframes dl-dialog-in { from { opacity: 0; transform: translateY(16px); } }
+@media (prefers-reduced-motion: reduce) { .dl-dialog[open] { animation: none; } }
+.dl-dialog-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 56px 22px 24px;
+  color: #FFFFFF;
+  background:
+    radial-gradient(60% 120% at 20% 0%, rgba(123, 216, 255, 0.4), transparent 70%),
+    linear-gradient(160deg, #0C78D2, var(--brand-deep) 60%, var(--brand-deeper));
+}
+.dl-dialog-logo { line-height: 0; filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3)); }
+.dl-dialog-title { margin: 0; font-family: var(--display); font-size: 21px; font-weight: 600; line-height: 1.25; }
+.dl-dialog-x {
+  position: absolute; top: 14px; right: 14px;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.14); color: #FFFFFF; cursor: pointer;
+}
+.dl-dialog-x:hover { background: rgba(255, 255, 255, 0.26); }
+.dl-dialog-body { padding: 22px 24px 24px; font-size: 15px; line-height: 1.55; }
+.dl-dialog-body p { margin: 0 0 16px; }
+.dl-dialog-scan { display: flex; gap: 12px; align-items: flex-start; margin: 0 0 16px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.dl-dialog-scan-icon { width: 34px; height: 34px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--accent-tint); color: var(--accent); }
+.dl-dialog-scan-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--text-2); }
+.dl-dialog-scan-text p { margin: 0 !important; }
+.dl-dialog-scan-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.dl-dialog-scan-hash code { font-family: 'Cascadia Mono', Consolas, ui-monospace, monospace; font-size: 11.5px; overflow-wrap: anywhere; }
+.dl-dialog-caution { padding: 12px 14px; border-radius: 12px; border: 1px solid var(--caution-border); background: var(--caution-bg); }
+.dl-dialog-ok { margin-top: 4px; }
+@media (max-width: 600px) {
+  .dl-dialog-head { padding: 18px 52px 18px 18px; }
+  .dl-dialog-logo svg { width: 36px; height: 36px; }
+  .dl-dialog-title { font-size: 18px; }
+  .dl-dialog-body { padding: 18px; }
 }

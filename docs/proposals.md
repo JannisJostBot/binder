@@ -38,6 +38,7 @@ Every item follows the project brief: zero cost while idle or gaming, no third-p
 | 25 Weekly chart details | §24 | Proposed (2026-11-12), waiting for the owner's go; two choices open (§24 "To decide") |
 | 26 Updates from GitHub | §25 | **Built and released** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; the keys (both YubiKeys' since 2026-11-15, made on the keys with PIN and touch always) and the repository set at build time since 2026-11-15: `build/OfficialRelease.props` for `publish.ps1 -Official` (release.yml), `build/Updates.targets` checks them and generates `Services.UpdateKeys`; other builds and forks without their own keys never check (About says so); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier; notes format in `docs/releases/README.md`. Default decided: Ask before installing (2026-11-14).<br>Built 2026-11-14: `.github/workflows/release.yml` (v* tags only, actions pinned, a draft with the setup and its attestation); `Services/Updater` (check with redirects only through `IsAllowedAddress`, 15 s, a client per check, no cookies; manifest kept in `%LOCALAPPDATA%\Binder\updates\` and verified again when read; the download hashed while it streams; the setup hashed again through a handle held with read sharing only and started with `/S /update`; waits for a watcher or a Game mode journal); `App.Updates` (check after a panel's first frame at most once a day, download at once with "Install automatically" or urgent, closing the panel cancels it, install when the flyout closes or at a `--background` start, the in-panel toast "Updated to …" with What's new after `--updated`, "couldn't be installed" when `--updated` comes back on the old version); Settings › About (version card with Check for updates / Update / Restart now, progress bar, What's new with Skip this version, the Updates combo); the "…" dot and first item, the tray item; three settings fields plus the mode; 37 strings in EN/DE/FR; view model tests. The pill is the panel's toast, not board 23's separate pill window. Not built: the Authenticode same-publisher check (Binder is unsigned today).<br>Built 2026-11-15: the setup's `/update` (the widget comes back with `--updated --background` after a success, a failure or a busy setup) and the all-or-nothing swap (§25 "To decide" 3, owner: yes; `FileSwap`, unit-tested on real files), run in CI by `setup-test.ps1`.<br>Released: Windows sees both YubiKeys' certificates and `sign-release.ps1` asks which one signs; after a dry run, 0.2.0 and 0.2.1 were published on 2026-11-15 through `release.yml` and `sign-release.ps1`. Since 2026-11-16 `virustotal.yml` scans each published setup and adds the result to the release notes. An installed copy updated itself through the app on the owner's PC. Not built: the Authenticode same-publisher check (Binder is unsigned today) |
 | 27 Game shortcuts | §26 | Built 2026-11-18 (boards 35 A, 36, 37). Tried on the real PC 2026-11-18 (Debug build, keys and mouse sent with SendInput, one 4K screen with an auto-hide taskbar): Win+Shift, G, a number on the number row shows the flash, the panel stays shut, nothing on the taskbar starts; a quick tap opens the panel at once, holding opens it after 1 s; Esc cancels ("Cancelled · Balatro didn't start", gone after about 1 s) and Esc and letters reach apps normally afterwards; the same number again plays at once (Balatro started, Binder exited, only the watcher stayed, the widget came back when it closed); another number switches; "Nothing on 4"; the switch off lets the number through and opens the panel; dragging a cover or a list row raises the numbers, the line follows the slot under the pointer ("replaces Balatro", "already there"), a drop gives the number and the toast names the game that lost it, 0 refuses, releasing elsewhere removes the row; efficiency mode back on after a flash and a cancel. Fixed: the number pad (Windows lifts Shift around a pad key while Shift is held, which ended the wait, and may hand it over as Insert, End, arrows); a game without store art showed only its name (now its generated cover); the drag's caption repeated the line above the numbers. Added (owner, 2026-11-18): held past 1 s the shortcut lists what each number plays, letting go then opens the panel; and the debug panel's "Game shortcuts" buttons. Not tried: the menu's, Game detail's and Settings' number pickers by hand (their view models are unit-tested), a real keyboard (only sent keys: the Start menu on letting go of Win and the number pad with NumLock need a person), light mode, high contrast, Animation effects off, two screens, Narrator (Windows settings Claude doesn't change), the published AOT build |
+| 28 Native ARM64 build | §27 | Proposed (2026-11-17), waiting for the owner's go; choices open (§27 "To decide") |
 | Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
 | Setup: shortcuts into the logo | §6 step 2 | Built 2026-11-16 (`Views/LogoMerge`, as on the website): after Move, the moved shortcuts' rows turn into pills and fly into the logo's covers, the rest of the page fades, then step 3. At most seven fly, ~1.5 s on the compositor, no timer; skipped with Animation effects off or in high contrast. A second Move while it runs does nothing (unit test). To try on the real PC |
@@ -233,6 +234,21 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   looking for it in Settings. Off / Only items that don't need administrator rights / All items (the helper, one
   UAC prompt through the same `GameModeService.AllowAsync` as Settings › Game mode › Allow…). It opens on **Off**:
   Game mode stays opt-in. A line says it can be changed later in Settings › Game mode.
+- The website's new look, "the desktop story" (design canvas https://claude.ai/artifact/9tRqEzXwkccPqmsjQYqWNc):
+  the page opens on a Windows desktop full of game shortcuts that fly into Binder's shelf as you scroll, then a game
+  with Binder gone and only the helper left (its measured memory), then "Welcome back". The rest is plain Windows
+  (4 px controls, neutral greys, the accent only for actions); the blue download panel stays. The launcher chips'
+  merge into the logo and the old "How it works" scroll story went with the old hero.
+
+**2026-11-18**
+- A release depends on its VirusTotal scan (§25, "Making a release", step 4): the draft is scanned before it's
+  signed, and `sign-release.ps1` refuses a setup the release check blocked: flagged by any of the major engines
+  (Microsoft, Kaspersky, ESET-NOD32, BitDefender, Sophos, Symantec, Avast, AVG, Malwarebytes, Trend Micro, McAfee,
+  CrowdStrike) or by 3 or more engines of any kind. The owner can override it only with a reason, which goes into the
+  published notes. Uploading the draft to VirusTotal before release is accepted (it'll be public anyway).
+- The website has a Releases page (every version's notes and setup) and, once a download starts, a dialog in the
+  site's own look (not a Windows dialog's): Defender may warn, the VirusTotal result, don't install if that's not
+  acceptable.
 
 ---
 
@@ -955,6 +971,30 @@ smooth scrolling through the grid, and the published size. Report the numbers in
 - Try `OptimizationPreference` `Speed` and `Size` against the default, for the widget and the watcher, and keep
   whichever is best on the measurements above. Add `IlcGenerateStackTraceData=false` only if the error log stays
   readable without it.
+- Watcher, done 2026-11-16, measured on the real PC 2026-11-18: `OptimizationPreference` `Size`, identical method
+  bodies folded, no stack trace data (its logs keep `e.Message` only), no EventSource, metrics or debugger support,
+  non-concurrent GC (no background GC thread), and its working set emptied (`SetProcessWorkingSetSize(-1, -1)`)
+  right before it blocks on the game.
+  CI's smoke test (Native AOT, 5 s into the fake game), main → this change: working set 9.2 → 3.1 MB, private
+  3.1 → 3.2 MB (unchanged within noise: emptying the working set frees RAM but not committed memory, and the GC
+  switch made no measurable difference); installed size 114,622 → 114,115 KB, `BinderSetup.exe` 34,678 → 34,558 KB.
+  Real PC, 2026-11-18, Windows 11 25H2 (build 26200.9974): 0.2.1's installed `Binder.Watcher.exe` against this
+  branch's `publish.ps1` build, each started with the widget's arguments right after the game, read 10 s into the
+  game (counters as Task Manager › Details shows them: Memory = private working set, Commit size = private bytes;
+  CPU time over the next 10 s). Exe 2,000 → 1,613 KB.
+
+  | Game (source)                | Private WS (KB) | Working set (KB) | Commit (KB)   | CPU |
+  |------------------------------|-----------------|------------------|---------------|-----|
+  | Balatro (Steam, Game mode on)| 1,820 → 592     | 12,204 → 3,248   | 3,692 → 4,080 | 0 → 0 |
+  | Little Inferno (Epic)        | 1,332 → 540     | 9,012 → 3,244    | 3,096 → 3,316 | 0 → 0 |
+  | Magical Drop VI (GOG, exe)   | 1,392 → 540     | 9,096 → 3,312    | 3,200 → 3,304 | 0 → 0 |
+
+  Working set about a third, private working set under half; commit size about the same (up 0.1–0.4 MB, the
+  non-concurrent GC's or noise; CI saw the same). Behaviour unchanged, all with the new build: each game detected,
+  its session saved, the widget back after it closed; Game mode applied and put back (helper: "Restored 5 of 5");
+  Balatro with "Restart if it crashes", ended by force after 70 s: recorded as closed unexpectedly, the restart
+  pill played it again. Error logs read the same in both builds (exception messages are resource keys already,
+  `UseSystemResourceKeys`), e.g. "IO_SharingViolation_File, …\sessions-2026.jsonl".
 - Don't raise the instruction set (`IlcInstructionSet`, e.g. AVX2): Binder would crash on older processors.
 
 ### e. CsWinRT 3.0, once it's stable
@@ -1880,18 +1920,38 @@ A release can be marked `"urgent": true` for a security fix that shouldn't wait 
    - Writes `release.json` itself from what it checked plus the notes file at the tagged commit; nothing from CI's
      side goes into the manifest unchecked.
    - Shows version, commit, size, hash and the English notes and asks to confirm.
+   - Checks VirusTotal's release check (step 6) in the draft's notes: it must be there, for this very file, and
+     "passed". "Blocked" stops it unless `-OverrideScan "<reason>"` (20 to 300 characters, confirmed by typing
+     "override"); the reason goes into the published notes above the VirusTotal section.
    - Signs with the main key and checks the signature with the public keys in `build/OfficialRelease.props` at the
      tagged commit before uploading (it reads the repository from there too).
    - Uploads `release.json` and `release.json.sig` to the draft and publishes it as the latest release.
-5. **Published:** with "immutable releases" on, the release's files and tag can't change any more. A bad release is
+5. **Website numbers (GitHub Actions, `.github/workflows/site-numbers.yml`, on a published release):** builds the
+   tag, runs `main`'s UI smoke test on it (so older tags are measured the same way; it also measures the open panel
+   with 100 games after scrolling through every cover), writes its memory and processor numbers into the website's "How much it uses"
+   (`scripts/site-numbers.ps1`: only the text between the page's `<!-- n:… -->` markers; stops when a number is
+   missing or contradicts the page's "None") and opens a pull request `Website: numbers for v…`; the site goes live
+   from `main` once it's merged. Memory is Task Manager's value (private working set) on GitHub's Windows test
+   machine with the smoke test's 9 games and with 100, and the page says so. Needs "Allow GitHub Actions to create and approve
+   pull requests" in the repository's Actions settings; without it the branch is pushed and the run warns. Can be
+   run by hand for a tag (Actions › Website numbers › Run workflow).
+6. **Published:** with "immutable releases" on, the release's files and tag can't change any more. A bad release is
    fixed by the next version, never by replacing files (the app never downgrades).
-6. **VirusTotal (automatic, `.github/workflows/virustotal.yml`):** publishing starts a separate job that downloads
-   the setup, checks its SHA-256 against `release.json`, uploads it to VirusTotal, waits for the result and adds a
-   "VirusTotal" section to the release notes (scan date, how many engines flagged it, report link, hash; not which engines). A
-   finding is a warning on the run, naming the engines, not a failure: look at which and why before telling anyone
-   (0.2.1: Bkav alone, a generic name, likely a false positive). It runs only with the repository
-   secret `VT_API_KEY` (a free VirusTotal account's key); `release.yml` itself stays without secrets. Earlier tags:
-   Actions › VirusTotal › Run workflow.
+6. **VirusTotal (automatic, `.github/workflows/virustotal.yml`), twice:**
+   - **Before signing:** when `release.yml` has made the draft (up to about 40 minutes; sign after it). It downloads
+     the draft's setup, checks it against GitHub's hash of the upload, uploads it to VirusTotal, waits for the result
+     and adds a "VirusTotal" section to the draft's notes: scan date, how many engines flagged it, report link,
+     hash, and the **release check**, plus a `<!-- release-check: passed|blocked sha256=… -->` line that step 4 reads.
+     Blocked when any major engine flags it (Microsoft, Kaspersky, ESET-NOD32, BitDefender, Sophos, Symantec, Avast,
+     AVG, Malwarebytes, Trend Micro, McAfee, CrowdStrike) or 3 or more engines of any kind do; then the run fails,
+     naming the engines in its log. A false positive: report it to the vendor and run the workflow again later, or
+     override in step 4 with a reason. Below the limits, findings are a warning on the run (0.2.1: Bkav alone).
+   - **After publishing:** scanned again, since engines change their verdicts; the section is replaced (also checked
+     against `release.json`). Blocked now: the run fails and opens an issue (people may already have it), unless
+     it was published with an override for that same file.
+   The notes name no engines (one false positive named there reads worse than it is). It runs only with the
+   repository secret `VT_API_KEY` (a free VirusTotal account's key); `release.yml` itself stays without secrets.
+   Earlier tags or a rescan: Actions › VirusTotal › Run workflow.
 7. **Website (after publishing):** `site/index.html`'s "Download for Windows" button links to the published file,
    `https://github.com/JannisJostBot/binder/releases/download/v<version>/BinderSetup-<version>.exe`, and the line
    under it says `Version <version> · <size> MB` (size in MiB, rounded; the sign script prints both at the end).
@@ -2130,6 +2190,64 @@ with option A of board 35 and a 1.5 s wait (both picked by Claude for a first bu
 `Library/GameKeys` (tested), `MessageWindow.GameKeys.cs`, `App.GameKeys.cs`, `Views/GameKeyFlash`,
 `MainWindow.GameKeys.cs`, `ViewModels/GameKeyChoices` and `SettingsViewModel.GameKeys.cs` (tested), `GameMenu`,
 `DetailView`, `SettingsView`, `ShelfView.GameKeys.cs`, `site/docs.html` (what the keyboard hook does).
+
+## 27. Native ARM64 build (milestone 28, proposed 2026-11-17, no board)
+
+Binder ships for x64 only. Windows 11 on Arm runs it through emulation (Prism), so it works there today, but every
+start pays for the translation and the emulated watcher sits in memory while a game runs. A native `win-arm64`
+build removes that. **Proposed, not approved yet:** build only after the owner's go; it changes "Windows 10/11 x64"
+in `CLAUDE.md`.
+
+### What carries over unchanged (checked 2026-11-17)
+
+- WinUI (`Microsoft.WindowsAppSDK.WinUI`), Native AOT and .NET 10 all support `win-arm64`; no new package.
+- No code depends on x64: the `WOW6432Node` registry paths are the same on Arm64; the helper's VARIANT is 24 bytes
+  on every 64-bit Windows; XInput, power plans, QoS, WMI and the scheduled tasks exist on Windows on Arm.
+- The watcher matches games by their exe's path, so it follows emulated x64 games as well as native ones.
+
+### Build
+
+- The three `.csproj` files take the runtime from the build instead of fixing `win-x64`; `publish.ps1` gets
+  `-Runtime win-x64|win-arm64` and builds into `publish\<runtime>\`.
+- Cross-compiled on GitHub's x64 Windows runners (Native AOT for Arm64 with MSVC's Arm64 tools; nothing runs).
+- Tests: the unit tests are architecture-free. The smoke and setup tests need an Arm64 machine: GitHub's
+  `windows-11-arm` runners (free for public repositories) or the owner's own Arm PC. An Arm64 build isn't released
+  until both have passed on Arm64 at least once.
+
+### Two setups, not one
+
+- `BinderSetup-<version>.exe` (x64, as now) and `BinderSetup-arm64-<version>.exe`. One setup carrying both apps would
+  double every download and update (~35 → ~70 MB) for everyone; the brief prefers the lighter way.
+- An x64 setup started on an Arm64 PC (Windows 11 runs it) installs the x64 app as now; switching is a new install
+  from the Arm64 setup, which replaces the files in place (same folder, same data).
+
+### Updates (§25)
+
+- The signed manifest gains an optional `setupArm64` object (`size`, `sha256`), checked like `setup`. The parser
+  already ignores unknown fields, so installed x64 copies keep working unchanged.
+- An Arm64 copy (`RuntimeInformation.ProcessArchitecture`) reads `setupArm64`, builds its address from the version
+  alone (`BinderSetup-arm64-<version>.exe`) and refuses a manifest without it ("no update for this PC yet"), never
+  falling back to the x64 setup.
+- `release.yml` builds both, attests both; `sign-release.ps1` checks both attestations and writes both entries.
+  `UpdateManifest` unit tests for: missing entry on Arm64, a bad entry, x64 ignoring it.
+
+### Website
+
+- The script-free part of the page can't tell the processor (browsers on Windows on Arm usually report x64), so it
+  offers both: the main button "Download for Windows" (x64), under it a plain link "Download for Arm-based PCs".
+- The line under them: "Most PCs need the first one. To check: Settings › System › About › System type says
+  'x64-based processor' or 'ARM-based processor'." (Windows' own words.)
+- `release.js` fills both links and sizes from the release's assets, as it does for the one setup now.
+
+### Cost
+
+- No change for x64 users. Release builds take about twice as long; two files to sign per release.
+
+### To decide (owner)
+
+1. Go or no go, and whether the first Arm64 release waits for a `windows-11-arm` CI run (public repository) or a
+   test on an Arm PC.
+2. Windows 10 on Arm (end of support October 2025): proposed not to support it; it can't run the x64 setup either.
 
 ## Build order (after milestone 7)
 

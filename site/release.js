@@ -63,15 +63,27 @@
 
     var link = byId('download-link');
     var meta = byId('download-version');
-    if (link) link.href = downloadUrl;
+    if (link) {
+      link.href = downloadUrl;
+      link.setAttribute('data-version', version);
+      // The dialog after the download (download.js) shows this version's scan, or that there's none yet.
+      ['data-flagged', 'data-engines', 'data-scanned', 'data-sha256'].forEach(function (n) { link.removeAttribute(n); });
+    }
     if (meta) meta.textContent = 'Version ' + version + ' · ' + Math.max(1, Math.round(setup.size / 1048576)) + ' MB';
 
-    var box = byId('scan');
-    if (!box) return;
     var scan = readScan(typeof release.body === 'string' ? release.body : '', setupName);
     // GitHub's own hash of the file, where it gives one, must be the one that was scanned.
     var digest = typeof setup.digest === 'string' ? /^sha256:([0-9a-f]{64})$/.exec(setup.digest) : null;
     if (scan && digest && digest[1] !== scan.sha256) scan = null;
+    if (link && scan) {
+      link.setAttribute('data-flagged', String(scan.flagged));
+      link.setAttribute('data-engines', String(scan.engines));
+      link.setAttribute('data-scanned', scan.date);
+      link.setAttribute('data-sha256', scan.sha256);
+    }
+
+    var box = byId('scan');
+    if (!box) return;
 
     var title = byId('scan-title'), detail = byId('scan-detail'), hash = byId('scan-hash');
     if (!title || !detail || !hash) return;
