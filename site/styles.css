@@ -1572,6 +1572,24 @@ summary::-webkit-details-marker { display: none; }
 .docs-toc a { display: block; padding: 5px 0; color: var(--text); text-decoration: none; }
 .docs-toc ol ol a { color: var(--text-2); }
 .docs-toc a:hover { color: var(--accent); }
+/* The part being read (nav.js): accent text and a short accent bar on the left, like the selection in Windows' side
+   navigation; its parent, when it's in a sub-list, in bold. */
+.docs-toc a { position: relative; transition: color 0.15s; }
+.docs-toc a[aria-current] { color: var(--accent); font-weight: 600; }
+.docs-toc a[aria-current]::before {
+  content: "";
+  position: absolute;
+  left: -13.5px;
+  top: 50%;
+  width: 3px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.docs-toc > ol > li > a[aria-current]::before { left: -12px; }
+.docs-toc a.is-within { font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .docs-toc a { transition: none; } }
 .docs-content { max-width: 760px; min-width: 0; line-height: 1.6; }
 .docs-content p { margin: 0 0 14px; }
 .docs-part + .docs-part { margin-top: 72px; padding-top: 56px; border-top: 1px solid var(--divider); }
