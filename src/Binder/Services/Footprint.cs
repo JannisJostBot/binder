@@ -41,6 +41,7 @@ internal static partial class Footprint
             $"managed heap (committed): {Mb(gc.TotalCommittedBytes)}",
             $"not managed (private - committed): {Mb(process.PrivateMemorySize64 - gc.TotalCommittedBytes)}",
             $"threads: {process.Threads.Count}",
+            $"panel windows alive: {PanelsAlive()}",
         };
         try
         {
@@ -49,6 +50,19 @@ internal static partial class Footprint
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
     }
+
+    // Weak references to the panel windows made so far, for the report: a closed one still alive after Shrink's
+    // collections is held by something (an event, a static), and with it its views and covers.
+    private static readonly List<WeakReference> Panels = [];
+
+    /// <summary>Called when a panel window is made.</summary>
+    public static void TrackPanel(object panel)
+    {
+        Panels.RemoveAll(p => !p.IsAlive);
+        Panels.Add(new WeakReference(panel));
+    }
+
+    private static int PanelsAlive() => Panels.Count(p => p.IsAlive);
 
     /// <summary>
     /// "Open faster": the closed panel stays loaded, so nothing is collected. The working set is still trimmed:

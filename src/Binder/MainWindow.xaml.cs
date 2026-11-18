@@ -43,7 +43,11 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     public MainWindow()
     {
         InitializeComponent();
-        Closed += (_, _) => CloseTips();
+        Footprint.TrackPanel(this); // counted in --memory-report
+        // Set here, not with x:Bind: an x:Bind on a Window subscribes to its Activated event (see OnClosed).
+        KeepOpenButton.Content = Strings.KeepOpen;
+        Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(KeepOpenButton, Strings.KeepOpenToolTip);
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(KeepOpenButton, Strings.KeepOpenName);
         _dispatcher = DispatcherQueue.GetForCurrentThread();
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
@@ -115,7 +119,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         NativeWindow.Cloak(_hwnd, true);
         CoverQueue.HoldFrom(0); // no grid covers until the first layout says which ones are in view
         Activate();
-        CompositionTarget.Rendering += OnFirstFrame;
+        FrameTicks.Add(OnFirstFrame);
     }
 
     /// <summary>Longest the panel waits for the covers in view before it shows anyway (slow disk, huge art).</summary>
@@ -132,7 +136,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     /// window shows complete, the slide starts and, once per run, the library scan. Covers below the fold load
     /// after the slide.
     /// </summary>
-    private void OnFirstFrame(object? sender, object e)
+    private void OnFirstFrame()
     {
         if (--_framesBeforeShowing > 0) return;
         if (_coverWait is null)
@@ -145,7 +149,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         bool drawn = _framesAfterCovers >= 0 && --_framesAfterCovers <= 0;
         if (!drawn && _coverWait.Elapsed.TotalMilliseconds < MaxCoverWaitMilliseconds) return;
 
-        CompositionTarget.Rendering -= OnFirstFrame;
+        FrameTicks.Remove(OnFirstFrame);
         NativeWindow.Cloak(_hwnd, false);
         _shown = true;
         if (_startSlide is { } slide)

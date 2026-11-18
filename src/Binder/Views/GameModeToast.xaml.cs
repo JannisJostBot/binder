@@ -190,7 +190,7 @@ public sealed partial class GameModeToast : Window
             _timer?.Stop();
             ShowStoryboard.Stop();
             _drawCheck?.Stop();
-            CompositionTarget.Rendering -= StartMeltOnFirstFrame;
+            FrameTicks.Remove(StartMeltOnFirstFrame);
             _melting?.Remove();
         };
     }
@@ -347,12 +347,12 @@ public sealed partial class GameModeToast : Window
 
         NativeWindow.Cloak(_hwnd, false);
         FrameworkElementAutomationPeer.CreatePeerForElement(_announce)?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
-        CompositionTarget.Rendering += StartMeltOnFirstFrame;
+        FrameTicks.Add(StartMeltOnFirstFrame);
     }
 
-    private void StartMeltOnFirstFrame(object? sender, object e)
+    private void StartMeltOnFirstFrame()
     {
-        CompositionTarget.Rendering -= StartMeltOnFirstFrame;
+        FrameTicks.Remove(StartMeltOnFirstFrame);
         if (_melting is not { } melt) return;
         var body = VisualOf(Body);
         var c = body.Compositor;

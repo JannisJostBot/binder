@@ -168,10 +168,17 @@ public sealed partial class MainWindow
             IsClosing = true;
             Closing?.Invoke();
         }
+        // A handler on the window's own events that reaches back to it keeps the closed window alive (WinUI's
+        // Window doesn't let the GC see through that cycle), and with it its views and covers: so each one is
+        // removed here, and MainWindow.xaml has no x:Bind (that adds one to Activated).
+        Activated -= OnActivated;
+        Closed -= OnClosed;
+        App.Current.UpdateChanged -= PushUpdate;
+        CloseTips();
         _slideGeneration++;
         OpeningGate.Release();
         CoverQueue.ReleaseHold();
-        CompositionTarget.Rendering -= OnFirstFrame;
+        FrameTicks.Remove(OnFirstFrame);
         App.Current.CountdownTick -= OnCountdownTick;
         _undoTimer?.Stop();
         _pad.Dispose();

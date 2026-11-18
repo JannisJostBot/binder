@@ -428,6 +428,7 @@ public sealed partial class App : Application
 
     private void OnPanelClosed(object sender, WindowEventArgs e)
     {
+        ((Window)sender).Closed -= OnPanelClosed;
         if (ReferenceEquals(sender, _kept)) _kept = null;
         if (!ReferenceEquals(sender, _panel)) return;
         _panel = null;

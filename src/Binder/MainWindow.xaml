@@ -57,9 +57,9 @@
                             <TextBlock x:Name="CountdownText" Style="{StaticResource CaptionTextBlockStyle}"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         </StackPanel>
-                        <Button x:Name="KeepOpenButton" Grid.Column="2" Content="{x:Bind s:Strings.KeepOpen}" VerticalAlignment="Center"
-                                Click="OnKeepOpenClick" ToolTipService.ToolTip="{x:Bind s:Strings.KeepOpenToolTip}"
-                                AutomationProperties.Name="{x:Bind s:Strings.KeepOpenName}" />
+                        <!-- Its text is set in code: an x:Bind on a Window subscribes to the window's Activated event,
+                             which keeps the closed panel alive (MainWindow's constructor). -->
+                        <Button x:Name="KeepOpenButton" Grid.Column="2" VerticalAlignment="Center" Click="OnKeepOpenClick" />
                     </Grid>
                     <!-- Time left: a thin bar along the card's bottom edge, inside its rounded corners. -->
                     <Grid Grid.Row="1" Height="3" Margin="14,0,14,10" CornerRadius="1.5"

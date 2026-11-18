@@ -1055,8 +1055,14 @@ smooth scrolling through the grid, and the published size. Report the numbers in
   | Never opened (`--background`) | 13 / 68 MB | 13 / 68 MB |
 
   Found on both: the commit size grows by ~20 MB at every open and close (closed after the 6th: main 269 MB, branch
-  241 MB), all outside the managed heap; the private working set while closed stays ~1.7 MB. Not this branch's;
-  to look into (what each new panel window leaves behind).
+  241 MB), all outside the managed heap; the private working set while closed stays ~1.7 MB. Not this branch's.
+  **Fixed (2026-11-18):** every closed panel window stayed alive, with its views and covers. Three causes, each
+  measured on the real PC: a handler added in code to each launcher chip's `ContextRequested` (now one on the
+  bar, in XAML); handlers on the Window's own events, including the one x:Bind adds to `Activated` (removed in
+  `OnClosed`; MainWindow.xaml has no x:Bind); and `CompositionTarget.Rendering`, which keeps its last handler
+  (`Views/FrameTicks`, one static handler). 30 open/close cycles: commit 140 → 220 MB (was ~+21 MB per cycle),
+  closed working set ~18 MB. Left: the latest closed panel stays alive until the next open (cause not found), and
+  ~2.5 MB commit and ~26 handles per cycle, native. `--memory-report` now prints "panel windows alive".
 - **Tile hover parts:** `GameTile`'s scrim, edge, high contrast outline and Play mark are `x:Load` and built when
   the tile first rises (a UserControl's `FindName` does realize them). The Details button stays in the tree (UI
   Automation). Checked on the real PC (2026-11-18): the tile area and the Play mark captured every ~4 ms after the

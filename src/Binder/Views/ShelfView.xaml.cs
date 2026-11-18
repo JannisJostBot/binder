@@ -387,22 +387,25 @@ public sealed partial class ShelfView : UserControl
     private void AddChip(string filter, string label)
     {
         var item = new SelectorBarItem { Text = label, Tag = filter };
-        // A launcher chip opens its launcher from a menu (spec §21 a); a normal click still only filters.
+        // A launcher chip opens its launcher from a menu (spec §21 a, OnChipContextRequested); a normal click still
+        // only filters.
         if (ViewModel!.OpenLauncherLabel(filter) is not null && ShelfViewModel.LauncherOf(filter) is { } source)
-        {
             AutomationProperties.SetHelpText(item, Strings.Format(Strings.ChipOpenLauncherHelp, Format.LauncherAppName(source)));
-            item.ContextRequested += OnChipContextRequested;
-        }
         Filters.Items.Add(item);
         if (ViewModel!.CurrentFilter == filter) Filters.SelectedItem = item;
     }
 
-    /// <summary>Right-click, Shift+F10 or the Menu key on a launcher chip: "Open Steam", built when it opens.</summary>
+    /// <summary>
+    /// Right-click, Shift+F10 or the Menu key on a launcher chip: "Open Steam", built when it opens. Handled on the
+    /// bar (ShelfView.xaml), not on each chip: a handler added to a chip in code kept every closed panel alive.
+    /// </summary>
     private void OnChipContextRequested(UIElement sender, ContextRequestedEventArgs args)
     {
-        args.Handled = true;
-        if (sender is not SelectorBarItem { Tag: string filter } chip || ViewModel is not { } vm ||
+        var node = args.OriginalSource as DependencyObject;
+        while (node is not null and not SelectorBarItem && node != Filters) node = VisualTreeHelper.GetParent(node);
+        if (node is not SelectorBarItem { Tag: string filter } chip || ViewModel is not { } vm ||
             vm.OpenLauncherLabel(filter) is not { } label || ShelfViewModel.LauncherOf(filter) is not { } source) return;
+        args.Handled = true;
         var item = new MenuFlyoutItem { Text = label };
         if (LauncherBadge.LoadedImage(source) is { } image) item.Icon = new ImageIcon { Source = image };
         item.Click += (_, _) => vm.OpenLauncher(filter);

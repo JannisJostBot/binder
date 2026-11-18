@@ -17,11 +17,10 @@ public sealed partial class MainWindow
     }
     void IShelfActions.StartUpdate() => StartUpdateFromMenu();
 
-    /// <summary>Connected in the constructor; the window stops listening when it closes.</summary>
+    /// <summary>Connected in the constructor; the window stops listening when it closes (OnClosed).</summary>
     private void ListenForUpdates()
     {
         App.Current.UpdateChanged += PushUpdate;
-        Closed += (_, _) => App.Current.UpdateChanged -= PushUpdate;
         PushUpdate();
     }
 
