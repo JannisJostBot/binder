@@ -355,13 +355,13 @@ summary::-webkit-details-marker { display: none; }
   gap: 16px 8px;
 }
 .ico {
+  --lift: 140px;                 /* how high the arc rises above the straight line */
   width: 84px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   transform-origin: 50% 23px;
-  transition: transform 0.7s cubic-bezier(0.55, 0, 0.25, 1), opacity 0.2s ease 0.55s;
 }
 .ico i { position: relative; display: block; width: 46px; height: 46px; border-radius: 8px; overflow: visible; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); }
 .ico[data-tile] i::after {
@@ -374,28 +374,60 @@ summary::-webkit-details-marker { display: none; }
   border-radius: 3px;
   background: #FFFFFF linear-gradient(45deg, transparent 45%, #1F6FD1 45% 58%, transparent 58%);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.15s;
 }
-.ico span { max-width: 84px; font-size: 12px; line-height: 1.25; color: #FFFFFF; text-align: center; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75); }
+.ico span { max-width: 84px; font-size: 12px; line-height: 1.25; color: #FFFFFF; text-align: center; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75); transition: opacity 0.15s; }
 .ico-bin { background: linear-gradient(160deg, #E9EEF5, #B9C4D3); }
 .ico-doc { background: linear-gradient(160deg, #FFFFFF, #DDE3EA); }
 .ico-folder { background: linear-gradient(160deg, #FFD978, #E9A93A); }
-/* Later icons leave a little later. */
-.ico:nth-child(4n+2) { transition-delay: 0.04s, 0.59s; }
-.ico:nth-child(4n+3) { transition-delay: 0.08s, 0.63s; }
-.ico:nth-child(4n) { transition-delay: 0.12s, 0.67s; }
 
+/* Tidying up: each game shortcut is picked up (it lifts and grows a little, its label and arrow fade), flies on an
+   arc over the shelf while it turns from a square icon into a 3:4 cover, and lands on its own tile, which appears
+   under it with a small bounce and a glow of the accent. They leave one after another in the shelf's order
+   (story.js sets each one's --d), just after the shelf has started to slide in. The arc is drawn as eased points
+   (ico-fly), so the path is a smooth curve; --dx/--dy/--s come from story.js. */
 .stage:not([data-step="0"]) .ico[data-tile] {
-  transform: translate(var(--dx, 900px), var(--dy, 0px)) scale(var(--s, 0.5));
-  opacity: 0;
+  z-index: 5;
+  animation: ico-fly 1s linear calc(0.15s + var(--d, 0s)) both;
 }
-/* Scrolling back: the shortcuts are visible at once and fly home together (leaving, they fade only on arrival). */
-.stage[data-step="0"] .ico { transition: transform 0.6s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.15s; }
+.stage:not([data-step="0"]) .ico[data-tile] i {
+  animation: ico-shape 1s ease-in-out calc(0.15s + var(--d, 0s)) both;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
+}
+.stage:not([data-step="0"]) .ico[data-tile] span,
+.stage:not([data-step="0"]) .ico[data-tile] i::after { opacity: 0; }
+@keyframes ico-fly {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  10% { transform: translate(0, -12px) scale(1.12); opacity: 1; }
+  18% { transform: translate(calc(var(--dx, 900px) * 0.004), calc(var(--dy, 0px) * 0.004 - var(--lift) * 0.016 - 11.95px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.004)); opacity: 1; }
+  26% { transform: translate(calc(var(--dx, 900px) * 0.032), calc(var(--dy, 0px) * 0.032 - var(--lift) * 0.124 - 11.62px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.032)); opacity: 1; }
+  34% { transform: translate(calc(var(--dx, 900px) * 0.108), calc(var(--dy, 0px) * 0.108 - var(--lift) * 0.385 - 10.70px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.108)); opacity: 1; }
+  42% { transform: translate(calc(var(--dx, 900px) * 0.256), calc(var(--dy, 0px) * 0.256 - var(--lift) * 0.762 - 8.93px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.256)); opacity: 1; }
+  50% { transform: translate(calc(var(--dx, 900px) * 0.500), calc(var(--dy, 0px) * 0.500 - var(--lift) * 1.000 - 6.00px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.500)); opacity: 1; }
+  58% { transform: translate(calc(var(--dx, 900px) * 0.744), calc(var(--dy, 0px) * 0.744 - var(--lift) * 0.762 - 3.07px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.744)); opacity: 1; }
+  66% { transform: translate(calc(var(--dx, 900px) * 0.892), calc(var(--dy, 0px) * 0.892 - var(--lift) * 0.385 - 1.30px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.892)); opacity: 1; }
+  74% { transform: translate(calc(var(--dx, 900px) * 0.968), calc(var(--dy, 0px) * 0.968 - var(--lift) * 0.124 - 0.38px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.968)); opacity: 1; }
+  82% { transform: translate(calc(var(--dx, 900px) * 0.996), calc(var(--dy, 0px) * 0.996 - var(--lift) * 0.016 - 0.05px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 0.996)); opacity: 1; }
+  90% { transform: translate(calc(var(--dx, 900px) * 1.000), calc(var(--dy, 0px) * 1.000 - var(--lift) * 0.000 - 0.00px)) scale(calc(1.12 + (var(--s, 0.5) - 1.12) * 1.000)); opacity: 1; }
+  100% { transform: translate(var(--dx, 900px), var(--dy, 0px)) scale(var(--s, 0.5)); opacity: 0; }
+}
+@keyframes ico-shape {
+  0%, 35% { height: 46px; margin: 0; border-radius: 8px; }
+  100% { height: 61.33px; margin: -7.67px 0; border-radius: 6px; }
+}
+/* Scrolling back after they've flown: the shortcuts reappear on the shelf's tiles and fly home together. */
+.stage.has-flown[data-step="0"] .ico[data-tile] { animation: ico-home 0.55s cubic-bezier(0.1, 0.9, 0.2, 1) both; }
+@keyframes ico-home {
+  from { transform: translate(var(--dx, 900px), var(--dy, 0px)) scale(var(--s, 0.5)); opacity: 0; }
+  20% { opacity: 1; }
+  to { transform: none; opacity: 1; }
+}
 
 /* The game: Starfall Drift fills the screen, taskbar and all. */
 .game-scene {
   position: absolute;
   inset: 0;
-  z-index: 5;
+  z-index: 6;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.5s, visibility 0s 0.5s;
@@ -426,7 +458,7 @@ summary::-webkit-details-marker { display: none; }
   position: absolute;
   right: 32px;
   bottom: 32px;
-  z-index: 6;
+  z-index: 7;
   width: min(520px, calc(100% - 64px));
   background: #FFFFFF;
   border-radius: 8px;
@@ -531,9 +563,16 @@ summary::-webkit-details-marker { display: none; }
 .mock-chips span { padding: 3px 10px; border-radius: 12px; border: 1px solid #3C3C43; color: #E4E4E8; white-space: nowrap; }
 .mock-chips span.on { background: #4CC2FF; border-color: #4CC2FF; color: #0A1A24; font-weight: 600; }
 .mock-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.mock-grid span { aspect-ratio: 3 / 4; border-radius: 6px; position: relative; overflow: hidden; background: #3A3A42; transition: opacity 0.25s ease 0.6s; }
+.mock-grid span { aspect-ratio: 3 / 4; border-radius: 6px; position: relative; overflow: hidden; background: #3A3A42; }
 .mock-grid span::before { content: ""; position: absolute; z-index: 1; left: 4px; top: 4px; width: 12px; height: 12px; border-radius: 4px; background: rgba(0, 0, 0, 0.55); }
-.stage[data-step="0"] .mock-grid span { opacity: 0; transition: none; }
+.stage[data-step="0"] .mock-grid span { opacity: 0; }
+/* Each tile appears as its shortcut lands on it (the flight's last tenth), with a small bounce and a glow. */
+.stage:not([data-step="0"]) .mock-grid span { animation: tile-land 0.45s ease-out calc(0.15s + var(--d, 0s) + 0.9s) both; }
+@keyframes tile-land {
+  from { opacity: 0; transform: scale(0.9); box-shadow: 0 0 0 0 rgba(76, 194, 255, 0); }
+  40% { opacity: 1; transform: scale(1.07); box-shadow: 0 0 0 2px #4CC2FF, 0 0 22px rgba(76, 194, 255, 0.65); }
+  to { opacity: 1; transform: none; box-shadow: 0 0 0 0 rgba(76, 194, 255, 0); }
+}
 
 
 /* The made-up games' covers: a title over a little picture drawn with gradients (shelf tiles, desktop icons, the
@@ -723,8 +762,9 @@ summary::-webkit-details-marker { display: none; }
   .story-cue { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ico, .mock-panel, .mock-grid span, .game-scene, .procs { transition: none !important; }
-  .stage:not([data-step="0"]) .ico[data-tile] { transform: none; }
+  .ico, .ico i, .ico span, .mock-panel, .mock-grid span, .game-scene, .procs { transition: none !important; animation: none !important; }
+  .stage:not([data-step="0"]) .ico[data-tile] { opacity: 0; }
+  .stage:not([data-step="0"]) .mock-grid span { opacity: 1; }
 }
 
 /* Narrow windows and phones: the desktop is a picture pinned at the top, the captions scroll below it. */
@@ -768,7 +808,7 @@ summary::-webkit-details-marker { display: none; }
 }
 .mock-toast-text { flex-grow: 1; }
 .mock-toast-count { min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 11px; background: #4CC2FF; color: #0A1A24; font-weight: 600; }
-.mock-game { position: absolute; inset: 0 0 48px; z-index: 5; overflow: hidden; container-type: size; }
+.mock-game { position: absolute; inset: 0 0 48px; z-index: 8; overflow: hidden; container-type: size; }
 .mock-score {
   position: absolute; left: 12px; top: 12px; padding: 4px 12px; border-radius: 14px;
   background: rgba(20, 20, 24, 0.75); color: #F3F3F5; font-size: 13px; font-weight: 600; font-family: var(--text-font);

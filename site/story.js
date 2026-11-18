@@ -30,6 +30,8 @@
       if (stage.getAttribute('data-step') === step) return;
       // Measure before the first flight if the page had no size yet when it loaded (a preview's hidden frame).
       if (!measured) measure();
+      // Once the shortcuts have flown, going back to the first step flies them home (styles.css, ico-home).
+      if (step !== '0') stage.classList.add('has-flown');
       stage.setAttribute('data-step', step);
     }
     function observe() { place(); update(); }
@@ -42,6 +44,22 @@
     // and the move is given in the desktop's own, unscaled units.
     var desk = stage.querySelector('.desk');
     var panel = stage.querySelector('.mock-panel');
+    var header = document.querySelector('.site-header') || { offsetHeight: 0 };
+
+    // The order they fly in: the shelf's order, about 60 ms apart; a second shortcut for the same game (a demo, a
+    // mod tool) follows its first one. Each tile appears as its first shortcut lands (--d on both).
+    var GAP = 0.06, AGAIN = 0.12;
+    (function order() {
+      var seen = {};
+      var icons = stage.querySelectorAll('.ico[data-tile]');
+      for (var i = 0; i < icons.length; i++) {
+        var n = parseInt(icons[i].getAttribute('data-tile'), 10);
+        var again = seen[n] = (seen[n] || 0) + 1;
+        icons[i].style.setProperty('--d', ((n - 1) * GAP + (again - 1) * AGAIN).toFixed(2) + 's');
+      }
+      var tiles = stage.querySelectorAll('.mock-grid > span');
+      for (var j = 0; j < tiles.length; j++) tiles[j].style.setProperty('--d', (j * GAP).toFixed(2) + 's');
+    })();
     function measure() {
       if (!desk || !panel) return;
       var k = desk.getBoundingClientRect().width / desk.offsetWidth || 1;
@@ -59,6 +77,9 @@
         icons[i].style.setProperty('--dx', ((bx - ax) / k).toFixed(1) + 'px');
         icons[i].style.setProperty('--dy', ((by - ay) / k).toFixed(1) + 'px');
         icons[i].style.setProperty('--s', (tile.offsetWidth / (pic.offsetWidth * k)).toFixed(3));
+        // The arc rises up to 140 px, less for icons near the top, so none goes behind the header.
+        var room = ay - header.offsetHeight - 40;
+        icons[i].style.setProperty('--lift', (Math.max(24, Math.min(140, room)) / k).toFixed(0) + 'px');
         measured = true;
       }
     }
