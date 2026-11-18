@@ -971,14 +971,30 @@ smooth scrolling through the grid, and the published size. Report the numbers in
 - Try `OptimizationPreference` `Speed` and `Size` against the default, for the widget and the watcher, and keep
   whichever is best on the measurements above. Add `IlcGenerateStackTraceData=false` only if the error log stays
   readable without it.
-- Watcher, done 2026-11-16 (to measure on the real PC: exe size, and private working set and commit size in
-  Task Manager › Details about 10 s into a game, against 0.2.1): `OptimizationPreference` `Size`, identical method
+- Watcher, done 2026-11-16, measured on the real PC 2026-11-18: `OptimizationPreference` `Size`, identical method
   bodies folded, no stack trace data (its logs keep `e.Message` only), no EventSource, metrics or debugger support,
   non-concurrent GC (no background GC thread), and its working set emptied (`SetProcessWorkingSetSize(-1, -1)`)
   right before it blocks on the game.
   CI's smoke test (Native AOT, 5 s into the fake game), main → this change: working set 9.2 → 3.1 MB, private
   3.1 → 3.2 MB (unchanged within noise: emptying the working set frees RAM but not committed memory, and the GC
   switch made no measurable difference); installed size 114,622 → 114,115 KB, `BinderSetup.exe` 34,678 → 34,558 KB.
+  Real PC, 2026-11-18, Windows 11 25H2 (build 26200.9974): 0.2.1's installed `Binder.Watcher.exe` against this
+  branch's `publish.ps1` build, each started with the widget's arguments right after the game, read 10 s into the
+  game (counters as Task Manager › Details shows them: Memory = private working set, Commit size = private bytes;
+  CPU time over the next 10 s). Exe 2,000 → 1,613 KB.
+
+  | Game (source)                | Private WS (KB) | Working set (KB) | Commit (KB)   | CPU |
+  |------------------------------|-----------------|------------------|---------------|-----|
+  | Balatro (Steam, Game mode on)| 1,820 → 592     | 12,204 → 3,248   | 3,692 → 4,080 | 0 → 0 |
+  | Little Inferno (Epic)        | 1,332 → 540     | 9,012 → 3,244    | 3,096 → 3,316 | 0 → 0 |
+  | Magical Drop VI (GOG, exe)   | 1,392 → 540     | 9,096 → 3,312    | 3,200 → 3,304 | 0 → 0 |
+
+  Working set about a third, private working set under half; commit size about the same (up 0.1–0.4 MB, the
+  non-concurrent GC's or noise; CI saw the same). Behaviour unchanged, all with the new build: each game detected,
+  its session saved, the widget back after it closed; Game mode applied and put back (helper: "Restored 5 of 5");
+  Balatro with "Restart if it crashes", ended by force after 70 s: recorded as closed unexpectedly, the restart
+  pill played it again. Error logs read the same in both builds (exception messages are resource keys already,
+  `UseSystemResourceKeys`), e.g. "IO_SharingViolation_File, …\sessions-2026.jsonl".
 - Don't raise the instruction set (`IlcInstructionSet`, e.g. AVX2): Binder would crash on older processors.
 
 ### e. CsWinRT 3.0, once it's stable
