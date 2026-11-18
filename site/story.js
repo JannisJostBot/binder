@@ -18,11 +18,14 @@
     // scroll position with those numbers, at most once a frame. (Not an IntersectionObserver: inside a frame from
     // another site, as in a preview, browsers ignore its margins, and the step changed too early or got stuck.)
     var narrow = window.matchMedia('(max-width: 900px)');
-    var starts = [], line = 0, ticking = 0, measured = false, marked = null;
+    var starts = [], lengths = [], line = 0, ticking = 0, measured = false, marked = null;
     story.classList.add('has-steps');
     function place() {
       var y = window.scrollY || window.pageYOffset;
-      for (var i = 0; i < steps.length; i++) starts[i] = steps[i].getBoundingClientRect().top + y;
+      for (var i = 0; i < steps.length; i++) {
+        starts[i] = steps[i].getBoundingClientRect().top + y;
+        lengths[i] = steps[i].offsetHeight;
+      }
       line = narrow.matches ? stage.offsetHeight + 80 : window.innerHeight / 2;
     }
     function update() {
@@ -30,8 +33,11 @@
       var y = window.scrollY || window.pageYOffset;
       // The "Scroll to tidy this desktop" hint goes as soon as the page scrolls.
       stage.classList.toggle('is-scrolled', y > 24);
-      var at = y + line, step = steps[0].getAttribute('data-step');
-      for (var i = 0; i < steps.length; i++) if (at >= starts[i]) step = steps[i].getAttribute('data-step');
+      var at = y + line, step = steps[0].getAttribute('data-step'), current = 0;
+      for (var i = 0; i < steps.length; i++) if (at >= starts[i]) { step = steps[i].getAttribute('data-step'); current = i; }
+      // How far through its step the page is (0 to 1): the current caption's progress bar fills with it.
+      var through = Math.max(0, Math.min(1, (at - starts[current]) / (lengths[current] || 1)));
+      steps[current].style.setProperty('--p', through.toFixed(3));
       // The step on the section too (the headline's window minimises once the story moves on); kept in step even
       // when the scene's own step is unchanged, so the section is never left without one.
       if (story.getAttribute('data-step') !== step) story.setAttribute('data-step', step);

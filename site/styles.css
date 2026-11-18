@@ -1135,6 +1135,21 @@ summary::-webkit-details-marker { display: none; }
   color: #F3F3F5;
 }
 .caption-dark p { color: #CFCCE0; }
+/* Where the story is: four segments, one per step. The steps already read are full; the current one fills as the
+   page scrolls through its step (story.js sets --p, 0 to 1), so the scroll wheel always visibly moves something
+   while the captions rest. */
+.caption-progress { align-self: stretch; display: flex; gap: 4px; margin: 6px 0 0 !important; }
+.caption-progress i { position: relative; flex: 1; height: 3px; border-radius: 2px; overflow: hidden; background: var(--mica-edge); }
+.caption-progress i::after { content: ""; position: absolute; inset: 0; border-radius: 2px; background: var(--accent); transform-origin: left; transform: scaleX(0); }
+.story-step[data-step="2"] .caption-progress i:nth-child(-n+1)::after,
+.story-step[data-step="3"] .caption-progress i:nth-child(-n+2)::after,
+.story-step[data-step="4"] .caption-progress i:nth-child(-n+3)::after { transform: none; }
+.story-step[data-step="1"] .caption-progress i:nth-child(1)::after,
+.story-step[data-step="2"] .caption-progress i:nth-child(2)::after,
+.story-step[data-step="3"] .caption-progress i:nth-child(3)::after,
+.story-step[data-step="4"] .caption-progress i:nth-child(4)::after { transform: scaleX(var(--p, 0)); }
+.caption-dark .caption-progress i { background: rgba(255, 255, 255, 0.14); }
+.caption-dark .caption-progress i::after { background: #4CC2FF; }
 
 /* The hero: the page's headline in a Mica window on the desktop; the title bar is part of the same surface. */
 .window {
