@@ -18,7 +18,8 @@
     // scroll position with those numbers, at most once a frame. (Not an IntersectionObserver: inside a frame from
     // another site, as in a preview, browsers ignore its margins, and the step changed too early or got stuck.)
     var narrow = window.matchMedia('(max-width: 900px)');
-    var starts = [], line = 0, ticking = 0, measured = false;
+    var starts = [], line = 0, ticking = 0, measured = false, marked = null;
+    story.classList.add('has-steps');
     function place() {
       var y = window.scrollY || window.pageYOffset;
       for (var i = 0; i < steps.length; i++) starts[i] = steps[i].getBoundingClientRect().top + y;
@@ -34,6 +35,17 @@
       // The step on the section too (the headline's window minimises once the story moves on); kept in step even
       // when the scene's own step is unchanged, so the section is never left without one.
       if (story.getAttribute('data-step') !== step) story.setAttribute('data-step', step);
+      // The captions' own state: the current one shows, the ones already read have moved up (styles.css).
+      if (marked !== step) {
+        marked = step;
+        var reached = false;
+        for (var j = 0; j < steps.length; j++) {
+          var here = steps[j].getAttribute('data-step') === step;
+          steps[j].classList.toggle('is-current', here);
+          steps[j].classList.toggle('is-past', !here && !reached);
+          if (here) reached = true;
+        }
+      }
       if (stage.getAttribute('data-step') === step) return;
       // Measure before the first flight if the page had no size yet when it loaded (a preview's hidden frame).
       if (!measured) measure();
