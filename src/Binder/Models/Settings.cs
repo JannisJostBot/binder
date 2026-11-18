@@ -52,6 +52,8 @@ public sealed class Settings
     /// the widget exits while a game runs. Null until it first runs: then it's set without showing anything.
     /// </summary>
     public DateTimeOffset? WelcomeBackSessionStart { get; set; }
+    /// <summary>Welcome back has said once that Binder was closed the whole time the game ran (spec §22 d).</summary>
+    public bool ClosedLineShown { get; set; }
     /// <summary>Favourite covers get a rainbow sheen that follows the pointer (proposals §13 d).</summary>
     public bool ShinyFavorites { get; set; } = true;
 
@@ -66,10 +68,24 @@ public sealed class Settings
     public bool KeepPanelLoaded { get; set; }
     public bool CloseOnClickAway { get; set; } = true;
     public Hotkey Hotkey { get; set; } = Hotkey.WinShiftG;
+    /// <summary>
+    /// Game shortcuts (spec §26): with the shortcut's modifiers still held, a number after its letter plays a game
+    /// without opening the panel. On by default; 0 (the last game played) works before any game has a number.
+    /// </summary>
+    public bool GameKeysOn { get; set; } = true;
+    /// <summary>The numbers 1–9 the user gave games ("3" → game id; <c>Library.GameKeys</c>). Checked on every use.</summary>
+    public Dictionary<string, string> GameKeySlots { get; set; } = [];
     public bool SetupDone { get; set; }
 
     public bool StayOnDesktop { get; set; } = true;
     public bool StartWithWindows { get; set; }
+    /// <summary>
+    /// "Add my games to Start search" (spec §22 c, off by default): Binder's Start menu folder holds a shortcut per
+    /// game Start doesn't find, each running "Binder.exe --play &lt;id&gt;".
+    /// </summary>
+    public bool StartMenuGames { get; set; }
+    /// <summary>What that folder was last written from (<c>StartMenuGames.Sync</c>), so a rescan that changed nothing writes nothing.</summary>
+    public string? StartMenuStamp { get; set; }
 
     /// <summary>Game mode (spec §11): optimize Windows while a game runs, put back when it closes. Opt-in.</summary>
     public bool GameModeEnabled { get; set; }

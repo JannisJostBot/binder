@@ -17,6 +17,12 @@ public sealed class AppState
     public List<CrashRecord> Crashes { get; set; } = [];
 
     /// <summary>
+    /// The game whose end started this process (the watcher's "--returned" at a first start): Binder was closed the
+    /// whole time it ran. Welcome back says so once (spec §22 d).
+    /// </summary>
+    public string? ClosedDuringGame { get; set; }
+
+    /// <summary>
     /// The stores are scanned when the panel first opens, on Refresh, and when it opens again more than
     /// <see cref="RescanAfter"/> after the last scan (games uninstalled meanwhile leave the shelf), not every time.
     /// </summary>
@@ -129,6 +135,7 @@ public sealed partial class App : Application
         _messages.HotkeyPressed += TogglePanel;
         _messages.ShowTrayIcon(Settings.TrayIcon);
         ApplyHotkey();
+        InitGameKeys(); // a number after the shortcut plays a game (spec §26)
 
         HandleCommand(StartArgs, firstStart: true);
     }
@@ -157,6 +164,12 @@ public sealed partial class App : Application
             Quit(); // the installer is about to replace or remove us
             return;
         }
+        if (PlayArgument(args) is { } playId)
+        {
+            PlayFromStart(playId, firstStart); // a Start menu shortcut (spec §22 c)
+            return;
+        }
+
         var notice = StartupNotice.Parse(args);
         bool background = args.Contains("--background");
         var restored = StartupNotice.Restored(args);
@@ -184,6 +197,7 @@ public sealed partial class App : Application
         {
             // A game ended (the watcher brought us back): pick up the session it wrote.
             State.Sessions = Storage.ReloadSessions(State.Sessions); // only what was appended since
+            if (firstStart) State.ClosedDuringGame = notice.GameId;
             if (!_crashedOnly) // else only the restart pill (or the crash card), after the check
             {
                 if (Settings.DisplayMode == DisplayMode.Desktop) OpenPanel();
@@ -348,6 +362,7 @@ public sealed partial class App : Application
     public void OpenPanel()
     {
         _reopenAfterClose = false;
+        CloseFlash(); // a game shortcut's wait gives way to the panel
         Footprint.Wake();
         if (_panel is null)
         {
@@ -476,6 +491,7 @@ public sealed partial class App : Application
     {
         var (modifiers, key) = HotkeyKeys(Settings.Hotkey);
         HotkeyFree = _messages?.RegisterHotkey(modifiers, key) ?? false;
+        ApplyGameKeys(); // they follow the shortcut (none while it's off)
         return HotkeyFree;
     }
 
@@ -571,6 +587,7 @@ public sealed partial class App : Application
     {
         _quitting = true;
         CancelCountdown();
+        CloseFlash();
         _panel?.Close();
         _gameModeToast?.Close();
         _restartToast?.Close();

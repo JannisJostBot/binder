@@ -18,6 +18,8 @@ New-Item -ItemType Directory -Force $art | Out-Null
 $dataDir = Join-Path $env:APPDATA 'Binder'
 New-Item -ItemType Directory -Force $dataDir | Out-Null
 $metrics = @()
+# The website's "How much it uses" numbers (scripts/site-numbers.ps1 writes them into site/index.html).
+$siteNumbers = [ordered]@{}
 $testStart = Get-Date
 $watcherBuild = if ($env:WATCHER_BUILD) { $env:WATCHER_BUILD } else { 'JIT' }
 
@@ -200,6 +202,14 @@ function Add-MemoryReport([string] $label) {
     Start-Process $Exe -ArgumentList '--memory-report' -Wait
     if (Test-Path $report) { $script:metrics += "Memory report ($label): " + ((Get-Content $report | Select-Object -Skip 1) -join '; ') }
 }
+
+# Task Manager's "Memory" column (Details: "Memory (private working set)"), in MB; the number users compare with.
+function Get-PrivateWorkingSetMB($process) {
+    $p = Get-CimInstance Win32_PerfFormattedData_PerfProc_Process -Filter "IDProcess=$($process.Id)" -ErrorAction SilentlyContinue
+    if ($p) { [math]::Round($p.WorkingSetPrivate / 1MB, 1) }
+}
+# The first query of that class takes seconds (Windows loads its counters); not during the short fake game.
+Get-PrivateWorkingSetMB (Get-Process -Id $PID) | Out-Null
 
 function Assert-Running($process, [string] $when) {
     $process.Refresh()
@@ -530,13 +540,19 @@ try {
     $watcher = Wait-Until { Get-Process Binder.Watcher -ErrorAction SilentlyContinue } 10 'watcher running'
     Start-Sleep -Seconds 4   # past detection: the watcher should now be blocked in a kernel wait
     $watcher.Refresh()
+    # Memory first, while the fake game (15 s) surely still runs.
+    $watcherWs = $watcher.WorkingSet64
+    $watcherPrivate = $watcher.PrivateMemorySize64
+    $watcherPws = Get-PrivateWorkingSetMB $watcher
     $w0 = $watcher.TotalProcessorTime
     Start-Sleep -Seconds 5
     $watcher.Refresh()
-    $metrics += "Watcher while game runs: $([math]::Round($watcher.WorkingSet64 / 1MB, 1)) MB working set, $([math]::Round($watcher.PrivateMemorySize64 / 1MB, 1)) MB private, CPU over 5 s: $([int]($watcher.TotalProcessorTime - $w0).TotalMilliseconds) ms ($watcherBuild build)"
-    if ($watcherBuild -eq 'Native AOT' -and $watcher.PrivateMemorySize64 -gt 3MB) {
+    $watcherCpu = [int]($watcher.TotalProcessorTime - $w0).TotalMilliseconds
+    $metrics += "Watcher while game runs: $([math]::Round($watcherWs / 1MB, 1)) MB working set, $([math]::Round($watcherPrivate / 1MB, 1)) MB private, $watcherPws MB private working set, CPU over 5 s: $watcherCpu ms ($watcherBuild build)"
+    if ($watcherBuild -eq 'Native AOT') { $siteNumbers.watcherMB = $watcherPws; $siteNumbers.watcherCpuMs = $watcherCpu }
+    if ($watcherBuild -eq 'Native AOT' -and $watcherPrivate -gt 3MB) {
         # Private bytes: the watcher's own memory. Working set also counts shared Windows DLL pages.
-        Write-Host "::warning::Watcher private memory is $([math]::Round($watcher.PrivateMemorySize64 / 1MB, 1)) MB (budget: ~3 MB)"
+        Write-Host "::warning::Watcher private memory is $([math]::Round($watcherPrivate / 1MB, 1)) MB (budget: ~3 MB)"
     }
     Shot '4-during-game'
 
@@ -566,16 +582,22 @@ try {
     Start-Sleep -Seconds 2   # the desktop scan for the picker
     Shot '17-setup-desktop'
     Invoke-Button $window 'Not now'
-    Find-Button $window 'Done' | Out-Null
+    Find-Button $window 'Next' | Out-Null
     Start-Sleep -Milliseconds 500
     Shot '18-setup-mode'
+    Invoke-Button $window 'Next'
+    # Step 4 opens on Off: Done turns nothing on and never shows the UAC prompt (none in CI).
+    Find-Button $window 'Done' | Out-Null
+    Start-Sleep -Milliseconds 500
+    Shot '18b-setup-game-mode'
     Invoke-Button $window 'Done'
     Wait-Until { (Get-Content (Join-Path $dataDir 'settings.json') -Raw) -match '"SetupDone":\s*true' } 5 'setup saved' | Out-Null
     if ((Get-Content (Join-Path $dataDir 'settings.json') -Raw) -notmatch '"DisplayMode":\s*"Flyout"') { Fail 'Setup did not keep the flyout as the default mode' }
+    if ((Get-Content (Join-Path $dataDir 'settings.json') -Raw) -match '"GameModeEnabled":\s*true') { Fail 'Setup turned Game mode on although step 4 was left on Off' }
     Find-Button $window 'More actions' | Out-Null
     Start-Sleep -Milliseconds 800
     Shot '19-flyout-open'
-    $metrics += 'First-run setup: three steps, saved, flyout kept as the default'
+    $metrics += 'First-run setup: four steps, saved, flyout kept as the default, Game mode left off'
 
     # Shortcut closes it; the process stays, with the panel gone.
     $pid9 = $widget.Id
@@ -585,12 +607,15 @@ try {
     Assert-Running $widget 'closing the flyout'
     $widget.Refresh()
     Add-MemoryReport 'closed after use'
-    $metrics += "Stay ready (closed after use): working set $([math]::Round($widget.WorkingSet64 / 1MB, 1)) MB, private $([math]::Round($widget.PrivateMemorySize64 / 1MB, 1)) MB"
+    $closedPws = Get-PrivateWorkingSetMB $widget
+    $metrics += "Stay ready (closed after use): working set $([math]::Round($widget.WorkingSet64 / 1MB, 1)) MB, private $([math]::Round($widget.PrivateMemorySize64 / 1MB, 1)) MB, private working set $closedPws MB"
+    $siteNumbers.closedMB = $closedPws
     $c0 = $widget.TotalProcessorTime
     Start-Sleep -Seconds 10
     $widget.Refresh()
     $closedCpu = [int]($widget.TotalProcessorTime - $c0).TotalMilliseconds
     $metrics += "Stay ready: CPU over 10 s while closed: $closedCpu ms"
+    $siteNumbers.closedCpuMs = $closedCpu
     if ($closedCpu -gt 100) { Write-Host "::warning::CPU while closed was $closedCpu ms over 10 s (budget: ~0)" }
 
     # Open with the shortcut and time it, then Esc closes.
@@ -644,8 +669,66 @@ try {
     Start-Sleep -Seconds 4
     $widget.Refresh()
     Add-MemoryReport 'open'
-    $metrics += "Flyout open: working set $([math]::Round($widget.WorkingSet64 / 1MB, 1)) MB, private $([math]::Round($widget.PrivateMemorySize64 / 1MB, 1)) MB"
+    $openPws = Get-PrivateWorkingSetMB $widget
+    $metrics += "Flyout open: working set $([math]::Round($widget.WorkingSet64 / 1MB, 1)) MB, private $([math]::Round($widget.PrivateMemorySize64 / 1MB, 1)) MB, private working set $openPws MB"
+    $siteNumbers.openMB = $openPws
+    $siteNumbers.games = @((Get-Content (Join-Path $dataDir 'library.json') -Raw | ConvertFrom-Json) | ForEach-Object { $_ }).Count
     Shot '21-flyout-after-background'
+
+    # --- A library of 100 games: real Steam app ids, so their covers download like a real library's. The panel is
+    # scrolled through once so every cover has been shown, then measured (the website's "with 100 games"). ---
+    Stop-Process -Id $widget.Id -Force
+    $widget.WaitForExit()
+    $bigIds = @(
+        271590, 292030, 1245620, 1091500, 413150, 105600, 252490, 578080, 359550, 1174180, 377160, 489830, 8930,
+        289070, 394360, 236850, 281990, 1158310, 255710, 346110, 252950, 218620, 550, 620, 400, 220, 546560, 4000,
+        381210, 322330, 219740, 367520, 504230, 1145360, 588650, 646570, 250900, 268910, 391540, 427520, 526870,
+        892970, 1086940, 435150, 374320, 814380, 1817070, 1593500, 582010, 1446780, 601150, 883710, 952060,
+        1196590, 2050650, 238960, 1240440, 976730, 1966720, 1623730, 553850, 945360, 990080, 1716740, 1144200,
+        739630, 108600, 304930, 286160, 1172620, 1551360, 1293830, 244210, 805550, 236390, 1097150, 1794680,
+        1150690, 1057090, 387290, 268500, 594650, 1222140, 1325200, 2379780, 1426210, 753640, 1151640, 1659040,
+        552500, 1142710, 594570, 779340, 214950)
+    $current = @((Get-Content (Join-Path $dataDir 'library.json') -Raw | ConvertFrom-Json) | ForEach-Object { $_ }).Count
+    foreach ($id in ($bigIds | Select-Object -First (100 - $current))) {
+        New-Item -ItemType Directory -Force (Join-Path $steamapps "common\Game$id") | Out-Null
+        Set-Content -Encoding UTF8 (Join-Path $steamapps "appmanifest_$id.acf") @"
+"AppState"
+{
+    "appid"		"$id"
+    "name"		"Library game $id"
+    "StateFlags"		"4"
+    "installdir"		"Game$id"
+    "SizeOnDisk"		"$([long]10GB)"
+}
+"@
+    }
+    $widget = Start-Process $Exe -PassThru
+    $window = Get-WidgetWindow $widget.Id
+    $bigCount = Wait-Until {
+        try { $n = @((Get-Content (Join-Path $dataDir 'library.json') -Raw | ConvertFrom-Json) | ForEach-Object { $_ }).Count }
+        catch { $n = 0 }   # read while it's being saved
+        if ($n -ge 100) { $n }
+    } 60 '100 games in the library after the rescan'
+    Start-Sleep -Seconds 10   # the first rows' covers download and decode
+    $scrollable = New-Object System.Windows.Automation.PropertyCondition($UIA::IsScrollPatternAvailableProperty, $true)
+    $grid = @($window.FindAll($Scope::Descendants, $scrollable)) |
+        Where-Object { $_.GetCurrentPattern([System.Windows.Automation.ScrollPattern]::Pattern).Current.VerticallyScrollable } |
+        Select-Object -First 1
+    if (-not $grid) { Fail 'No scrollable grid with 100 games' }
+    $scroll = $grid.GetCurrentPattern([System.Windows.Automation.ScrollPattern]::Pattern)
+    foreach ($percent in 10, 20, 30, 40, 50, 60, 70, 80, 90, 100) {
+        $scroll.SetScrollPercent([System.Windows.Automation.ScrollPattern]::NoScroll, $percent)
+        Start-Sleep -Milliseconds 1500   # covers coming into view download (two at a time) and decode
+    }
+    Shot '22-hundred-games'
+    $scroll.SetScrollPercent([System.Windows.Automation.ScrollPattern]::NoScroll, 0)
+    Start-Sleep -Seconds 5
+    Assert-Running $widget 'scrolling through 100 games'
+    $widget.Refresh()
+    $bigPws = Get-PrivateWorkingSetMB $widget
+    $metrics += "Flyout open with $bigCount games (scrolled through once): working set $([math]::Round($widget.WorkingSet64 / 1MB, 1)) MB, private $([math]::Round($widget.PrivateMemorySize64 / 1MB, 1)) MB, private working set $bigPws MB"
+    $siteNumbers.openBigMB = $bigPws
+    $siteNumbers.bigGames = $bigCount
 }
 finally {
     # Diagnostics for a failed run: the app's own error log, the returned widget's state, and Windows' crash
@@ -662,6 +745,14 @@ finally {
     } catch { }
     $metrics | ForEach-Object { Write-Host $_ }
     $metrics | Set-Content (Join-Path $art 'metrics.txt')
+    # The test machine, for the website's "Measured on" line.
+    try {
+        $os = Get-CimInstance Win32_OperatingSystem
+        $siteNumbers.windows = $os.Caption -replace '^Microsoft\s+', ''
+        $siteNumbers.cores = (Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors
+        $siteNumbers.ramGB = [int][math]::Round($os.TotalVisibleMemorySize / 1MB)
+    } catch { }
+    $siteNumbers | ConvertTo-Json | Set-Content (Join-Path $art 'site-numbers.json')
     Copy-Item (Join-Path $dataDir '*.json') $art -ErrorAction SilentlyContinue
     Get-Process Binder, Binder.Watcher, FakeGame -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     Remove-ItemProperty $runKey 'Binder' -ErrorAction SilentlyContinue

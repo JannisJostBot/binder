@@ -202,10 +202,19 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
 
         App.State.Scanned = true;
         // The usual case: nothing changed. Keep the games already shown (their objects, so nothing on screen goes
-        // stale), with no save and no redraw of the grid.
-        if (!iconChanged && result.Dropped.Count == 0 && Storage.SameLibrary(games, _games)) return;
+        // stale), with no save and no redraw of the grid. Start search is still brought in line (spec §22 c: a
+        // launcher may have added its own Start entries).
+        if (!iconChanged && result.Dropped.Count == 0 && Storage.SameLibrary(games, _games))
+        {
+            if (App.Settings.StartMenuGames) SyncStartMenu();
+            return;
+        }
         _games = games;
+        // Spec §22 c: after a rescan always (a launcher may have added its own Start entries), so not through
+        // SaveLibrary's check, which would sync a second time.
+        _startMenuShelfKey = StartMenuShelfKey();
         SaveLibrary();
+        if (App.Settings.StartMenuGames) SyncStartMenu();
         if (IsClosing)
         {
             App.Current.LibraryRescanned(); // the panel was closed and maybe reopened meanwhile: that one shows it
@@ -232,6 +241,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         foreach (var game in RemovedGames.Remember(removed, dropped)) CoverCache.Forget(game, customToo: true);
         foreach (var game in dropped) CoverCache.Forget(game, customToo: !game.HasUserData);
         App.State.SetRemovedGames(removed);
+        ForgetGameKeys(dropped); // their numbers are free again
         if (!changed) return; // nothing restored or added
         try { Storage.SaveRemovedGames(removed); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
@@ -241,6 +251,9 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     {
         try { Storage.SaveLibrary(_games); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        // An import, its Undo, Add a game, Hide or a rename changes what Start should list (spec §22 c); other edits
+        // (favorites, per-game settings) leave the shelf's games as they were and don't read the Start menu.
+        if (App.Settings.StartMenuGames && StartMenuShelfKey() != _startMenuShelfKey) SyncStartMenu();
     }
 
     private static void SaveSettings()

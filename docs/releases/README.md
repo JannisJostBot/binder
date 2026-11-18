@@ -2,7 +2,8 @@
 
 One file per release, `<version>.json` (e.g. `0.2.0.json`), written by the owner before tagging
 (`docs/proposals.md` §25, "Making a release"). `scripts/sign-release.ps1` reads it from the tagged commit and
-copies it into the signed `release.json`; the app shows it under "What's new".
+copies it into the signed `release.json`; the app shows it under "What's new". The website's Releases page
+(`site/releases.html`, written by `scripts/site-releases.ps1`) lists the English lines once the release is published.
 
 ```json
 {

@@ -9,11 +9,13 @@
     Prints the public key of a YubiKey's signing certificate (PIV slot 9c, ECC P-384, found by Windows in
     CurrentUser\My) as base64 SubjectPublicKeyInfo, for build/OfficialRelease.props.
 
-  -Version 0.2.0 [-Urgent] [-DryRun]
+  -Version 0.2.0 [-Urgent] [-DryRun] [-OverrideScan "<reason>"]
     For the draft release v<Version> that .github/workflows/release.yml made:
       1. checks the tag: on origin, on main, the same commit as here, <Version> in Directory.Build.props;
-      2. checks the draft holds only BinderSetup-<Version>.exe, downloads it and runs `gh attestation verify`
-         (this repository, release.yml, the tag's commit, GitHub-hosted runners);
+      2. checks the draft holds only BinderSetup-<Version>.exe, downloads it and runs `gh attestation verify`n         (this repository, release.yml, the tag's commit, GitHub-hosted runners), then checks the VirusTotal
+         workflow's release check in the draft's notes: it must be there, for this very file, and "passed". A
+         "blocked" check stops here unless -OverrideScan gives the reason (at least 20 characters), which is confirmed
+         by typing "override" and goes into the published notes;
       3. writes release.json itself from what it checked plus docs/releases/<Version>.json at the tagged commit;
       4. shows it and asks to confirm;
       5. signs it (the YubiKey asks for its PIN and a touch), with -Urgent with both YubiKeys in turn; with both
@@ -43,6 +45,9 @@ param(
     [Parameter(ParameterSetName = 'Sign', Mandatory)] [ValidatePattern('^(0|[1-9]\d{0,4})\.(0|[1-9]\d{0,4})\.(0|[1-9]\d{0,4})$')] [string]$Version,
     [Parameter(ParameterSetName = 'Sign')] [switch]$Urgent,
     [Parameter(ParameterSetName = 'Sign')] [switch]$DryRun,
+    # Sign although VirusTotal's release check blocked this setup, and why (e.g. "Microsoft confirmed a false
+    # positive, submission 1234"). Shown in the published release notes.
+    [Parameter(ParameterSetName = 'Sign')] [string]$OverrideScan,
     # Which certificate signs, skipping the question; without it and with more than one P-384 smart card
     # certificate present, the script lists them and asks.
     [string]$Thumbprint,
@@ -169,6 +174,40 @@ $size = (Get-Item -LiteralPath $setup).Length
 if ($size -lt 1MB -or $size -gt 200MB) { Fail "The setup's size ($size bytes) is outside 1 to 200 MB." }
 $sha256 = (Get-FileHash -LiteralPath $setup -Algorithm SHA256).Hash.ToLowerInvariant()
 
+# --- VirusTotal's release check (.github/workflows/virustotal.yml, run when release.yml made the draft) -----
+# Its section in the draft's notes ends with "<!-- release-check: passed|blocked sha256=<hash> -->"; it must be for
+# this very file. A draft without one isn't signed: the scan takes up to about 40 minutes after release.yml.
+$draftNotes = (Run gh @('release', 'view', $tag, '--repo', $Repo, '--json', 'body', '--jq', '.body')) -join "`n"
+$vt = [regex]::Match($draftNotes, '(?s)<!-- virustotal -->(.*?)<!-- /virustotal -->')
+$verdict = if ($vt.Success) { [regex]::Match($vt.Groups[1].Value, '<!-- release-check: (passed|blocked) sha256=([0-9a-f]{64}) -->') } else { $null }
+if (-not $verdict -or -not $verdict.Success) {
+    Fail "The draft has no VirusTotal release check yet. Wait for Actions › VirusTotal (it starts when release.yml has finished), or run it for $tag."
+}
+if ($verdict.Groups[2].Value -ne $sha256) {
+    Fail "The VirusTotal release check is for another file ($($verdict.Groups[2].Value)), not this setup ($sha256). Run Actions › VirusTotal for $tag again."
+}
+$checkText = ($vt.Groups[1].Value -split "`n" | Where-Object { $_ -like 'Release check:*' } | Select-Object -First 1)
+$scanText = ($vt.Groups[1].Value -split "`n" | Where-Object { $_ -match 'engines flagged it' } | Select-Object -First 1) -replace '\[Full report\]\((https://[^)]+)\)', '$1'
+Write-Host "VirusTotal: $scanText"
+Write-Host "            $checkText"
+$overridden = $false
+if ($verdict.Groups[1].Value -eq 'blocked') {
+    if (-not $OverrideScan) {
+        Fail "VirusTotal's release check blocked this setup; the run's log (Actions › VirusTotal) names the engines. If it's a false positive, report it to the vendor and run the workflow again later, or sign anyway with -OverrideScan ""<why>"" (it goes into the published notes)."
+    }
+    $reason = $OverrideScan.Trim()
+    if ($reason.Length -lt 20 -or $reason.Length -gt 300 -or $reason -match '[\p{Cc}<>]') {
+        Fail '-OverrideScan: give the reason as plain text of 20 to 300 characters (no line breaks, no < or >).'
+    }
+    Write-Host ''
+    Write-Host "OVERRIDE  Signing although the release check blocked it. Reason, shown in the release notes:" -ForegroundColor Yellow
+    Write-Host "          $reason" -ForegroundColor Yellow
+    if ((Read-Host 'Type override to go on') -ne 'override') { Fail 'Not confirmed.' }
+    $overridden = $true
+} elseif ($OverrideScan) {
+    Write-Host 'The release check passed: -OverrideScan is ignored.' -ForegroundColor Yellow
+}
+
 # --- 3. release.json -------------------------------------------------------------------------------------
 $manifest = [ordered]@{
     format        = 1
@@ -193,6 +232,7 @@ Write-Host "Version   $Version$(if ($Urgent) { '   URGENT (both YubiKeys)' })"
 Write-Host "Commit    $commit"
 Write-Host "Setup     $size bytes"
 Write-Host "SHA-256   $sha256"
+Write-Host "VirusTotal $($verdict.Groups[1].Value)$(if ($overridden) { ', OVERRIDDEN' })"
 Write-Host "Helper    $helperVersion"
 Write-Host 'Notes (en):'
 $notes['en'] | ForEach-Object { Write-Host "  - $_" }
@@ -242,6 +282,21 @@ Run gh @('release', 'upload', $tag, $manifestPath, $sigPath, '--repo', $Repo, '-
 if ($DryRun) {
     Write-Host "Dry run: $tag stays a draft. Files in $work. To publish it, run again without -DryRun (it replaces these two files); otherwise delete the draft: gh release delete $tag --repo $Repo" -ForegroundColor Yellow
     exit 0
+}
+if ($overridden) {
+    # The override and its reason, above the VirusTotal section, in the notes everyone sees. The comment tells the
+    # VirusTotal workflow's later scans of this file that it was published knowingly (a warning, not a new issue).
+    $current = ((Run gh @('release', 'view', $tag, '--repo', $Repo, '--json', 'body', '--jq', '.body')) -join "`n") -replace '(?s)\s*<!-- release-check-override.*?<!-- /release-check-override -->', ''
+    $block = @(
+        "<!-- release-check-override sha256=$sha256 -->"
+        "**Published although VirusTotal's release check blocked this setup.** The reason: $reason"
+        '<!-- /release-check-override -->'
+    ) -join "`n"
+    $at = $current.IndexOf('<!-- virustotal -->')
+    $newNotes = if ($at -ge 0) { $current.Substring(0, $at).TrimEnd() + "`n`n" + $block + "`n`n" + $current.Substring($at) } else { $current.TrimEnd() + "`n`n" + $block + "`n" }
+    $notesPath = Join-Path $work 'notes.md'
+    [IO.File]::WriteAllText($notesPath, $newNotes, $Utf8)
+    Run gh @('release', 'edit', $tag, '--repo', $Repo, '--notes-file', $notesPath) | Out-Host
 }
 Run gh @('release', 'edit', $tag, '--repo', $Repo, '--draft=false', '--latest') | Out-Host
 Remove-Item -LiteralPath $work -Recurse -Force

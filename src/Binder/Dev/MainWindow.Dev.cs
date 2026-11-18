@@ -13,6 +13,12 @@ public sealed partial class MainWindow
     /// <summary>"Welcome back" for a made-up session; not stored, unlike the real one.</summary>
     internal void DevWelcome(WelcomeMoment moment) => Shelf.ViewModel!.SetWelcome(moment);
 
+    /// <summary>The toast after giving a game a number; nothing is saved. With <paramref name="other"/>, it took that game's.</summary>
+    internal void DevGameKeyToast(string name, int number, string? other) =>
+        ShowToast(Strings.Format(Strings.GameKeyGiven, name, number),
+            other is not null ? Strings.Format(Strings.GameKeyTaken, other) : Views.Format.GameKeyLabel(App.Settings.Hotkey, number),
+            Strings.Ok);
+
     internal void DevCloseToast()
     {
         CloseToast();

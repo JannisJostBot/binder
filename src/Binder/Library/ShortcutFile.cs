@@ -72,9 +72,13 @@ public sealed record ShortcutFile(string Path, string Name, string? TargetPath, 
     }
 
     /// <summary>The URL= line of the [InternetShortcut] section.</summary>
-    public static string? ReadUrlFile(string path)
+    public static string? ReadUrlFile(string path) => ReadUrlValue(path, "URL");
+
+    /// <summary>A key of the [InternetShortcut] section (URL, IconFile), or null. Bounded like <see cref="ReadUrlFile"/>.</summary>
+    public static string? ReadUrlValue(string path, string key)
     {
         if (new FileInfo(path).Length > MaxUrlFileBytes) return null;
+        var prefix = key + "=";
         bool inSection = false;
         foreach (var raw in File.ReadLines(path))
         {
@@ -84,10 +88,10 @@ public sealed record ShortcutFile(string Path, string Name, string? TargetPath, 
                 inSection = line.Equals("[InternetShortcut]", StringComparison.OrdinalIgnoreCase);
                 continue;
             }
-            if (inSection && line.StartsWith("URL=", StringComparison.OrdinalIgnoreCase))
+            if (inSection && line.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
-                var url = line[4..].Trim();
-                return url.Length is > 0 and <= 2048 ? url : null;
+                var value = line[prefix.Length..].Trim();
+                return value.Length is > 0 and <= 2048 ? value : null;
             }
         }
         return null;
@@ -149,6 +153,32 @@ internal static unsafe partial class ShellLink
         catch (COMException)
         {
             return null;
+        }
+        finally
+        {
+            Marshal.Release(unknown);
+        }
+    }
+
+    /// <summary>
+    /// Writes a new .lnk (spec §22 c: Binder's own Start menu folder only). Throws <see cref="COMException"/> or an
+    /// IO exception when it can't.
+    /// </summary>
+    public static void Write(string path, string target, string arguments, string description, string iconPath)
+    {
+        var clsid = ClsidShellLink;
+        var iid = typeof(IShellLinkW).GUID;
+        int hr = CoCreateInstance(in clsid, IntPtr.Zero, CLSCTX_INPROC_SERVER, in iid, out var unknown);
+        if (hr < 0 || unknown == IntPtr.Zero) throw new COMException("ShellLink", hr);
+        try
+        {
+            var link = (IShellLinkW)Wrappers.GetOrCreateObjectForComInstance(unknown, CreateObjectFlags.UniqueInstance);
+            link.SetPath(target);
+            link.SetArguments(arguments);
+            link.SetDescription(description);
+            link.SetIconLocation(iconPath, 0);
+            link.SetWorkingDirectory(System.IO.Path.GetDirectoryName(target) ?? "");
+            ((IPersistFile)link).Save(path, true);
         }
         finally
         {

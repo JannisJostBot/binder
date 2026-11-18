@@ -82,6 +82,30 @@ jobs:
           WATCHER_BUILD: Native AOT
         run: ./tests/smoke.ps1 -Exe publish/app/Binder.exe -FakeGame tests/FakeGame/out/FakeGame.exe
 
+      # The website's numbers as the release workflow (site-numbers.yml) would write them, on a copy of the page:
+      # catches a broken marker or a measurement the page would contradict before a release. The result is in
+      # the artifacts (site-preview.html); it doesn't fail the run, since a busy test machine can be noisy.
+      - name: Website numbers (preview)
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $version = ([xml](Get-Content -Raw Directory.Build.props)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          Copy-Item site/index.html artifacts/site-preview.html
+          ./scripts/site-numbers.ps1 -Numbers artifacts/site-numbers.json -Version $version -Site artifacts/site-preview.html
+
+      # The Releases page as the Website workflow writes it (artifacts/releases-preview.html), from the published
+      # releases; it doesn't fail the run (the list only changes when a release is published).
+      - name: Releases page (preview)
+        continue-on-error: true
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate "repos/$env:GITHUB_REPOSITORY/releases?per_page=100" --jq '.[] | tojson' > artifacts/releases.jsonl
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Copy-Item site/releases.html artifacts/releases-preview.html
+          ./scripts/site-releases.ps1 -Releases artifacts/releases.jsonl -Repository $env:GITHUB_REPOSITORY -Site artifacts/releases-preview.html
+
       # The installer: install through its dialogs, update while the app and a watcher run, uninstall.
       - name: Setup test
         if: always()

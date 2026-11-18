@@ -43,6 +43,8 @@ public sealed partial class GameTile : UserControl
         InitializeComponent();
         ToolTipService.SetToolTip(FavoriteBadge, Strings.Favorite);
         ToolTipService.SetToolTip(DetailsButton, Strings.Details);
+        EnterHintText.Text = Strings.EnterKey;
+        AutomationProperties.SetAccessibilityView(EnterHint, Microsoft.UI.Xaml.Automation.Peers.AccessibilityView.Raw);
         Cover.ImageChanged += hasImage => PlaceholderTitle.Visibility = hasImage ? Visibility.Collapsed : Visibility.Visible;
         // The grid item handles the press itself, so listen to handled events too.
         Hit.AddHandler(PointerPressedEvent, new PointerEventHandler(OnPointerPressed), true);
@@ -52,8 +54,15 @@ public sealed partial class GameTile : UserControl
     private void OnTitleTrimmedChanged(TextBlock sender, IsTextTrimmedChangedEventArgs args) =>
         ToolTipService.SetToolTip(sender, sender.IsTextTrimmed ? sender.Text : null);
 
-    private void OnCoverSizeChanged(object sender, SizeChangedEventArgs e) =>
+    private void OnCoverSizeChanged(object sender, SizeChangedEventArgs e)
+    {
         CoverArea.CenterPoint = new Vector3((float)e.NewSize.Width / 2, (float)e.NewSize.Height / 2, 0);
+        bool narrow = e.NewSize.Width < NarrowCover; // Small and Medium covers: the ↵ symbol, the title keeps its room
+        EnterHintText.Visibility = narrow ? Visibility.Collapsed : Visibility.Visible;
+        EnterHintGlyph.Visibility = narrow ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private const double NarrowCover = 150;
 
     /// <summary>Called when the Details (i) button is pressed.</summary>
     public Action<Game>? DetailsRequested { get; set; }
@@ -85,7 +94,12 @@ public sealed partial class GameTile : UserControl
         FavoriteBadge.Visibility = game.Favorite ? Visibility.Visible : Visibility.Collapsed;
         Shine.SetOn(game.Favorite && App.Settings.ShinyFavorites && !Accessibility.HighContrast);
         AutomationProperties.SetName(DetailsButton, Strings.Format(Strings.DetailsFor, game.Name));
+        // What a click on the cover does (spec §22 e); the Details button keeps its own tooltip.
+        ToolTipService.SetToolTip(CoverArea, Format.PlayToolTip(game, App.Settings.GameModeEnabled));
     }
+
+    /// <summary>The search's top match shows an "Enter" key (Enter in the search box plays it).</summary>
+    public void SetEnterHint(bool on) => EnterHint.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
 
     /// <summary>The sheen follows the pointer over a favourite (§13 d); still with "Animation effects" off.</summary>
     private void OnCoverPointerMoved(object sender, PointerRoutedEventArgs e)

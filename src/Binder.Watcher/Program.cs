@@ -118,7 +118,8 @@ internal static class Program
         while (true)
         {
             // Block until every matched process has exited. No polling while the game runs, and while it waits the
-            // watcher is compacted, trimmed and in efficiency mode.
+            // watcher is compacted, trimmed and in efficiency mode (Footprint.Rest also hands the pages detection used
+            // back to Windows now, for the game, rather than whenever it trims us).
             var waitOn = handles.ToArray();
             matcher.ReleaseList();
             Footprint.Rest();

@@ -56,8 +56,80 @@ public sealed partial class App
         if (_panel is { } panel) show(panel);
     }
 
+    private Views.GameKeyFlash? _devFlash;
+
+    /// <summary>A Steam game if there is one (its banner and logo show in the flash), else the first.</summary>
+    internal Game? DevSteamGame => State.Games.FirstOrDefault(g => g.Source == GameSource.Steam) ?? DevGame;
+
+    /// <summary>A game that isn't Steam's (the cover beside the name), else the first.</summary>
+    internal Game? DevOtherGame => State.Games.FirstOrDefault(g => g.Source != GameSource.Steam) ?? DevGame;
+
+    /// <summary>
+    /// Game shortcuts' flash (spec §26) through its real window: the bar empties over the real wait, then it closes,
+    /// or halfway it shows "Cancelled" as Esc does. Nothing is started and no keyboard hook is made.
+    /// </summary>
+    internal void DevGameKeyFlash(Game game, int number, bool cancel)
+    {
+        _devFlash?.Close();
+        var flash = new Views.GameKeyFlash(game, number, Views.Format.HotkeyLetter(Settings.Hotkey));
+        flash.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_devFlash, flash)) _devFlash = null;
+        };
+        _devFlash = flash;
+        flash.ShowQuietly();
+        flash.StartWait(Library.GameKeys.Wait);
+        var timer = _dispatcher.CreateTimer();
+        timer.Interval = cancel ? Library.GameKeys.Wait / 2 : Library.GameKeys.Wait;
+        timer.IsRepeating = false;
+        timer.Tick += (_, _) =>
+        {
+            if (!ReferenceEquals(_devFlash, flash)) return;
+            if (cancel) flash.ShowCancelled(); // it closes by itself after a moment
+            else flash.Close();
+        };
+        timer.Start();
+    }
+
+    /// <summary>The pill for a number without a game: "Nothing on 4 …", or "No game played yet" for 0.</summary>
+    internal void DevGameKeyNothing(int number)
+    {
+        _devFlash?.Close();
+        var (title, detail) = number == Library.GameKeys.LastPlayed
+            ? (Strings.NoGamePlayedYet, (string?)null)
+            : (Strings.Format(Strings.NothingOnNumber, number), Strings.NothingOnNumberDetail);
+        var notice = new Views.GameKeyFlash(number, title, detail);
+        notice.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_devFlash, notice)) _devFlash = null;
+        };
+        _devFlash = notice;
+        notice.ShowQuietly();
+    }
+
+    /// <summary>The list the held shortcut shows (spec §26), with the real numbers; it closes after 4 s.</summary>
+    internal void DevGameKeyList(bool empty)
+    {
+        _devFlash?.Close();
+        var shelf = State.Games.Where(g => !g.Hidden && Settings.IsSourceEnabled(g.Source)).ToList();
+        var list = new Views.GameKeyFlash(Library.GameKeys.LastPlayedGame(shelf, State.Sessions),
+            empty ? [] : Library.GameKeys.Given(shelf, Settings.GameKeySlots));
+        list.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_devFlash, list)) _devFlash = null;
+        };
+        _devFlash = list;
+        list.ShowQuietly();
+        var timer = _dispatcher.CreateTimer();
+        timer.Interval = TimeSpan.FromSeconds(4);
+        timer.IsRepeating = false;
+        timer.Tick += (_, _) => list.Close();
+        timer.Start();
+    }
+
     internal void DevCloseToasts()
     {
+        _devFlash?.Close();
         _gameModeToast?.Close();
         _devRestartPill?.Close();
         _panel?.DevCloseToast();

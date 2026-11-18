@@ -31,6 +31,9 @@ public sealed partial class MainWindow
             case SettingChange.Hotkey:
                 App.Current.ApplyHotkey();
                 break;
+            case SettingChange.GameKeys:
+                App.Current.ApplyGameKeys();
+                break;
             case SettingChange.TrayIcon:
                 App.Current.ApplyTrayIcon();
                 break;
@@ -56,6 +59,9 @@ public sealed partial class MainWindow
                 if (change == SettingChange.SourceArtwork) CoverCache.ForgetSteamLookups();
                 SaveSettings();
                 return; // nothing on the page or the shelf changes until then
+            case SettingChange.StartMenu:
+                SyncStartMenu(); // writes or removes the folder off the UI thread, then saves
+                return;
             case SettingChange.Updates:
                 SaveSettings();
                 App.Current.UpdateModeChanged(); // the card and the "…" dot follow through UpdateChanged

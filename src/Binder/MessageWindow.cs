@@ -14,7 +14,7 @@ namespace Binder;
 /// A hidden top-level window rather than a message-only one: only top-level windows can be found by class
 /// name and get Explorer's "TaskbarCreated" broadcast (to re-add the icon after Explorer restarts).
 /// </summary>
-internal sealed class MessageWindow : IDisposable
+internal sealed partial class MessageWindow : IDisposable
 {
     public const string ClassName = "Binder.MessageWindow";
     public const int WM_COPYDATA = 0x004A;
@@ -251,6 +251,7 @@ internal sealed class MessageWindow : IDisposable
     public bool RegisterHotkey(uint modifiers, uint key)
     {
         UnregisterHotKey(_hwnd, HotkeyId);
+        _modifiers = key == 0 ? 0 : modifiers; // what a number after it must be pressed with (game shortcuts)
         if (key == 0) return true; // shortcut turned off
         return RegisterHotKey(_hwnd, HotkeyId, modifiers | MOD_NOREPEAT, key);
     }
@@ -261,7 +262,7 @@ internal sealed class MessageWindow : IDisposable
     {
         if (msg == WM_HOTKEY && wParam == HotkeyId)
         {
-            HotkeyPressed?.Invoke();
+            OnShortcut(); // the panel, or a number first (game shortcuts, MessageWindow.GameKeys.cs)
             return IntPtr.Zero;
         }
         if (msg == TrayCallback)
@@ -309,6 +310,11 @@ internal sealed class MessageWindow : IDisposable
             StepTrayAnimation();
             return IntPtr.Zero;
         }
+        if (msg == WM_TIMER && wParam == (IntPtr)NumberWaitTimer)
+        {
+            OnNumberWaitOver();
+            return IntPtr.Zero;
+        }
         if (msg == WM_SETTINGCHANGE) UpdateTrayImage(); // light/dark taskbar may have changed
         return DefWindowProcW(hwnd, msg, wParam, lParam);
     }
@@ -316,6 +322,7 @@ internal sealed class MessageWindow : IDisposable
     public void Dispose()
     {
         KillTimer(_hwnd, (UIntPtr)TrayAnimationTimer);
+        StopGameKeys();
         RemoveTrayIcon();
         DestroyFrameIcons();
         if (_glyphIcon != IntPtr.Zero) DestroyIcon(_glyphIcon);

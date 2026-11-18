@@ -30,8 +30,11 @@ public sealed partial class MainWindow
         ShowImportResult(result);
     }
 
-    /// <summary>What an import did; <paramref name="Stored"/> are the shortcuts that went (setup's merge animation).</summary>
-    private readonly record struct ImportResult(int Imported, int Copied, int Failed, IReadOnlyList<ShortcutFile> Stored);
+    /// <summary>
+    /// What an import did; <paramref name="Stored"/> are the shortcuts that went (setup's merge animation),
+    /// <paramref name="StoredPaths"/> where they are now (the toast's Undo).
+    /// </summary>
+    private readonly record struct ImportResult(int Imported, int Copied, int Failed, IReadOnlyList<ShortcutFile> Stored, IReadOnlyList<string> StoredPaths);
 
     private ImportResult StoreShortcuts(IReadOnlyList<ShortcutFile> picked) => AddStored(MoveShortcuts(picked));
 
@@ -50,6 +53,7 @@ public sealed partial class MainWindow
     {
         int imported = 0, copied = 0, failed = 0;
         var stored = new List<ShortcutFile>();
+        var storedPaths = new List<string>();
         foreach (var (shortcut, record) in moved)
         {
             var existing = ShortcutImporter.ExistingFor(shortcut, _games);
@@ -60,6 +64,7 @@ public sealed partial class MainWindow
             }
             imported++;
             stored.Add(shortcut);
+            storedPaths.Add(record.StoredPath);
             if (record.Copied) copied++;
             if (existing is not null) continue; // already on the shelf: the shortcut is only tidied away
 
@@ -71,25 +76,91 @@ public sealed partial class MainWindow
         SaveLibrary();
         RefreshViews();
         ShellNotify.DesktopsChanged();
-        return new ImportResult(imported, copied, failed, stored);
+        return new ImportResult(imported, copied, failed, stored, storedPaths);
     }
 
     private void ShowImportResult(ImportResult result)
     {
         var (title, detail) = ImportResultText(result);
-        ShowToast(title, detail, Strings.Ok);
+        if (result.StoredPaths.Count == 0)
+        {
+            ShowToast(title, detail, Strings.Ok);
+            return;
+        }
+        // Undo puts back only this import's shortcuts (spec §22 d), as Restore to desktop does for all of them.
+        var paths = result.StoredPaths;
+        ShowToast(title, detail, Strings.Undo, () =>
+        {
+            var (restored, stillHere) = ShortcutImporter.RestoreBatch(paths, _games);
+            SaveLibrary();
+            RefreshViews();
+            ShowToast(stillHere == 0 ? Strings.RestoredShortcuts : Strings.RestoreShortcutsFailed,
+                stillHere == 0 ? Strings.Plural(restored, Strings.RestoredCountOne, Strings.RestoredCount) : Strings.Plural(stillHere, Strings.StillInFolderOne, Strings.StillInFolder), Strings.Ok);
+        });
     }
 
-    /// <summary>"Imported 5 shortcuts" and what to know about them: the notice, or setup's step 3.</summary>
+    /// <summary>
+    /// "Your desktop has 14 fewer icons" (spec §22 d) when shortcuts left the desktop, else "Imported 5 shortcuts",
+    /// and what to know about them: the notice, or setup's step 3.
+    /// </summary>
     private static (string Title, string Detail) ImportResultText(ImportResult result)
     {
-        var (imported, copied, failed, _) = result;
+        var (imported, copied, failed, _, _) = result;
         var detail = copied > 0
             ? Strings.Plural(copied, Strings.ImportCopiedOne, Strings.ImportCopied)
             : Strings.ImportRestoreHint;
         if (failed > 0) detail += " " + Strings.Plural(failed, Strings.ImportFailedOne, Strings.ImportFailed);
-        return (Strings.Plural(imported, Strings.ImportDoneOne, Strings.ImportDone), detail);
+        int moved = imported - copied; // a copy leaves the original on the shared desktop
+        var title = moved > 0
+            ? Strings.Plural(moved, Strings.DesktopFewerIconsOne, Strings.DesktopFewerIcons)
+            : Strings.Plural(imported, Strings.ImportDoneOne, Strings.ImportDone);
+        return (title, detail);
     }
+
+    /// <summary>
+    /// "Add my games to Start search" (spec §22 c): writes Binder's Start folder from the shelf (games hidden or from
+    /// a launcher turned off are left out) when the setting is on, removes it when off. Off the UI thread; the folder
+    /// is written only when something changed since the last time (the stamp in settings).
+    /// </summary>
+    private void SyncStartMenu()
+    {
+        var settings = App.Settings;
+        bool on = settings.StartMenuGames;
+        var shelf = _games.Where(g => !g.Hidden && settings.IsSourceEnabled(g.Source)).ToList();
+        var last = settings.StartMenuStamp;
+        _startMenuShelfKey = StartMenuShelfKey();
+        _ = Task.Run(() =>
+        {
+            if (!on)
+            {
+                StartMenuGames.Remove();
+                return (string?)null;
+            }
+            return StartMenuGames.Sync(shelf, last);
+        }).ContinueWith(done =>
+        {
+            if (done.Exception is { } error)
+            {
+                ErrorLog.Write(error, "Start menu games");
+                return;
+            }
+            if (settings.StartMenuGames != on) return; // switched again meanwhile: that run saves
+            settings.StartMenuStamp = done.Result;
+            SaveSettings();
+        }, TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    /// <summary>The shelf's games as the Start folder sees them (id and name), to tell when a library save needs a sync.</summary>
+    private string StartMenuShelfKey()
+    {
+        var settings = App.Settings;
+        var key = new System.Text.StringBuilder();
+        foreach (var g in _games)
+            if (!g.Hidden && settings.IsSourceEnabled(g.Source)) key.Append(g.Id).Append('|').Append(g.Name).Append('\n');
+        return key.ToString();
+    }
+
+    private string? _startMenuShelfKey;
 
     /// <summary>Puts every imported shortcut back on the desktop and removes the games made from them.</summary>
     private void RestoreShortcuts()

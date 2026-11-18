@@ -85,6 +85,7 @@ internal static class Uninstaller
                 run.DeleteValue(Locations.RunValue, throwOnMissingValue: false);
         }
         TryDelete(Locations.StartMenuLink);
+        RemoveStartMenuGames();
         Registry.CurrentUser.DeleteSubKeyTree(Locations.UninstallKey, throwOnMissingSubKey: false);
 
         // Only the files setup put there; anything else the user added stays, and so does the folder then.
@@ -241,6 +242,23 @@ internal static class Uninstaller
             }
         }
         Locations.Log("couldn't delete " + path);
+    }
+
+    /// <summary>
+    /// The app's Start folder of game shortcuts (spec §22 c): only the .lnk files directly in it, never through a
+    /// link, then the folder if nothing else is left in it.
+    /// </summary>
+    private static void RemoveStartMenuGames()
+    {
+        var folder = Locations.StartMenuGamesDir;
+        try
+        {
+            if (!Directory.Exists(folder) || File.GetAttributes(folder).HasFlag(FileAttributes.ReparsePoint)) return;
+            foreach (var file in Directory.EnumerateFiles(folder, "*.lnk"))
+                if (!File.GetAttributes(file).HasFlag(FileAttributes.ReparsePoint)) TryDelete(file);
+            if (!Directory.EnumerateFileSystemEntries(folder).Any()) Directory.Delete(folder);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
     }
 
     private static void TryDelete(string path)

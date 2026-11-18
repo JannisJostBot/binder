@@ -3,7 +3,8 @@ using Binder.Models;
 namespace Binder.Library;
 
 /// <summary>What "Welcome back" shows (proposals §13 c, e): the session just played and, if passed, a milestone.</summary>
-public sealed record WelcomeMoment(string GameId, DateTimeOffset SessionStart, TimeSpan Length, TimeSpan Week, int Milestone);
+/// <paramref name="ClosedLine"/>: say once that Binder was closed the whole time (spec §22 d).
+public sealed record WelcomeMoment(string GameId, DateTimeOffset SessionStart, TimeSpan Length, TimeSpan Week, int Milestone, bool ClosedLine = false);
 
 /// <summary>
 /// "Welcome back" after a session and quiet playtime milestones (proposals §13 c and e). Pure: the caller stores

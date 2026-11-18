@@ -13,6 +13,22 @@ public sealed partial class MainWindow
     void ISetupActions.Skip() => FinishSetup(null);
     void ISetupActions.LoadShortcuts() => _ = LoadSetupShortcutsAsync();
     void ISetupActions.Finish(SetupChoices choices) => FinishSetup(choices);
+    bool ISetupActions.CanAllowHelper => GameModeService.CanAllow;
+    bool ISetupActions.HelperReady => GameModeService.Allowed && !GameModeService.AllowedButOutdated;
+
+    /// <summary>Step 4's "Allow and finish…": the same UAC prompt as Settings › Game mode › Allow….</summary>
+    async Task<int> ISetupActions.AllowHelperAsync()
+    {
+        App.ModalDepth++; // the UAC prompt takes the focus: click-away must not close the flyout
+        try
+        {
+            return await GameModeService.AllowAsync();
+        }
+        finally
+        {
+            App.ModalDepth--;
+        }
+    }
 
     void ISetupActions.Import(IReadOnlyList<ShortcutFile> picked)
     {
@@ -40,6 +56,14 @@ public sealed partial class MainWindow
         SetupPage.ViewModel!.Start(App.Settings, _games, Autostart.IsEnabled());
         ShowPage(SetupPage);
         _ = CountLaunchersForSetupAsync();
+        _ = ReadStartMenuForSetupAsync();
+    }
+
+    /// <summary>Step 1's "N of them aren't in Start search" (spec §22 d): the Start menu read once per run, off the UI thread.</summary>
+    private async Task ReadStartMenuForSetupAsync()
+    {
+        var entries = await Task.Run(StartMenuGames.ReadEntries);
+        if (!IsClosing && SetupPage.Visibility == Visibility.Visible) SetupPage.ViewModel!.SetStartEntries(entries);
     }
 
     private HashSet<GameSource> _sourcesBeforeSetup = [];
@@ -71,6 +95,15 @@ public sealed partial class MainWindow
             if (choices.StartWithWindows != Autostart.IsEnabled() && !Autostart.TrySet(choices.StartWithWindows))
                 ShowToast(Strings.AutostartFailed, Strings.AutostartFailedDetail, Strings.Ok);
             settings.StartWithWindows = Autostart.IsEnabled();
+            // Step 4. The admin items are in GameModeItems by default; without the helper the watcher skips them, with
+            // it they'd run, so "Only items that don't need administrator rights" takes them out.
+            settings.GameModeEnabled = choices.GameMode != SetupGameMode.Off;
+            settings.GameModeItems = SetupViewModel.ItemsFor(choices.GameMode, settings.GameModeItems);
+            if (choices.StartMenuGames != settings.StartMenuGames)
+            {
+                settings.StartMenuGames = choices.StartMenuGames;
+                SyncStartMenu(); // spec §22 c, off the UI thread
+            }
         }
         settings.SetupDone = true;
         SaveSettings();
