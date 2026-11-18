@@ -1070,19 +1070,29 @@ summary::-webkit-details-marker { display: none; }
    story.js marks the steps is-current and is-past (has-steps on the section); without it they all simply show. */
 @media (min-width: 901px) {
   .story-step:not(.story-step-hero) { min-height: calc(var(--stage-h) * 1.5); justify-content: flex-start; padding: 0 40px; }
-  .story-step:not(.story-step-hero) .caption { position: sticky; top: max(calc(var(--header-h) + 24px), calc(50vh - 130px)); }
+  /* The negative bottom margin lets a caption stay pinned to the very end of its step (sticky stops at its step's
+     edge otherwise, and the caption then scrolled away at full speed); by then it has faded (below). */
+  .story-step:not(.story-step-hero) .caption { position: sticky; top: max(calc(var(--header-h) + 24px), calc(50vh - 130px)); margin-bottom: -100vh; }
+  /* The way out follows the scrolling: over the last quarter of its step (--p from story.js, 0.75 to 1) the caption
+     drifts up and fades as you scroll (--out 0 to 1), so you see it go; once the next step takes over, what's left of
+     it settles out gently. Scrolling back brings it back the same way. */
   .story.has-steps .story-step:not(.story-step-hero) .caption {
+    --out: clamp(0, (var(--p, 0) - 0.75) * 4, 1);
     opacity: 0;
     transform: translateY(32px) scale(0.98);
+    translate: 0 calc(var(--out) * -56px);
     pointer-events: none;
-    transition: opacity 0.2s, transform 0.3s cubic-bezier(0.7, 0, 1, 0.5);
+    transition: opacity 0.45s ease-out, transform 0.6s cubic-bezier(0.2, 0, 0, 1), translate 0.12s linear;
   }
-  .story.has-steps .story-step.is-past .caption { transform: translateY(-32px) scale(0.98); }
+  .story.has-steps .story-step.is-past .caption { transform: translateY(-24px) scale(0.98); }
+  /* The last caption ("Welcome back") stays, and leaves with the story. */
+  .story-step:not(.story-step-hero):last-child .caption { margin-bottom: 0; }
+  .story.has-steps .story-step:last-child .caption { --out: 0; }
   .story.has-steps .story-step.is-current .caption {
-    opacity: 1;
+    opacity: calc(1 - var(--out) * 0.8);
     transform: none;
     pointer-events: auto;
-    transition: opacity 0.3s, transform 0.55s cubic-bezier(0.1, 0.9, 0.2, 1);
+    transition: opacity 0.12s linear, transform 0.7s cubic-bezier(0.1, 0.9, 0.2, 1), translate 0.12s linear;
   }
 }
 /* The captions and the hero window are Windows 11 windows in Mica: a translucent surface tinted by what's behind
@@ -1205,7 +1215,7 @@ summary::-webkit-details-marker { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .ico, .ico i, .ico span, .mock-panel, .mock-grid span, .game-scene, .game-scene *, .procs, .story-cue, .window, .mock-tray, .caption { transition: none !important; animation: none !important; }
-  .story.has-steps .story-step .caption { transform: none !important; }
+  .story.has-steps .story-step .caption { transform: none !important; translate: none !important; }
   .cursor { display: none; }
   /* The game as a still frame: the first shot on its way to the big asteroid. */
   .sf-a { transform: translate(66cqw, 40cqh); }
