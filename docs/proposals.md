@@ -28,7 +28,7 @@ Every item follows the project brief: zero cost while idle or gaming, no third-p
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | **In progress.** Done: a, the logo on banners (`ArtKind.Logo`, `BannerLogo`; Steam keeps `librarycache\{appid}\logo.png`, 188 of 400 games on the owner's PC, the rest downloaded once; shadow from the logo's alpha via `Image.GetAlphaMask`; in Detail it sits right of the cover, which overlaps the banner's bottom left). Built: b–e, to try on the real PC.<br>b (the cover growing into details) was built and then removed on 2026-11-09, owner's choice: it looked bad.<br>c and e are `Library/Moments`, picked each time the panel opens; tested live with a session written into the sessions file. With a crash, the crash card still takes the slot.<br>d is `Views/Sheen`, plain alpha layers tuned below the prototype's "Medium", since blend modes would need Win2D (approved for the Game mode toast only). The rest look was checked on screen; following the pointer couldn't be tested here, because injected mouse input didn't reach the panel |
 | 17 Advanced: sources and artwork | §14 | Built: `Library/SourceDefaults` (every default, `Validate` per kind, `Use` at start and after a change; invalid or unknown values fall back), read by the Steam, Epic, GOG, Ubisoft and Rockstar sources and `CoverCache` (cover names tried in order, the first downloaded; `ForgetSteamLookups` after an artwork change drops resolved paths and `.none` markers). Settings › Advanced: one card at the bottom (closed), per launcher a Check (`Services/SourceCheck`, no downloads) and a text box per entry with Reset and its error, Reset all, the host named when the address differs. Values take effect from the next scan. Unit-tested (each kind's validation, the view model); network and validation rules in `CLAUDE.md`. Still to try on the real PC: the page on screen, Check per launcher |
-| 18 Performance | §15 | **In progress.** Built 2026-11-17 (§15 g), not yet measured on the real PC: a rescan with nothing new skips the save and the grid redraw; pages other than the shelf built on first visit (`MainWindow.Pages`, `x:Load`, so the page-level part of c); tile hover parts built on first raise; the watcher rests while the game runs and opens only new processes while detecting; sessions read incrementally after a game. d: the watcher's part done and measured on the real PC (2026-11-18, see d). To do: a, b, the rest of c, the widget's part of d, e; f is proposed, waiting for measurements and the owner's go |
+| 18 Performance | §15 | **In progress.** Built 2026-11-17 (§15 g): a rescan with nothing new skips the save and the grid redraw; pages other than the shelf built on first visit (`MainWindow.Pages`, in code, so the page-level part of c; checked on the real PC 2026-11-18: same as main on every first opening, open panel 103 → 86 MB private working set, commit 180 → 160 MB, shortcut to visible 77 → 47 ms); tile hover parts built on first raise (checked: the first hover fades like the next); the watcher rests while the game runs and opens only new processes while detecting; sessions read incrementally after a game. d: the watcher's part done and measured on the real PC (2026-11-18, see d). To do: a, b, the rest of c, the widget's part of d, e; f is proposed, waiting for measurements and the owner's go |
 | 19 Quick actions | §16 | Done (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); tried on the real PC |
 | 20 Restart after a crash | §17 | Built: the Detail toggle, `CrashAnalysis.ShouldRestart` (in a row from `crashes.json`, at most 2), the watcher's `--restart` / `--crashed`, the restart pill (Game mode's pill with a 5 s countdown, bar and Cancel, owner's change) and the crash card's "Restarted twice already" line; unit-tested. To try on the real PC with a game that crashes (or a test exe that exits with 0xC0000005 after a minute) |
 | 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
@@ -957,8 +957,9 @@ smooth scrolling through the grid, and the published size. Report the numbers in
 
 ### c. Load hidden parts of the UI only when needed
 
-- Nothing in the XAML uses deferred loading yet (`x:Load`). Mark elements that aren't visible when a view first
-  shows, so WinUI builds them only when they're needed:
+- The pages are built on first visit and the tiles' hover parts on first raise (g). Mark elements that aren't
+  visible when a view first shows, so WinUI builds them only when they're needed (`x:Load` works inside a
+  UserControl; in MainWindow itself `FindName` doesn't realize it, so build in code there):
   - the Settings page and its sections (it's only shown when opened);
   - the Detail view's parts that are collapsed at first (crash card, launch options, anti-cheat details, the
     "This game only" settings);
@@ -1025,12 +1026,44 @@ smooth scrolling through the grid, and the published size. Report the numbers in
 - **Rescan without changes:** `MainWindow.RescanAsync` compares the merged library with the shown one
   (`Storage.SameLibrary`, as saved); when nothing changed (no game dropped, no icon changed), the games on screen
   stay, with no save of `library.json` and no rebuild of the grid.
-- **Pages on first visit:** every page but the shelf is `x:Load="False"` (`…Slot` fields) and built and
-  initialized when first shown (`MainWindow.Pages`); `Shown(…Slot)` checks without building. Check on the PC:
-  every page's first opening (focus, layout, Esc, the controller), the smoke test.
+- **Pages on first visit:** every page but the shelf is built in code and initialized when first shown
+  (`MainWindow.Pages`: `new T()`, inserted in `Root` right above the shelf, below the notices; `…Slot` fields);
+  `Shown(…Slot)` checks without building. First built as `x:Load="False"` in MainWindow.xaml, which failed on the
+  real PC (2026-11-18): a Window's `Root.FindName` doesn't realize them, so the first Detail threw ("Something went
+  wrong") and no page could open.
+  Checked on the real PC (2026-11-18, Native AOT build, 81 games, Medium covers, dark): each page's first opening
+  after a fresh panel (closed with Stay ready, reopened) screenshotted at 50 and 750 ms and after Esc, against
+  main's build. Pixel-identical (apart from a moving chart tab, the caret and a fading tooltip): Detail from the
+  (i) button, Space and right-click › Details (focus on Play, its focus rectangle after Space; Esc back to the tile,
+  raised); Settings from the "…" menu; Import shortcuts (Esc back to Settings, then the shelf); Game mode from the
+  "…" menu and from Settings (its switches still fade into On at 50 ms, the same as main's from ~120 ms); Free up
+  space (the (i) tip opens, closes on Esc and when the page is left by Back); first-run setup again (step 1 the
+  same, Skip). What's new after an update (debug panel's "Updated to 9.9.9" pill) opens Settings scrolled to About on
+  its first build. Not checked here: the controller (Y, Menu), the "…" menu's update item (needs an available update;
+  same `ShowSettings` + `ShowAbout` as What's new), the smoke test (it rewrites the PC's Binder data, Steam path and
+  Run key: CI only).
+  Measured (the same PC and library, `--background`, then 6 opens with Win+Shift+G, 4 s open, 6 s closed; two rounds
+  each, main 53b7db2 against this branch):
+
+  | | main | branch |
+  |---|---|---|
+  | Shortcut to visible, first open | 118–126 ms | 85–89 ms |
+  | Shortcut to visible, later opens (median) | 76–77 ms | 47 ms |
+  | Open (1st): private working set / commit | 103 / 180 MB | 86 / 160 MB |
+  | Open (1st): managed heap live | 9.3 MB | 7.2 MB |
+  | Closed, Stay ready (1st): private working set / commit | 1.6 / 157 MB | 1.6 / 136 MB |
+  | Never opened (`--background`) | 13 / 68 MB | 13 / 68 MB |
+
+  Found on both: the commit size grows by ~20 MB at every open and close (closed after the 6th: main 269 MB, branch
+  241 MB), all outside the managed heap; the private working set while closed stays ~1.7 MB. Not this branch's;
+  to look into (what each new panel window leaves behind).
 - **Tile hover parts:** `GameTile`'s scrim, edge, high contrast outline and Play mark are `x:Load` and built when
-  the tile first rises. The Details button stays in the tree (UI Automation). Check: the first hover of a tile
-  fades in like the next ones; keyboard, controller, high contrast.
+  the tile first rises (a UserControl's `FindName` does realize them). The Details button stays in the tree (UI
+  Automation). Checked on the real PC (2026-11-18): the tile area and the Play mark captured every ~4 ms after the
+  pointer arrives: the first hover of a never-raised tile fades in on the same curve as the second and third (Play
+  mark ~140 ms, whole tile ~210 ms; the first starts ≤ 10 ms later); the same after scrolling 25 notches so tiles
+  recycle (no tile left raised), and for keyboard focus (Right arrow onto a fresh tile). Not checked here: the
+  controller, Animation effects off and high contrast (Windows settings a person changes).
 - **Watcher**, on top of d's smaller build: while blocked on the game it's compacted (an aggressive collection that
   also decommits free GC memory), trimmed and in efficiency mode with very low memory priority (`Footprint`, in
   place of d's working-set trim alone), undone when the game exits or Windows ends the session; `ConserveMemory`.

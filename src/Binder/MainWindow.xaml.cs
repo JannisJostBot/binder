@@ -305,9 +305,9 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         SetShown(ImportSlot, page);
         SetShown(SetupSlot, page);
         SetShown(GameModeSlot, page);
-        if (page != FreeSpaceSlot && Shown(FreeSpaceSlot))
+        if (page != FreeSpaceSlot && FreeSpaceSlot is { Visibility: Visibility.Visible } freeSpace)
         {
-            FreeSpaceSlot.Release();
+            freeSpace.Release();
             App.State.FreeSpace = null;
         }
         SetShown(FreeSpaceSlot, page);

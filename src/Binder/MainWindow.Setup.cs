@@ -63,7 +63,7 @@ public sealed partial class MainWindow
     private async Task ReadStartMenuForSetupAsync()
     {
         var entries = await Task.Run(StartMenuGames.ReadEntries);
-        if (!IsClosing && SetupPage.Visibility == Visibility.Visible) SetupPage.ViewModel!.SetStartEntries(entries);
+        if (!IsClosing && Shown(SetupSlot)) SetupPage.ViewModel!.SetStartEntries(entries);
     }
 
     private HashSet<GameSource> _sourcesBeforeSetup = [];

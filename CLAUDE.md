@@ -90,7 +90,7 @@ src/Binder/            the WinUI widget
                           entry in Strings.Entries.cs; Strings.cs has Format, Plural, List, LowerFirst
   MainWindow.xaml.cs      the panel: start, first frame, page navigation, rescan; partial files by area:
                           MainWindow.<Page>.cs (that page's actions), .Pages (every page but the shelf is built on its
-                          first visit, `x:Load`; `Shown(…Slot)` checks without building), .Flyout (slide, placement), .Games (import,
+                          first visit, in code; `Shown(…Slot)` checks without building), .Flyout (slide, placement), .Games (import,
                           add, game actions), .Input (Esc, controller, type-to-search), .Launch (play, countdown,
                           return), .Notices (toast, errors, crash card), .Updates (About's buttons, the "…" item,
                           the pill after an update)
