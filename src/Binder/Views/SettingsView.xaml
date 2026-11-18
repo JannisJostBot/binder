@@ -85,6 +85,29 @@
                 </Grid>
             </Border>
 
+            <!-- Spec §26 (board 36): the shortcut, then a number, plays a game. 0 is the last game played. -->
+            <Border x:Name="GameKeysCard" Style="{StaticResource SettingCard}">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.GameKeysToolTip}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE8A9;" />
+                    <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.GameKeys}" />
+                        <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.GameKeysText, Mode=OneWay}" />
+                    </StackPanel>
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.GameKeysOn, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="{x:Bind s:Strings.GameKeys}" />
+                    <Button x:Name="GameKeysChevron" Grid.Column="3" Style="{StaticResource DisclosureButton}" />
+                </Grid>
+            </Border>
+            <Border x:Name="GameKeysBody" Style="{StaticResource SettingCardBody}" Padding="52,0,16,0">
+                <StackPanel x:Name="GameKeysList" AutomationProperties.Name="{x:Bind s:Strings.GameKeys}" />
+            </Border>
+
             <Border Style="{StaticResource SettingCard}">
                 <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.TrayIconToolTip}">
                     <Grid.ColumnDefinitions>

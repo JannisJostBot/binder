@@ -66,7 +66,7 @@ their games, and it must feel like part of Windows. When an idea doesn't clearly
 ```
 src/Binder/            the WinUI widget
   Library/                sources (*Source.cs), SourceDefaults (where each source reads, user overrides),
-                          GameSearch (the search's ranking), StartMenuMatch (games Start finds, our Start folder's plan),
+                          GameSearch (the search's ranking), GameKeys (game shortcuts' numbers), StartMenuMatch (games Start finds, our Start folder's plan),
                           InstallFolder (folder safety), Vdf, ShortcutFile/ShortcutImporter,
                           LaunchOptions, GameScan, GameFiles (installed or gone, removed games' settings), AntiCheat, PlaytimeStats, CrashAnalysis, SpacePlanner,
                           Moments ("Welcome back"), UpdateManifest (release signature and rules) (pure logic)
@@ -80,7 +80,8 @@ src/Binder/            the WinUI widget
   ViewModels/             MVVM: ObservableObject, RelayCommand, one <Page>ViewModel + I<Page>Actions per page (Shelf,
                           Detail, Settings, Setup, FreeSpace, GameMode)
   Views/                  ShelfView, DetailView, SettingsView, SetupView, ImportView, FreeSpaceView, GameModeView,
-                          GameModeToast, ToastMelt (its changes melt in, Win2D), BannerLogo, Sheen (shiny
+                          GameModeToast, ToastMelt (its changes melt in, Win2D), GameKeyFlash (a game shortcut's
+                          logo before the game starts), BannerLogo, Sheen (shiny
                           favorites), LogoMerge (setup step 2's moved shortcuts fly into the logo, as on the
                           website); Format.cs the text formatting,
                           GameAction.cs (menu actions, chart bars)
@@ -93,8 +94,9 @@ src/Binder/            the WinUI widget
                           return), .Notices (toast, errors, crash card), .Updates (About's buttons, the "…" item,
                           the pill after an update)
   App.xaml.cs             the app's lifetime (panel, tray menu, countdown); App.Restart.cs, App.Updates.cs (when to
-                          check, download and install an update; spec §25), App.Play.cs ("--play <id>" from Start, §22)
-  Program.cs, MessageWindow.cs   single instance, tray icon, hotkey
+                          check, download and install an update; spec §25), App.Play.cs ("--play <id>" from Start, §22),
+                          App.GameKeys.cs (a number after the shortcut plays a game: the flash and its wait, §26)
+  Program.cs, MessageWindow.cs   single instance, tray icon, hotkey; MessageWindow.GameKeys.cs the number after it
   Dev/                    the debug panel, Debug builds only ("Binder.exe --dev"): buttons that show every toast, card
                           and message through the real code with made-up data; left out of Release builds
 src/Binder.Watcher/    windowless (one hidden window on its own thread, SystemEvents.cs: shutdown, sign-out and
@@ -289,7 +291,10 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
   Downloads have a size cap.
 - **Launching.** Only what came from a validated library entry or that the user picked. Store URIs from validated
   ids only. `--play <id>` (the Start menu's game shortcuts, `App.Play`) plays only a game in the library, on the
-  shelf; any other id just opens the panel. Arguments via `ProcessStartInfo.ArgumentList`, or quoted by the Windows argv rules.
+  shelf; any other id just opens the panel. A game shortcut's number (spec §26) plays only a game on the shelf.
+- **Keyboard.** The only keyboard hook (`MessageWindow.GameKeys.cs`) exists right after the panel's shortcut while
+  its modifiers are held (until they come up, at most 15 s) and while a game shortcut's flash waits; it takes only 0–9 and Esc, stores
+  nothing, and does its work after returning. Never a hook at any other time. Arguments via `ProcessStartInfo.ArgumentList`, or quoted by the Windows argv rules.
 - **Native code.** Only Windows system DLLs, from System32 (`DefaultDllImportSearchPaths(System32)` in every
   assembly; the setup and helper also link with `/DEPENDENTLOADFLAG:0x800`, the setup calls
   `SetDefaultDllDirectories`).

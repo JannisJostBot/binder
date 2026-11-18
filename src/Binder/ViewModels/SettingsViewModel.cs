@@ -19,6 +19,8 @@ public enum SettingChange
     Updates,
     /// <summary>"Add my games to Start search" (spec §22 c).</summary>
     StartMenu,
+    /// <summary>Game shortcuts on or off (spec §26).</summary>
+    GameKeys,
 }
 
 /// <summary>What the Settings page asks its owner (the panel window) to do. An interface, so none can be left unwired.</summary>
@@ -47,6 +49,10 @@ public interface ISettingsActions
     void SkipUpdate();
     /// <summary>"Binder on GitHub": opens the repository's page in the browser.</summary>
     void OpenRepository();
+    /// <summary>Gives a game a number for its game shortcut (1–9), or none (null); the owner saves and fills the page again.</summary>
+    void SetGameKey(string gameId, int? number);
+    /// <summary>The game the number 0 plays now (the last one played on the shelf), or null.</summary>
+    Game? LastPlayedGame();
 }
 
 /// <summary>
@@ -121,6 +127,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         HiddenGames = [.. games.Where(g => g.Hidden).OrderBy(g => g.Name, StringComparer.CurrentCultureIgnoreCase)];
         settings.SourceOverrides ??= []; // "null" in a hand-edited settings.json
         LoadSourcePaths();
+        LoadGameKeys();
         OnAllPropertiesChanged();
     }
 

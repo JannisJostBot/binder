@@ -2507,4 +2507,97 @@ Ralentir : mode efficacité pendant le jeu</value>
   <data name="StartMenuGamesToolTip" xml:space="preserve">
     <value>Les jeux que le menu Démarrer ne trouve pas reçoivent un raccourci qui les lance via Binder</value>
   </data>
+  <data name="GameKeys" xml:space="preserve">
+    <value>Raccourcis clavier des jeux</value>
+  </data>
+  <data name="GameKeysToolTip" xml:space="preserve">
+    <value>Maintenez les touches du raccourci et appuyez sur un chiffre pour lancer un jeu sans ouvrir Binder</value>
+  </data>
+  <data name="DisclosureGameKeys" xml:space="preserve">
+    <value>les raccourcis clavier des jeux</value>
+  </data>
+  <data name="GameKeyMenu" xml:space="preserve">
+    <value>Raccourci clavier</value>
+  </data>
+  <data name="GameKeyName" xml:space="preserve">
+    <value>Chiffre du raccourci de ce jeu</value>
+  </data>
+  <data name="GameKeyToolTip" xml:space="preserve">
+    <value>Maintenez les touches du raccourci et appuyez sur ce chiffre pour lancer le jeu</value>
+  </data>
+  <data name="GameKeyChoice" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="GameKeyFree" xml:space="preserve">
+    <value>Libre</value>
+  </data>
+  <data name="GameKeyThisGame" xml:space="preserve">
+    <value>Ce jeu</value>
+  </data>
+  <data name="GameKeyCombo" xml:space="preserve">
+    <value>{0}, {1}</value>
+  </data>
+  <data name="GameKeyGiven" xml:space="preserve">
+    <value>{0} est sur le {1}</value>
+  </data>
+  <data name="GameKeyTaken" xml:space="preserve">
+    <value>{0} n'en a plus</value>
+  </data>
+  <data name="GameKeyLastPlayed" xml:space="preserve">
+    <value>Dernier jeu joué</value>
+  </data>
+  <data name="GameKeyRowName" xml:space="preserve">
+    <value>{0}, {1}</value>
+  </data>
+  <data name="GameKeyZeroToolTip" xml:space="preserve">
+    <value>Toujours le dernier jeu joué</value>
+  </data>
+  <data name="GameKeyZeroHint" xml:space="preserve">
+    <value>0 est toujours le dernier jeu joué</value>
+  </data>
+  <data name="GameKeyDropHint" xml:space="preserve">
+    <value>Déposez {0} sur un chiffre</value>
+  </data>
+  <data name="GameKeyPut" xml:space="preserve">
+    <value>Mettre {0} sur le {1}</value>
+  </data>
+  <data name="GameKeyReplaces" xml:space="preserve">
+    <value>remplace {0}</value>
+  </data>
+  <data name="GameKeyAlreadyThere" xml:space="preserve">
+    <value>déjà là</value>
+  </data>
+  <data name="Starting" xml:space="preserve">
+    <value>Démarrage</value>
+  </data>
+  <data name="EscToCancel" xml:space="preserve">
+    <value>Échap pour annuler</value>
+  </data>
+  <data name="GameKeyStartingName" xml:space="preserve">
+    <value>Démarrage de {0}. Appuyez sur Échap pour annuler.</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Annulé</value>
+  </data>
+  <data name="GameDidntStart" xml:space="preserve">
+    <value>{0} n'a pas été lancé</value>
+  </data>
+  <data name="NoGamePlayedYet" xml:space="preserve">
+    <value>Aucun jeu joué pour l'instant</value>
+  </data>
+  <data name="NothingOnNumber" xml:space="preserve">
+    <value>Rien sur le {0}</value>
+  </data>
+  <data name="NothingOnNumberDetail" xml:space="preserve">
+    <value>clic droit sur un jeu dans Binder</value>
+  </data>
+  <data name="GameKeyListTitle" xml:space="preserve">
+    <value>Appuyez sur un chiffre</value>
+  </data>
+  <data name="GameKeyListDetail" xml:space="preserve">
+    <value>relâchez pour ouvrir Binder</value>
+  </data>
+  <data name="GameKeyListNone" xml:space="preserve">
+    <value>Clic droit sur un jeu dans Binder pour lui donner un chiffre</value>
+  </data>
 </root>

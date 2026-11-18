@@ -37,6 +37,7 @@ Every item follows the project brief: zero cost while idle or gaming, no third-p
 | 24 Lean speed-ups | §23 | To do |
 | 25 Weekly chart details | §24 | Proposed (2026-11-12), waiting for the owner's go; two choices open (§24 "To decide") |
 | 26 Updates from GitHub | §25 | **Built and released** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; the keys (both YubiKeys' since 2026-11-15, made on the keys with PIN and touch always) and the repository set at build time since 2026-11-15: `build/OfficialRelease.props` for `publish.ps1 -Official` (release.yml), `build/Updates.targets` checks them and generates `Services.UpdateKeys`; other builds and forks without their own keys never check (About says so); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier; notes format in `docs/releases/README.md`. Default decided: Ask before installing (2026-11-14).<br>Built 2026-11-14: `.github/workflows/release.yml` (v* tags only, actions pinned, a draft with the setup and its attestation); `Services/Updater` (check with redirects only through `IsAllowedAddress`, 15 s, a client per check, no cookies; manifest kept in `%LOCALAPPDATA%\Binder\updates\` and verified again when read; the download hashed while it streams; the setup hashed again through a handle held with read sharing only and started with `/S /update`; waits for a watcher or a Game mode journal); `App.Updates` (check after a panel's first frame at most once a day, download at once with "Install automatically" or urgent, closing the panel cancels it, install when the flyout closes or at a `--background` start, the in-panel toast "Updated to …" with What's new after `--updated`, "couldn't be installed" when `--updated` comes back on the old version); Settings › About (version card with Check for updates / Update / Restart now, progress bar, What's new with Skip this version, the Updates combo); the "…" dot and first item, the tray item; three settings fields plus the mode; 37 strings in EN/DE/FR; view model tests. The pill is the panel's toast, not board 23's separate pill window. Not built: the Authenticode same-publisher check (Binder is unsigned today).<br>Built 2026-11-15: the setup's `/update` (the widget comes back with `--updated --background` after a success, a failure or a busy setup) and the all-or-nothing swap (§25 "To decide" 3, owner: yes; `FileSwap`, unit-tested on real files), run in CI by `setup-test.ps1`.<br>Released: Windows sees both YubiKeys' certificates and `sign-release.ps1` asks which one signs; after a dry run, 0.2.0 and 0.2.1 were published on 2026-11-15 through `release.yml` and `sign-release.ps1`. Since 2026-11-16 `virustotal.yml` scans each published setup and adds the result to the release notes. An installed copy updated itself through the app on the owner's PC. Not built: the Authenticode same-publisher check (Binder is unsigned today) |
+| 27 Game shortcuts | §26 | Built 2026-11-18 (boards 35 A, 36, 37). Tried on the real PC 2026-11-18 (Debug build, keys and mouse sent with SendInput, one 4K screen with an auto-hide taskbar): Win+Shift, G, a number on the number row shows the flash, the panel stays shut, nothing on the taskbar starts; a quick tap opens the panel at once, holding opens it after 1 s; Esc cancels ("Cancelled · Balatro didn't start", gone after about 1 s) and Esc and letters reach apps normally afterwards; the same number again plays at once (Balatro started, Binder exited, only the watcher stayed, the widget came back when it closed); another number switches; "Nothing on 4"; the switch off lets the number through and opens the panel; dragging a cover or a list row raises the numbers, the line follows the slot under the pointer ("replaces Balatro", "already there"), a drop gives the number and the toast names the game that lost it, 0 refuses, releasing elsewhere removes the row; efficiency mode back on after a flash and a cancel. Fixed: the number pad (Windows lifts Shift around a pad key while Shift is held, which ended the wait, and may hand it over as Insert, End, arrows); a game without store art showed only its name (now its generated cover); the drag's caption repeated the line above the numbers. Added (owner, 2026-11-18): held past 1 s the shortcut lists what each number plays, letting go then opens the panel; and the debug panel's "Game shortcuts" buttons. Not tried: the menu's, Game detail's and Settings' number pickers by hand (their view models are unit-tested), a real keyboard (only sent keys: the Start menu on letting go of Win and the number pad with NumLock need a person), light mode, high contrast, Animation effects off, two screens, Narrator (Windows settings Claude doesn't change), the published AOT build |
 | Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
 | Setup: shortcuts into the logo | §6 step 2 | Built 2026-11-16 (`Views/LogoMerge`, as on the website): after Move, the moved shortcuts' rows turn into pills and fly into the logo's covers, the rest of the page fades, then step 3. At most seven fly, ~1.5 s on the compositor, no timer; skipped with Animation effects off or in high contrast. A second Move while it runs does nothing (unit test). To try on the real PC |
@@ -2079,6 +2080,57 @@ download's size and hash checks against a local file.
 3. ~~Write and verify every file before swapping any~~: decided 2026-11-15, **yes** (`Binder.Setup/FileSwap.cs`): all
    files are written and checked first, then swapped in; a failed swap puts back what was already swapped.
 
+## 26. Game shortcuts (milestone 27, boards 35–37)
+
+The owner's idea (2026-11-18): the panel's shortcut plus a number starts a game without opening the shelf. Built
+with option A of board 35 and a 1.5 s wait (both picked by Claude for a first build; the owner may still change them).
+
+### Keys
+- **Hold the shortcut's modifiers, tap its letter, tap a number** (Win+Shift+G, 3). Windows uses Win+number with
+  every modifier for the taskbar, and Ctrl+Alt+number is AltGr on German and French keyboards, so the number can't be
+  a hotkey of its own.
+- The shortcut's `WM_HOTKEY` starts a wait (`MessageWindow.GameKeys.cs`) only while its modifiers are still down: a
+  low-level keyboard hook (`WH_KEYBOARD_LL`) that takes only 0–9 (number row and pad; with Shift held Windows hands the
+  pad's keys over as Insert, End, arrows, … and lifts Shift around them with a scan code marked 0x200, which isn't a
+  release). Letting the modifiers go without a number opens the panel as before. The hook exists only during that wait
+  and while the flash waits (for Esc and another number); its callback only records the key and returns, the work runs
+  after.
+- **Held for 1 s** (owner, 2026-11-18): instead of opening the panel, the list of what each number plays shows where
+  the flash does (`GameKeyFlash`'s list: "Press a number · let go to open Binder", 0 and its last game, then the
+  numbers given, or how to give one). A number plays as above; letting go closes it and opens the panel; Esc closes
+  it and opens nothing. At most 15 s, should the keys' release never reach the hook.
+- 0 is always the last game played on the shelf (`GameKeys.LastPlayedGame`); 1–9 are the user's
+  (`Settings.GameKeySlots`, number → game id, checked on every use). `Settings.GameKeysOn`, on by default.
+
+### The flash (board 35, A)
+- `Views/GameKeyFlash`: the game's banner (Steam's hero and logo via `BannerLogo`, else the cover beside the name on
+  the cover's color) over a strip "Starting · Esc to cancel" with the keys pressed, centered above the taskbar of the
+  screen with the mouse, without focus. A bar empties over `GameKeys.Wait` (1.5 s).
+- Esc: "Cancelled · [Game] didn't start", gone after 1.2 s. The same number again starts at once; another number
+  (modifiers still held) switches. The panel opening cancels the wait.
+- After the wait the game plays as `--play` does (`App.PlayFromStart`): no panel, the watcher, Game mode.
+- A number without a game: the pill "Nothing on 4 · right-click a game in Binder", or "No game played yet" for 0.
+- Animations off: no rise and fade; the bar still empties (it shows time). High contrast: no art, system colors.
+
+### Giving a game a number (boards 36, 37)
+- The cover's right-click menu: "Shortcut ›" with None and 1–9, each naming the game that has it.
+- Game detail: a Shortcut card under "This game" (second line "Win+Shift+G, 3").
+- Settings › Opening Binder: "Game shortcuts" with a switch and a list of 0–9 (0 fixed, 1–9 a list of the shelf's
+  games).
+- Dragging a cover or row on the shelf raises the numbers 0–9 over the bottom of the grid; dropping it on one gives
+  the game that number (0 refuses). The drag carries only our own format.
+- A number that's taken moves to the new game; the toast says which game has none now. A game that leaves the
+  library frees its number.
+
+### Not chosen
+- More than 10 slots, letters, or a confirmation: search (Win+Shift+G, type, Enter) covers the rest.
+- A badge on covers: the number shows in Game detail and Settings only.
+
+### Touches
+`Library/GameKeys` (tested), `MessageWindow.GameKeys.cs`, `App.GameKeys.cs`, `Views/GameKeyFlash`,
+`MainWindow.GameKeys.cs`, `ViewModels/GameKeyChoices` and `SettingsViewModel.GameKeys.cs` (tested), `GameMenu`,
+`DetailView`, `SettingsView`, `ShelfView.GameKeys.cs`, `site/docs.html` (what the keyboard hook does).
+
 ## Build order (after milestone 7)
 
 8. **Quick wins:** *(Done.)*
@@ -2126,6 +2178,8 @@ download's size and hash checks against a local file.
     published, checked by the unit tests' verifier), then the app's check, About cards and download, then install on close and the
     pill. Update the rules in `CLAUDE.md`, the README, `docs/installer.md` and the site in the same milestone.
     *(Built; 0.2.0 and 0.2.1 released.)*
+27. **Game shortcuts** (§26): first check on the real PC that the hook gets the number while Win+Shift is held; then
+    the flash, Esc, and the three ways to give a number. *(Built.)*
 
 ## Not decided (don't build)
 
