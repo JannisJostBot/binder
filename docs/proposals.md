@@ -46,6 +46,16 @@ The build order is at the end of this file. The ideas under "Not decided" at the
 
 ## Decisions log
 
+**2026-11-18**
+- A release depends on its VirusTotal scan (§25, "Making a release", step 4): the draft is scanned before it's
+  signed, and `sign-release.ps1` refuses a setup the release check blocked: flagged by any of the major engines
+  (Microsoft, Kaspersky, ESET-NOD32, BitDefender, Sophos, Symantec, Avast, AVG, Malwarebytes, Trend Micro, McAfee,
+  CrowdStrike) or by 3 or more engines of any kind. The owner can override it only with a reason, which goes into the
+  published notes. Uploading the draft to VirusTotal before release is accepted (it'll be public anyway).
+- The website has a Releases page (every version's notes and setup) and, once a download starts, a dialog in the
+  site's own look (not a Windows dialog's): Defender may warn, the VirusTotal result, don't install if that's not
+  acceptable.
+
 **2026-11-17**
 - The website's new look, "the desktop story" (design canvas https://claude.ai/artifact/9tRqEzXwkccPqmsjQYqWNc):
   the page opens on a Windows desktop full of game shortcuts that fly into Binder's shelf as you scroll, then a game
@@ -1858,6 +1868,9 @@ A release can be marked `"urgent": true` for a security fix that shouldn't wait 
    - Writes `release.json` itself from what it checked plus the notes file at the tagged commit; nothing from CI's
      side goes into the manifest unchecked.
    - Shows version, commit, size, hash and the English notes and asks to confirm.
+   - Checks VirusTotal's release check (step 6) in the draft's notes: it must be there, for this very file, and
+     "passed". "Blocked" stops it unless `-OverrideScan "<reason>"` (20 to 300 characters, confirmed by typing
+     "override"); the reason goes into the published notes above the VirusTotal section.
    - Signs with the main key and checks the signature with the public keys in `build/OfficialRelease.props` at the
      tagged commit before uploading (it reads the repository from there too).
    - Uploads `release.json` and `release.json.sig` to the draft and publishes it as the latest release.
@@ -1872,13 +1885,21 @@ A release can be marked `"urgent": true` for a security fix that shouldn't wait 
    run by hand for a tag (Actions › Website numbers › Run workflow).
 6. **Published:** with "immutable releases" on, the release's files and tag can't change any more. A bad release is
    fixed by the next version, never by replacing files (the app never downgrades).
-6. **VirusTotal (automatic, `.github/workflows/virustotal.yml`):** publishing starts a separate job that downloads
-   the setup, checks its SHA-256 against `release.json`, uploads it to VirusTotal, waits for the result and adds a
-   "VirusTotal" section to the release notes (scan date, how many engines flagged it, report link, hash; not which engines). A
-   finding is a warning on the run, naming the engines, not a failure: look at which and why before telling anyone
-   (0.2.1: Bkav alone, a generic name, likely a false positive). It runs only with the repository
-   secret `VT_API_KEY` (a free VirusTotal account's key); `release.yml` itself stays without secrets. Earlier tags:
-   Actions › VirusTotal › Run workflow.
+6. **VirusTotal (automatic, `.github/workflows/virustotal.yml`), twice:**
+   - **Before signing:** when `release.yml` has made the draft (up to about 40 minutes; sign after it). It downloads
+     the draft's setup, checks it against GitHub's hash of the upload, uploads it to VirusTotal, waits for the result
+     and adds a "VirusTotal" section to the draft's notes: scan date, how many engines flagged it, report link,
+     hash, and the **release check**, plus a `<!-- release-check: passed|blocked sha256=… -->` line that step 4 reads.
+     Blocked when any major engine flags it (Microsoft, Kaspersky, ESET-NOD32, BitDefender, Sophos, Symantec, Avast,
+     AVG, Malwarebytes, Trend Micro, McAfee, CrowdStrike) or 3 or more engines of any kind do; then the run fails,
+     naming the engines in its log. A false positive: report it to the vendor and run the workflow again later, or
+     override in step 4 with a reason. Below the limits, findings are a warning on the run (0.2.1: Bkav alone).
+   - **After publishing:** scanned again, since engines change their verdicts; the section is replaced (also checked
+     against `release.json`). Blocked now: the run fails and opens an issue (people may already have it), unless
+     it was published with an override for that same file.
+   The notes name no engines (one false positive named there reads worse than it is). It runs only with the
+   repository secret `VT_API_KEY` (a free VirusTotal account's key); `release.yml` itself stays without secrets.
+   Earlier tags or a rescan: Actions › VirusTotal › Run workflow.
 7. **Website (after publishing):** `site/index.html`'s "Download for Windows" button links to the published file,
    `https://github.com/JannisJostBot/binder/releases/download/v<version>/BinderSetup-<version>.exe`, and the line
    under it says `Version <version> · <size> MB` (size in MiB, rounded; the sign script prints both at the end).

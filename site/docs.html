@@ -323,6 +323,7 @@
         <ul class="docs-list">
           <li>Binder checks GitHub for a new version once a day, when it opens. Settings › About › Updates offers <strong>Install automatically</strong>, <strong>Ask before installing</strong> and <strong>Don't check</strong>; with Don't check, Binder makes no request at all.</li>
           <li>The check downloads a list signed by Binder's author. Binder installs only a newer version whose signature, size and checksum match, and never an older one.</li>
+          <li>Before a version is signed, its setup is scanned with VirusTotal. It isn't released if one of the major antivirus engines (including Microsoft Defender's) or 3 or more engines flag it, unless the author overrides that with a reason, which then appears in that version's release notes.</li>
           <li>It never installs while a game is running or Game mode still has changes applied. With Ask before installing, security fixes still install when you close Binder.</li>
           <li>Downloads are kept in <code>%LOCALAPPDATA%\Binder\updates\</code> and deleted once installed.</li>
           <li>A copy built from the source code checks only if its build names a repository and signing keys. Without them it never checks, and Settings › About says <strong>This build doesn't check for updates</strong>.</li>
