@@ -45,6 +45,7 @@
     var desk = stage.querySelector('.desk');
     var panel = stage.querySelector('.mock-panel');
     var header = document.querySelector('.site-header') || { offsetHeight: 0 };
+    var PIC = 46;   // the icon picture's size (styles.css, .ico i)
 
     // The order they fly in: the shelf's order, about 60 ms apart; a second shortcut for the same game (a demo, a
     // mod tool) follows its first one. Each tile appears as its first shortcut lands (--d on both).
@@ -67,16 +68,19 @@
       var icons = stage.querySelectorAll('.ico[data-tile]');
       for (var i = 0; i < icons.length; i++) {
         var tile = tiles[parseInt(icons[i].getAttribute('data-tile'), 10) - 1];
-        var pic = icons[i].querySelector('i');
-        if (!tile || !pic || !pic.offsetWidth || !tile.offsetWidth) continue;
-        // Centres relative to the stage. The picture's offsets are within the desktop, the tile's within the shelf.
-        var ax = desk.offsetLeft + (pic.offsetLeft + pic.offsetWidth / 2) * k;
-        var ay = desk.offsetTop + (pic.offsetTop + pic.offsetHeight / 2) * k;
+        var icon = icons[i];
+        if (!tile || !icon.offsetWidth || !tile.offsetWidth) continue;
+        // Centres relative to the stage, the icon's within the desktop and the tile's within the shelf. The icon's
+        // own offsets, not its picture's: once an icon has flown it keeps its transform, and a transformed element
+        // becomes the reference for its children's offsets, so measuring the picture again (after a resize) sent
+        // the next flight too far. The picture sits centred at the icon's top, PIC px square.
+        var ax = desk.offsetLeft + (icon.offsetLeft + icon.offsetWidth / 2) * k;
+        var ay = desk.offsetTop + (icon.offsetTop + PIC / 2) * k;
         var bx = panel.offsetLeft + tile.offsetLeft + tile.offsetWidth / 2;
         var by = panel.offsetTop + tile.offsetTop + tile.offsetHeight / 2;
         icons[i].style.setProperty('--dx', ((bx - ax) / k).toFixed(1) + 'px');
         icons[i].style.setProperty('--dy', ((by - ay) / k).toFixed(1) + 'px');
-        icons[i].style.setProperty('--s', (tile.offsetWidth / (pic.offsetWidth * k)).toFixed(3));
+        icons[i].style.setProperty('--s', (tile.offsetWidth / (PIC * k)).toFixed(3));
         // The arc rises up to 140 px, less for icons near the top, so none goes behind the header.
         var room = ay - header.offsetHeight - 40;
         icons[i].style.setProperty('--lift', (Math.max(24, Math.min(140, room)) / k).toFixed(0) + 'px');
