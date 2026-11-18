@@ -31,16 +31,17 @@
       stage.classList.toggle('is-scrolled', y > 24);
       var at = y + line, step = steps[0].getAttribute('data-step');
       for (var i = 0; i < steps.length; i++) if (at >= starts[i]) step = steps[i].getAttribute('data-step');
+      // The step on the section too (the headline's window minimises once the story moves on); kept in step even
+      // when the scene's own step is unchanged, so the section is never left without one.
+      if (story.getAttribute('data-step') !== step) story.setAttribute('data-step', step);
       if (stage.getAttribute('data-step') === step) return;
       // Measure before the first flight if the page had no size yet when it loaded (a preview's hidden frame).
       if (!measured) measure();
       // Once the shortcuts have flown, going back to the first step flies them home (styles.css, ico-home).
       if (step !== '0') stage.classList.add('has-flown');
-      // Where it came from (the shelf is clicked open only coming from the cluttered desktop), and the step on
-      // the section too (the headline's window minimises once the story moves on).
+      // Where it came from: the shelf is clicked open only coming from the cluttered desktop.
       stage.setAttribute('data-from', stage.getAttribute('data-step'));
       stage.setAttribute('data-step', step);
-      story.setAttribute('data-step', step);
     }
     function observe() { place(); update(); }
     window.addEventListener('scroll', function () { if (!ticking) ticking = requestAnimationFrame(update); }, { passive: true });
