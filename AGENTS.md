@@ -98,7 +98,8 @@ Pages whenever a change to `site/` reaches `main`, so what's merged is live with
 - The look (owner, 2026-11-17, "the desktop story"): plain Windows. Segoe UI Variable, neutral greys, the Windows
   accent only for actions and links, 4 px corners on controls and 8 px on cards, no blooms, pill buttons or
   decorative shapes. The header is Windows' acrylic (translucent and blurred, the story's desktop runs under it)
-  with selector-bar links (an accent bar under the current one) and a Menu flyout on narrow windows; the colour comes from the pictures. The one exception is the download panel in Binder's blue
+  with selector-bar links (an accent bar under the current one) and a Menu flyout on narrow windows; the story's
+  captions and hero window are Windows 11 windows in Mica (translucent, tinted by the desktop behind them); the colour comes from the pictures. The one exception is the download panel in Binder's blue
   with the logo's fanned cover stack, kept by the owner. No small labels above headings, and don't add stock
   illustrations, emoji or other fonts.
 - The page opens with the desktop story: one Windows desktop (`.stage`) pinned while five captions
