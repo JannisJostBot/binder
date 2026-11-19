@@ -77,8 +77,11 @@
         </li>
         <li><a href="#pc">Other changes to your PC</a>
           <ol>
+            <li><a href="#pc-install">Installing</a></li>
+            <li><a href="#pc-playing">While a game runs</a></li>
             <li><a href="#pc-shortcuts">Desktop shortcuts</a></li>
             <li><a href="#pc-startmenu">Your games in Start search</a></li>
+            <li><a href="#pc-keys">Keyboard shortcuts</a></li>
             <li><a href="#pc-gamekeys">Game shortcuts</a></li>
             <li><a href="#pc-autostart">Start with Windows</a></li>
             <li><a href="#pc-updates">Updates</a></li>
@@ -315,11 +318,90 @@
       <section id="pc" class="docs-part">
         <h2 class="docs-h2">Other changes to your PC</h2>
 
+        <h3 id="pc-install" class="docs-h3">Installing</h3>
+        <p><code>BinderSetup.exe</code> installs Binder for your account only, without an administrator prompt:</p>
+        <ul class="docs-list">
+          <li>the app's files go to <code>%LOCALAPPDATA%\Programs\Binder\</code>;</li>
+          <li>it adds <strong>Binder</strong> to the Start menu, and to Settings › Apps › Installed apps through the value <code>HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\Binder</code>.</li>
+        </ul>
+        <p>That's all. The setup downloads nothing and installs no other software: the app carries its own runtimes. It reads every file back after writing it, and an update or uninstall only ever deletes the files it wrote. Your games, play history and settings are kept apart from the app, in <code>%APPDATA%\Binder\</code>, so updating or reinstalling leaves them as they are.</p>
+
+        <h3 id="pc-playing" class="docs-h3">While a game runs</h3>
+        <p>When you press Play, Binder shows <strong>Starting</strong> with the game's name, a countdown (10 seconds unless you set another for the game) and <strong>Keep open</strong>. It starts a small helper, <code>Binder.Watcher.exe</code>, which waits for the game to close. When the countdown ends, Binder itself closes, unless you chose Keep open. While you play, only the watcher is left:</p>
+        <ul class="docs-list">
+          <li><strong>Finding the game:</strong> every 2 seconds, for up to 3 minutes, it looks for a program running from the game's install folder, or for the one set under <strong>Process to watch</strong> in the game's details. If none starts, it opens Binder with <strong>Couldn't detect the game</strong>.</li>
+          <li><strong>Once it's found:</strong> the watcher just waits for the game to close, without checking anything in the meantime. It uses under 3 MB of memory and no processor time.</li>
+          <li><strong>When the game closes:</strong> it waits about 3 seconds for games that restart themselves, then adds the session as one line to <code>%APPDATA%\Binder\sessions-&lt;year&gt;.jsonl</code>. Time the PC was asleep isn't counted. Then it opens Binder again if <strong>Come back when the game closes</strong> is on.</li>
+          <li><strong>After a crash:</strong> with <strong>Restart if it crashes</strong> on for the game, a game that crashed after playing for at least a minute is started again after 5 seconds, at most twice in a row.</li>
+          <li><strong>Shutting down or signing out:</strong> the session is saved at once and nothing is reopened.</li>
+        </ul>
+        <p>Binder only stays open if a game can't be followed (it has no install folder and no Process to watch); a notice then points to that setting. Because Binder isn't running while you play, its keyboard shortcut does nothing until the game closes.</p>
+
         <h3 id="pc-shortcuts" class="docs-h3">Desktop shortcuts</h3>
         <p><strong>Import desktop shortcuts</strong> lists the shortcuts on your desktop and the shared (Public) desktop; you tick which are games. Those are <strong>moved</strong>, not deleted, to <code>%APPDATA%\Binder\Shortcuts\</code>. A shortcut on the shared desktop that needs administrator rights to move is copied instead, and the original stays. Shortcuts are only read while they're listed, never run. <strong>Restore</strong> in Settings › Desktop shortcuts moves them back onto your desktop. Right after an import, <strong>Undo</strong> in its notice moves that import's shortcuts back.</p>
 
         <h3 id="pc-startmenu" class="docs-h3">Your games in Start search</h3>
         <p><strong>Add my games to Start search</strong> (off by default; in Settings and on the first page of Binder's first-run setup) gives each game that Start search doesn't find yet a shortcut in its own folder, <code>%APPDATA%\Microsoft\Windows\Start Menu\Programs\Binder games\</code>. Each shortcut runs <code>Binder.exe --play</code> with the game's id, so a game started from Start is played the same way as from Binder; an id that isn't a game in your list just opens Binder. Games that already have their own Start entry, such as a Steam shortcut, get none, and existing Start entries are never changed. To tell which games Start finds, Binder reads the shortcuts in your and the shared Start menu, without running them. The folder follows your game list: when Binder looks for new games, and when you import, add, hide or remove one. Turning the setting off, or uninstalling Binder, deletes the shortcuts in that folder and then the folder.</p>
+
+        <h3 id="pc-keys" class="docs-h3">Keyboard shortcuts</h3>
+        <p>Binder's keyboard shortcut is registered with Windows the usual way, like any app's, and only while Binder runs; Windows tells Binder when it's pressed, so Binder doesn't watch the keyboard for it. Change it in Settings › Opening Binder › <strong>Keyboard shortcut</strong>: <span class="keys"><kbd>Win</kbd><kbd>Shift</kbd><kbd>G</kbd></span> (the default), <span class="keys"><kbd>Win</kbd><kbd>Shift</kbd><kbd>J</kbd></span>, <span class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>G</kbd></span> or Off. The table shows the default.</p>
+        <h4 class="keys-h4">Anywhere</h4>
+        <dl class="doc-facts doc-facts-plain doc-keys">
+          <dt><span class="keys"><kbd>Win</kbd><kbd>Shift</kbd><kbd>G</kbd></span></dt>
+          <dd>Open or close Binder.</dd>
+          <dt><span class="keys"><kbd>Win</kbd><kbd>Shift</kbd><kbd>G</kbd></span><span class="keys-then">then</span><span class="keys"><kbd>1</kbd>–<kbd>9</kbd></span></dt>
+          <dd>Play the game with that number, while Win+Shift is still held (see <a href="#pc-gamekeys">Game shortcuts</a>).</dd>
+          <dt><span class="keys"><kbd>Win</kbd><kbd>Shift</kbd><kbd>G</kbd></span><span class="keys-then">then</span><span class="keys"><kbd>0</kbd></span></dt>
+          <dd>Play the last game you played.</dd>
+          <dt><span class="keys"><kbd>Win</kbd><kbd>Shift</kbd><kbd>G</kbd></span><span class="keys-then">then</span>hold</dt>
+          <dd>Show which game each number plays.</dd>
+          <dt><span class="keys"><kbd>Esc</kbd></span></dt>
+          <dd>Don't start the game while its logo shows.</dd>
+        </dl>
+        <h4 class="keys-h4">In Binder</h4>
+        <dl class="doc-facts doc-facts-plain doc-keys">
+          <dt>type</dt>
+          <dd>Search your games, from anywhere outside a text box.</dd>
+          <dt><span class="keys"><kbd>Enter</kbd></span>in search</dt>
+          <dd>Play the best match, or with nothing typed the game under Continue playing.</dd>
+          <dt><span class="keys"><kbd>↓</kbd></span>in search</dt>
+          <dd>Go to the games.</dd>
+          <dt><span class="keys"><kbd>Esc</kbd></span></dt>
+          <dd>Clear the search, go back to your games, or close Binder.</dd>
+          <dt><span class="keys"><kbd>Ctrl</kbd><kbd>G</kbd></span></dt>
+          <dd>Turn Game mode on or off.</dd>
+          <dt><span class="keys"><kbd>F5</kbd></span></dt>
+          <dd>Refresh library: look for new games.</dd>
+          <dt><span class="keys"><kbd>Ctrl</kbd><kbd>,</kbd></span></dt>
+          <dd>Open Settings.</dd>
+        </dl>
+        <h4 class="keys-h4">On a game</h4>
+        <dl class="doc-facts doc-facts-plain doc-keys">
+          <dt><span class="keys"><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd></span></dt>
+          <dd>Move between games. <kbd>↑</kbd> from the first row goes back to search.</dd>
+          <dt><span class="keys"><kbd>Enter</kbd></span></dt>
+          <dd>Play.</dd>
+          <dt><span class="keys"><kbd>Space</kbd></span></dt>
+          <dd>Open its details.</dd>
+          <dt><span class="keys"><kbd>Shift</kbd><kbd>F10</kbd></span>or<span class="keys"><kbd>Menu</kbd></span></dt>
+          <dd>Open the game's menu.</dd>
+        </dl>
+        <h4 class="keys-h4">With a controller</h4>
+        <dl class="doc-facts doc-facts-plain doc-keys">
+          <dt><span class="keys"><kbd>A</kbd></span></dt>
+          <dd>Play, or press what has focus.</dd>
+          <dt><span class="keys"><kbd>X</kbd></span></dt>
+          <dd>Open details.</dd>
+          <dt><span class="keys"><kbd>Y</kbd></span></dt>
+          <dd>Add to or remove from favorites.</dd>
+          <dt><span class="keys"><kbd>B</kbd></span></dt>
+          <dd>Go back, or close a menu.</dd>
+          <dt><span class="keys"><kbd>LB</kbd><kbd>RB</kbd></span></dt>
+          <dd>Switch the filter.</dd>
+          <dt><span class="keys"><kbd>Menu</kbd></span></dt>
+          <dd>Open Settings.</dd>
+        </dl>
+        <p>The left stick or the D-pad moves between games and controls; the right stick scrolls. Binder only reads the controller while its window is active and a controller is connected.</p>
 
         <h3 id="pc-gamekeys" class="docs-h3">Game shortcuts</h3>
         <p><strong>Game shortcuts</strong> (on by default, in Settings › Opening Binder) play a game with Binder's keyboard shortcut and a number: with the default shortcut, hold Win+Shift, press G, then press a number. 0 is always the last game played; 1 to 9 are the games you give them. Windows uses Win+Shift and a number for the taskbar, so Binder can't register those keys. Instead, right after the shortcut and only while its keys are still held, Binder watches the keyboard for a number until they are let go (at most 15 seconds), and for Esc while the game's logo shows (about 1.5 seconds). Held for over a second, the keys show which game each number plays. It takes only the number or Esc it acts on and lets every other key through; nothing is recorded or stored. Letting go without a number opens Binder as before. At no other time does Binder watch the keyboard, and while a game runs Binder isn't running at all.</p>
@@ -346,7 +428,7 @@
           <li><code>%LOCALAPPDATA%\Binder\</code>: cover pictures, logs, Game mode's journal while a game runs, and downloaded updates.</li>
           <li><code>%ProgramData%\Binder\</code>: only if you allowed Game mode's admin helper; its journal and log.</li>
         </ul>
-        <p>Binder sends nothing about you or your PC anywhere. Besides the update check, it only downloads cover art for Steam games, from Steam's servers.</p>
+        <p>Binder sends nothing about you or your PC anywhere. Besides the update check, it only downloads cover art for Steam games that Steam hasn't stored on your PC, once each, from Steam's servers, or from the HTTPS address you set in Settings › Advanced instead (that page names its server). Downloads are only ever opened as pictures.</p>
 
         <h3 id="pc-uninstall" class="docs-h3">Uninstalling</h3>
         <p>Uninstall Binder from Settings › Apps. It first puts back anything Game mode still has applied and removes the admin helper. It also removes Binder's Start menu entry and its <code>Binder games</code> folder. Then it asks whether to put your imported shortcuts back on the desktop, and whether to also delete your game list, play history and settings.</p>

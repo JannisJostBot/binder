@@ -1793,3 +1793,32 @@ summary::-webkit-details-marker { display: none; }
   .dl-dialog-title { font-size: 18px; }
   .dl-dialog-body { padding: 18px; }
 }
+
+/* Keyboard shortcuts (docs.html #pc-keys): keys drawn like keycaps */
+.docs kbd {
+  display: inline-block;
+  min-width: 1.9em;
+  padding: 1px 7px;
+  font-family: var(--text-font);
+  font-size: 0.82em;
+  font-weight: 600;
+  line-height: 1.6;
+  text-align: center;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-color: var(--border-strong);
+  border-radius: var(--radius-small);
+  box-shadow: inset 0 -1px 0 var(--border-strong);
+  white-space: nowrap;
+}
+.keys { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; vertical-align: baseline; }
+.keys-then { font-weight: 400; color: var(--text-2); }
+.keys-h4 { margin: 24px 0 10px; font-family: var(--display); font-size: 16px; font-weight: 600; }
+.doc-keys dt { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-weight: 400; color: var(--text-2); }
+.doc-keys dd { color: var(--text); }
+.doc-keys { grid-template-columns: 290px minmax(0, 1fr); align-items: center; }
+@media (max-width: 600px) {
+  .doc-keys { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .doc-keys dd { margin-bottom: 12px; }
+}
