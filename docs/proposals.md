@@ -1066,6 +1066,27 @@ smooth scrolling through the grid, and the published size. Report the numbers in
   The same fix for the small windows (2026-11-19): Game mode's toast and the game shortcuts' flash lose their x:Bind
   and their `Closed` handlers (theirs and App's) go through `Views/WindowClosed` (run once, then removed); checked
   through the debug panel that their texts, buttons and closing are unchanged, not measured.
+- **Still open (to look at again; found 2026-11-18/19 on the real PC, Release build, 81 games):**
+  - *How to measure.* Start `Binder.exe --background`, then open and close the flyout N times with Win+Shift+G
+    (2 s open, 2.5 s closed; Shrink runs 1 s after a close), then `Binder.exe --memory-report` and read
+    `%LOCALAPPDATA%\Binder\memory.txt` ("panel windows alive", "private bytes"). "Private bytes" is the commit
+    size. Watch the process's handle count too.
+  - *The latest closed panel stays alive until the next open.* Always exactly one (the newest), with its 37 tiles,
+    also after a forced GC and 15 s more. Ruled out by switching each off: focusing the search box (`BringForward`),
+    the update check (`PanelShown`), the controller (no pad connected, so its timers never start), the slide and
+    first-frame handler (`FrameTicks`), `CoverQueue`/`OpeningGate` (empty, released), and the Acrylic backdrop.
+    A MainWindow made, `Open()`ed, closed and dropped outside App's open/close path was freed, so the holder is
+    on that path (`App.OpenPanel`/`ClosePanel`, `CloseAnimated`, activation) or inside WinUI (e.g. its last active
+    window or focus). Not yet tried: dotnet-gcdump on a JIT build, which shows the roots (the owner's OK first:
+    it's a download).
+  - *Native growth.* ~2.5 MB commit and ~26 handles per open/close, steady over 30 cycles (140 → 220 MB,
+    1309 → 2094 handles); the managed heap stays ~3 MB and the closed working set ~18 MB. Probably inside WinUI
+    (a window, its DirectComposition and input objects each open); not looked into. Worth comparing with a bare
+    WinUI `Window` opened and closed the same way, to see whether it's ours at all.
+  - *An occasional crash on fast open/close.* Twice, during rapid open/close loops (main and this branch, same
+    place): `Microsoft.UI.Xaml.dll`, exception 0xc000027b (a stowed exception), 8000ffff, offset 0x3d1699, in the
+    Windows event log. Not reproduced in 15 more minutes with a debug output listener; no dump kept. Next time:
+    turn on local crash dumps (WER `LocalDumps` for Binder.exe) and read the stowed exception from the dump.
 - **Tile hover parts:** `GameTile`'s scrim, edge, high contrast outline and Play mark are `x:Load` and built when
   the tile first rises (a UserControl's `FindName` does realize them). The Details button stays in the tree (UI
   Automation). Checked on the real PC (2026-11-18): the tile area and the Play mark captured every ~4 ms after the
