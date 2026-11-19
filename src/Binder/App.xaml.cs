@@ -275,11 +275,11 @@ public sealed partial class App : Application
         float slow = 1;
         DevToastSpeed(ref slow);
         var toast = new Views.GameModeToast(kind, result, slow);
-        toast.Closed += (_, _) =>
+        Views.WindowClosed.Once(toast, () =>
         {
             if (ReferenceEquals(_gameModeToast, toast)) _gameModeToast = null;
             if (exitWhenClosed) QuitIfIdle();
-        };
+        });
         _gameModeToast = toast;
         toast.ShowQuietly();
     }

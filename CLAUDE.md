@@ -83,7 +83,8 @@ src/Binder/            the WinUI widget
                           GameModeToast, ToastMelt (its changes melt in, Win2D), GameKeyFlash (a game shortcut's
                           logo before the game starts), BannerLogo, Sheen (shiny
                           favorites), LogoMerge (setup step 2's moved shortcuts fly into the logo, as on the
-                          website); Format.cs the text formatting,
+                          website), FrameTicks (per-frame callbacks, one static handler), WindowClosed (close
+                          handlers that remove themselves); Format.cs the text formatting,
                           GameAction.cs (menu actions, chart bars)
   Themes/Theme.xaml        shared styles and brushes
   Strings/                the app's text: Strings.resx (English), Strings.de.resx, Strings.fr.resx, one property per
@@ -191,6 +192,13 @@ hidden `MessageWindow` (WM_COPYDATA). With no arguments that toggles the flyout.
   `ItemsSource` from a view model is a plain array (`string[]`), never a collection expression typed as an interface
   (`IReadOnlyList<T> x = [..]` makes a hidden compiler type AOT can't pass to WinUI); bind a ComboBox's selection by
   item, not index, when its list changes with it.
+- Closed windows must be collectable (measured: each closed panel kept ~20 MB while anything held it). WinUI's
+  Window doesn't let the GC see through a cycle that runs through its own events: no x:Bind in a Window's XAML (it
+  adds a handler to `Activated`; set those texts in code), a handler on a window's `Closed` goes through
+  `WindowClosed.Once`, and any other handler on its own events is removed when it closes (`MainWindow.OnClosed`).
+  `CompositionTarget.Rendering` keeps its last handler after removal: use `FrameTicks`. Handlers on elements go in
+  XAML or on a container, not added in code to items rebuilt at each open (the shelf's chips). Check with
+  `Binder.exe --memory-report` ("panel windows alive") after a few opens and closes.
 - What a page asks its owner to do is an interface (`I<Page>Actions`), implemented by `MainWindow` with explicit
   interface members in the page's partial file (`MainWindow.<Page>.cs`), so a missing action is a compile error,
   not a dead button. What the page needs from Windows (drives, running apps, the helper) goes through it too.

@@ -37,10 +37,10 @@ public sealed partial class App : IRestartActions
         _restarting = (game, crash);
         _gameModeToast?.Close(); // "Back to normal" gives way; Game mode is applied again with the game
         var toast = new Views.GameModeToast(new RestartViewModel(this, game.Name));
-        toast.Closed += (_, _) =>
+        Views.WindowClosed.Once(toast, () =>
         {
             if (ReferenceEquals(_restartToast, toast)) _restartToast = null;
-        };
+        });
         _restartToast = toast;
         toast.ShowQuietly();
         return true;

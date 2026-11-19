@@ -100,8 +100,7 @@
                     <Run x:Name="RestartTitle" FontWeight="SemiBold" /><Run x:Name="RestartDetail" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </TextBlock>
                 <Button x:Name="RestartCancel" Grid.Column="2" VerticalAlignment="Center" CornerRadius="16" Padding="12,4"
-                        Content="{x:Bind s:Strings.Cancel}" AutomationProperties.Name="{x:Bind s:Strings.RestartCancelName}"
-                        ToolTipService.ToolTip="{x:Bind s:Strings.RestartCancelName}" />
+                        />
                 <!-- Time left, inside the round ends. -->
                 <Grid Grid.ColumnSpan="3" Height="3" Margin="22,0,22,4" VerticalAlignment="Bottom" CornerRadius="1.5"
                       Background="{ThemeResource ControlStrokeColorSecondaryBrush}" AutomationProperties.AccessibilityView="Raw">
@@ -136,9 +135,8 @@
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
                 <Button x:Name="CloseButton" Grid.Column="2" Style="{StaticResource IconButton}" Content="&#xE711;" FontSize="12"
-                        Width="32" Height="32" VerticalAlignment="Top" Click="OnCloseClick"
-                        ToolTipService.ToolTip="{x:Bind s:Strings.Dismiss}" AutomationProperties.Name="{x:Bind s:Strings.Dismiss}" />
-                <Button x:Name="DetailsButton" Grid.Row="1" Grid.Column="1" Content="{x:Bind s:Strings.OpenLog}" Click="OnDetailsClick"
+                        Width="32" Height="32" VerticalAlignment="Top" Click="OnCloseClick" />
+                <Button x:Name="DetailsButton" Grid.Row="1" Grid.Column="1" Click="OnDetailsClick"
                         Visibility="Collapsed" />
             </Grid>
             </Grid>

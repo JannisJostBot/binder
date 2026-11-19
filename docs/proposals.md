@@ -1063,6 +1063,9 @@ smooth scrolling through the grid, and the published size. Report the numbers in
   (`Views/FrameTicks`, one static handler). 30 open/close cycles: commit 140 → 220 MB (was ~+21 MB per cycle),
   closed working set ~18 MB. Left: the latest closed panel stays alive until the next open (cause not found), and
   ~2.5 MB commit and ~26 handles per cycle, native. `--memory-report` now prints "panel windows alive".
+  The same fix for the small windows (2026-11-19): Game mode's toast and the game shortcuts' flash lose their x:Bind
+  and their `Closed` handlers (theirs and App's) go through `Views/WindowClosed` (run once, then removed); checked
+  through the debug panel that their texts, buttons and closing are unchanged, not measured.
 - **Tile hover parts:** `GameTile`'s scrim, edge, high contrast outline and Play mark are `x:Load` and built when
   the tile first rises (a UserControl's `FindName` does realize them). The Details button stays in the tree (UI
   Automation). Checked on the real PC (2026-11-18): the tile area and the Play mark captured every ~4 ms after the

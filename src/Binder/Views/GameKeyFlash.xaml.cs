@@ -58,12 +58,12 @@ public sealed partial class GameKeyFlash : Window
         NameText.Text = game.Name;
         Logo.LogoChanged += hasLogo => NamePanel.Visibility = hasLogo ? Visibility.Collapsed : Visibility.Visible;
         Root.SizeChanged += OnFirstLayout;
-        Closed += (_, _) =>
+        WindowClosed.Once(this, () =>
         {
             _timer?.Stop();
             _drain?.Stop();
             Logo.Game = null;
-        };
+        });
     }
 
     /// <summary>A number without a game ("Nothing on 4", "No game played yet"): the pill, gone after a moment.</summary>
@@ -82,7 +82,7 @@ public sealed partial class GameKeyFlash : Window
         _announce = PillText;
         _closeAfter = NoticeFor;
         Root.SizeChanged += OnFirstLayout;
-        Closed += (_, _) => _timer?.Stop();
+        WindowClosed.Once(this, () => _timer?.Stop());
     }
 
     /// <summary>
@@ -111,7 +111,7 @@ public sealed partial class GameKeyFlash : Window
                 Margin = new Thickness(0, 6, 0, 0),
             });
         Root.SizeChanged += OnFirstLayout;
-        Closed += (_, _) => _timer?.Stop();
+        WindowClosed.Once(this, () => _timer?.Stop());
     }
 
     /// <summary>One line of the list: the number as a key, the game's name, and for 0 what it always plays.</summary>
