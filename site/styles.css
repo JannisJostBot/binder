@@ -1644,6 +1644,13 @@ summary::-webkit-details-marker { display: none; }
 }
 .docs-toc > ol > li > a[aria-current]::before { left: -12px; }
 .docs-toc a.is-within { font-weight: 600; }
+/* With the script, wide windows list only the open part's sections (nav.js sets is-open), so the list stays short
+   enough to fit beside the page; scrolls inside itself if it still doesn't. Without it, everything is listed. */
+@media (min-width: 901px) {
+  .docs-toc { max-height: calc(100vh - var(--header-h) - 48px); overflow-y: auto; overscroll-behavior: contain; margin-left: -16px; padding-left: 16px; }
+  .docs-toc.is-folding > ol > li:not(.is-open) > ol { display: none; }
+  .docs-toc > ol > li + li { margin-top: 2px; }
+}
 @media (prefers-reduced-motion: reduce) { .docs-toc a { transition: none; } }
 .docs-content { max-width: 760px; min-width: 0; line-height: 1.6; }
 .docs-content p { margin: 0 0 14px; }
