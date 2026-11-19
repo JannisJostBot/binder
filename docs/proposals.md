@@ -28,7 +28,7 @@ Every item follows the project brief: zero cost while idle or gaming, no third-p
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | **In progress.** Done: a, the logo on banners (`ArtKind.Logo`, `BannerLogo`; Steam keeps `librarycache\{appid}\logo.png`, 188 of 400 games on the owner's PC, the rest downloaded once; shadow from the logo's alpha via `Image.GetAlphaMask`; in Detail it sits right of the cover, which overlaps the banner's bottom left). Built: b–e, to try on the real PC.<br>b (the cover growing into details) was built and then removed on 2026-11-09, owner's choice: it looked bad.<br>c and e are `Library/Moments`, picked each time the panel opens; tested live with a session written into the sessions file. With a crash, the crash card still takes the slot.<br>d is `Views/Sheen`, plain alpha layers tuned below the prototype's "Medium", since blend modes would need Win2D (approved for the Game mode toast only). The rest look was checked on screen; following the pointer couldn't be tested here, because injected mouse input didn't reach the panel |
 | 17 Advanced: sources and artwork | §14 | Built: `Library/SourceDefaults` (every default, `Validate` per kind, `Use` at start and after a change; invalid or unknown values fall back), read by the Steam, Epic, GOG, Ubisoft and Rockstar sources and `CoverCache` (cover names tried in order, the first downloaded; `ForgetSteamLookups` after an artwork change drops resolved paths and `.none` markers). Settings › Advanced: one card at the bottom (closed), per launcher a Check (`Services/SourceCheck`, no downloads) and a text box per entry with Reset and its error, Reset all, the host named when the address differs. Values take effect from the next scan. Unit-tested (each kind's validation, the view model); network and validation rules in `CLAUDE.md`. Still to try on the real PC: the page on screen, Check per launcher |
-| 18 Performance | §15 | **In progress.** Built 2026-11-17 (§15 g): a rescan with nothing new skips the save and the grid redraw; pages other than the shelf built on first visit (`MainWindow.Pages`, in code, so the page-level part of c; checked on the real PC 2026-11-18: same as main on every first opening, open panel 103 → 86 MB private working set, commit 180 → 160 MB, shortcut to visible 77 → 47 ms); tile hover parts built on first raise (checked: the first hover fades like the next); the watcher rests while the game runs and opens only new processes while detecting; sessions read incrementally after a game. d: the watcher's part done and measured on the real PC (2026-11-18, see d). To do: a, b, the rest of c, the widget's part of d, e; f is proposed, waiting for measurements and the owner's go |
+| 18 Performance | §15 | **In progress.** Built 2026-11-17 (§15 g): a rescan with nothing new skips the save and the grid redraw; pages other than the shelf built on first visit (`MainWindow.Pages`, in code, so the page-level part of c; checked on the real PC 2026-11-18: same as main on every first opening, open panel 103 → 86 MB private working set, commit 180 → 160 MB, shortcut to visible 77 → 47 ms); tile hover parts built on first raise (checked: the first hover fades like the next); the watcher rests while the game runs and opens only new processes while detecting; sessions read incrementally after a game. The data side (rescan with and without changes, sessions after a game, the imported count, compact files) checked on the real PC 2026-11-19, two fixes then (a hand-edited sessions file read from the wrong offset; no `library.json` after a `.bak` fallback); not yet with a real game or "Restore to desktop" (§15 g). d: the watcher's part done and measured on the real PC (2026-11-18, see d). To do: a, b, the rest of c, the widget's part of d, e; f is proposed, waiting for measurements and the owner's go |
 | 19 Quick actions | §16 | Done (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); tried on the real PC |
 | 20 Restart after a crash | §17 | Built: the Detail toggle, `CrashAnalysis.ShouldRestart` (in a row from `crashes.json`, at most 2), the watcher's `--restart` / `--crashed`, the restart pill (Game mode's pill with a 5 s countdown, bar and Cancel, owner's change) and the crash card's "Restarted twice already" line; unit-tested. To try on the real PC with a game that crashes (or a test exe that exits with 0xC0000005 after a minute) |
 | 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
@@ -1025,7 +1025,14 @@ smooth scrolling through the grid, and the published size. Report the numbers in
 
 - **Rescan without changes:** `MainWindow.RescanAsync` compares the merged library with the shown one
   (`Storage.SameLibrary`, as saved); when nothing changed (no game dropped, no icon changed), the games on screen
-  stay, with no save of `library.json` and no rebuild of the grid.
+  stay, with no save of `library.json` and no rebuild of the grid. Start search is still synced. Checked on the real
+  PC 2026-11-19 (Release build, driven through UI Automation): Refresh from the shelf and from Settings left
+  `library.json`/`.bak` untouched, the same tile elements, the grid's scroll position kept (focus not checked: the
+  panel wasn't the foreground window); a renamed game (Epic manifest) rewrote `library.json`, updated the shelf and
+  renamed its Start entry; a game that left went to `removed-games.json` with its settings; with nothing new, a
+  launcher's own new Start entry still removed ours, and ours came back when it went. Fixed then: after a damaged
+  `library.json` fell back to its `.bak`, a rescan with nothing new left no `library.json` behind; it now saves
+  when the file is missing (`Storage.LibraryFileExists`).
 - **Pages on first visit:** every page but the shelf is built in code and initialized when first shown
   (`MainWindow.Pages`: `new T()`, inserted in `Root` right above the shelf, below the notices; `…Slot` fields);
   `Shown(…Slot)` checks without building. First built as `x:Load="False"` in MainWindow.xaml, which failed on the
@@ -1104,6 +1111,19 @@ smooth scrolling through the grid, and the published size. Report the numbers in
   against d's numbers, and the watcher's CPU while Steam starts a game with Steam closed.
 - **Smaller things:** after a game only the appended session lines are read (`Storage.ReloadSessions`); the
   imported shortcut count is read once; the crash check looks games up by id; data files are saved compact.
+  Checked on the real PC 2026-11-19, with the real watcher following a stand-in process under a library game's id
+  (no real game played): a 2 min session showed at once in Detail, This week, Recent and Welcome back, with the
+  widget running and when the watcher started it; two in a row; the week's total matched the file (none doubled).
+  A file cut short by hand was read again whole. Fixed then: a hand edit that made a line a few bytes shorter, with
+  a longer session appended before the next read, left the file longer than the last read, so the new session was
+  read from the wrong offset and missing until the next start; each read now also keeps the 64 bytes before its
+  end (`Storage.ReadMark`) and reads the file again whole when they moved (unit-tested). The imported count was
+  right after an import, an Undo and a hand edit of `imported-shortcuts.json` with Binder closed ("Restore to
+  desktop" not run: it would have put the store's 119 shortcuts on the desktop). Indented 0.2.1-style
+  `settings.json` and `library.json` loaded; later saves were compact and loaded; a damaged `library.json` went to
+  `.bad` and the `.bak` was used. Note: processes started from the Claude desktop app see its MSIX copy of
+  `%APPDATA%` (`%LOCALAPPDATA%\Packages\Claude_…\LocalCache\Roaming`), so these checks ran on that copy, not the
+  one a Binder started from Explorer uses.
 
 ## 16. Quick actions (board 18, milestone 19)
 

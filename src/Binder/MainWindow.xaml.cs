@@ -207,8 +207,9 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         App.State.Scanned = true;
         // The usual case: nothing changed. Keep the games already shown (their objects, so nothing on screen goes
         // stale), with no save and no redraw of the grid. Start search is still brought in line (spec §22 c: a
-        // launcher may have added its own Start entries).
-        if (!iconChanged && result.Dropped.Count == 0 && Storage.SameLibrary(games, _games))
+        // launcher may have added its own Start entries). Not when library.json is gone (it was damaged and its .bak
+        // used): then this save puts it back.
+        if (!iconChanged && result.Dropped.Count == 0 && Storage.SameLibrary(games, _games) && Storage.LibraryFileExists())
         {
             if (App.Settings.StartMenuGames) SyncStartMenu();
             return;

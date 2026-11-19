@@ -59,7 +59,7 @@ static partial class Tests
         // After a game: only what was appended is read; a line still being written is read once it's complete.
         var reloadDir = Path.Combine(root, "session-reload");
         Directory.CreateDirectory(reloadDir);
-        var read = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        var read = new Dictionary<string, Storage.ReadMark>(StringComparer.OrdinalIgnoreCase);
         string Line(string id, DateTimeOffset start) =>
             $"{{\"GameId\":\"{id}\",\"Start\":\"{start:O}\",\"End\":\"{start.AddHours(1):O}\"}}";
         var day = new DateTimeOffset(2027, 3, 1, 20, 0, 0, cet);
@@ -77,6 +77,13 @@ static partial class Tests
         reloaded = Storage.ReloadSessions(reloadDir, reloaded, read);
         Check(reloaded.Count == 3 && reloaded[2].GameId == "steam:3", "sessions: once complete it's read, once");
         Check(Storage.ReloadSessions(reloadDir, reloaded, read).Count == 3, "sessions: nothing new, nothing added");
+        // Edited by hand (a line a little shorter), then a session appended: the file is longer than what was read,
+        // but the bytes before that point moved, so it's read again whole (found on the real PC).
+        File.WriteAllText(file, File.ReadAllText(file).Replace("\"steam:1\"", "\"s:1\""));
+        SessionLog.AppendLine(file, Encoding.UTF8.GetBytes(Line("steam:5", day.AddDays(3))));
+        reloaded = Storage.ReloadSessions(reloadDir, reloaded, read);
+        Check(reloaded.Count == 4 && reloaded[0].GameId == "s:1" && reloaded[3].GameId == "steam:5",
+            "sessions: an edit that moved the read end, then an append: read again whole, none lost or doubled");
         File.WriteAllText(file, Line("steam:9", day) + "\n"); // changed some other way: shorter
         reloaded = Storage.ReloadSessions(reloadDir, reloaded, read);
         Check(reloaded.Count == 1 && reloaded[0].GameId == "steam:9", "sessions: a file that got shorter is read again whole");

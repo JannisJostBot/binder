@@ -40,6 +40,10 @@ public static class Storage
     public static List<Game> LoadLibrary() => Load(LibraryPath, StorageJsonContext.Default.ListGame) ?? [];
     public static void SaveLibrary(List<Game> games) => Save(LibraryPath, games, StorageJsonContext.Default.ListGame);
 
+    /// <summary>False after a damaged library.json was moved aside and its .bak used: the next rescan saves it again
+    /// even when it found nothing new.</summary>
+    public static bool LibraryFileExists() => File.Exists(LibraryPath);
+
     /// <summary>
     /// Whether two libraries would be saved as the same file: a rescan that found nothing new then needs no save
     /// and no redraw. A few hundred games serialize in about a millisecond.
@@ -60,33 +64,36 @@ public static class Storage
         return LoadSessions(DataDir, SessionsRead);
     }
 
-    /// <summary>How far each year file was read by <see cref="LoadSessions()"/> (bytes), for <see cref="ReloadSessions"/>.</summary>
-    private static readonly Dictionary<string, long> SessionsRead = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>How far each year file was read by <see cref="LoadSessions()"/>, for <see cref="ReloadSessions"/>.</summary>
+    private static readonly Dictionary<string, ReadMark> SessionsRead = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// How far a year file was read: the offset, and the bytes just before it. An append leaves those bytes where
+    /// they were; an edit by hand that moved them (a line made shorter, then a session appended) doesn't.
+    /// </summary>
+    internal readonly record struct ReadMark(long End, byte[] Tail)
+    {
+        public const int TailBytes = 64;
+        public static readonly ReadMark Start = new(0, []);
+    }
 
     /// <summary>
     /// After a game ended: <paramref name="known"/> plus the sessions appended since the last read, reading only the
-    /// new end of each year file (the watcher only ever appends). A file that got shorter or went away means it was
-    /// changed some other way: everything is read again. Returns a new list (a check off the UI thread may still be
-    /// reading the old one).
+    /// new end of each year file (the watcher only ever appends). A file that went away, got shorter, or whose bytes
+    /// before the last read's end changed was changed some other way: everything is read again. Returns a new list
+    /// (a check off the UI thread may still be reading the old one).
     /// </summary>
     public static List<Session> ReloadSessions(List<Session> known) => ReloadSessions(DataDir, known, SessionsRead);
 
-    internal static List<Session> ReloadSessions(string dir, List<Session> known, Dictionary<string, long> read)
+    internal static List<Session> ReloadSessions(string dir, List<Session> known, Dictionary<string, ReadMark> read)
     {
         var files = Shared.SessionLog.YearFiles(dir);
         var present = new HashSet<string>(files.Select(f => f.Path), StringComparer.OrdinalIgnoreCase);
         bool rewritten = read.Count == 0 || read.Keys.Any(p => !present.Contains(p));
-        if (!rewritten)
+        foreach (var (_, path) in files)
         {
-            foreach (var (_, path) in files)
-            {
-                if (!read.TryGetValue(path, out long from)) continue;
-                try
-                {
-                    if (new FileInfo(path).Length < from) rewritten = true;
-                }
-                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
-            }
+            if (rewritten) break;
+            if (read.TryGetValue(path, out var mark) && !OnlyAppended(path, mark)) rewritten = true;
         }
         if (rewritten)
         {
@@ -95,37 +102,56 @@ public static class Storage
         }
         var sessions = new List<Session>(known);
         foreach (var (_, path) in files)
-            read[path] = ReadSessionLines(path, sessions, read.GetValueOrDefault(path));
+            read[path] = ReadSessionLines(path, sessions, read.GetValueOrDefault(path, ReadMark.Start));
         return sessions;
     }
 
-    internal static List<Session> LoadSessions(string dir, Dictionary<string, long>? read = null)
+    /// <summary>Whether the file still holds what was read up to <paramref name="mark"/>, as far as its last bytes show.</summary>
+    private static bool OnlyAppended(string path, ReadMark mark)
+    {
+        try
+        {
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            if (stream.Length < mark.End) return false;
+            if (mark.Tail.Length == 0) return true;
+            var tail = new byte[mark.Tail.Length];
+            stream.Seek(mark.End - tail.Length, SeekOrigin.Begin);
+            stream.ReadExactly(tail);
+            return tail.AsSpan().SequenceEqual(mark.Tail);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return true; // can't tell now: only the new end is read, as before
+        }
+    }
+
+    internal static List<Session> LoadSessions(string dir, Dictionary<string, ReadMark>? read = null)
     {
         var sessions = new List<Session>();
         foreach (var (_, path) in Shared.SessionLog.YearFiles(dir))
         {
-            long end = ReadSessionLines(path, sessions, 0);
-            if (read is not null) read[path] = end;
+            var mark = ReadSessionLines(path, sessions, ReadMark.Start);
+            if (read is not null) read[path] = mark;
         }
         return sessions;
     }
 
     /// <summary>
-    /// Reads one year file from byte <paramref name="from"/> on. Lines that don't parse (cut off by a power loss,
+    /// Reads one year file from <paramref name="from"/> on. Lines that don't parse (cut off by a power loss,
     /// edited by hand) or have no game are skipped; an oversized file is skipped whole. Shares the file with a
     /// watcher that is appending. Returns how far it's read: past the last complete line, or the end when the last
     /// line has no line break yet but parsed (so a line still being written is read again next time, once).
     /// </summary>
-    private static long ReadSessionLines(string path, List<Session> into, long from)
+    private static ReadMark ReadSessionLines(string path, List<Session> into, ReadMark from)
     {
         byte[] bytes;
         try
         {
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
             if (stream.Length > Shared.SessionLog.MaxFileBytes) return from;
-            if (from < 0 || from > stream.Length) from = 0;
-            stream.Seek(from, SeekOrigin.Begin);
-            bytes = new byte[stream.Length - from];
+            if (from.End < 0 || from.End > stream.Length) from = ReadMark.Start;
+            stream.Seek(from.End, SeekOrigin.Begin);
+            bytes = new byte[stream.Length - from.End];
             stream.ReadExactly(bytes);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
@@ -134,11 +160,11 @@ public static class Storage
         }
 
         ReadOnlySpan<byte> rest = bytes;
-        long consumed = from;
-        if (from == 0 && rest.StartsWith("\uFEFF"u8))
+        int consumed = 0;
+        if (from.End == 0 && rest.StartsWith("\uFEFF"u8))
         {
             rest = rest[3..];
-            consumed += 3;
+            consumed = 3;
         }
         while (!rest.IsEmpty)
         {
@@ -148,7 +174,18 @@ public static class Storage
             bool parsed = ReadSessionLine(line, into);
             if (end >= 0 || parsed) consumed += end < 0 ? line.Length : end + 1;
         }
-        return consumed;
+        return new ReadMark(from.End + consumed, TailOf(from.Tail, bytes.AsSpan(0, consumed)));
+    }
+
+    /// <summary>The last <see cref="ReadMark.TailBytes"/> of what was read before followed by what was read now.</summary>
+    private static byte[] TailOf(byte[] before, ReadOnlySpan<byte> now)
+    {
+        int length = Math.Min(ReadMark.TailBytes, before.Length + now.Length);
+        var tail = new byte[length];
+        int fromNow = Math.Min(length, now.Length);
+        now[^fromNow..].CopyTo(tail.AsSpan(length - fromNow));
+        before.AsSpan(before.Length - (length - fromNow)).CopyTo(tail);
+        return tail;
     }
 
     /// <summary>One line; false when it isn't a session (yet).</summary>
