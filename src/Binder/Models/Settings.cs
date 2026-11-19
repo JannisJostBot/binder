@@ -13,6 +13,12 @@ public enum SortBy { RecentlyPlayed, MostPlayed, Name, RecentlyAdded, Size }
 /// <summary>Cover size on the shelf: Small = 5 columns, Medium = 4, Large = 3, or a list.</summary>
 public enum GridDensity { Medium, Small, Large, List }
 
+/// <summary>
+/// "End a stuck game" (spec §28): holding the shortcut for 2 s during a game ends it, only while Windows says it
+/// stopped responding (default), always, or never.
+/// </summary>
+public enum EndStuckGame { WhenNotResponding, Always, Off }
+
 /// <summary>Updates from GitHub (spec §25): Ask before installing (default), Install automatically, or Don't check (no network).</summary>
 public enum UpdateMode { Ask, Automatic, Off }
 
@@ -73,6 +79,8 @@ public sealed class Settings
     /// without opening the panel. On by default; 0 (the last game played) works before any game has a number.
     /// </summary>
     public bool GameKeysOn { get; set; } = true;
+    /// <summary>"End a stuck game" (spec §28): needs the shortcut; the watcher holds it while the game runs.</summary>
+    public EndStuckGame EndStuckGame { get; set; } = EndStuckGame.WhenNotResponding;
     /// <summary>The numbers 1–9 the user gave games ("3" → game id; <c>Library.GameKeys</c>). Checked on every use.</summary>
     public Dictionary<string, string> GameKeySlots { get; set; } = [];
     public bool SetupDone { get; set; }

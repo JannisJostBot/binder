@@ -57,11 +57,13 @@ internal static class CrashStore
 
     /// <summary>
     /// The newest problem whose card hasn't been seen yet (last 7 days), unless that game was played again since.
+    /// A game the user ended (spec §28) has its card only when the widget comes back for it
+    /// (<paramref name="returnedGame"/>): with "Come back" off it isn't shown later.
     /// </summary>
-    public static CrashRecord? Unseen(IReadOnlyList<CrashRecord> records, IReadOnlyList<Session> sessions)
+    public static CrashRecord? Unseen(IReadOnlyList<CrashRecord> records, IReadOnlyList<Session> sessions, string? returnedGame = null)
     {
         var since = DateTimeOffset.Now.AddDays(-7);
-        var candidates = records.Where(r => r.IsProblem && !r.Seen && r.End > since).ToList();
+        var candidates = records.Where(r => CrashAnalysis.ShowsCard(r, returnedGame) && !r.Seen && r.End > since).ToList();
         if (candidates.Count == 0) return null; // the usual case: no pass over the sessions at all
         // Each game's latest session start, in one pass, instead of searching the sessions per record.
         var latest = new Dictionary<string, DateTimeOffset>();

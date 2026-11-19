@@ -155,4 +155,18 @@ public static class Format
     /// <summary>A game shortcut as it's pressed: "Win+Shift+G, 3" (spec §26).</summary>
     public static string GameKeyLabel(Models.Hotkey hotkey, int number) =>
         Strings.Format(Strings.GameKeyCombo, HotkeyLabel(hotkey), number);
+
+    /// <summary>The seven lines the watcher's ring shows (EndHold.Labels), each one line, kept short.</summary>
+    public static string EndStuckText(string name)
+    {
+        if (name.Length > 60) name = name[..59] + "…";
+        name = new string(name.Select(c => char.IsControl(c) ? ' ' : c).ToArray());
+        string[] lines =
+        [
+            Strings.Format(Strings.HoldEnding, name), Strings.HoldLetGo, Strings.HoldCancelled,
+            Strings.Format(Strings.HoldStillRunning, name), Strings.Format(Strings.HoldResponding, name),
+            Strings.Format(Strings.HoldRespondingAgain, name), Strings.HoldNothingEnded,
+        ];
+        return string.Join('\n', lines);
+    }
 }

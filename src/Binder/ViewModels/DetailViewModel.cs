@@ -230,7 +230,8 @@ public sealed partial class DetailViewModel : ObservableObject
     {
         bool problem = crash is { IsProblem: true };
         bool knownNormal = !problem && session.ExitCode is not null;
-        var label = !problem ? (knownNormal ? Strings.SessionClosedNormally : "") : crash!.Ending switch
+        var label = !problem ? (crash is { Ending: GameEnding.EndedByUser } ? Strings.SessionEndedByYou
+            : knownNormal ? Strings.SessionClosedNormally : "") : crash!.Ending switch
         {
             GameEnding.StartFailed => Strings.SessionStartFailed,
             GameEnding.ClosedUnexpectedly => Strings.SessionClosedUnexpectedly,

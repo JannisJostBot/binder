@@ -2600,4 +2600,70 @@ Ralentir : mode efficacité pendant le jeu</value>
   <data name="GameKeyListNone" xml:space="preserve">
     <value>Clic droit sur un jeu dans Binder pour lui donner un chiffre</value>
   </data>
+  <data name="EndStuck" xml:space="preserve">
+    <value>Arrêter un jeu bloqué</value>
+  </data>
+  <data name="EndStuckToolTip" xml:space="preserve">
+    <value>Maintenez le raccourci pendant 2 secondes pendant une partie pour arrêter le jeu. Un appui bref ne fait rien.</value>
+  </data>
+  <data name="EndStuckHold" xml:space="preserve">
+    <value>Maintenir {0}</value>
+  </data>
+  <data name="EndStuckNeedsShortcut" xml:space="preserve">
+    <value>Nécessite un raccourci clavier</value>
+  </data>
+  <data name="EndStuckWhenNotResponding" xml:space="preserve">
+    <value>S’il ne répond plus</value>
+  </data>
+  <data name="EndStuckAlways" xml:space="preserve">
+    <value>Toujours</value>
+  </data>
+  <data name="HoldEnding" xml:space="preserve">
+    <value>Arrêt de {0}</value>
+  </data>
+  <data name="HoldLetGo" xml:space="preserve">
+    <value>relâchez pour annuler</value>
+  </data>
+  <data name="HoldCancelled" xml:space="preserve">
+    <value>Annulé</value>
+  </data>
+  <data name="HoldStillRunning" xml:space="preserve">
+    <value>{0} est toujours en cours d’exécution</value>
+  </data>
+  <data name="HoldResponding" xml:space="preserve">
+    <value>{0} répond</value>
+  </data>
+  <data name="HoldRespondingAgain" xml:space="preserve">
+    <value>{0} répond à nouveau</value>
+  </data>
+  <data name="HoldNothingEnded" xml:space="preserve">
+    <value>rien n’a été arrêté</value>
+  </data>
+  <data name="EndedTitle" xml:space="preserve">
+    <value>Vous avez arrêté {0} après {1}</value>
+  </data>
+  <data name="EndedResponding" xml:space="preserve">
+    <value>Il répondait encore, ce n’est donc pas compté comme un plantage.</value>
+  </data>
+  <data name="EndedWhileHung" xml:space="preserve">
+    <value>Vous l’avez arrêté après que Windows l’a signalé comme ne répondant pas.</value>
+  </data>
+  <data name="EndedWhileReport" xml:space="preserve">
+    <value>Vous l’avez arrêté pendant que Windows enregistrait le rapport de plantage.</value>
+  </data>
+  <data name="CrashHangEnded" xml:space="preserve">
+    <value>A cessé de répondre et vous l’avez arrêté</value>
+  </data>
+  <data name="CrashReportEnded" xml:space="preserve">
+    <value>S’est planté et vous l’avez arrêté pendant l’enregistrement du rapport de plantage</value>
+  </data>
+  <data name="EndedStillResponding" xml:space="preserve">
+    <value>Arrêté par vous alors qu’il répondait encore</value>
+  </data>
+  <data name="AlsoEndedByYou" xml:space="preserve">
+    <value>Vous l’avez arrêté</value>
+  </data>
+  <data name="SessionEndedByYou" xml:space="preserve">
+    <value>Arrêté par vous</value>
+  </data>
 </root>

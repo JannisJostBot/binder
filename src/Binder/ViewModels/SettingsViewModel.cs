@@ -69,6 +69,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private static readonly DockPosition[] Positions = [DockPosition.Left, DockPosition.Right, DockPosition.Free];
     private static readonly Hotkey[] Hotkeys = Enum.GetValues<Hotkey>();
     private static readonly string[] HotkeyNames = [.. Hotkeys.Select(Format.HotkeyLabel)];
+    private static readonly EndStuckGame[] EndStuckChoices = [EndStuckGame.WhenNotResponding, EndStuckGame.Always, EndStuckGame.Off];
 
     private Settings _settings = new();
     private bool _hotkeyFree = true;
@@ -176,7 +177,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         set
         {
             if (TryPick(Hotkeys, value, out var hotkey))
-                Set(_settings.Hotkey, hotkey, v => _settings.Hotkey = v, SettingChange.Hotkey, [nameof(HotkeyTaken), nameof(HotkeyToolTip)], nameof(HotkeyIndex));
+                Set(_settings.Hotkey, hotkey, v => _settings.Hotkey = v, SettingChange.Hotkey,
+                    [nameof(HotkeyTaken), nameof(HotkeyToolTip), nameof(EndStuckText), nameof(EndStuckAvailable)], nameof(HotkeyIndex));
         }
     }
 
@@ -266,6 +268,25 @@ public sealed partial class SettingsViewModel : ObservableObject
         get => _settings.ComeBackOnClose;
         set => Set(_settings.ComeBackOnClose, value, v => _settings.ComeBackOnClose = v, SettingChange.Behavior, [], nameof(ComeBackOnClose));
     }
+
+    /// <summary>"End a stuck game" (spec §28): when holding the shortcut during a game ends it.</summary>
+    public int EndStuckIndex
+    {
+        get => IndexOf(EndStuckChoices, _settings.EndStuckGame);
+        set
+        {
+            if (TryPick(EndStuckChoices, value, out var choice))
+                Set(_settings.EndStuckGame, choice, v => _settings.EndStuckGame = v, SettingChange.Behavior, [nameof(EndStuckText)], nameof(EndStuckIndex));
+        }
+    }
+
+    /// <summary>It works through the shortcut: with the shortcut off there's nothing to hold.</summary>
+    public bool EndStuckAvailable => _settings.Hotkey != Hotkey.Off;
+
+    /// <summary>The card's second line: what to hold, or why it can't be used.</summary>
+    public string EndStuckText => _settings.Hotkey == Hotkey.Off ? Strings.EndStuckNeedsShortcut
+        : _settings.EndStuckGame == EndStuckGame.Off ? Strings.Off
+        : Strings.Format(Strings.EndStuckHold, Format.HotkeyLabel(_settings.Hotkey));
 
     public string GameModeText => _settings.GameModeEnabled ? "On" : "Off";
 

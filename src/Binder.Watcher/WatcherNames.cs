@@ -21,6 +21,18 @@ public static class WatcherNames
     public static string Ended(string gameId) => @"Local\Binder.Watcher.Ended." + Hash(gameId);
 
     /// <summary>
+    /// The class of each watcher's hidden window (SystemEvents.cs). The widget finds them by it to take Binder's
+    /// shortcut back (<see cref="ReleaseKey"/>): during a game the watcher holds it for "End a stuck game".
+    /// </summary>
+    public const string WindowClass = "Binder.Watcher.SystemEvents";
+
+    /// <summary>
+    /// Sent by the widget to a watcher's window (wParam: the widget's process id) when it can't register its
+    /// shortcut: the watcher lets go of it and takes it again once that widget has exited.
+    /// </summary>
+    public const uint ReleaseKey = 0x8000 + 0x42; // WM_APP + 0x42
+
+    /// <summary>
     /// For the widget: true when the game's watcher says the game has ended, false while it runs (or hasn't been
     /// found yet), null when no watcher for it is running.
     /// </summary>

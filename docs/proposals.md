@@ -38,6 +38,7 @@ Every item follows the project brief: zero cost while idle or gaming, no third-p
 | 25 Weekly chart details | §24 | Proposed (2026-11-12), waiting for the owner's go; two choices open (§24 "To decide") |
 | 26 Updates from GitHub | §25 | **Built and released** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; the keys (both YubiKeys' since 2026-11-15, made on the keys with PIN and touch always) and the repository set at build time since 2026-11-15: `build/OfficialRelease.props` for `publish.ps1 -Official` (release.yml), `build/Updates.targets` checks them and generates `Services.UpdateKeys`; other builds and forks without their own keys never check (About says so); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier; notes format in `docs/releases/README.md`. Default decided: Ask before installing (2026-11-14).<br>Built 2026-11-14: `.github/workflows/release.yml` (v* tags only, actions pinned, a draft with the setup and its attestation); `Services/Updater` (check with redirects only through `IsAllowedAddress`, 15 s, a client per check, no cookies; manifest kept in `%LOCALAPPDATA%\Binder\updates\` and verified again when read; the download hashed while it streams; the setup hashed again through a handle held with read sharing only and started with `/S /update`; waits for a watcher or a Game mode journal); `App.Updates` (check after a panel's first frame at most once a day, download at once with "Install automatically" or urgent, closing the panel cancels it, install when the flyout closes or at a `--background` start, the in-panel toast "Updated to …" with What's new after `--updated`, "couldn't be installed" when `--updated` comes back on the old version); Settings › About (version card with Check for updates / Update / Restart now, progress bar, What's new with Skip this version, the Updates combo); the "…" dot and first item, the tray item; three settings fields plus the mode; 37 strings in EN/DE/FR; view model tests. The pill is the panel's toast, not board 23's separate pill window. Not built: the Authenticode same-publisher check (Binder is unsigned today).<br>Built 2026-11-15: the setup's `/update` (the widget comes back with `--updated --background` after a success, a failure or a busy setup) and the all-or-nothing swap (§25 "To decide" 3, owner: yes; `FileSwap`, unit-tested on real files), run in CI by `setup-test.ps1`.<br>Released: Windows sees both YubiKeys' certificates and `sign-release.ps1` asks which one signs; after a dry run, 0.2.0 and 0.2.1 were published on 2026-11-15 through `release.yml` and `sign-release.ps1`. Since 2026-11-16 `virustotal.yml` scans each published setup and adds the result to the release notes. An installed copy updated itself through the app on the owner's PC. Not built: the Authenticode same-publisher check (Binder is unsigned today) |
 | 27 Game shortcuts | §26 | Built 2026-11-18 (boards 35 A, 36, 37). Tried on the real PC 2026-11-18 (Debug build, keys and mouse sent with SendInput, one 4K screen with an auto-hide taskbar): Win+Shift, G, a number on the number row shows the flash, the panel stays shut, nothing on the taskbar starts; a quick tap opens the panel at once, holding opens it after 1 s; Esc cancels ("Cancelled · Balatro didn't start", gone after about 1 s) and Esc and letters reach apps normally afterwards; the same number again plays at once (Balatro started, Binder exited, only the watcher stayed, the widget came back when it closed); another number switches; "Nothing on 4"; the switch off lets the number through and opens the panel; dragging a cover or a list row raises the numbers, the line follows the slot under the pointer ("replaces Balatro", "already there"), a drop gives the number and the toast names the game that lost it, 0 refuses, releasing elsewhere removes the row; efficiency mode back on after a flash and a cancel. Fixed: the number pad (Windows lifts Shift around a pad key while Shift is held, which ended the wait, and may hand it over as Insert, End, arrows); a game without store art showed only its name (now its generated cover); the drag's caption repeated the line above the numbers. Added (owner, 2026-11-18): held past 1 s the shortcut lists what each number plays, letting go then opens the panel; and the debug panel's "Game shortcuts" buttons. Not tried: the menu's, Game detail's and Settings' number pickers by hand (their view models are unit-tested), a real keyboard (only sent keys: the Start menu on letting go of Win and the number pad with NumLock need a person), light mode, high contrast, Animation effects off, two screens, Narrator (Windows settings Claude doesn't change), the published AOT build |
+| 29 End a stuck game | §28 | Built 2026-11-19 (board 40); to try on the real PC. The watcher's `EndHold` (shortcut, keys, checks, ending) and `RingWindow` (GDI+ layered window), the session's `EndedByUser`/`Hung`/`ErrorReport`, `GameEnding.EndedByUser` and the card's three wordings, Settings › When a game starts › End a stuck game, `WatcherKey` (the widget takes its shortcut back). Unit-tested (arguments, texts, the card's wording, restart, the setting). Not tried: everything on Windows (no Windows here): the ring on 100/150/200 % and two monitors, light/dark/high contrast, Animation effects off, exclusive fullscreen, a game running as administrator (does `GetAsyncKeyState` still see the keys?), a real hang and a real crash with WerFault |
 | 28 Native ARM64 build | §27 | Proposed (2026-11-17), waiting for the owner's go; choices open (§27 "To decide") |
 | Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
@@ -267,6 +268,12 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   "running" as long as the launcher. Restore to desktop and Undo keep the games' settings for a later import; a copied
   shortcut whose original was deleted doesn't come back.
 - A data file another program holds at start is read from its `.bak` and never saved over in that run.
+
+**2026-11-19**
+- **End a stuck game** approved and built (§28, board 40): hold the shortcut 2 s; the default ends a game only while
+  Windows says it isn't responding (or its error report holds it); "Always" and "Off" as choices. With "Come back"
+  off the shelf doesn't open for it, and its card isn't shown later. A new security rule: the watcher may end the
+  game's own processes, only after the hold.
 
 ---
 
@@ -2266,6 +2273,47 @@ in `CLAUDE.md`.
 1. Go or no go, and whether the first Arm64 release waits for a `windows-11-arm` CI run (public repository) or a
    test on an Arm PC.
 2. Windows 10 on Arm (end of support October 2025): proposed not to support it; it can't run the x64 setup either.
+
+## 28. End a stuck game (milestone 29, board 40, approved 2026-11-19)
+
+A fullscreen game hangs and Task Manager can't get in front of it. Holding Binder's shortcut ends it.
+
+### What the user does
+- During a game, hold the shortcut (Win+Shift+G by default). After 0.3 s a ring with an X appears in the middle of
+  the game's monitor and fills over **2 s**; full, the game ends. Letting go earlier drains it ("Cancelled · [game] is
+  still running"); a tap shows nothing.
+- Settings › When a game starts › **End a stuck game**: **When it stops responding** (default) / **Always** / **Off**.
+  Second line "Hold Win+Shift+G"; "Needs a keyboard shortcut" (disabled) when the shortcut is off.
+- **When it stops responding**: when the ring would appear, the game counts as stuck only if one of its top-level
+  windows is hung (`IsHungAppWindow`) or a System32 `WerFault.exe` holds one of its processes (parent, or `-p <pid>`
+  on its command line). Not stuck: a pill "[game] is responding · nothing was ended" instead of the ring. Checked
+  again when the ring is full ("[game] is responding again · nothing was ended").
+- Afterwards, with **Come back when the game closes** on, the shelf opens with a card: "[game] crashed after …" (its
+  crash event or error report; the usual diagnosis), "[game] stopped responding after …" (hung), or, only possible with
+  Always, a neutral "You ended [game] after … · It was still responding, so it isn't counted as a crash." Play again
+  on all. With Come back off nothing opens and the card isn't shown later. Never restarted by "Restart if it crashes".
+
+### How it works (watcher)
+- `--end hung|always --end-key <modifiers>,<key> --end-text <seven lines>` from the widget (the texts translated,
+  with the game's name: the watcher has no resources). Missing or invalid: off.
+- The system events window (SystemEvents.cs) registers the shortcut once the game is found (`RegisterHotKey`, no hook).
+  The widget still running (countdown, Keep open) has it: the watcher waits on that widget's process and takes it
+  when it exits. A widget that starts meanwhile and can't register asks the watchers to let go (`WatcherKey`,
+  `WatcherNames.ReleaseKey`), and the watcher takes it again once that widget has exited. Its loop is
+  `MsgWaitForMultipleObjectsEx`: no polling.
+- `WM_HOTKEY` with the keys really held starts a 30 ms timer that reads the keys (`GetAsyncKeyState`) and draws the
+  ring; it stops when they're let go or the ring is done. With Animation effects off, quarters and no drain.
+- The ring (`RingWindow`): a layered, top-most, click-through, non-activating window; GDI+ into a premultiplied DIB;
+  per-monitor DPI; dark/light from the app mode, system colors in high contrast; created when shown, destroyed (and
+  GDI+ shut down) after. In exclusive fullscreen (`SHQueryUserNotificationState`) the game's windows are minimized
+  while it shows and restored on letting go.
+- Ending: `TerminateProcess` (exit code 1) of the processes the watcher follows, each checked by id and start time;
+  the error report first. The session line gets `EndedByUser`, `Hung`, `ErrorReport`; no restart grace, no crash
+  restart.
+
+### Not chosen (board 40)
+- The "press again" fallback for a game running as administrator (if Windows hides its key state): to add only if
+  testing shows it's needed. Event-based hang detection (shell hook, Event Log subscription): later, if wanted.
 
 ## Build order (after milestone 7)
 

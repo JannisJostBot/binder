@@ -234,6 +234,27 @@
                                   AutomationProperties.Name="{x:Bind s:Strings.ComeBack}" />
                 </Grid>
             </Border>
+            <!-- Spec §28 (board 40): hold the shortcut during a game to end it -->
+            <Border Style="{StaticResource SettingCard}">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.EndStuckToolTip}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xEB90;" />
+                    <StackPanel Grid.Column="1" Style="{StaticResource RowText}">
+                        <TextBlock Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.EndStuck}" />
+                        <TextBlock Style="{StaticResource RowDetail}" Text="{x:Bind ViewModel.EndStuckText, Mode=OneWay}" />
+                    </StackPanel>
+                    <ComboBox Grid.Column="2" Style="{StaticResource RowCombo}" AutomationProperties.Name="{x:Bind s:Strings.EndStuck}"
+                              IsEnabled="{x:Bind ViewModel.EndStuckAvailable, Mode=OneWay}" SelectedIndex="{x:Bind ViewModel.EndStuckIndex, Mode=TwoWay}">
+                        <ComboBoxItem Content="{x:Bind s:Strings.EndStuckWhenNotResponding}" />
+                        <ComboBoxItem Content="{x:Bind s:Strings.EndStuckAlways}" />
+                        <ComboBoxItem Content="{x:Bind s:Strings.Off}" />
+                    </ComboBox>
+                </Grid>
+            </Border>
             <!-- Game mode (spec §11): its own page -->
             <Button Style="{StaticResource SettingLinkCard}" Command="{x:Bind ViewModel.GameModeCommand}" AutomationProperties.Name="{x:Bind s:Strings.GameModeSettings}">
                 <Grid ColumnSpacing="16">

@@ -18,6 +18,7 @@ namespace Binder.Watcher;
 /// Args: --game &lt;id&gt; --dir &lt;install folder&gt; [--process &lt;name&gt;] [--timeout &lt;s&gt;] [--return 0|1] [--restart 0|1]
 ///       [--mode &lt;game mode items, comma-separated&gt; [--close &lt;app exe&gt;]… [--calm &lt;app exe&gt;]… [--toast 0|1]
 ///        [--smooth &lt;exe name&gt;]… [--throttle &lt;exe name&gt;]… [--limit &lt;Mbit/s&gt;]]
+///       [--end hung|always --end-key &lt;modifiers&gt;,&lt;key&gt; [--end-text &lt;seven lines&gt;]] ("End a stuck game", EndHold.cs)
 /// Or:   --restore [--quiet] (put back Game mode changes left by a session that didn't end normally; --quiet: the
 ///       uninstaller, without starting the widget)
 /// </summary>
@@ -71,6 +72,11 @@ internal static class Program
                 case "--smooth": if (network.Smooth.Count < 32) network.Smooth.Add(args[i + 1]); break;
                 case "--throttle": if (network.Throttle.Count < 32) network.Throttle.Add(args[i + 1]); break;
                 case "--limit": if (int.TryParse(args[i + 1], out int limit)) network.UploadLimitMbps = limit; break;
+                case "--end": EndHold.Setting = EndHold.ParseMode(args[i + 1]); break;
+                case "--end-key":
+                    if (EndHold.ParseKey(args[i + 1], out var modifiers, out var key)) (EndHold.Modifiers, EndHold.Key) = (modifiers, key);
+                    break;
+                case "--end-text": if (EndHold.ParseLabels(args[i + 1]) is { } labels) EndHold.Text = labels; break;
             }
         }
         if (gameId is null || (dir is null && processName is null)) return 2;
@@ -136,6 +142,7 @@ internal static class Program
                 return SaveSession(gameId, start, until, how, reporter);
             }
         }
+        EndHold.Follow(handles);
         SystemEvents.Listen(() => Save(DateTimeOffset.Now, default, false));
 
         DateTimeOffset end;
@@ -144,6 +151,7 @@ internal static class Program
         {
             // Block until every matched process has exited. No polling while the game runs.
             var waitOn = handles.ToArray();
+            EndHold.Follow(handles); // what "End a stuck game" may end: these processes, nothing else
             // Hand the pages detection used back to Windows now, for the game, rather than whenever it trims us:
             // nothing touches them until the game exits (a few page faults then).
             Native.SetProcessWorkingSetSize(Native.CurrentProcess, -1, -1);
@@ -153,8 +161,9 @@ internal static class Program
             CloseAll(handles);
             ended.Set();
 
-            // Shutting down or signing out: no time to look for a restart, save now.
-            if (SystemEvents.Ending) break;
+            // Shutting down or signing out: no time to look for a restart, save now. Ended with the hold: it's not
+            // restarting itself.
+            if (SystemEvents.Ending || EndHold.Ended) break;
             // Some games restart themselves (launcher → game exe): look again briefly before deciding it's closed.
             // An engine crash reporter showing up now is noted, not mistaken for the game coming back.
             matcher.NoteReporters = true;
@@ -179,7 +188,8 @@ internal static class Program
         // (the widget's, or the admin helper's at logon); reopening closed apps during a shutdown would be wrong.
         // A shutdown that is called off (another app held it up and the user cancelled) carries on as usual.
         if (SystemEvents.Ending && SystemEvents.WaitForOutcome()) return 0;
-        bool crashed = restartOnCrash && MayRestart(exit.Code, played);
+        // Ended with the hold: never restarted by "Restart if it crashes"; the shelf's card has Play again.
+        bool crashed = restartOnCrash && MayRestart(exit.Code, played) && !EndHold.Ended;
 
         if (comeBack)
         {
@@ -268,6 +278,9 @@ internal static class Program
         foreach (var h in handles) Native.CloseHandle(h);
         handles.Clear();
     }
+
+    /// <summary>The game was ended with "End a stuck game": whether Windows called it hung, or was writing its crash report.</summary>
+    internal readonly record struct EndedBy(bool ByUser, bool Hung, bool Reporting);
 
     /// <summary>How the game's processes ended: the exit code that tells the most, and that exe's file name.</summary>
     internal readonly record struct GameExit(uint Code, string? Exe);
@@ -434,7 +447,8 @@ internal static class Program
             {
                 try
                 {
-                    AppendSession(gameId, from, to, last ? exit : default, last && crashReporter, resumed: from > start);
+                    AppendSession(gameId, from, to, last ? exit : default, last && crashReporter, resumed: from > start,
+                        last && EndHold.Ended ? new EndedBy(true, EndHold.WasHung, EndHold.WasReporting) : default);
                     break;
                 }
                 catch (Exception e) when (e is IOException or UnauthorizedAccessException)
@@ -471,7 +485,8 @@ internal static class Program
     /// Appends the session as one line to this year's sessions file (<see cref="Shared.SessionLog"/>), without
     /// reading the file or loading a serializer.
     /// </summary>
-    private static void AppendSession(string gameId, DateTimeOffset start, DateTimeOffset end, GameExit exit, bool crashReporter, bool resumed)
+    private static void AppendSession(string gameId, DateTimeOffset start, DateTimeOffset end, GameExit exit, bool crashReporter, bool resumed,
+        EndedBy ended = default)
     {
         var dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Binder");
         var buffer = new System.Buffers.ArrayBufferWriter<byte>(256);
@@ -487,6 +502,10 @@ internal static class Program
             if (crashReporter) w.WriteBoolean("CrashReporter", true);
             // A part after the PC slept: it didn't start with the game (no "closed right after starting").
             if (resumed) w.WriteBoolean("Resumed", true);
+            // Ended with "End a stuck game", and what Windows said about it then (only on the last part).
+            if (ended.ByUser) w.WriteBoolean("EndedByUser", true);
+            if (ended.Hung) w.WriteBoolean("Hung", true);
+            if (ended.Reporting) w.WriteBoolean("ErrorReport", true);
             w.WriteEndObject();
         }
         Shared.SessionLog.AppendLine(Shared.SessionLog.PathFor(dataDir, end), buffer.WrittenSpan);
@@ -516,7 +535,7 @@ internal static class Program
         sb.Append('"');
     }
 
-    private static string WidgetPath => Path.Combine(AppContext.BaseDirectory, "Binder.exe");
+    internal static string WidgetPath => Path.Combine(AppContext.BaseDirectory, "Binder.exe");
 
     /// <summary>How long the result waits for a widget that is still starting (a cold start is about a second).</summary>
     private const uint WidgetReadyMs = 10_000;

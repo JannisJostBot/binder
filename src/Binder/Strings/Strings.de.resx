@@ -2600,4 +2600,70 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   <data name="GameKeyListNone" xml:space="preserve">
     <value>Spiel in Binder mit der rechten Maustaste anklicken, um ihm eine Zahl zu geben</value>
   </data>
+  <data name="EndStuck" xml:space="preserve">
+    <value>Hängendes Spiel beenden</value>
+  </data>
+  <data name="EndStuckToolTip" xml:space="preserve">
+    <value>Halten Sie die Tastenkombination während eines Spiels 2 Sekunden lang gedrückt, um es zu beenden. Kurzes Drücken bewirkt nichts.</value>
+  </data>
+  <data name="EndStuckHold" xml:space="preserve">
+    <value>{0} gedrückt halten</value>
+  </data>
+  <data name="EndStuckNeedsShortcut" xml:space="preserve">
+    <value>Erfordert eine Tastenkombination</value>
+  </data>
+  <data name="EndStuckWhenNotResponding" xml:space="preserve">
+    <value>Wenn es nicht mehr reagiert</value>
+  </data>
+  <data name="EndStuckAlways" xml:space="preserve">
+    <value>Immer</value>
+  </data>
+  <data name="HoldEnding" xml:space="preserve">
+    <value>{0} wird beendet</value>
+  </data>
+  <data name="HoldLetGo" xml:space="preserve">
+    <value>loslassen zum Abbrechen</value>
+  </data>
+  <data name="HoldCancelled" xml:space="preserve">
+    <value>Abgebrochen</value>
+  </data>
+  <data name="HoldStillRunning" xml:space="preserve">
+    <value>{0} läuft weiter</value>
+  </data>
+  <data name="HoldResponding" xml:space="preserve">
+    <value>{0} reagiert</value>
+  </data>
+  <data name="HoldRespondingAgain" xml:space="preserve">
+    <value>{0} reagiert wieder</value>
+  </data>
+  <data name="HoldNothingEnded" xml:space="preserve">
+    <value>nichts wurde beendet</value>
+  </data>
+  <data name="EndedTitle" xml:space="preserve">
+    <value>Sie haben {0} nach {1} beendet</value>
+  </data>
+  <data name="EndedResponding" xml:space="preserve">
+    <value>Es reagierte noch und wird daher nicht als Absturz gezählt.</value>
+  </data>
+  <data name="EndedWhileHung" xml:space="preserve">
+    <value>Sie haben es beendet, nachdem Windows es als „reagiert nicht“ gemeldet hatte.</value>
+  </data>
+  <data name="EndedWhileReport" xml:space="preserve">
+    <value>Sie haben es beendet, während Windows den Absturzbericht speicherte.</value>
+  </data>
+  <data name="CrashHangEnded" xml:space="preserve">
+    <value>Reagierte nicht mehr und wurde von Ihnen beendet</value>
+  </data>
+  <data name="CrashReportEnded" xml:space="preserve">
+    <value>Abgestürzt und von Ihnen beendet, während Windows den Absturzbericht speicherte</value>
+  </data>
+  <data name="EndedStillResponding" xml:space="preserve">
+    <value>Von Ihnen beendet, während es noch reagierte</value>
+  </data>
+  <data name="AlsoEndedByYou" xml:space="preserve">
+    <value>Sie haben es beendet</value>
+  </data>
+  <data name="SessionEndedByYou" xml:space="preserve">
+    <value>Von Ihnen beendet</value>
+  </data>
 </root>

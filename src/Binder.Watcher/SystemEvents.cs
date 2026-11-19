@@ -6,7 +6,8 @@ namespace Binder.Watcher;
 /// <summary>
 /// What Windows tells top-level windows and the watcher, windowless, would otherwise never hear: the PC is shutting
 /// down or the user signs out (save the session before the process is ended), and sleep (the time asleep isn't
-/// playtime). One hidden tool window on its own thread, blocked in GetMessage: no polling, no CPU while the game runs.
+/// playtime). One hidden tool window on its own thread, blocked waiting for a message: no polling, no CPU while the
+/// game runs. The same window takes Binder's shortcut for "End a stuck game" (<see cref="EndHold"/>).
 /// </summary>
 internal static unsafe partial class SystemEvents
 {
@@ -84,7 +85,7 @@ internal static unsafe partial class SystemEvents
         try
         {
             var instance = GetModuleHandleW(null);
-            fixed (char* name = "Binder.Watcher.SystemEvents")
+            fixed (char* name = Shared.WatcherNames.WindowClass)
             {
                 var wc = new WNDCLASSEXW
                 {
@@ -101,9 +102,27 @@ internal static unsafe partial class SystemEvents
                 // PCs with Modern Standby tell sleep and wake only to windows that ask for it (the broadcast is
                 // for classic sleep); asking is harmless on others, where both arrive and count once.
                 RegisterSuspendResumeNotification(hwnd, DEVICE_NOTIFY_WINDOW_HANDLE);
+                EndHold.Attach(hwnd); // "End a stuck game": the shortcut, while the game runs
             }
+            // Blocked until a message comes, or the widget that has Binder's shortcut exits (EndHold takes it then).
             MSG msg;
-            while (GetMessageW(&msg, IntPtr.Zero, 0, 0) > 0) DispatchMessageW(&msg);
+            while (true)
+            {
+                var widget = EndHold.WaitHandle;
+                uint count = widget == IntPtr.Zero ? 0u : 1u;
+                uint woke = MsgWaitForMultipleObjectsEx(count, &widget, INFINITE, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
+                if (count == 1 && woke == 0)
+                {
+                    EndHold.WidgetGone();
+                    continue;
+                }
+                if (woke == WAIT_FAILED) return;
+                while (PeekMessageW(&msg, IntPtr.Zero, 0, 0, PM_REMOVE))
+                {
+                    if (msg.message == WM_QUIT) return;
+                    DispatchMessageW(&msg);
+                }
+            }
         }
         catch (Exception e)
         {
@@ -116,6 +135,7 @@ internal static unsafe partial class SystemEvents
     {
         try
         {
+            if (EndHold.Handle(msg, wParam)) return 0;
             switch (msg)
             {
                 case WM_QUERYENDSESSION:
@@ -190,8 +210,15 @@ internal static unsafe partial class SystemEvents
     [LibraryImport("user32.dll")]
     private static partial IntPtr RegisterSuspendResumeNotification(IntPtr recipient, int flags);
 
+    private const uint INFINITE = 0xFFFFFFFF, WAIT_FAILED = 0xFFFFFFFF, QS_ALLINPUT = 0x04FF, MWMO_INPUTAVAILABLE = 0x4,
+        PM_REMOVE = 1, WM_QUIT = 0x0012;
+
     [LibraryImport("user32.dll")]
-    private static partial int GetMessageW(MSG* msg, IntPtr hwnd, uint min, uint max);
+    private static partial uint MsgWaitForMultipleObjectsEx(uint count, IntPtr* handles, uint ms, uint wakeMask, uint flags);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool PeekMessageW(MSG* msg, IntPtr hwnd, uint min, uint max, uint remove);
 
     [LibraryImport("user32.dll")]
     private static partial nint DispatchMessageW(MSG* msg);

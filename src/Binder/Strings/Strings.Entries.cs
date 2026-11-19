@@ -869,4 +869,28 @@ public sealed partial class Strings
     public static string GameKeyListTitle => Get(nameof(GameKeyListTitle));
     public static string GameKeyListDetail => Get(nameof(GameKeyListDetail));
     public static string GameKeyListNone => Get(nameof(GameKeyListNone));
+
+    // End a stuck game (spec §28)
+    public static string EndStuck => Get(nameof(EndStuck));
+    public static string EndStuckToolTip => Get(nameof(EndStuckToolTip));
+    public static string EndStuckHold => Get(nameof(EndStuckHold));
+    public static string EndStuckNeedsShortcut => Get(nameof(EndStuckNeedsShortcut));
+    public static string EndStuckWhenNotResponding => Get(nameof(EndStuckWhenNotResponding));
+    public static string EndStuckAlways => Get(nameof(EndStuckAlways));
+    public static string HoldEnding => Get(nameof(HoldEnding));
+    public static string HoldLetGo => Get(nameof(HoldLetGo));
+    public static string HoldCancelled => Get(nameof(HoldCancelled));
+    public static string HoldStillRunning => Get(nameof(HoldStillRunning));
+    public static string HoldResponding => Get(nameof(HoldResponding));
+    public static string HoldRespondingAgain => Get(nameof(HoldRespondingAgain));
+    public static string HoldNothingEnded => Get(nameof(HoldNothingEnded));
+    public static string EndedTitle => Get(nameof(EndedTitle));
+    public static string EndedResponding => Get(nameof(EndedResponding));
+    public static string EndedWhileHung => Get(nameof(EndedWhileHung));
+    public static string EndedWhileReport => Get(nameof(EndedWhileReport));
+    public static string CrashHangEnded => Get(nameof(CrashHangEnded));
+    public static string CrashReportEnded => Get(nameof(CrashReportEnded));
+    public static string EndedStillResponding => Get(nameof(EndedStillResponding));
+    public static string AlsoEndedByYou => Get(nameof(AlsoEndedByYou));
+    public static string SessionEndedByYou => Get(nameof(SessionEndedByYou));
 }

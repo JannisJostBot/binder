@@ -3465,4 +3465,92 @@ Calm: efficiency mode while you play</value>
     <value>Right-click a game in Binder to give it a number</value>
     <comment>Game shortcuts overlay, in place of the rows for 1 to 9 when no game has a number yet.</comment>
   </data>
+  <data name="EndStuck" xml:space="preserve">
+    <value>End a stuck game</value>
+    <comment>Setting card title (Settings, When a game starts): holding the panel's keyboard shortcut during a game ends the game. Also the name of its drop-down for screen readers.</comment>
+  </data>
+  <data name="EndStuckToolTip" xml:space="preserve">
+    <value>Hold the shortcut for 2 seconds during a game to end it. A short press does nothing.</value>
+    <comment>Tooltip of the End a stuck game card. "Shortcut" = the panel's keyboard shortcut, e.g. Win+Shift+G.</comment>
+  </data>
+  <data name="EndStuckHold" xml:space="preserve">
+    <value>Hold {0}</value>
+    <comment>Second line of the End a stuck game card (state). {0} = the keyboard shortcut as Windows writes it, e.g. Win+Shift+G. "Hold" = keep the keys pressed (verb).</comment>
+  </data>
+  <data name="EndStuckNeedsShortcut" xml:space="preserve">
+    <value>Needs a keyboard shortcut</value>
+    <comment>Second line of the End a stuck game card when the panel's keyboard shortcut is set to Off: the feature can't be used.</comment>
+  </data>
+  <data name="EndStuckWhenNotResponding" xml:space="preserve">
+    <value>When it stops responding</value>
+    <comment>Choice in the End a stuck game drop-down (default): a game is ended only while Windows reports it as not responding. Keep it short (about 25 characters).</comment>
+  </data>
+  <data name="EndStuckAlways" xml:space="preserve">
+    <value>Always</value>
+    <comment>Choice in the End a stuck game drop-down: any game is ended after the hold, even one that still responds.</comment>
+  </data>
+  <data name="HoldEnding" xml:space="preserve">
+    <value>Ending {0}</value>
+    <comment>Label under the ring while the shortcut is held to end a game (bold part). {0} = game name.</comment>
+  </data>
+  <data name="HoldLetGo" xml:space="preserve">
+    <value>let go to cancel</value>
+    <comment>Rest of the label under the ring, after "Ending [game] · ": releasing the keys cancels. Lower case: it continues the label.</comment>
+  </data>
+  <data name="HoldCancelled" xml:space="preserve">
+    <value>Cancelled</value>
+    <comment>Label under the ring after the keys were released early (bold part).</comment>
+  </data>
+  <data name="HoldStillRunning" xml:space="preserve">
+    <value>{0} is still running</value>
+    <comment>Rest of the label after "Cancelled · ". {0} = game name.</comment>
+  </data>
+  <data name="HoldResponding" xml:space="preserve">
+    <value>{0} is responding</value>
+    <comment>Note shown instead of the ring when the game still responds, so it isn't ended (bold part). {0} = game name.</comment>
+  </data>
+  <data name="HoldRespondingAgain" xml:space="preserve">
+    <value>{0} is responding again</value>
+    <comment>Note shown when the game started responding again during the hold, so it isn't ended (bold part). {0} = game name.</comment>
+  </data>
+  <data name="HoldNothingEnded" xml:space="preserve">
+    <value>nothing was ended</value>
+    <comment>Rest of the note after "[game] is responding · ". Lower case: it continues the note.</comment>
+  </data>
+  <data name="EndedTitle" xml:space="preserve">
+    <value>You ended {0} after {1}</value>
+    <comment>Card title on the shelf after the user ended a game that was still responding. {0} = game name, {1} = how long it ran, e.g. 1 h 12 min.</comment>
+  </data>
+  <data name="EndedResponding" xml:space="preserve">
+    <value>It was still responding, so it isn't counted as a crash.</value>
+    <comment>Second line of that card.</comment>
+  </data>
+  <data name="EndedWhileHung" xml:space="preserve">
+    <value>You ended it after Windows marked it as not responding.</value>
+    <comment>Second line of the crash card when the user ended a game Windows reported as not responding.</comment>
+  </data>
+  <data name="EndedWhileReport" xml:space="preserve">
+    <value>You ended it while Windows was saving the crash report.</value>
+    <comment>Second line of the crash card when the user ended a game that had crashed while Windows Error Reporting was still writing its report.</comment>
+  </data>
+  <data name="CrashHangEnded" xml:space="preserve">
+    <value>Stopped responding, and you ended it</value>
+    <comment>"What happened" line when the game froze and the user ended it.</comment>
+  </data>
+  <data name="CrashReportEnded" xml:space="preserve">
+    <value>Crashed, and you ended it while Windows saved the crash report</value>
+    <comment>"What happened" line when the game crashed and the user ended it during Windows' error report.</comment>
+  </data>
+  <data name="EndedStillResponding" xml:space="preserve">
+    <value>You ended it while it was still responding</value>
+    <comment>"What happened" line of a game the user ended that still responded.</comment>
+  </data>
+  <data name="AlsoEndedByYou" xml:space="preserve">
+    <value>You ended it</value>
+    <comment>"Also at that time" line on the crash card: the user ended the game with the hold.</comment>
+  </data>
+  <data name="SessionEndedByYou" xml:space="preserve">
+    <value>Ended by you</value>
+    <comment>Tooltip of the mark next to a past session in Game detail: the user ended the game with the hold while it still responded.</comment>
+  </data>
 </root>
