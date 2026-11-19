@@ -1,0 +1,10 @@
+2026-11-19T13:33:39.7875403+00:00 [note] settings.json is damaged; kept as settings.json.bad
+
+2026-11-19T13:33:39.7882377+00:00 [note] settings.json couldn't be read; the copy from the save before was used
+
+2026-11-19T13:33:39.7910236+00:00 [note] settings.json is damaged; kept as settings.json.bad
+
+2026-11-19T13:33:41.1069138+00:00 [note] held-settings.json is held by another program; it isn't saved over until Binder starts again
+
+2026-11-19T13:33:41.1074293+00:00 [note] held-settings.json couldn't be read; the copy from the save before was used
+

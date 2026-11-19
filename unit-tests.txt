@@ -1,0 +1,878 @@
+PASS deep VDF rejected
+PASS normal VDF still parses
+PASS valid manifest accepted
+PASS Steam LastPlayed read (0 means never)
+PASS appid with extra text rejected
+PASS appid path traversal rejected
+PASS installdir .. rejected
+PASS absolute installdir rejected
+PASS installdir with separators rejected
+PASS Steam icon from the library cache, validated appid only
+PASS oversized manifest rejected
+PASS quote round-trip steam:570 -> "steam:570"
+PASS quote round-trip a"b -> "a\"b"
+PASS quote round-trip C:\dir\ -> "C:\dir\\"
+PASS quote round-trip x\\"y -> "x\\\\\"y"
+PASS quote round-trip  -> ""
+PASS quote round-trip two words -> "two words"
+PASS quote round-trip end\\ -> "end\\\\"
+PASS duration under a minute
+PASS greeting by time of day
+PASS duration with hours
+PASS playtime over 10 h
+PASS hide delay labels
+PASS game folder accepted
+PASS drive root rejected
+PASS relative or empty path rejected
+PASS missing folder rejected
+PASS user profile itself rejected
+PASS Windows folder rejected
+PASS System32 rejected
+PASS Program Files itself rejected
+PASS valid Epic manifest accepted
+PASS Epic AppName with URI characters rejected
+PASS Epic namespace with separators rejected
+PASS Epic install at a drive root rejected
+PASS Epic engine (not a game) skipped
+PASS Epic game category accepted
+PASS incomplete Epic install skipped
+PASS Epic add-on (HD texture pack) skipped
+PASS Epic game naming itself as main game accepted
+PASS oversized Epic manifest rejected
+PASS Epic manifest with a UTF-8 BOM read
+PASS deeply nested Epic manifest rejected
+PASS valid GOG entry accepted
+PASS relative GOG exe resolved
+PASS GOG exe outside the install folder rejected
+PASS GOG exe path traversal rejected
+PASS GOG id that isn't digits rejected
+PASS EA uninstaller recognized
+PASS EA app's own uninstaller isn't a game
+PASS valid EA entry accepted, ™ removed
+PASS EA entry without a content id starts its exe
+PASS EA exe outside the install folder rejected
+PASS EA content id with link characters rejected
+PASS EA content id read from installerdata.xml
+PASS valid Ubisoft install accepted (forward slashes)
+PASS Ubisoft name falls back to the folder
+PASS Ubisoft install without a folder skipped
+PASS Ubisoft id that isn't digits rejected
+PASS Ubisoft icon must be an .ico
+PASS .GamingRoot parsed
+PASS .GamingRoot can't point outside the drive root
+PASS .GamingRoot with a full path or a bad header rejected
+PASS package family from a full name
+PASS malformed package names rejected
+PASS Xbox game: launch link from the registered family, name from MicrosoftGame.config, icon from its exe
+PASS Xbox cover picture: the tile logo before the exe
+PASS new icon source: cached icon and its color dropped, user data kept
+PASS same icon source: cached color kept
+PASS Xbox name falls back to the folder when the manifest only has a resource reference
+PASS Xbox game not registered for this user skipped
+PASS Xbox app id with link characters rejected
+PASS Xbox exe outside the Content folder not used
+PASS Rockstar title from its uninstaller
+PASS the Rockstar launcher's own entry isn't a game
+PASS other uninstallers and odd titles rejected
+PASS valid Rockstar entry accepted, icon from its exe
+PASS Rockstar icon outside the install folder not used
+PASS Rockstar entry without a folder or with a bad title rejected
+PASS Hytale without its client isn't a game yet
+PASS Hytale found with its install folder, size and client icon
+PASS Hytale on another patchline found
+PASS Hytale with no or an unsafe folder rejected
+PASS Steam link parsed
+PASS Ubisoft link parsed
+PASS Ubisoft link with a bad id rejected
+PASS Steam link with extra text rejected
+PASS Epic link parsed
+PASS short Epic link parsed
+PASS document shortcut isn't offered
+PASS .url file read
+PASS shortcut duplicating a store game's exe taken out, its favorite kept
+PASS nothing more to take out
+PASS shortcut restored to the desktop
+PASS restore doesn't overwrite an existing file
+PASS restore moves nothing that isn't in our shortcuts folder
+PASS docked right at 100 %
+PASS docked left at 100 %
+PASS width and margins scale at 150 %
+PASS auto-hide taskbar at the bottom left free (bottom 1004)
+PASS auto-hide taskbar on the right left free (right 1844)
+PASS docked right on a monitor at negative coordinates
+PASS free position kept on screen (1360, 0)
+PASS free position inside the screen kept
+PASS small screen: full height (380)
+PASS initials skip a leading The
+PASS one-word title gives one initial
+PASS initials are upper case, split on punctuation
+PASS Initials: The alone is kept
+PASS Initials: lower-case the is skipped
+PASS Initials: only the first two words
+PASS Initials: digits count as initials
+PASS Initials: underscore splits words
+PASS Initials: no letter or digit first gives ?
+PASS Initials: empty title gives ?
+PASS monogram tone is stable
+PASS tint keeps the icon's hue, muted and dark (#6F2A2A: 0°, 45%, 30%)
+PASS white text on a tint from a bright icon passes 4.5:1 (#6F682A)
+PASS fully transparent icon has no tint
+PASS gray icon gives a neutral tint (#4C4C4C)
+PASS white text passes 4.5:1 on every monogram tone
+PASS recently played: most recent first, never played last
+PASS most played
+PASS name sort places Ä with A (culture-aware)
+PASS recently added, unknown dates last
+PASS size on disk, biggest first
+PASS favorites first, then the chosen order
+PASS unsafe install path rejected: '..\evil.exe'
+PASS unsafe install path rejected: 'C:\Windows\x.exe'
+PASS unsafe install path rejected: '\x.exe'
+PASS unsafe install path rejected: 'a/b.exe'
+PASS unsafe install path rejected: 'a\..\b.exe'
+PASS unsafe install path rejected: 'x.exe:stream'
+PASS unsafe install path rejected: 'con.'
+PASS unsafe install path rejected: 'x '
+PASS unsafe install path rejected: ''
+PASS unsafe install path rejected: 'a\\b.exe'
+PASS unsafe install path rejected: 'a\b\c\d\e\f\g\h\i.exe'
+PASS install path accepted: 'Binder.exe'
+PASS install path accepted: 'Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png'
+PASS install path accepted: 'Assets\tray-dark.ico'
+PASS payload list parsed
+PASS payload without the watcher rejected
+PASS payload with a path outside the folder rejected
+PASS payload with a repeated path rejected
+PASS payload with a malformed hash rejected
+PASS sound is 2 s (Lullaby)
+PASS sound has its length
+PASS sound is quiet but audible, never clipping (peak 0.051)
+PASS two notes, the second at least as full (0.0097, 0.0178)
+PASS the notes fade and the room carries on (0.00187)
+PASS sound ends in silence
+PASS sound is balanced left and right
+PASS the night version is about 6 dB quieter (-5.9 dB)
+PASS night is 22:00 to 7:00
+PASS sound is a PCM WAV
+PASS sound is small (172 KB)
+PASS sound is made quickly (60 ms)
+PASS welcome back: the last session, with the 10 h milestone it passed
+PASS welcome back shows once per session
+PASS a milestone already shown isn't shown again
+PASS no welcome back after a session under 2 min
+PASS crossing several milestones shows only the highest
+PASS first run: old sessions and milestones count as shown
+PASS first run without sessions: the first session gets its welcome
+PASS existing file and folder are present
+PASS missing file or folder on a present drive is gone
+PASS no path or a relative path is unknown, never gone
+PASS a path on a missing drive is unknown, never gone
+PASS manual game with its exe is there
+PASS manual game without its exe is gone
+PASS shortcut whose target exe is gone is gone
+PASS shortcut without a known target stays
+PASS store game: gone only when its folder is
+PASS only games with settings are remembered
+PASS a reinstalled game gets its settings back (and counts as new)
+PASS nothing kept, nothing restored
+PASS the kept list is capped, the oldest go first
+PASS remembering again replaces the older entry
+PASS uninstalled store game and deleted manual game leave the library
+PASS the dropped games are reported
+PASS a reinstalled store game gets its kept settings back
+PASS a stored shortcut outside our Shortcuts folder is never moved
+PASS a shortcut goes back only onto a desktop, not where the data file says
+PASS a shortcut from the desktop goes back to its place
+PASS an original that isn't a shortcut name goes back under the stored name
+PASS split matches argv rules: -novid -windowed -> [-novid|-windowed]
+PASS join round-trips: -novid -windowed
+PASS split matches argv rules: "two words" -x -> [two words|-x]
+PASS join round-trips: "two words" -x
+PASS split matches argv rules: a\"b c -> [a"b|c]
+PASS join round-trips: a\"b c
+PASS split matches argv rules: C:\dir\ next -> [C:\dir\|next]
+PASS join round-trips: C:\dir\ next
+PASS split matches argv rules: x\\"y z" -> [x\y z]
+PASS join round-trips: x\\"y z"
+PASS split matches argv rules:   -a   -b   -> [-a|-b]
+PASS join round-trips:   -a   -b  
+PASS empty arguments split to nothing
+PASS steam run link
+PASS slashes and ? # are encoded
+PASS bad appid gives no link
+PASS steam link without arguments
+PASS steam link with arguments
+PASS bad appid gives no steam link
+PASS id Tech console variable kept as two arguments
+PASS Glacier skips its launcher
+PASS multi-word suggestion found
+PASS multi-word suggestion removed
+PASS exe inside the folder accepted
+PASS exe outside via .. rejected
+PASS sibling folder with the same prefix rejected
+PASS relative path rejected
+PASS override outside the folder ignored
+PASS override inside the folder used
+PASS Epic games take no arguments from us
+PASS Steam games use the run link
+PASS Unity detected
+PASS UnityPlayer.dll alone isn't Unity
+PASS Unreal detected
+PASS Unreal detected from Engine\Binaries
+PASS CryEngine's Engine folder isn't Unreal
+PASS Source 2 detected
+PASS Source detected
+PASS Godot detected
+PASS a .pck without its exe isn't Godot
+PASS Frostbite detected
+PASS RE Engine detected
+PASS CryEngine detected
+PASS GameMaker detected
+PASS Snowdrop detected three folders down
+PASS a lone 'toc' file isn't the Insomniac engine
+PASS Unity wins over a stray data.win
+PASS Easy Anti-Cheat detected once
+PASS BattlEye detected from *_BE.exe
+PASS no anti-cheat in a plain game
+PASS scan depth is capped
+PASS links inside the game folder aren't followed
+PASS engine: Unity versions, with 6000.x as Unity 6
+PASS engine: Unreal's build string, ASCII and UTF-16
+PASS engine: a build string across two read blocks is found
+PASS engine: mismatched or branch builds and text past the cap give no version
+PASS Vanguard needs TPM 2.0 and Secure Boot on Windows 11
+PASS EAC baseline has no Secure Boot
+PASS Battlefield 6 exception adds Secure Boot
+PASS no anti-cheat, no requirements
+PASS weeks start on Monday
+PASS Sunday belongs to the week before
+PASS Monday gets its share of a session over midnight (01:30:00)
+PASS Tuesday gets the rest plus its own session (01:30:00)
+PASS week total, game count and most played
+PASS empty week
+PASS 8 weeks, the last one is this week
+PASS weekly buckets split at the week boundary
+PASS 12 months ending this month
+PASS monthly buckets
+PASS chart labels are English whatever the locale
+PASS Labels: day name
+PASS Labels: Thursday letter
+PASS Labels: Sunday letter
+PASS Labels: week label without a leading zero
+PASS Labels: short month
+PASS Labels: month and year
+PASS WeekStart: a Monday keeps its date, without the time
+PASS WeekStart: across a month end
+PASS WeekStart: across a year end
+PASS a failure code beats 0 and 1
+PASS a nonzero code beats 0
+PASS no processes, no exit code
+PASS engine crash reporters recognized
+PASS the game itself isn't a crash reporter
+PASS exit code 0xDEAD counts as closed unexpectedly
+PASS a plain exit code 1 isn't checked
+PASS a crash in nvwgf2umx.dll is the NVIDIA driver
+PASS known culprits get advice, not the AI prompt
+PASS crash title with the play time
+PASS another app's crash event isn't ours
+PASS an event long after the session isn't ours
+PASS exit code 1 alone is a normal ending
+PASS a closed console window isn't a crash
+PASS failure code plus crash reporter is a crash
+PASS a failure code alone is softer, with the AI prompt
+PASS a missing DLL right after starting points to the Visual C++ Redistributable
+PASS start-failure title
+PASS a dxgi.dll in the game folder is a mod
+PASS Windows' own dxgi.dll isn't blamed on a mod
+PASS the Steam overlay is an overlay
+PASS a display driver reset points to the graphics card
+PASS without an install folder the exe name matches
+PASS only sessions that ended with an error are checked
+PASS pattern line names a shared cause
+PASS pattern line without a shared cause
+PASS one crash is no pattern
+PASS AI prompt has no user name or paths
+PASS bug report has no user name or paths
+PASS AI prompt has the error, file, PC and how often
+PASS bug report has the game, store, error file and how often
+PASS NVIDIA driver version as NVIDIA shows it
+PASS other driver versions unchanged
+PASS event XML parsed: provider, id, time, named values, entities
+PASS malformed or oversized event XML rejected
+PASS restart: the first crash restarts
+PASS restart: closed unexpectedly counts, second restart allowed
+PASS restart: never more than twice in a row; the card says so
+PASS restart: crashes more than 30 minutes apart start a new count
+PASS restart: a normal exit ends the run
+PASS restart: never after closed right after starting
+PASS restart: never after a session under a minute
+PASS restart: never after a normal exit
+PASS restart: off by default
+PASS watcher: exit code 0x0 judged like the crash check
+PASS watcher: exit code 0x1 judged like the crash check
+PASS watcher: exit code 0x2 judged like the crash check
+PASS watcher: exit code 0xC0000005 judged like the crash check
+PASS watcher: exit code 0xC000013A judged like the crash check
+PASS watcher: exit code 0xDEAD judged like the crash check
+PASS watcher: exit code 0x887A0006 judged like the crash check
+PASS watcher: exit code 0xFFFFFFFF judged like the crash check
+PASS watcher: not after a session under a minute
+PASS watcher: with Come back on, an ordinary return
+PASS watcher: with Come back off, brought back for the restart
+PASS watcher: with Come back off and no crash, only Game mode's toast or nothing
+PASS playtime bands
+PASS never-played games first, closest fit
+PASS the smallest game that covers it
+PASS nothing to remove when it fits
+PASS recent games before favorites
+PASS favorites only when nothing else is enough
+PASS picks that aren't needed after all are dropped, biggest first
+PASS games without a known size are never picked
+PASS best drive: one that frees enough, with the least playtime removed
+PASS a drive where it fits already wins
+PASS by drive: manual games and running games left out, hidden ones kept
+PASS a game played through Steam lately counts as recent
+PASS treemap fills the area exactly
+PASS treemap tile area follows its size
+PASS treemap tiles stay roughly square
+PASS restore result encoding
+PASS restore result round-trip
+PASS malformed restore results rejected
+PASS names of what couldn't be put back
+PASS toast only when something changed; problems shown even with the confirmation off
+PASS restored toast's two lines
+PASS applied toast's two lines
+PASS applied toast also when nothing needed changing; failures shown even with the confirmation off
+PASS helper counts what it applied, not what it left alone
+PASS journal round-trip
+PASS journal with nothing changed
+PASS unknown power change in the journal rejected
+PASS journal apps that aren't plain full exe paths are never reopened
+PASS journal keeps OneDrive and calmed apps
+PASS only OneDrive's own exe is started again
+PASS calmed apps: plain exe paths only, masks limited to the known bits
+PASS OneDrive stays running when Documents is in it
+PASS windowed games optimizations read from Windows' value
+PASS relative paths, non-exes and Binder itself aren't closed
+PASS Windows' own programs are never closed
+PASS already at best performance is left alone
+PASS Game mode is opt-in; defaults as in the spec
+PASS service program names read from quoted, unquoted and prefixed image paths
+PASS paths without a program give no name
+PASS the watcher's and the helper's results add up
+PASS request round-trip; an app kept smooth is never slowed down
+PASS only allowlisted services and plain exe names are kept
+PASS Windows and security processes are never throttled or re-marked
+PASS malformed requests rejected
+PASS only user SIDs name tasks and files
+PASS a marker with this helper version is current, whatever the app version
+PASS another helper version needs an update
+PASS old app-version markers and junk update once
+PASS helper journal round-trip
+PASS the helper only ever restarts allowlisted services and removes its own policies
+PASS a helper journal without a user SID is rejected
+PASS settings: filling the page reports no change
+PASS settings: filling the page refreshes every binding once
+PASS settings: library line counts sources and shown games
+PASS settings: hidden games listed
+PASS settings: screens left to right, the current one selected
+PASS settings: choices show the defaults (Medium, Right edge, 10 s, Flyout)
+PASS settings: same value or no selection reports nothing
+PASS settings: cover size writes List and reports Shelf
+PASS settings: Add my games to Start search reports StartMenu
+PASS settings: Open faster writes KeepPanelLoaded and refreshes its texts
+PASS settings: a source off writes it, reports Sources and updates the count
+PASS settings: picking a screen stores its device
+PASS settings: Free position
+PASS settings: Start with Windows reported
+PASS settings: Shiny favorites off writes it and reports Shelf once
+PASS settings: scanning and imported shortcuts shown
+PASS settings: a taken shortcut and an unknown screen shown
+PASS settings: buttons reach the owner
+PASS settings: advanced entries filled from settings, defaults as placeholders, unknown names not counted
+PASS settings: an invalid value shows its error and changes nothing
+PASS settings: a valid artwork value is stored tidied and reported as an artwork change
+PASS settings: the same value again reports nothing
+PASS settings: a registry key is stored with the short hive name, as a non-artwork change
+PASS settings: another download host is named next to the address
+PASS settings: Reset goes back to the default
+PASS settings: Reset all clears every entry
+PASS settings: Check asks the owner and shows its answer
+PASS about: the default is Ask before installing
+PASS about: not checked yet shows the version and Check for updates, and reports no change
+PASS about: a new update state refreshes only the About card
+PASS about: checking disables the button
+PASS about: up to date says when it checked today
+PASS about: or the day it last checked
+PASS about: an update shows Update, its notes and Skip this version
+PASS about: Update downloads, Skip reaches the owner
+PASS about: Binder on GitHub opens the repository
+PASS about: an official build shows the GitHub link and the Updates choice
+PASS about: downloading shows MB and the progress bar, no button
+PASS about: ready shows Restart now
+PASS about: Restart now installs
+PASS about: a download that didn't verify offers Try again
+PASS about: Try again downloads again
+PASS about: an urgent update can't be skipped
+PASS about: an install that failed says where the log is
+PASS about: no connection
+PASS about: a build without release keys says so, with no check button and no Updates choice
+PASS about: the same Updates choice reports nothing
+PASS about: Don't check writes Off and reports Updates
+PASS about: with Don't check the card says it doesn't check
+PASS about: Install automatically
+PASS about: no selection changes nothing
+PASS detail: filling the page reports no change
+PASS detail: a new game refreshes every binding
+PASS detail: header from the game
+PASS detail: playtime and sessions of this game only
+PASS detail: the crashed session is marked, the other closed normally
+PASS detail: chart of 8 weeks
+PASS detail: chart of 12 months
+PASS detail: hide delay choices, the default selected
+PASS detail: game mode choices
+PASS detail: same value or no selection reports nothing
+PASS detail: hide delay written and saved
+PASS detail: game mode off for this game
+PASS detail: Unity suggestions ticked from the arguments
+PASS detail: the rest are extra arguments
+PASS detail: summary and the Steam note
+PASS detail: a suggestion of a group unticks the other, saved
+PASS detail: typing composes without saving
+PASS detail: leaving the field saves
+PASS detail: Start with outside the folder refused
+PASS detail: Reset clears the options
+PASS detail: same game again; anti-cheat being checked
+PASS detail: a missing requirement and a running program are issues
+PASS detail: requirement rows
+PASS detail: custom cover
+PASS detail: default cover
+PASS detail: buttons reach the owner
+PASS detail: Restart if it crashes is off by default
+PASS detail: the same value reports nothing
+PASS detail: Restart if it crashes turned on and saved
+PASS detail: and off again
+PASS detail: another game shown, no launcher name for a manual game
+PASS detail: a game without sessions, folder or anti-cheat
+PASS restart pill: starts at 5 s, full bar
+PASS restart pill: one line for screen readers
+PASS restart pill: a second later
+PASS restart pill: restarts when it runs out
+PASS restart pill: nothing more once it ended
+PASS restart pill: Cancel stops it for good
+PASS game mode: filling the page reports no change
+PASS game mode: filling the page refreshes every binding once
+PASS game mode: back says where it goes
+PASS game mode: what Windows does now
+PASS game mode: Windows' own settings and OneDrive
+PASS game mode: opens Windows' Game Mode settings
+PASS game mode: closed apps with their state
+PASS game mode: services with their state
+PASS game mode: not allowed yet: the Allow bar
+PASS game mode: nothing restored yet
+PASS game mode: the default upload limit (5 Mbit/s)
+PASS game mode: same value or no selection saves nothing
+PASS game mode: switches and the limit write and save
+PASS game mode: on and no game: ready for the next one
+PASS game mode: applied: running now
+PASS game mode: a service row writes its item
+PASS game mode: no confirmation, no sound choice
+PASS game mode: turning the sound on plays it once
+PASS game mode: apps already closed aren't offered
+PASS game mode: add and remove closed apps (any case)
+PASS game mode: Calm an app (saved once)
+PASS game mode: back to Close
+PASS game mode: removing an app also forgets Calm
+PASS game mode: uploads list stores the exe name, not offered again
+PASS game mode: removing a name
+PASS game mode: a failed Allow shows its code
+PASS game mode: allowed, the bar closes
+PASS game mode: removed again
+PASS game mode: something to restore
+PASS game mode: restoring
+PASS game mode: a partial restore
+PASS game mode: buttons reach the owner
+PASS free space: filling the page refreshes once, asks nothing
+PASS free space: the drive with most game data first
+PASS free space: no size yet: no plan, drives without an outcome
+PASS free space: back target and unknown sizes
+PASS free space: a plan that removes games, favorites kept
+PASS free space: best drive marked, the other can't hold it
+PASS free space: enough, ready to uninstall
+PASS free space: clicking a suggested tile keeps the game
+PASS free space: clicking it again adds it back
+PASS free space: the first game goes to its launcher
+PASS free space: the last step says Done
+PASS free space: after the last one, check again
+PASS free space: picking a drive starts its plan from scratch
+PASS free space: it fits on the picked drive
+PASS free space: an unknown drive is ignored
+PASS free space: buttons reach the owner
+PASS free space: GB rounding
+PASS setup: starting refreshes every binding and asks nothing
+PASS setup: starts at step 1
+PASS setup: launchers with games first, unticked as in the settings
+PASS setup: manual games aren't counted
+PASS setup: no Start search line before the Start menu is read
+PASS setup: how many Start search doesn't find
+PASS setup: counted again when the library changes
+PASS setup: Add my games to Start search offered with the number, off
+PASS setup: step 3 from the settings
+PASS setup: counts come in, ticks kept
+PASS setup: Next applies the ticks and loads shortcuts
+PASS setup: nothing picked yet
+PASS setup: picked shortcuts
+PASS setup: a second Move while one runs does nothing
+PASS setup: moving goes on to step 3
+PASS setup: step 3 shows what the move did
+PASS setup: shortcuts are loaded once per run
+PASS setup: step 3's Next goes on to Game mode
+PASS setup: Game mode opens on Off, nothing to ask
+PASS setup: Game mode's default items, services on one line, the admin ones marked
+PASS setup: All items asks Windows on Done
+PASS setup: a declined prompt stays on the step, nothing turned on
+PASS setup: a failed install says so and stays
+PASS setup: another choice clears the message
+PASS setup: Done hands over the choices
+PASS setup: only the items without admin rights, even with the helper allowed
+PASS setup: All items brings the admin items back only when none are left; Off keeps the list
+PASS setup: Skip reaches the owner
+PASS setup: a new run starts over, nothing found
+PASS setup: a new run opens Game mode on Off again
+PASS setup: helper already allowed
+PASS setup: nothing to ask when it's there
+PASS setup: a run after "only items without admin rights" opens on that choice, helper or not
+PASS setup: standard account, Game mode without the helper
+PASS setup: unchecking a radio button keeps the choice
+PASS shelf: new data refreshes every binding once and asks nothing
+PASS shelf: hidden and turned-off launchers left out, sorted by name
+PASS shelf: the search box counts the games and says Enter plays the last game
+PASS shelf: three launchers (most games first), the rest under More
+PASS shelf: chip labels
+PASS shelf: launchers with games in chip order, without Other (also the tray menu's order)
+PASS shelf: launcher chips offer Open … only when installed; other chips have no menu
+PASS shelf: Open … reaches the owner, other chips do nothing
+PASS shelf: last played on each game
+PASS shelf: continue playing the last game
+PASS shelf: both top cards, Continue first
+PASS shelf: footer hint and medium covers
+PASS shelf: no helper notice
+PASS shelf: Enter on an empty search plays the Continue playing game
+PASS shelf: search filters and hides the top slot
+PASS shelf: Enter plays the top match
+PASS shelf: the same result keeps the shown list
+PASS shelf: a name that starts with the query comes first
+PASS shelf: within a rank, the shelf's order
+PASS shelf: Enter with no match does nothing
+PASS shelf: no match offers to clear the search
+PASS shelf: favorites filter
+PASS shelf: recent, latest first, no sort button
+PASS shelf: a filter under More takes the last chip
+PASS shelf: RB wraps around to All
+PASS shelf: LB goes back
+PASS shelf: sorting saves and re-orders
+PASS shelf: favorites first
+PASS shelf: the This week card is remembered
+PASS shelf: with This week showing, Enter waits for a search
+PASS shelf: the same card saves nothing
+PASS shelf: the crash card takes the top slot
+PASS shelf: the top slot comes back
+PASS shelf: Welcome back takes the top slot, with its milestone and no switch
+PASS shelf: Enter plays the Welcome back game
+PASS shelf: Welcome back says once that Binder was closed
+PASS shelf: the next opening shows the normal slot again
+PASS shelf: pin button in the flyout
+PASS shelf: pinned
+PASS shelf: controller hints replace the footer
+PASS shelf: no B hint on the desktop
+PASS shelf: switching Game mode updates only the Game mode button
+PASS shelf: Game mode on but no game: ready, not running
+PASS shelf: Game mode applied: the button shows it running
+PASS shelf: helper notice, Game mode on, list
+PASS shelf: a closed notice stays closed
+PASS shelf: buttons reach the owner
+PASS shelf: nothing found yet
+PASS shelf: no update, no dot
+PASS shelf: an update waiting puts the dot on … and renames it
+PASS shelf: the same update again reports nothing
+PASS shelf: the menu item reaches the owner
+PASS shelf: the dot goes with the update
+PASS search: the name starts with it
+PASS search: a word starts with it
+PASS search: an apostrophe doesn't start a word
+PASS search: initials, numbers whole
+PASS search: a leading The may be left out of the initials
+PASS search: digits after letters start a word
+PASS search: anywhere, or not at all
+PASS search: accents and case ignored
+PASS search: one letter never counts as initials
+PASS search: the initials, with and without The
+PASS search: by rank, most recently played first within one, then the order given
+PASS search: initials find both, a prefix one
+PASS search: an empty query matches everything
+PASS game keys: 0–9 on the number row and the number pad
+PASS game keys: letters, Esc and the pad's * aren't numbers
+PASS game keys: the number pad with Shift held (Insert, End, Clear, Page Up) is 0, 1, 5, 9
+PASS game keys: the separate Insert and arrow keys aren't numbers
+PASS game keys: a free number is given
+PASS game keys: a game moves to its new number
+PASS game keys: a taken number replaces its game and says which
+PASS game keys: None takes the number away
+PASS game keys: 0 can't be given (it's the last game played)
+PASS game keys: only numbers 1–9 with an id count
+PASS game keys: games that left the library and bad entries are dropped
+PASS game keys: 0 plays the last game played on the shelf
+PASS game keys: 0 with no session plays nothing
+PASS game keys: a number plays its game only while it's on the shelf
+PASS game keys: the held shortcut's list has the numbers given to games on the shelf, in order
+PASS game keys: the menu lists None and 1–9 with who has each
+PASS game keys: Game detail shows the game's number and how it's pressed
+PASS game keys: Game detail gives the picked number
+PASS game keys: Game detail's None takes it away
+PASS game keys: Settings lists 0 (last played) and 1–9 with their games
+PASS game keys: Settings picks from the shelf's games by name (no hidden ones) and counts them
+PASS game keys: Settings gives and takes numbers
+PASS game keys: the switch turns them off
+PASS start menu: matched by store link, exe and install folder, imported shortcuts by name; Xbox games are Start apps; others not
+PASS start menu: the games it doesn't find
+PASS start menu: one shortcut per game without an entry, safe and unique names, plain ids only
+PASS start menu: file names trimmed, never empty, a device name or too long
+PASS start menu: only plain ids go into --play
+PASS play tooltip: what Play does for that game
+PASS Playtime: 0 shows 1 min
+PASS Playtime: 59 min
+PASS Playtime: 59 min 59 s rounds down
+PASS Playtime: 1 h shows 1 h 0 min
+PASS Playtime: minutes not padded under 10 h
+PASS Playtime: 9 h 59 min
+PASS Playtime: from 10 h only hours
+PASS Playtime: 123 h 45 min shows 123 h
+PASS Duration: 0 shows < 1 min
+PASS Duration: 59 s shows < 1 min
+PASS Duration: 60 s shows 1 min
+PASS Duration: 59 min 59 s rounds down
+PASS Duration: 1 h pads the minutes
+PASS Duration: 2 h 5 min pads the minutes
+PASS Duration: over a day stays in hours
+PASS Delay: negative shows Instantly
+PASS Delay: 0 shows Instantly
+PASS Delay: 5 s
+PASS Delay: 30 s
+PASS Greeting: midnight is evening
+PASS Greeting: 11:59 is morning
+PASS Greeting: 17:59 is afternoon
+PASS Greeting: 23:59 is evening
+PASS RelativeDay: today
+PASS RelativeDay: tomorrow also shows Today
+PASS RelativeDay: yesterday
+PASS RelativeDay: 3 days ago
+PASS RelativeDay: 6 days ago
+PASS RelativeDay: from 7 days a short date
+PASS localization: every English entry has a comment for translators ()
+PASS localization: every comment says what its {0} placeholders hold ()
+PASS localization: English table read
+PASS localization: de has the same entries (missing: ; extra: )
+PASS localization: no empty de entries ()
+PASS localization: de placeholders match English ()
+PASS localization: fr has the same entries (missing: ; extra: )
+PASS localization: no empty fr entries ()
+PASS localization: fr placeholders match English ()
+PASS localization: one Strings property per entry (no property: ; no entry: )
+PASS localization: every Strings.X in the app exists ()
+PASS localization: German, with its plurals
+PASS localization: lower case only at the start
+PASS localization: German durations
+PASS localization: French, 0 is singular
+PASS localization: French lists
+PASS localization: other languages get English
+PASS localization: English lists
+PASS docs: every data-item is a well-formed Game mode card
+PASS docs: one card per Game mode item, in the Settings order (power,priority,wsearch,sysmain,diagtrack,spooler,gamebar,onedrive,smooth,uploads,updates)
+PASS docs: each card's anchor is gm-<item id>
+PASS docs: power says on by default, like GameModeInfo.DefaultItems
+PASS docs: power doesn't need the admin helper, like GameModeInfo.ElevatedItems
+PASS docs: priority says on by default, like GameModeInfo.DefaultItems
+PASS docs: priority doesn't need the admin helper, like GameModeInfo.ElevatedItems
+PASS docs: wsearch says on by default, like GameModeInfo.DefaultItems
+PASS docs: wsearch needs the admin helper, like GameModeInfo.ElevatedItems
+PASS docs: wsearch names the service WSearch
+PASS docs: sysmain says on by default, like GameModeInfo.DefaultItems
+PASS docs: sysmain needs the admin helper, like GameModeInfo.ElevatedItems
+PASS docs: sysmain names the service SysMain
+PASS docs: diagtrack says on by default, like GameModeInfo.DefaultItems
+PASS docs: diagtrack needs the admin helper, like GameModeInfo.ElevatedItems
+PASS docs: diagtrack names the service DiagTrack
+PASS docs: spooler says off by default, like GameModeInfo.DefaultItems
+PASS docs: spooler needs the admin helper, like GameModeInfo.ElevatedItems
+PASS docs: spooler names the service Spooler
+PASS docs: gamebar says off by default, like GameModeInfo.DefaultItems
+PASS docs: gamebar doesn't need the admin helper, like GameModeInfo.ElevatedItems
+PASS docs: onedrive says off by default, like GameModeInfo.DefaultItems
+PASS docs: onedrive doesn't need the admin helper, like GameModeInfo.ElevatedItems
+PASS docs: smooth says on by default, like GameModeInfo.DefaultItems
+PASS docs: smooth needs the admin helper, like GameModeInfo.ElevatedItems
+PASS docs: uploads says on by default, like GameModeInfo.DefaultItems
+PASS docs: uploads needs the admin helper, like GameModeInfo.ElevatedItems
+PASS docs: updates says on by default, like GameModeInfo.DefaultItems
+PASS docs: updates needs the admin helper, like GameModeInfo.ElevatedItems
+PASS docs: the number of services Game mode may pause
+PASS docs: "What Game mode never does" counts the services the same
+PASS docs: the upload limits (1, 5 or 20 Mbit/s)
+PASS docs: the default upload limit
+PASS docs: OneDrive.exe is slowed down by default
+PASS docs: GoogleDriveFS.exe is slowed down by default
+PASS docs: Dropbox.exe is slowed down by default
+PASS docs: Discord is kept smooth when installed
+PASS docs: TeamSpeak is kept smooth when installed
+PASS docs: Mumble is kept smooth when installed
+PASS docs: Teams is kept smooth when installed
+PASS docs: Zoom is kept smooth when installed
+PASS docs: the DSCP value is the one the Game mode page shows
+PASS docs: Windows Update is limited to 10%
+PASS docs: the Game Bar recording value
+PASS docs: how long OneDrive is given to close
+PASS sources: empty means the default
+PASS sources: an existing full folder is accepted, without its trailing backslash
+PASS sources: relative, missing and network folders are refused
+PASS sources: registry keys under SOFTWARE are accepted with their hive's short name
+PASS sources: other hives, other roots, '..' and empty parts are refused
+PASS sources: the default keys parse
+PASS sources: plain .jpg / .png names are accepted
+PASS sources: folders, other types and lists are refused for one file name
+PASS sources: cover names are a short list of image names
+PASS sources: https addresses with {appid} are accepted
+PASS sources: http, no {appid}, placeholders in the host, user info, unknown placeholders and IP hosts are refused
+PASS sources: the download host is read for the notice
+PASS sources: valid values are used, invalid and unknown ones keep the defaults
+PASS sources: back to the defaults
+PASS sessions: one file per year, a wrong clock clamped into range
+PASS sessions: only sessions-YYYY.jsonl names are read
+PASS sessions: a session over New Year is stored once, in the year it ended
+PASS sessions: a cut-off line is skipped, the next one still reads, unknown fields are ignored
+PASS sessions: the append after a cut-off line starts a new line
+PASS sessions: older years first; empty game ids and non-objects skipped
+PASS sessions: an oversized line is skipped
+PASS sessions: the old sessions.json moves into year files and is kept as .bak
+PASS sessions: moved lines are compact and leave defaults out
+PASS sessions: a second move adds only new sessions and keeps the first backup
+PASS sessions: an unreadable old file is left alone
+PASS scan: a game added while it ran stays on the shelf
+PASS scan: a game removed while it ran stays removed
+PASS scan: a setting changed while it ran is kept
+PASS scan: no game twice
+PASS scan: still sorted by name
+PASS scan: newly found games are added
+PASS save: the new file is in place, the one before kept as .bak
+PASS save: a damaged file falls back to the copy before
+PASS save: the damaged file is kept aside as .bad
+PASS save: damaged and no backup: nothing (the caller starts fresh)
+PASS save: a missing file is just missing
+PASS shortcuts: one in our folder without a record still goes back (to the user's desktop)
+PASS play: the first press starts the game
+PASS play: a second press right after is ignored
+PASS play: another game starts at once
+PASS play: the same game again after a few seconds starts
+PASS sessions: a night asleep mid-game leaves two hours played, in two parts
+PASS sessions: no sleep, one session
+PASS sessions: sleeps over the start or the end are cut off
+PASS watcher: the game-ended signal reads as no watcher, running, then closed
+PASS sessions: a game that ends within a second is still saved
+PASS sessions: a game that ends right after the PC wakes keeps its last part
+PASS sessions: a part under a second before a sleep is left out
+PASS crash check: a short part after a sleep with an ordinary exit code isn't checked
+PASS crash check: a crash right after the PC woke is a crash of a running game, and may be restarted
+PASS crash check: a game that fails within seconds of starting still says so
+PASS scan: a game on an unplugged drive stays, an uninstalled one leaves
+PASS a reachable drive (or no path) isn't offline
+PASS scan: kept settings added or taken back meanwhile are kept that way
+PASS scan: nothing changed meanwhile, the scan's list stands
+PASS a shortcut through a launcher watches nothing of the launcher's (Process to watch says what)
+PASS a shortcut to the game's own exe watches its folder
+PASS Rockstar's Launcher.exe by its folder, not every Launcher.exe
+PASS explorer.exe is a Windows program
+PASS Steam: updating counts as installed, a first install and an uninstall don't
+PASS save: a held file falls back to the copy before
+PASS save: a file that couldn't be read isn't saved over with older data
+PASS restore: our copy of a shortcut the user deleted since goes, and doesn't reappear
+PASS update keys: one or two different ECDSA P-384 public keys compiled in
+PASS update keys: an official build checks the official repository
+PASS update keys: a build checks only with a repository and a key
+PASS update: a manifest signed with the main key verifies and parses
+PASS update: the backup key verifies too
+PASS update: another key's signature is refused
+PASS update: no compiled-in keys, nothing verifies
+PASS update: one changed byte fails the signature
+PASS update: a signature without the fixed prefix is refused
+PASS update: a signature file with CRLF reads
+PASS update: a malformed signature line is refused
+PASS update: an empty signature file is refused
+PASS update: a signature of the wrong length is refused
+PASS update: oversized files are refused before anything is read
+PASS update: only P-384 keys are accepted
+PASS update: a signed manifest still has to pass the rules
+PASS update: urgent with both keys
+PASS update: urgent with one key is a normal update
+PASS update: the same key twice counts once
+PASS update: a stranger's second signature doesn't count
+PASS update: rejected, format 2
+PASS update: rejected, another product
+PASS update: rejected, another channel
+PASS update: rejected, version "0.2"
+PASS update: rejected, version "0.2.0.1"
+PASS update: rejected, version "v0.2.0"
+PASS update: rejected, version "0.02.0"
+PASS update: rejected, version "-1.0.0"
+PASS update: rejected, version "0.2.x"
+PASS update: rejected, version "0.2. 0"
+PASS update: rejected, version "123456.0.0"
+PASS update: rejected, version ""
+PASS update: rejected, issued "2026-11-20"
+PASS update: rejected, issued "2026-11-20T18:04:00+01:00"
+PASS update: rejected, issued "2026-11-20 18:04:00Z"
+PASS update: rejected, issued "yesterday"
+PASS update: rejected, a short commit
+PASS update: rejected, an upper-case commit
+PASS update: rejected, a hash with non-hex digits
+PASS update: rejected, a setup under 1 MB
+PASS update: rejected, a setup over 200 MB
+PASS update: rejected, a fractional size
+PASS update: rejected, urgent as text
+PASS update: rejected, notes without English
+PASS update: rejected, seven note lines
+PASS update: rejected, a note line over 200 characters
+PASS update: rejected, a line break in a note
+PASS update: rejected, a direction override in a note
+PASS update: rejected, an empty note line
+PASS update: rejected, a note that isn't text
+PASS update: rejected, helper version 0
+PASS update: rejected, a repeated field
+PASS update: rejected, a comment
+PASS update: rejected, an array
+PASS update: rejected, deep nesting
+PASS update: helper version read, unknown fields ignored
+PASS update: notes fall back to English, unknown languages ignored
+PASS update: notes in the UI's language
+PASS update: a newer version is offered
+PASS update: never the installed version or an older one
+PASS update: a manifest issued before the last accepted one is refused
+PASS update: the same manifest read back again still counts
+PASS update: issued more than a day in the future is refused
+PASS update: a skipped version is held back unless urgent
+PASS update: the setup's address is built from the version
+PASS update: GitHub's release hosts are allowed
+PASS update: address refused http://github.com/x
+PASS update: address refused https://github.com:8443/x
+PASS update: address refused https://evil.com/x
+PASS update: address refused https://github.com.evil.com/x
+PASS update: address refused https://user@github.com/x
+PASS update: address refused file:///C:/x
+PASS update: the download matches its size and hash
+PASS update: the download stops once it's longer than the manifest says
+PASS update: a short download doesn't match
+PASS update: a wrong hash doesn't match
+PASS setup swap: a bad file stops it before anything is replaced, and the staged files are removed
+PASS setup swap: staging leaves the installed files alone
+PASS setup swap: commit swaps every file in
+PASS setup swap: a running file is moved aside and replaced
+PASS setup swap: a failed swap puts back the old version whole
+ALL PASS
