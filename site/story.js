@@ -151,19 +151,28 @@
     stage.classList.add('is-live');
   }
 
-  // Narrow windows (no desktop story): each caption's small picture plays once as it comes into view; styles.css
-  // has the animations (none with reduced motion).
+  // Narrow windows (no desktop story): each caption's small picture plays once when it has scrolled up to about the
+  // middle of the window, where it's being looked at (styles.css has the animations; none with reduced motion).
+  // Checked on scroll, at most once a frame, like the story above (an IntersectionObserver's margins are ignored in
+  // a frame from another site); the listener goes once all have played.
   function watchPictures() {
-    var pics = document.querySelectorAll('.caption-pic');
-    if (!pics.length || !window.IntersectionObserver) return;
-    var seen = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        e.target.classList.add('is-seen');
-        seen.unobserve(e.target);
+    var waiting = Array.prototype.slice.call(document.querySelectorAll('.caption-pic'));
+    if (!waiting.length) return;
+    var ticking = 0;
+    function check() {
+      ticking = 0;
+      var line = window.innerHeight * 0.6;
+      waiting = waiting.filter(function (pic) {
+        var r = pic.getBoundingClientRect();
+        if (!r.height || r.bottom > line || r.bottom < 0) return true;
+        pic.classList.add('is-seen');
+        return false;
       });
-    }, { threshold: 0.9 });
-    for (var i = 0; i < pics.length; i++) seen.observe(pics[i]);
+      if (!waiting.length) window.removeEventListener('scroll', onScroll);
+    }
+    function onScroll() { if (!ticking) ticking = requestAnimationFrame(check); }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    check();
   }
 
   function start() { setUp(); watchPictures(); }
