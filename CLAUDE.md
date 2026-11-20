@@ -121,7 +121,7 @@ site/                     the website: HTML + CSS, nothing loaded from other ser
                           for the latest release (download link, version, VirusTotal box; the website only: the app's
                           network rules below don't change), clock.js sets the story's clock, story.js runs the
                           desktop story at the top of index.html (a cluttered desktop tidied into Binder, a game,
-                          welcome back), game.js is the hidden game behind the shelf's Play (catch the covers, then
+                          welcome back), wallpaper.js its desktop's ribbons moving like silk until the page scrolls, game.js is the hidden game behind the shelf's Play (catch the covers, then
                           "Welcome back"), nav.js marks the header's current section and closes the phone menu,
                           usage.js draws the "How much it uses" bars to scale from the measured figures,
                           download.js the dialog once a download starts (Defender may warn, the VirusTotal result);

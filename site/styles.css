@@ -342,26 +342,22 @@ summary::-webkit-details-marker { display: none; }
   }
 }
 .scene { background: var(--ribbons) center / cover no-repeat, var(--wall-base); }
-/* On the story's desktop the ribbons drift and turn a little, very slowly, while the page is still at the top: the
-   first view isn't a still picture. They pause where they are as soon as the page scrolls (story.js sets
-   is-scrolled), so nothing moves behind the story, and carry on back at the top. Only a transform on its own layer
-   moves (the compositor's work, no repainting); with reduced motion they stay still. */
+/* On the story's desktop the ribbons move like silk in a breeze while the page is at the top (wallpaper.js draws
+   them into an SVG and pauses on scroll); this still layer is what shows without scripts. The moving ribbons are
+   softened like the still ones, and their colours come from here, light and dark. */
 .desk-wall { position: absolute; inset: 0; z-index: -1; overflow: hidden; background: var(--wall-base); }
-.desk-wall::before {
-  content: "";
-  position: absolute;
-  inset: -8%;
-  background: var(--ribbons) center / cover no-repeat;
-  will-change: transform;
-  animation: ribbons-drift 32s ease-in-out infinite alternate;
-}
-.stage.is-scrolled .desk-wall::before { animation-play-state: paused; }
-@keyframes ribbons-drift {
-  from { transform: translate(-2%, 1.5%) rotate(-1.5deg) scale(1.02); }
-  to { transform: translate(3%, -2%) rotate(1.5deg) scale(1.08); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .desk-wall::before { animation: none; }
+.desk-wall::before { content: ""; position: absolute; inset: 0; background: var(--ribbons) center / cover no-repeat; }
+.desk-wall.has-ribbons::before { display: none; }
+.desk-wall svg { position: absolute; inset: -3%; width: 106%; height: 106%; filter: blur(16px); }
+.wall-r1 { opacity: 0.8; fill: #4F7FE0; }
+.wall-r2 { opacity: 0.8; fill: #8C6BE8; }
+.wall-r3 { opacity: 0.8; fill: #6DB8F2; }
+.wall-sheen { fill: #E4EEFF; opacity: 0.45; }
+@media (prefers-color-scheme: dark) {
+  .wall-r1 { opacity: 0.7; fill: #2D5BC4; }
+  .wall-r2 { opacity: 0.7; fill: #6A45C9; }
+  .wall-r3 { opacity: 0.7; fill: #2F8FC9; }
+  .wall-sheen { fill: #8DB8FF; opacity: 0.3; }
 }
 
 /* Desktop icons, in Windows' columns from the top left. Game shortcuts carry the little arrow. */
