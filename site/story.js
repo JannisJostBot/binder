@@ -113,6 +113,16 @@
         icons[i].style.setProperty('--lift', (Math.max(24, Math.min(140, room)) / k).toFixed(0) + 'px');
         measured = true;
       }
+      // What's left once the games have gone (Recycle Bin, Notes.txt, Screenshots) is arranged down the first column,
+      // as Windows does: the n-th one moves to the cell in row n, column 1 (the desktop is a 4-column grid). Desktop
+      // units, like the flights.
+      var all = desk.children, plain = desk.querySelectorAll('.ico-plain');
+      for (var p = 0; p < plain.length; p++) {
+        var cell = all[p * 4];
+        if (!cell) continue;
+        plain[p].style.setProperty('--tx', (cell.offsetLeft - plain[p].offsetLeft) + 'px');
+        plain[p].style.setProperty('--ty', (cell.offsetTop - plain[p].offsetTop) + 'px');
+      }
     }
 
     // Phones change the window's height while scrolling (the address bar): that moves the line, not the scene, so
