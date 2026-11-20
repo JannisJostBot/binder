@@ -125,6 +125,8 @@ site/                     the website: HTML + CSS, nothing loaded from other ser
                           "Welcome back"), nav.js marks the header's current section and closes the phone menu,
                           usage.js draws the "How much it uses" bars to scale from the measured figures,
                           download.js the dialog once a download starts (Defender may warn, the VirusTotal result);
+                          screenshots/ and og-image.png the app's pictures ("What it looks like", the link preview),
+                          made from a site-screenshots.yml run by tests/Screenshots/make-site-images.mjs;
                           index.html,
                           docs.html (what Binder changes on the PC: every Game mode item, autostart, updates, …),
                           releases.html (every version's notes and setup; its list written by
