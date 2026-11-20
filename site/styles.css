@@ -1624,36 +1624,21 @@ summary::-webkit-details-marker { display: none; }
 .note-caution { background: var(--caution-bg); border-color: var(--caution-border); }
 .note-text { display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.5; }
 .note-text strong { font-size: 15px; }
-/* When the section first comes into view (download.js adds is-seen, once per visit), the AI-code note asks to be read:
-   a sheen sweeps across it, an amber glow pulses out from its edge twice and its sparkle twinkles; the other note
-   lifts in a moment later. Only then: the notes are fully shown before and without it, and nothing moves with
-   reduced motion. */
-.note-caution { position: relative; overflow: hidden; }
+/* When the section first comes into view (download.js adds is-seen, once per visit), the AI-code note asks quietly
+   to be read: one soft amber glow from its edge and one twinkle of its sparkle. The notes are fully shown before and
+   without it, and nothing moves with reduced motion. */
 @media (prefers-reduced-motion: no-preference) {
-  .notes.is-seen .note-caution { animation: note-glow 1.4s ease-out 0.2s 2; }
-  .notes.is-seen .note-caution::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(105deg, transparent 35%, color-mix(in srgb, #FFFFFF 55%, transparent) 50%, transparent 65%);
-    transform: translateX(-100%);
-    animation: note-sheen 1.3s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
-  }
-  .notes.is-seen .note-caution .note-icon svg { animation: note-twinkle 1.2s ease-in-out 0.4s 2; }
-  .notes.is-seen .note:not(.note-caution) { animation: note-lift 0.6s cubic-bezier(0.1, 0.9, 0.2, 1) 0.9s both; }
+  .notes.is-seen .note-caution { animation: note-glow 1.6s ease-out 0.2s; }
+  .notes.is-seen .note-caution .note-icon svg { animation: note-twinkle 1s ease-in-out 0.3s; }
 }
 @keyframes note-glow {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--caution-icon) 55%, transparent); }
-  100% { box-shadow: 0 0 0 14px color-mix(in srgb, var(--caution-icon) 0%, transparent); }
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--caution-icon) 35%, transparent); }
+  100% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--caution-icon) 0%, transparent); }
 }
-@keyframes note-sheen { to { transform: translateX(100%); } }
 @keyframes note-twinkle {
   0%, 100% { transform: scale(1) rotate(0deg); }
-  40% { transform: scale(1.25) rotate(18deg); }
-  70% { transform: scale(0.92) rotate(-6deg); }
+  45% { transform: scale(1.15) rotate(12deg); }
 }
-@keyframes note-lift { from { transform: translateY(10px); opacity: 0.4; } }
 .accent-fill { fill: var(--accent); }
 .caution-fill { fill: var(--caution-icon); }
 @media (max-width: 600px) {
