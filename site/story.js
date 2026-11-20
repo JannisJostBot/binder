@@ -151,6 +151,23 @@
     stage.classList.add('is-live');
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setUp);
-  else setUp();
+  // Narrow windows (no desktop story): each caption's small picture plays once as it comes into view; styles.css
+  // has the animations (none with reduced motion).
+  function watchPictures() {
+    var pics = document.querySelectorAll('.caption-pic');
+    if (!pics.length || !window.IntersectionObserver) return;
+    var seen = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('is-seen');
+        seen.unobserve(e.target);
+      });
+    }, { threshold: 0.9 });
+    for (var i = 0; i < pics.length; i++) seen.observe(pics[i]);
+  }
+
+  function start() { setUp(); watchPictures(); }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 })();

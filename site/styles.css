@@ -1359,7 +1359,9 @@ summary::-webkit-details-marker { display: none; }
   .cp-mini svg { width: 16px; height: 16px; }
   .caption .cp-procs .cp-gone { color: #A9A6BE; }
   .cp-gone .cp-mini { opacity: 0.45; filter: grayscale(1); }
-  .cp-gone s { text-decoration-color: rgba(255, 255, 255, 0.4); }
+  /* The struck-out name: a drawn line, so it can be drawn across when the card comes into view. */
+  .cp-strike { position: relative; }
+  .cp-strike::after { content: ""; position: absolute; left: -1px; right: -1px; top: 52%; height: 1.5px; background: rgba(255, 255, 255, 0.45); transform-origin: left; }
   .cp-mark { position: relative; background: rgba(76, 194, 255, 0.16); }
   .cp-mark::before { content: ""; position: absolute; left: 0; top: 50%; width: 3px; height: 12px; margin-top: -6px; border-radius: 2px; background: #4CC2FF; }
   .cp-mark b { font-weight: 600; }
@@ -1379,6 +1381,39 @@ summary::-webkit-details-marker { display: none; }
   .cp-welcome-text small { font-size: 11px; color: #C8C8D0; }
   .cp-welcome-text b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cp-play { margin-left: auto; flex-shrink: 0; padding: 4px 12px; border-radius: 4px; background: #4CC2FF; color: #0A1A24; font-size: 12px; font-weight: 600; }
+}
+
+/* Each picture plays once as its card comes into view (story.js adds is-seen), ending exactly as it looks at rest:
+   the shortcuts hop into Binder, the covers rise onto the shelf, Binder is struck out and its watcher marked,
+   Welcome back glows. Never with reduced motion; without scripts the pictures simply show. */
+@media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .cp-desk.is-seen .cp-ico { animation: cp-hop 0.7s cubic-bezier(0.3, 0, 0.2, 1) both; }
+  .cp-desk.is-seen .cp-ico:nth-child(2) { animation-delay: 0.15s; }
+  .cp-desk.is-seen .cp-ico:nth-child(3) { animation-delay: 0.3s; }
+  .cp-desk.is-seen .cp-arrow { animation: cp-nudge 0.8s ease-in-out 0.35s both; }
+  .cp-desk.is-seen .cp-logo { animation: cp-bump 0.5s cubic-bezier(0.3, 0, 0.2, 1) 0.8s both; }
+  .cp-shelf.is-seen .pc-thumb { animation: cp-rise 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) both; }
+  .cp-shelf.is-seen .pc-thumb:nth-child(2) { animation-delay: 0.08s; }
+  .cp-shelf.is-seen .pc-thumb:nth-child(3) { animation-delay: 0.16s; }
+  .cp-shelf.is-seen .pc-thumb:nth-child(4) { animation-delay: 0.24s; }
+  .cp-shelf.is-seen .cp-tray-icon { animation: cp-tray 0.8s ease-out 0.45s both; }
+  .cp-procs.is-seen .cp-strike::after { animation: cp-strike 0.45s ease-out 0.2s both; }
+  .cp-procs.is-seen .cp-mark { animation: cp-mark 0.6s ease-out 0.6s both; }
+  .cp-procs.is-seen .cp-mark::before { animation: cp-bar 0.4s cubic-bezier(0.1, 0.9, 0.2, 1) 0.7s both; }
+  .cp-welcome.is-seen { animation: cp-ring 1.2s ease-out 0.15s both; }
+  .cp-welcome.is-seen .cp-play { animation: cp-bump 0.45s cubic-bezier(0.3, 0, 0.2, 1) 0.5s both; }
+}
+@keyframes cp-hop { 0%, 100% { transform: none; } 40% { transform: translate(5px, -6px); } 70% { transform: translate(2px, 0); } }
+@keyframes cp-nudge { 0%, 100% { transform: none; } 50% { transform: translateX(5px); } }
+@keyframes cp-bump { 0%, 100% { transform: none; } 45% { transform: scale(1.1); } }
+@keyframes cp-rise { from { transform: translateY(8px); opacity: 0.3; } }
+@keyframes cp-tray { 0% { box-shadow: inset 0 -2px 0 -0.5px rgba(76, 194, 255, 0); } 100% { box-shadow: inset 0 -2px 0 -0.5px #4CC2FF; } }
+@keyframes cp-strike { from { transform: scaleX(0); } }
+@keyframes cp-mark { from { background: rgba(76, 194, 255, 0); } }
+@keyframes cp-bar { from { transform: scaleY(0); } }
+@keyframes cp-ring {
+  0% { box-shadow: inset 0 0 0 2px #4CC2FF, 0 0 0 0 rgba(76, 194, 255, 0.5); }
+  100% { box-shadow: inset 0 0 0 2px #4CC2FF, 0 0 0 10px rgba(76, 194, 255, 0); }
 }
 
 /* The hidden game behind the shelf's Play (game.js): Binder's launch toast counts down, the shelf slides away as
