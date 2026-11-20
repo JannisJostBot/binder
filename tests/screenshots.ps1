@@ -163,6 +163,16 @@ function Invoke-Menu($root, [string] $item) {
     $e.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
 }
 
+# --- Evening, as in the website's story (21:14): a time zone where it's 9 PM now, so Binder says "Good evening". ---
+$utc = [DateTime]::UtcNow
+$zone = [TimeZoneInfo]::GetSystemTimeZones() | Where-Object { [TimeZoneInfo]::ConvertTimeFromUtc($utc, $_).Hour -eq 21 } |
+    Select-Object -First 1
+if ($zone) {
+    Set-TimeZone -Id $zone.Id
+    [TimeZoneInfo]::ClearCachedData()
+    Note "Time zone: $($zone.Id), local time $([TimeZoneInfo]::ConvertTimeFromUtc($utc, $zone).ToString('HH:mm'))"
+} else { Note 'No time zone with 9 PM now; the greeting follows the machine clock' }
+
 # --- Screen: as large as the display offers (up to 4K), then the display scale that keeps ~1000 px of height. ---
 Note "Display modes: $([Shots]::Modes())"
 Note "Resolution change: $([Shots]::SetLargest(3840, 2160))"
