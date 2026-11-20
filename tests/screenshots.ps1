@@ -121,6 +121,10 @@ public static class Shots {
     [DllImport("user32.dll")] static extern bool SetCursorPos(int x, int y);
     [DllImport("user32.dll")] static extern void mouse_event(uint flags, uint x, uint y, uint data, UIntPtr extra);
     // A small mouse move in the screen's top left: the last input is the mouse, so no keyboard focus rings show.
+    public static void MoveMouse(int x, int y) {
+        SetCursorPos(x, y);
+        mouse_event(0x0001, 1, 1, 0, UIntPtr.Zero);
+    }
     public static void NudgeMouse() {
         SetCursorPos(40, 40);
         mouse_event(0x0001, 2, 2, 0, UIntPtr.Zero);
@@ -403,6 +407,12 @@ foreach ($theme in @('light', 'dark')) {
         $script:window = Start-Widget
         Invoke-Menu $window ('Game mode settings' + [char]0x2026)
         Start-Sleep -Seconds 2   # the page reads Windows' settings when it opens
+        # The back button gets focus and shows its tooltip: a pointer over the page and away closes it.
+        $r = $window.Current.BoundingRectangle
+        [Shots]::MoveMouse([int]($r.Left + $r.Width / 2), [int]($r.Top + $r.Height / 2))
+        Start-Sleep -Milliseconds 500
+        [Shots]::NudgeMouse()
+        Start-Sleep -Seconds 6
     }
     View 'free-up-space' {
         $script:window = Start-Widget
