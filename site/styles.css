@@ -837,14 +837,36 @@ summary::-webkit-details-marker { display: none; }
   background: rgba(243, 243, 243, 0.88);
   border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
-.mock-apps { position: absolute; left: 50%; display: flex; gap: 6px; transform: translateX(-50%); }
-.mock-apps span { width: 32px; height: 32px; border-radius: 4px; background: rgba(0, 0, 0, 0.08); }
+/* The apps in the middle, as Windows 11 lays them out: 40 px buttons with 24 px icons, the open app's short bar under
+   it; the search box on wider windows only. Icons keep their own colours (a picture of a PC). */
+.mock-apps { position: absolute; left: 50%; display: flex; align-items: center; gap: 4px; transform: translateX(-50%); color: #1B1B1B; }
+.mock-apps > span { position: relative; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+.mock-apps svg { width: 24px; height: 24px; display: block; }
+.tb-start, .tb-app { width: 40px; }
+.tb-start svg { fill: #0078D4; }
+.tb-start svg rect:nth-child(1) { fill: #3AA0F3; }
+.tb-start svg rect:nth-child(4) { fill: #005FB8; }
+.tb-search { gap: 8px; width: 190px; height: 32px !important; margin: 0 4px; padding: 0 12px; box-sizing: border-box; justify-content: flex-start !important; border-radius: 16px !important; background: rgba(255, 255, 255, 0.75); border: 1px solid rgba(0, 0, 0, 0.06); font-size: 12px; color: #5D5D5D; }
+.tb-search svg { width: 16px; height: 16px; }
+.tb-open { background: rgba(255, 255, 255, 0.55); }
+.tb-open::after { content: ""; position: absolute; left: 50%; bottom: 2px; width: 6px; height: 3px; margin-left: -3px; border-radius: 2px; background: #8A8A8A; }
+.tb-glyph { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 6px; border-radius: 4px; color: #1B1B1B; }
+.tb-glyph svg { width: 16px; height: 16px; display: block; }
+.tb-chevron { margin-right: -8px; }
+@media (max-width: 1100px) { .tb-search { width: 40px; padding: 0; justify-content: center !important; font-size: 0; background: none; border: 0; } .tb-search svg { width: 20px; height: 20px; } }
+@media (max-width: 600px) { .mock-apps { left: 12px; transform: none; } .mock-apps .tb-app:nth-child(n+5), .tb-chevron, .tb-status { display: none; } }
 .mock-tray { position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: background-color 0s 0.87s, box-shadow 0s 0.87s; }
 .stage:not([data-step="0"]):not([data-step="3"]) .mock-tray { background: rgba(0, 0, 0, 0.08); box-shadow: inset 0 -3px 0 -1px #005FB8; }
 .mock-clock { font-size: 12px; line-height: 1.3; color: #1B1B1B; text-align: right; }
 @media (prefers-color-scheme: dark) {
   .mock-taskbar { background: rgba(28, 28, 32, 0.92); border-top-color: rgba(255, 255, 255, 0.08); }
-  .mock-apps span { background: rgba(255, 255, 255, 0.1); }
+  .mock-apps, .tb-glyph { color: #F3F3F5; }
+  .tb-search { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.08); color: #C8C8D0; }
+  .tb-open { background: rgba(255, 255, 255, 0.08); }
+  .tb-open::after { background: #A9A9B2; }
+  .tb-start svg rect:nth-child(1) { fill: #7BD8FF; }
+  .tb-start svg { fill: #4CC2FF; }
+  .tb-start svg rect:nth-child(4) { fill: #2AA0E6; }
   .mock-clock { color: #F3F3F5; }
   .stage:not([data-step="0"]):not([data-step="3"]) .mock-tray { background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 -3px 0 -1px #4CC2FF; }
 }

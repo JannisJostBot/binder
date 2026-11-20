@@ -156,8 +156,19 @@
       <!-- Pinned to the desktop; fades as soon as the page scrolls (story.js sets is-scrolled). -->
       <p class="story-cue" aria-hidden="true">Scroll to tidy this desktop<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></p>
       <div class="mock-taskbar" aria-hidden="true">
-        <span class="mock-apps"><span></span><span></span><span></span><span></span></span>
+        <!-- Windows 11's taskbar, drawn generically (no real apps' logos): Start, Search, File Explorer (open), a browser,
+             Settings and a terminal; on the right the hidden-icons chevron, Binder's icon, network and volume, the clock. -->
+        <span class="mock-apps">
+          <span class="tb-start"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8.4" height="8.4" rx="1.2"></rect><rect x="12.6" y="3" width="8.4" height="8.4" rx="1.2"></rect><rect x="3" y="12.6" width="8.4" height="8.4" rx="1.2"></rect><rect x="12.6" y="12.6" width="8.4" height="8.4" rx="1.2"></rect></svg></span>
+          <span class="tb-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="m20 20-4.2-4.2"></path></svg>Search</span>
+          <span class="tb-app tb-open"><svg viewBox="0 0 48 48"><use href="#e-folder"></use></svg></span>
+          <span class="tb-app"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="#1F8FE0"></circle><path d="M2.5 12h19M12 2.5c2.8 2.6 4.2 5.8 4.2 9.5S14.8 18.9 12 21.5M12 2.5C9.2 5.1 7.8 8.3 7.8 12s1.4 6.9 4.2 9.5" fill="none" stroke="#DDF2FF" stroke-width="1.4"></path></svg></span>
+          <span class="tb-app"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" fill="#6B7280"></circle><circle cx="12" cy="12" r="5.6" fill="none" stroke="#E5E7EB" stroke-width="2.4" stroke-dasharray="2.6 1.8"></circle><circle cx="12" cy="12" r="2.4" fill="#E5E7EB"></circle></svg></span>
+          <span class="tb-app"><svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="3" fill="#2B2B33"></rect><path d="M6.5 9l3 3-3 3M11.5 15.5h5" fill="none" stroke="#E8E8EE" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        </span>
+        <span class="tb-glyph tb-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7 14 5-5 5 5"></path></svg></span>
         <span class="mock-tray"><i class="cursor"><svg viewBox="0 0 20 28"><path d="M2 2 L2 22 L7.2 17.2 L10.6 25.2 L13.8 23.9 L10.4 16 L17.4 16 Z" fill="#FFFFFF" stroke="#111111" stroke-width="1.4" stroke-linejoin="round"></path></svg></i><svg width="18" height="18" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
+        <span class="tb-glyph tb-status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3.5 9.5a12 12 0 0 1 17 0M6.5 12.8a7.5 7.5 0 0 1 11 0M9.5 16a3 3 0 0 1 5 0"></path><circle cx="12" cy="19" r="0.9" fill="currentColor"></circle></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"></path><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"></path></svg></span>
         <span class="mock-clock" id="mock-clock">21:14<br>17/11/2026</span>
       </div>
     </figure>
