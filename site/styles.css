@@ -326,22 +326,21 @@ summary::-webkit-details-marker { display: none; }
   line-height: 1.3;
 }
 
-/* The wallpaper: our own, quiet, nothing that looks like content. */
-.desk-wall {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
+/* The wallpaper (the story's desktop and the feature pictures, which are slices of it): our own, nothing that looks
+   like content: three soft blurred ribbons (blue, violet, sky) flowing across, on a blue that's a little deeper at
+   the top left so the icons' white labels stay readable. */
+.desk-wall { position: absolute; inset: 0; z-index: -1; }
+.desk-wall, .scene {
   background:
-    radial-gradient(70% 60% at 15% 10%, #DCE8F7 0%, rgba(220, 232, 247, 0) 60%),
-    radial-gradient(80% 70% at 100% 100%, #33558C 0%, rgba(51, 85, 140, 0) 70%),
-    linear-gradient(155deg, #B7CBE6, #7C98C6 55%, #4D6A9E);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='18'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url%28%23b%29' opacity='0.8'%3E%3Cpath d='M-100 700 C300 380 700 820 1100 460 C1300 290 1500 320 1700 260 L1700 420 C1500 470 1320 470 1120 620 C720 940 320 560 -100 860Z' fill='%234F7FE0'/%3E%3Cpath d='M-100 820 C380 560 760 900 1180 600 C1380 470 1560 480 1700 440 L1700 560 C1540 600 1400 610 1200 740 C780 1010 380 700 -100 960Z' fill='%238C6BE8'/%3E%3Cpath d='M300 -50 C520 160 760 120 1000 260 C1200 380 1400 300 1700 360 L1700 300 C1400 230 1220 300 1020 190 C780 60 560 100 380 -80Z' fill='%236DB8F2'/%3E%3C/g%3E%3C/svg%3E") center / cover no-repeat,
+    radial-gradient(60% 55% at 0% 0%, rgba(62, 94, 158, 0.55), rgba(62, 94, 158, 0) 70%),
+    linear-gradient(160deg, #A9BEE6, #C4D3EF 50%, #B3C3EC);
 }
 @media (prefers-color-scheme: dark) {
-  .desk-wall {
+  .desk-wall, .scene {
     background:
-      radial-gradient(70% 60% at 15% 10%, #3C5A82 0%, rgba(60, 90, 130, 0) 60%),
-      radial-gradient(80% 70% at 100% 100%, #0D1F3C 0%, rgba(13, 31, 60, 0) 70%),
-      linear-gradient(155deg, #2C4566, #1D3150 55%, #12223B);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='18'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url%28%23b%29' opacity='0.7'%3E%3Cpath d='M-100 700 C300 380 700 820 1100 460 C1300 290 1500 320 1700 260 L1700 420 C1500 470 1320 470 1120 620 C720 940 320 560 -100 860Z' fill='%232D5BC4'/%3E%3Cpath d='M-100 820 C380 560 760 900 1180 600 C1380 470 1560 480 1700 440 L1700 560 C1540 600 1400 610 1200 740 C780 1010 380 700 -100 960Z' fill='%236A45C9'/%3E%3Cpath d='M300 -50 C520 160 760 120 1000 260 C1200 380 1400 300 1700 360 L1700 300 C1400 230 1220 300 1020 190 C780 60 560 100 380 -80Z' fill='%232F8FC9'/%3E%3C/g%3E%3C/svg%3E") center / cover no-repeat,
+    linear-gradient(160deg, #141B33, #10162B 55%, #0B0F22);
   }
 }
 
@@ -1466,21 +1465,9 @@ summary::-webkit-details-marker { display: none; }
   font-size: 12px;
   line-height: 1.35;
 }
-.scene {
-  background:
-    radial-gradient(70% 60% at 15% 10%, #DCE8F7 0%, rgba(220, 232, 247, 0) 60%),
-    radial-gradient(80% 70% at 100% 100%, #33558C 0%, rgba(51, 85, 140, 0) 70%),
-    linear-gradient(155deg, #B7CBE6, #7C98C6 55%, #4D6A9E);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
-}
+.scene { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06); }
 @media (prefers-color-scheme: dark) {
-  .scene {
-    background:
-      radial-gradient(70% 60% at 15% 10%, #3C5A82 0%, rgba(60, 90, 130, 0) 60%),
-      radial-gradient(80% 70% at 100% 100%, #0D1F3C 0%, rgba(13, 31, 60, 0) 70%),
-      linear-gradient(155deg, #2C4566, #1D3150 55%, #12223B);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-  }
+  .scene { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); }
 }
 .feature .scene p { margin: 0; color: inherit; font-size: inherit; text-wrap: wrap; }
 .scene-taskbar {
