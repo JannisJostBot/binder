@@ -157,6 +157,7 @@ public sealed partial class ShelfView : UserControl
         ActionsMenu.Items.Add(MenuItem(Strings.GameModeSettingsMenu, "\uE9E9", vm.OpenGameMode));
         ActionsMenu.Items.Add(new MenuFlyoutSeparator());
         ActionsMenu.Items.Add(MenuItem(Strings.FreeUpSpaceMenu, "\uEDA2", vm.OpenFreeSpace));
+        if (vm.HasYearReview) ActionsMenu.Items.Add(MenuItem(Strings.YearInReviewMenu, "\uE787", vm.OpenYearReview));
         ActionsMenu.Items.Add(MenuItem(Strings.AddGameMenu, "\uE710", vm.AddGame));
         ActionsMenu.Items.Add(MenuItem(Strings.RefreshLibrary, "\uE72C", vm.RefreshLibrary, "F5"));
         ActionsMenu.Items.Add(new MenuFlyoutSeparator());
@@ -243,11 +244,26 @@ public sealed partial class ShelfView : UserControl
             SpotlightSwitch.SelectedItem = item;
             _updatingSpotlight = false;
         }
-        if (!vm.ShowWeek && !ReferenceEquals(ContinueArt.Game, vm.ContinueGame)) ContinueArt.Game = vm.ContinueGame;
-        var logoGame = vm.ShowWeek ? null : vm.ContinueGame; // loaded only while the banner shows
+        ShowYearOffer();
+        if (vm.ContinueVisible && !ReferenceEquals(ContinueArt.Game, vm.ContinueGame)) ContinueArt.Game = vm.ContinueGame;
+        var logoGame = vm.ContinueVisible ? vm.ContinueGame : null; // loaded only while the banner shows
         // No title-to-logo swap: the title waits until the logo lookup answers.
         if (logoGame is not null && !ReferenceEquals(ContinueLogo.Game, logoGame)) ContinueTitle.Visibility = Visibility.Collapsed;
         ContinueLogo.Game = logoGame;
+    }
+
+    /// <summary>Year in review's offer: the year's top three covers, loaded only while it shows (spec §28).</summary>
+    private void ShowYearOffer()
+    {
+        var vm = ViewModel!;
+        string[] ids = vm.YearOfferVisible && vm.YearOffer is { } offer ? offer.GameIds : [];
+        var covers = new[] { YearOfferCover0, YearOfferCover1, YearOfferCover2 };
+        for (int i = 0; i < covers.Length; i++)
+        {
+            var game = i < ids.Length ? vm.FindGame(ids[i]) : null;
+            covers[i].Visibility = game is null ? Visibility.Collapsed : Visibility.Visible;
+            covers[i].Game = game;
+        }
     }
 
     private void OnSpotlightChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)

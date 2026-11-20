@@ -36,6 +36,10 @@ public interface IShelfActions
     void StartUpdate();
     /// <summary>Gives the game a number for its game shortcut (1–9), or none (null); spec §26.</summary>
     void SetGameKey(string gameId, int? number);
+    /// <summary>Whether a year has enough play for Year in review (spec §28), read when the "…" menu opens.</summary>
+    bool HasYearReview();
+    /// <summary>Opens Year in review on <paramref name="year"/>, or the newest year.</summary>
+    void OpenYearReview(int? year);
 }
 
 /// <summary>
@@ -67,6 +71,13 @@ public sealed partial class ShelfViewModel : ObservableObject
         ImportCommand = new(actions.ImportShortcuts);
         AddGameCommand = new(actions.AddGame);
         ContinuePlayCommand = new(() => { if (ContinueGame is { } game) actions.Play(game); });
+        OpenYearOfferCommand = new(() =>
+        {
+            int? year = _yearOffer?.Year;
+            SetYearOffer(null); // once: back to the usual slot afterwards
+            actions.OpenYearReview(year);
+        });
+        DismissYearOfferCommand = new(() => SetYearOffer(null));
     }
 
     public RelayCommand SettingsCommand { get; }
@@ -74,6 +85,8 @@ public sealed partial class ShelfViewModel : ObservableObject
     public RelayCommand ImportCommand { get; }
     public RelayCommand AddGameCommand { get; }
     public RelayCommand ContinuePlayCommand { get; }
+    public RelayCommand OpenYearOfferCommand { get; }
+    public RelayCommand DismissYearOfferCommand { get; }
 
     public void Play(Game game) => _actions.Play(game);
     public void OpenDetails(Game game) => _actions.OpenDetails(game);
@@ -188,7 +201,7 @@ public sealed partial class ShelfViewModel : ObservableObject
     /// </summary>
     public Game? EnterGame =>
         Searching ? (Visible.Count > 0 ? Visible[0] : null)
-        : !_crashShown && SpotlightVisible && !ShowWeek ? ContinueGame : null;
+        : !_crashShown && SpotlightVisible && !ShowWeek && !YearOfferVisible ? ContinueGame : null;
 
     /// <summary>Enter in the search box: plays <see cref="EnterGame"/>. False when there's nothing to play.</summary>
     public bool PlayEnterGame()
@@ -412,7 +425,7 @@ public sealed partial class ShelfViewModel : ObservableObject
 
     private static readonly string[] SpotlightNames =
     [
-        nameof(Placeholder), nameof(EnterGame), nameof(CrashVisible), nameof(SpotlightVisible), nameof(ShowWeek), nameof(ContinueVisible), nameof(SwitchVisible),
+        nameof(Placeholder), nameof(EnterGame), nameof(CrashVisible), nameof(SpotlightVisible), nameof(ShowWeek), nameof(YearOfferVisible), nameof(ContinueVisible), nameof(SwitchVisible),
     ];
 
     private bool _crashShown;
@@ -450,6 +463,34 @@ public sealed partial class ShelfViewModel : ObservableObject
         RaiseSpotlight();
     }
 
+    private YearOffer? _yearOffer;
+
+    /// <summary>
+    /// Year in review's one-time offer in December (spec §28, board 42), or null. Set by the window when the panel
+    /// opens (and stored as offered there); Open or Dismiss takes it away, and the slot shows what it would otherwise.
+    /// </summary>
+    public void SetYearOffer(YearOffer? offer)
+    {
+        if (_yearOffer is null && offer is null) return;
+        _yearOffer = offer;
+        UpdateSpotlight();
+        OnPropertyChanged(nameof(YearOfferTitle));
+        OnPropertyChanged(nameof(YearOfferDetail));
+        OnPropertyChanged(nameof(YearOffer)); // the view sets the covers
+        RaiseSpotlight();
+    }
+
+    public YearOffer? YearOffer => _yearOffer;
+    /// <summary>A game on the shelf by id, or null (the offer's covers).</summary>
+    public Game? FindGame(string id) => _games.FirstOrDefault(g => g.Id == id);
+    public bool YearOfferVisible { get; private set; }
+    public string YearOfferTitle => _yearOffer?.Title ?? "";
+    public string YearOfferDetail => _yearOffer?.Detail ?? "";
+
+    /// <summary>The "…" menu's Year in review item, shown only when a year has enough play.</summary>
+    public bool HasYearReview => _actions.HasYearReview();
+    public void OpenYearReview() => _actions.OpenYearReview(null);
+
     /// <summary>"Welcome back" takes the slot for this opening, without the switch.</summary>
     public bool ShowsWelcome => _welcome is not null && ContinueGame?.Id == _welcome.GameId;
 
@@ -462,7 +503,7 @@ public sealed partial class ShelfViewModel : ObservableObject
     public bool CrashVisible { get; private set; }
     public bool SpotlightVisible { get; private set; }
     public bool ShowWeek { get; private set; }
-    public bool ContinueVisible => !ShowWeek;
+    public bool ContinueVisible => !ShowWeek && !YearOfferVisible;
     public bool SwitchVisible { get; private set; }
 
     /// <summary>The crash card takes the top slot (true) until it's dismissed or the game is played again.</summary>
@@ -483,6 +524,7 @@ public sealed partial class ShelfViewModel : ObservableObject
     private void UpdateSpotlight()
     {
         bool searching = Searching;
+        YearOfferVisible = false;
         if (_crashShown)
         {
             CrashVisible = !searching;
@@ -490,6 +532,13 @@ public sealed partial class ShelfViewModel : ObservableObject
             return;
         }
         CrashVisible = false;
+        // Year in review's offer (spec §28): after the crash card and Welcome back, before the usual slot.
+        if (!searching && _yearOffer is not null && !ShowsWelcome)
+        {
+            YearOfferVisible = SpotlightVisible = true;
+            ShowWeek = SwitchVisible = false;
+            return;
+        }
         bool hasContinue = ContinueGame is not null;
         SpotlightVisible = !searching && (hasContinue || HasWeek);
         if (!SpotlightVisible) return;

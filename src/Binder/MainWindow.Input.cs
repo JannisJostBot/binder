@@ -29,6 +29,7 @@ public sealed partial class MainWindow
         if (Detail.Visibility == Visibility.Visible || SettingsPage.Visibility == Visibility.Visible) ShowShelf();
         else if (FreeSpacePage.Visibility == Visibility.Visible) LeaveFreeSpace();
         else if (GameModePage.Visibility == Visibility.Visible) GameModeBack();
+        else if (YearReviewPage.Visibility == Visibility.Visible) ShowShelf();
         else if (ImportPage.Visibility == Visibility.Visible) ImportPage.CancelByEscape();
         else if (IsFlyout) App.Current.ClosePanel(this);
         else return false;
@@ -131,6 +132,11 @@ public sealed partial class MainWindow
             case PadButton.Y when popup is null && Detail.Visibility == Visibility.Visible && Detail.Game is { } shown:
                 OnGameAction(shown, GameAction.ToggleFavorite);
                 break;
+            case PadButton.LeftShoulder or PadButton.RightShoulder when popup is null && YearReviewPage.Visibility == Visibility.Visible:
+                // Year in review: the card before or the next one (spec §28).
+                var review = YearReviewPage.ViewModel!;
+                (button == PadButton.RightShoulder ? review.NextCommand : review.BackCommand).Execute(null);
+                break;
             case PadButton.LeftShoulder or PadButton.RightShoulder when popup is null && Shelf.Visibility == Visibility.Visible:
                 bool inGrid = game is not null;
                 Shelf.ViewModel!.CycleFilter(button == PadButton.RightShoulder ? 1 : -1);
@@ -183,7 +189,9 @@ public sealed partial class MainWindow
     private void OnCharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs e)
     {
         // No shelf to search behind the setup; on Free up space a stray key mustn't throw the plan away.
-        if (e.Handled || SetupPage.Visibility == Visibility.Visible || FreeSpacePage.Visibility == Visibility.Visible) return;
+        // Year in review: Space is its Next, and a stray key mustn't leave the story for the search.
+        if (e.Handled || SetupPage.Visibility == Visibility.Visible || FreeSpacePage.Visibility == Visibility.Visible ||
+            YearReviewPage.Visibility == Visibility.Visible) return;
         var focused = FocusManager.GetFocusedElement(Root.XamlRoot);
         if (focused is TextBox || char.IsControl(e.Character)) return;
         // Space activates a focused button, item or switch; leave it alone.

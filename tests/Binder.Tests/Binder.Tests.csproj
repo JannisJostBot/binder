@@ -55,6 +55,8 @@
     <Compile Include="..\..\src\Binder\Library\CrashAnalysis.cs" Link="Linked\Library\CrashAnalysis.cs" />
     <Compile Include="..\..\src\Binder\Library\SpacePlanner.cs" Link="Linked\Library\SpacePlanner.cs" />
     <Compile Include="..\..\src\Binder\Library\Moments.cs" Link="Linked\Library\Moments.cs" />
+    <Compile Include="..\..\src\Binder\Library\YearFacts.cs" Link="Linked\Library\YearFacts.cs" />
+    <Compile Include="..\..\src\Binder\Library\YearStory.cs" Link="Linked\Library\YearStory.cs" />
     <Compile Include="..\..\src\Binder\Library\RepeatGuard.cs" Link="Linked\Library\RepeatGuard.cs" />
     <Compile Include="..\..\src\Binder\Library\UpdateManifest.cs" Link="Linked\Library\UpdateManifest.cs" />
     <Compile Include="..\..\src\Binder\Services\UpdateKeys.cs" Link="Linked\Services\UpdateKeys.cs" />

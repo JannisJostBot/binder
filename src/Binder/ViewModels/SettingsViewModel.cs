@@ -294,6 +294,13 @@ public sealed partial class SettingsViewModel : ObservableObject
         set => Set(_settings.ShinyFavorites, value, v => _settings.ShinyFavorites = v, SettingChange.Shelf, [], nameof(ShinyFavorites));
     }
 
+    /// <summary>Year in review offers itself once in the shelf's top slot in December (spec §28).</summary>
+    public bool YearReviewOffer
+    {
+        get => _settings.YearReviewOffer;
+        set => Set(_settings.YearReviewOffer, value, v => _settings.YearReviewOffer = v, SettingChange.Shelf, [], nameof(YearReviewOffer));
+    }
+
     // --- Library ------------------------------------------------------------------------------------------
 
     /// <summary>The sources in the order of their check boxes; the count in <see cref="LibraryText"/> follows this list.</summary>

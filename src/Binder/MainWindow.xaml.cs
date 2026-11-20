@@ -16,7 +16,8 @@ namespace Binder;
 /// The panel: a borderless WinUI window docked to the screen edge, with Acrylic behind it. In Flyout mode it's
 /// created on open and closed for good on close; on the desktop it stays.
 /// </summary>
-public sealed partial class MainWindow : Window, ISettingsActions, IDetailActions, IGameModeActions, IFreeSpaceActions, ISetupActions, IShelfActions
+public sealed partial class MainWindow : Window, ISettingsActions, IDetailActions, IGameModeActions, IFreeSpaceActions, ISetupActions, IShelfActions,
+    IYearReviewActions
 {
     // The library lives in App.State, so it survives the flyout window being closed and rebuilt.
     private List<Game> _games { get => App.State.Games; set => App.State.Games = value; }
@@ -52,6 +53,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         SettingsPage.Initialize(this); // its actions: MainWindow.Settings.cs
         GameModePage.Initialize(this); // its actions: MainWindow.GameMode.cs
         FreeSpacePage.Initialize(this); // its actions: MainWindow.FreeSpace.cs
+        YearReviewPage.Initialize(this); // its actions: MainWindow.YearReview.cs
         ImportPage.Cancelled += ShowSettings;
         ImportPage.ImportRequested += ImportShortcuts;
         SetupPage.Initialize(this); // its actions: MainWindow.Setup.cs
@@ -66,6 +68,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         };
         Shelf.CrashDismissed += _ => CrashSeen();
         if (CrashStore.Unseen(App.State.Crashes, _sessions) is { } crash) ShowCrash(crash);
+        PickYearOffer(); // after Welcome back and the crash card, which come first
         if (!App.Settings.SetupDone) ShowSetup();
         else if (App.State.FreeSpace is { Uninstalling: true } freeSpace) ShowFreeSpace(freeSpace); // back from a launcher
 
@@ -300,6 +303,9 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         ImportPage.Visibility = page == ImportPage ? Visibility.Visible : Visibility.Collapsed;
         SetupPage.Visibility = page == SetupPage ? Visibility.Visible : Visibility.Collapsed;
         GameModePage.Visibility = page == GameModePage ? Visibility.Visible : Visibility.Collapsed;
+        bool leavingYearReview = page != YearReviewPage && YearReviewPage.Visibility == Visibility.Visible;
+        YearReviewPage.Visibility = page == YearReviewPage ? Visibility.Visible : Visibility.Collapsed;
+        if (leavingYearReview) YearReviewPage.Release(); // its cards, covers and the year's data go
         if (page != FreeSpacePage && FreeSpacePage.Visibility == Visibility.Visible)
         {
             FreeSpacePage.Release();

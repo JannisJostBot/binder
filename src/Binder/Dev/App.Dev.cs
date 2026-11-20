@@ -127,6 +127,15 @@ public sealed partial class App
         timer.Start();
     }
 
+    /// <summary>Year in review shows made-up years (Dev/YearReviewMock) and it's December 20; nothing is saved.</summary>
+    internal bool DevMockYears { get; set; }
+
+    /// <summary>With made-up years: the year's most played game was uninstalled ("A removed game").</summary>
+    internal bool DevMockRemovedTop { get; set; }
+
+    /// <summary>Year in review in this theme instead of the year's own (null).</summary>
+    internal Library.YearTheme? DevYearTheme { get; set; }
+
     internal void DevCloseToasts()
     {
         _devFlash?.Close();

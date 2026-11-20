@@ -124,6 +124,41 @@
                 </StackPanel>
                 <v:BarChart x:Name="WeekChart" Grid.Row="1" PlotHeight="44" BarWidth="16" VerticalAlignment="Bottom" />
             </Grid>
+            <!-- Year in review's offer (spec §28, board 42): once, in December, until opened or dismissed. The year's top
+                 three covers (set in code), its line and Open. -->
+            <Grid Padding="20,0,12,0" ColumnSpacing="20" Visibility="{x:Bind ViewModel.YearOfferVisible, Mode=OneWay}"
+                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid x:Name="YearOfferCovers" Width="118" Height="112" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw">
+                    <v:CoverView x:Name="YearOfferCover2" Width="64" Height="86" HorizontalAlignment="Right" VerticalAlignment="Bottom" DecodeWidth="64" CornerRadius="6">
+                        <v:CoverView.RenderTransform>
+                            <RotateTransform Angle="8" CenterX="32" CenterY="43" />
+                        </v:CoverView.RenderTransform>
+                    </v:CoverView>
+                    <v:CoverView x:Name="YearOfferCover1" Width="64" Height="86" HorizontalAlignment="Left" VerticalAlignment="Bottom" DecodeWidth="64" CornerRadius="6">
+                        <v:CoverView.RenderTransform>
+                            <RotateTransform Angle="-8" CenterX="32" CenterY="43" />
+                        </v:CoverView.RenderTransform>
+                    </v:CoverView>
+                    <v:CoverView x:Name="YearOfferCover0" Width="64" Height="86" HorizontalAlignment="Center" VerticalAlignment="Top" DecodeWidth="64" CornerRadius="6" />
+                </Grid>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{x:Bind s:Strings.YearInReview}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.YearOfferTitle, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="22"
+                               TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{x:Bind ViewModel.YearOfferDetail, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <Button Style="{StaticResource AccentButtonStyle}" Content="{x:Bind s:Strings.YirOpen}" Margin="0,8,0,0" Padding="18,5"
+                            Command="{x:Bind ViewModel.OpenYearOfferCommand}" AutomationProperties.Name="{x:Bind ViewModel.YearOfferTitle, Mode=OneWay}" />
+                </StackPanel>
+                <Button Grid.Column="2" Style="{StaticResource IconButton}" Content="&#xE711;" VerticalAlignment="Top" Margin="0,8,0,0"
+                        Command="{x:Bind ViewModel.DismissYearOfferCommand}"
+                        ToolTipService.ToolTip="{x:Bind s:Strings.Dismiss}" AutomationProperties.Name="{x:Bind s:Strings.Dismiss}" />
+            </Grid>
             <!-- The switch: WinUI's own SelectorBar (like the filters), on a solid surface so it reads over any art.
                  Shown only when both sides have something to show. -->
             <Border Margin="8" HorizontalAlignment="Right" VerticalAlignment="Top"

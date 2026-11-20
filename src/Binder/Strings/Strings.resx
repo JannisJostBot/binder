@@ -3465,4 +3465,272 @@ Calm: efficiency mode while you play</value>
     <value>Right-click a game in Binder to give it a number</value>
     <comment>Game shortcuts overlay, in place of the rows for 1 to 9 when no game has a number yet.</comment>
   </data>
+  <data name="YearInReview" xml:space="preserve">
+    <value>Year in review</value>
+    <comment>Title of the Year in review page (a short story of the user's year of playing, card by card), its screen-reader name, and the caption over its offer at the top of the shelf.</comment>
+  </data>
+  <data name="YearInReviewMenu" xml:space="preserve">
+    <value>Year in review…</value>
+    <comment>Item in the shelf's "…" menu that opens the Year in review page.</comment>
+  </data>
+  <data name="YirYear" xml:space="preserve">
+    <value>Year</value>
+    <comment>Tooltip and screen-reader name of the drop-down that picks which year Year in review shows (noun).</comment>
+  </data>
+  <data name="YirSoFar" xml:space="preserve">
+    <value>{0} so far</value>
+    <comment>An item in Year in review's year drop-down for the current year, which isn't over. {0} = the year, e.g. 2026.</comment>
+  </data>
+  <data name="YirSoFarLine" xml:space="preserve">
+    <value>{0}, so far</value>
+    <comment>Line on Year in review's first card while the year isn't over. {0} = the year's games and hours, e.g. "24 games · 312 hours".</comment>
+  </data>
+  <data name="YirNext" xml:space="preserve">
+    <value>Next</value>
+    <comment>Button under Year in review's card: shows the next card.</comment>
+  </data>
+  <data name="YirPosition" xml:space="preserve">
+    <value>{0} of {1} · {2}</value>
+    <comment>Small text between Back and Next under Year in review's card. {0} = this card's number, {1} = how many cards, {2} = the card's title (e.g. "Time played").</comment>
+  </data>
+  <data name="YirIntroTitle" xml:space="preserve">
+    <value>Your year in games</value>
+    <comment>Small caption above the large year on Year in review's first card; also that card's title under it.</comment>
+  </data>
+  <data name="YirCounted" xml:space="preserve">
+    <value>Counted from games started with Binder.</value>
+    <comment>Note at the bottom of Year in review's first card: only play started through Binder is counted (Binder doesn't know other playtime).</comment>
+  </data>
+  <data name="YirSince" xml:space="preserve">
+    <value>Since you started using Binder on {0}. Counted from games started with Binder.</value>
+    <comment>Note at the bottom of Year in review's first card in the first year with Binder. {0} = the day of the first game played with it, e.g. "September 14".</comment>
+  </data>
+  <data name="YirSayIntro" xml:space="preserve">
+    <value>Your {0} in games: {1}.</value>
+    <comment>Read by screen readers when Year in review's first (and last) card shows. {0} = the year, {1} = its games and hours, e.g. "24 games · 312 hours".</comment>
+  </data>
+  <data name="YirTimeTitle" xml:space="preserve">
+    <value>Time played</value>
+    <comment>Caption and title of Year in review's card with the year's total playtime; also a tile's name on the summary card.</comment>
+  </data>
+  <data name="YirHourCountOne" xml:space="preserve">
+    <value>{0:N0} hour</value>
+    <comment>Year in review: playtime in whole hours, singular. {0} = 1.</comment>
+  </data>
+  <data name="YirHourCount" xml:space="preserve">
+    <value>{0:N0} hours</value>
+    <comment>Year in review: playtime in whole hours, e.g. "312 hours". {0} = the number of hours.</comment>
+  </data>
+  <data name="YirHourUnitOne" xml:space="preserve">
+    <value>hour</value>
+    <comment>Year in review: the unit beside a large number counting up (shown separately, in its own text). Singular.</comment>
+  </data>
+  <data name="YirHourUnit" xml:space="preserve">
+    <value>hours</value>
+    <comment>Year in review: the unit beside a large number of hours counting up (the number is shown separately). Plural.</comment>
+  </data>
+  <data name="YirDayCountOne" xml:space="preserve">
+    <value>{0:N0} day</value>
+    <comment>Year in review: a number of days, singular. {0} = 1.</comment>
+  </data>
+  <data name="YirDayCount" xml:space="preserve">
+    <value>{0:N0} days</value>
+    <comment>Year in review: a number of days, e.g. "186 days" (days with play), "12 days" (in a row). {0} = the number.</comment>
+  </data>
+  <data name="YirDayUnitOne" xml:space="preserve">
+    <value>day</value>
+    <comment>Year in review: the unit beside a large number of days in a row counting up (the number is shown separately). Singular.</comment>
+  </data>
+  <data name="YirDayUnit" xml:space="preserve">
+    <value>days</value>
+    <comment>Year in review: the unit beside a large number of days in a row counting up (the number is shown separately). Plural.</comment>
+  </data>
+  <data name="YirSessionCountOne" xml:space="preserve">
+    <value>{0:N0} session</value>
+    <comment>Year in review: a number of game sessions (times a game was played), singular. {0} = 1.</comment>
+  </data>
+  <data name="YirSessionCount" xml:space="preserve">
+    <value>{0:N0} sessions</value>
+    <comment>Year in review: a number of game sessions (times a game was played). {0} = the number.</comment>
+  </data>
+  <data name="YirTimeLine" xml:space="preserve">
+    <value>{0} · {1} · {2} on average</value>
+    <comment>Line under the total on Year in review's Time played card. {0} = days with play ("186 days"), {1} = sessions ("412 sessions"), {2} = a session's average length ("45 min").</comment>
+  </data>
+  <data name="YirBusiest" xml:space="preserve">
+    <value>Most in {0} · {1}</value>
+    <comment>Over the month bars on Year in review's Time played card. {0} = the busiest month's name ("July"), {1} = its playtime ("48 hours").</comment>
+  </data>
+  <data name="YirSayTime" xml:space="preserve">
+    <value>Time played: {0}; {1}; {2}</value>
+    <comment>Read by screen readers when Year in review's Time played card shows. {0} = the total ("312 hours"), {1} = the days and sessions line, {2} = the busiest month line.</comment>
+  </data>
+  <data name="YirTopTitle" xml:space="preserve">
+    <value>Most played</value>
+    <comment>Caption and title of Year in review's card about the year's most played game; also a tile's name on the summary card.</comment>
+  </data>
+  <data name="YirShare" xml:space="preserve">
+    <value>{0}% of your playtime</value>
+    <comment>Year in review, Most played card: the game's share of the year's playtime. {0} = a whole percent.</comment>
+  </data>
+  <data name="YirTopDates" xml:space="preserve">
+    <value>First played {0} · last {1}</value>
+    <comment>Year in review, Most played card. {0} = the first day it was played that year ("February 3"), {1} = the last ("December 18").</comment>
+  </data>
+  <data name="YirSayTop" xml:space="preserve">
+    <value>Most played: {0}, {1}. {2}.</value>
+    <comment>Read by screen readers when Year in review's Most played card shows. {0} = the game's name, {1} = its hours ("104 hours"), {2} = its share and sessions line.</comment>
+  </data>
+  <data name="YirTopN" xml:space="preserve">
+    <value>Your top {0}</value>
+    <comment>Caption and title of Year in review's list of the year's most played games. {0} = how many (3 or 5).</comment>
+  </data>
+  <data name="YirOthersOne" xml:space="preserve">
+    <value>And 1 more game</value>
+    <comment>Under Year in review's top list: one more game was played that year. Singular (used for {0} = 1; French also for 0).</comment>
+  </data>
+  <data name="YirOthers" xml:space="preserve">
+    <value>And {0:N0} more games</value>
+    <comment>Under Year in review's top list: how many other games were played that year. {0} = the number.</comment>
+  </data>
+  <data name="YirWhenTitle" xml:space="preserve">
+    <value>When you played</value>
+    <comment>Caption and title of Year in review's card with a grid of the hours of the week the user played in.</comment>
+  </data>
+  <data name="YirWhenEvenings" xml:space="preserve">
+    <value>Mostly in the evening</value>
+    <comment>Headline on Year in review's When you played card.</comment>
+  </data>
+  <data name="YirWhenWeekdayEvenings" xml:space="preserve">
+    <value>Mostly on weekday evenings</value>
+    <comment>Headline on Year in review's When you played card.</comment>
+  </data>
+  <data name="YirWhenWeekends" xml:space="preserve">
+    <value>Mostly at the weekend</value>
+    <comment>Headline on Year in review's When you played card.</comment>
+  </data>
+  <data name="YirWhenLate" xml:space="preserve">
+    <value>Mostly late at night</value>
+    <comment>Headline on Year in review's When you played card.</comment>
+  </data>
+  <data name="YirWhenAfternoons" xml:space="preserve">
+    <value>Mostly in the afternoon</value>
+    <comment>Headline on Year in review's When you played card.</comment>
+  </data>
+  <data name="YirWhenMornings" xml:space="preserve">
+    <value>Mostly in the morning</value>
+    <comment>Headline on Year in review's When you played card.</comment>
+  </data>
+  <data name="YirPercent" xml:space="preserve">
+    <value>{0}%</value>
+    <comment>A percentage on Year in review's tiles and launcher rows. {0} = a whole number (41). Use your language's spacing before %.</comment>
+  </data>
+  <data name="YirEveningShare" xml:space="preserve">
+    <value>evenings, 6–10 pm</value>
+    <comment>Small name under a percentage tile on Year in review's When you played card: the share of playtime between 18:00 and 22:00.</comment>
+  </data>
+  <data name="YirWeekendShare" xml:space="preserve">
+    <value>at the weekend</value>
+    <comment>Small name under a percentage tile on Year in review's When you played card: the share of playtime on Saturday and Sunday.</comment>
+  </data>
+  <data name="YirLateShare" xml:space="preserve">
+    <value>after midnight</value>
+    <comment>Small name under a percentage tile on Year in review's When you played card: the share of playtime between midnight and 5:00.</comment>
+  </data>
+  <data name="YirRecordsTitle" xml:space="preserve">
+    <value>Records</value>
+    <comment>Caption and title of Year in review's card with the year's longest session, most days in a row and milestones (noun, plural).</comment>
+  </data>
+  <data name="YirLongest" xml:space="preserve">
+    <value>Longest session</value>
+    <comment>Year in review, Records card: name of the tile with the year's longest game session; also a summary tile's name.</comment>
+  </data>
+  <data name="YirStreak" xml:space="preserve">
+    <value>Most days in a row</value>
+    <comment>Year in review, Records card: the longest run of days in a row with play; also a summary tile's name.</comment>
+  </data>
+  <data name="YirRange" xml:space="preserve">
+    <value>{0} – {1}</value>
+    <comment>Year in review: a range of days. {0} = the first day ("August 4"), {1} = the last ("August 15").</comment>
+  </data>
+  <data name="YirMilestones" xml:space="preserve">
+    <value>Milestones passed</value>
+    <comment>Year in review, Records card: title of the list of playtime milestones games passed that year ("100 hours in …").</comment>
+  </data>
+  <data name="YirNewTitle" xml:space="preserve">
+    <value>New this year</value>
+    <comment>Caption and title of Year in review's card with the games first played that year.</comment>
+  </data>
+  <data name="YirNewCountOne" xml:space="preserve">
+    <value>1 new game</value>
+    <comment>Headline on Year in review's New this year card, singular (used for {0} = 1; French also for 0).</comment>
+  </data>
+  <data name="YirNewCount" xml:space="preserve">
+    <value>{0:N0} new games</value>
+    <comment>Headline on Year in review's New this year card. {0} = how many games were first played that year.</comment>
+  </data>
+  <data name="YirMonthCountOne" xml:space="preserve">
+    <value>1 month</value>
+    <comment>Year in review: a break of one month, inside "Back after {0}". German: the dative form that follows "nach".</comment>
+  </data>
+  <data name="YirMonthCount" xml:space="preserve">
+    <value>{0:N0} months</value>
+    <comment>Year in review: a break of several months, inside "Back after …". {0} = the number (3 or more). German: dative after "nach" (Monaten).</comment>
+  </data>
+  <data name="YirBackAfter" xml:space="preserve">
+    <value>Back after {0}</value>
+    <comment>Year in review, New this year card: a game played again after a long break. {0} = the break, e.g. "7 months".</comment>
+  </data>
+  <data name="YirLastPlayed" xml:space="preserve">
+    <value>Last played {0}</value>
+    <comment>Year in review: under the comeback's line, left. {0} = the month and year before the break, e.g. "May 2025".</comment>
+  </data>
+  <data name="YirBackOn" xml:space="preserve">
+    <value>Back on {0}</value>
+    <comment>Year in review: under the comeback's line, right. {0} = the day it was played again, e.g. "December 2".</comment>
+  </data>
+  <data name="YirLaunchersTitle" xml:space="preserve">
+    <value>By launcher</value>
+    <comment>Caption and title of Year in review's card with each game launcher's share of the playtime (Steam, Epic Games, …).</comment>
+  </data>
+  <data name="YirLaunchersLine" xml:space="preserve">
+    <value>From {0} launchers</value>
+    <comment>Headline on Year in review's By launcher card. {0} = how many launchers the games came from (2 or more).</comment>
+  </data>
+  <data name="YirSummaryTitle" xml:space="preserve">
+    <value>Summary</value>
+    <comment>Title of Year in review's last card, which sums up the year (noun).</comment>
+  </data>
+  <data name="YirWatchAgain" xml:space="preserve">
+    <value>Watch again</value>
+    <comment>Button on Year in review's last card: starts again from the first card.</comment>
+  </data>
+  <data name="YirOtherYears" xml:space="preserve">
+    <value>Other years</value>
+    <comment>Label before buttons with earlier years on Year in review's last card.</comment>
+  </data>
+  <data name="YirRemovedGame" xml:space="preserve">
+    <value>A removed game</value>
+    <comment>Year in review: in place of the name of a game that was played that year but has since left the library and isn't known any more.</comment>
+  </data>
+  <data name="YirNotInstalled" xml:space="preserve">
+    <value>Not installed</value>
+    <comment>Year in review, Most played card: in place of the Play button when that game is no longer installed.</comment>
+  </data>
+  <data name="YirOfferTitle" xml:space="preserve">
+    <value>Your {0} in games</value>
+    <comment>Title of Year in review's offer at the top of the shelf in December; the screen-reader name of its Open button. {0} = the year, e.g. 2026.</comment>
+  </data>
+  <data name="YirOpen" xml:space="preserve">
+    <value>Open</value>
+    <comment>Button on Year in review's offer at the top of the shelf: opens Year in review (verb).</comment>
+  </data>
+  <data name="YirSetting" xml:space="preserve">
+    <value>Year in review on the shelf</value>
+    <comment>Settings › Appearance card title with a switch: whether Year in review offers itself at the top of the shelf in December.</comment>
+  </data>
+  <data name="YirSettingToolTip" xml:space="preserve">
+    <value>Shows your year once in December, at the top of the shelf</value>
+    <comment>Tooltip of the Settings card "Year in review on the shelf".</comment>
+  </data>
 </root>

@@ -135,6 +135,33 @@ internal static class DevPanel
         Add("Updated to 9.9.9 (pill)", () => app.DevInPanel(panel => panel.ShowUpdated(Strings.Format(Strings.Updated, "9.9.9"), hasNotes: true)));
         Add("Something went wrong (error toast)", () => app.DevInPanel(panel => panel.ShowError()));
 
+        Group("Year in review");
+        var mockYears = new CheckBox { Content = "Made-up years (from the library's games; it's December 20)", IsChecked = app.DevMockYears };
+        mockYears.Click += (_, _) => app.DevMockYears = mockYears.IsChecked == true;
+        list.Children.Add(mockYears);
+        var removedTop = new CheckBox { Content = "Made-up years: the top game was uninstalled", IsChecked = app.DevMockRemovedTop };
+        removedTop.Click += (_, _) => app.DevMockRemovedTop = removedTop.IsChecked == true;
+        list.Children.Add(removedTop);
+        var themes = new ComboBox { HorizontalAlignment = HorizontalAlignment.Stretch, Header = "Theme" };
+        themes.Items.Add("The year's own");
+        foreach (var theme in YearThemes.All) themes.Items.Add(theme.Name);
+        themes.SelectedIndex = app.DevYearTheme is { } current ? Array.IndexOf(YearThemes.All, current) + 1 : 0;
+        themes.SelectionChanged += (_, _) => app.DevYearTheme = themes.SelectedIndex > 0 ? YearThemes.All[themes.SelectedIndex - 1] : null;
+        list.Children.Add(themes);
+        var slowReview = new CheckBox { Content = "Quarter speed (also Year in review's motion)", IsChecked = app.DevSlowToasts };
+        slowReview.Click += (_, _) =>
+        {
+            bool on = slowReview.IsChecked == true;
+            app.DevSlowToasts = on;
+            slow.IsChecked = on; // the same setting as the toasts' box above
+        };
+        list.Children.Add(slowReview);
+        Add("Open Year in review", () => app.DevInPanel(panel => panel.OpenYearReview(null)));
+        Add("The shelf's December offer", () => app.DevInPanel(panel =>
+        {
+            if (!panel.DevYearOffer()) status.Text = "No year to offer: tick Made-up years, or it isn't December.";
+        }));
+
         Group("Tools");
         Add("Open the panel", app.OpenPanel);
         Add("Close all toasts and cards", app.DevCloseToasts);

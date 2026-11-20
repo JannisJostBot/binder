@@ -86,6 +86,7 @@ static partial class Tests
         PayloadTests();
         ChimeTests();
         MomentTests();
+        YearReviewTests();
         RemovedGameTests();
         ShortcutRestoreTests();
         LaunchTests(dir);

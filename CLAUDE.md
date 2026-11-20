@@ -21,7 +21,10 @@ their games, and it must feel like part of Windows. When an idea doesn't clearly
   effects" off. One approved exception is the panel's Acrylic backdrop (`PanelBackdrop`, WinUI's
   `DesktopAcrylicController`, active while unfocused; solid when Transparency is off, in high contrast or unsupported).
   The other is the Game mode toast's melt (`ToastMelt`, Win2D blur): only while it plays, its visuals removed after,
-  the plain pill with animations off or in high contrast.
+  the plain pill with animations off or in high contrast. The third is Year in review's card motion
+  (`YearReviewMotion`, spec §28): only when the user moves to a card, at most ~1 s per block (1.3 s for a count-up,
+  the intro's covers, the comeback's line; `YearMotion` budgets, checked by the tests), Composition only (no blur),
+  nothing while a card sits still, none with animations off or in high contrast.
 - Data structures by the operation: lookups by id or path go through a `Dictionary`/`HashSet` built once, never a
   list search inside a loop over games or sessions (O(n·m)); one pass over the sessions per screen, not one per game.
 - No heavy or reflection-heavy dependencies. Between simpler-but-heavier and a bit-more-code-but-lighter, pick lighter.
@@ -69,7 +72,9 @@ src/Binder/            the WinUI widget
                           GameSearch (the search's ranking), GameKeys (game shortcuts' numbers), StartMenuMatch (games Start finds, our Start folder's plan),
                           InstallFolder (folder safety), Vdf, ShortcutFile/ShortcutImporter,
                           LaunchOptions, GameScan, GameFiles (installed or gone, removed games' settings), AntiCheat, PlaytimeStats, CrashAnalysis, SpacePlanner,
-                          Moments ("Welcome back"), UpdateManifest (release signature and rules) (pure logic)
+                          Moments ("Welcome back"), UpdateManifest (release signature and rules),
+                          YearFacts + YearStory (Year in review: the year's numbers; its cards, themes, colors and
+                          motion timings, spec §28) (pure logic)
   Models/                 Game, Session, Settings, ImportedShortcut, CrashRecord
   Services/               Launcher, CoverCache, Storage, UpdateKeys (where updates come from, generated at build
                           time), Updater (check, download,
@@ -78,8 +83,9 @@ src/Binder/            the WinUI widget
                           active and a pad is connected), GameModeService, WindowsGaming (Windows' Game Mode,
                           OneDrive; read when the Game mode page opens), Chime/Sound
   ViewModels/             MVVM: ObservableObject, RelayCommand, one <Page>ViewModel + I<Page>Actions per page (Shelf,
-                          Detail, Settings, Setup, FreeSpace, GameMode)
+                          Detail, Settings, Setup, FreeSpace, GameMode, YearReview)
   Views/                  ShelfView, DetailView, SettingsView, SetupView, ImportView, FreeSpaceView, GameModeView,
+                          YearReviewView + YearReviewCards (each block kind drawn once) + YearReviewMotion (its cues),
                           GameModeToast, ToastMelt (its changes melt in, Win2D), GameKeyFlash (a game shortcut's
                           logo before the game starts), BannerLogo, Sheen (shiny
                           favorites), LogoMerge (setup step 2's moved shortcuts fly into the logo, as on the
@@ -92,13 +98,14 @@ src/Binder/            the WinUI widget
                           MainWindow.<Page>.cs (that page's actions), .Flyout (slide, placement), .Games (import,
                           add, game actions), .Input (Esc, controller, type-to-search), .Launch (play, countdown,
                           return), .Notices (toast, errors, crash card), .Updates (About's buttons, the "…" item,
-                          the pill after an update)
+                          the pill after an update), .YearReview (its page's actions, the December offer)
   App.xaml.cs             the app's lifetime (panel, tray menu, countdown); App.Restart.cs, App.Updates.cs (when to
                           check, download and install an update; spec §25), App.Play.cs ("--play <id>" from Start, §22),
                           App.GameKeys.cs (a number after the shortcut plays a game: the flash and its wait, §26)
   Program.cs, MessageWindow.cs   single instance, tray icon, hotkey; MessageWindow.GameKeys.cs the number after it
   Dev/                    the debug panel, Debug builds only ("Binder.exe --dev"): buttons that show every toast, card
-                          and message through the real code with made-up data; left out of Release builds
+                          and message through the real code with made-up data (YearReviewMock: made-up years for
+                          Year in review); left out of Release builds
 src/Binder.Watcher/    windowless (one hidden window on its own thread, SystemEvents.cs: shutdown, sign-out and
                           sleep); Program.cs, GameMode.cs (apply/restore + journal), ElevatedClient.cs,
                           GameModeShared.cs (also compiled into the widget, helper and setup)
@@ -245,6 +252,9 @@ the reference for what exists; these rules apply to every change:
 - Look and moments (`docs/proposals.md` §13): "Welcome back" takes the top slot once after a session of 2 min or
   longer, with a quiet playtime milestone line; shiny favorites (`Sheen`, a Settings toggle; still with animations
   off, none in high contrast or List). Details open and close without a cover animation (§13 b was removed).
+- Year in review (§28, boards 41–43): one card at a time, paced by the user, from the "…" menu and once a year in
+  December in the top slot (a Settings › Appearance switch). A year's look is a `YearTheme` (data only, kept for
+  good per year); the cards, text and motion are the engine's, so a new year adds no strings or assets.
 
 Display modes: **Flyout** (default; tray icon and Win+Shift+G) or **On the desktop** (docked, kept at the bottom of
 the z-order with `HWND_BOTTOM`, no WorkerW hack). **Stay ready** (default on): closing the flyout destroys the

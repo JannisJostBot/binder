@@ -56,6 +56,10 @@ public sealed class Settings
     public bool ClosedLineShown { get; set; }
     /// <summary>Favourite covers get a rainbow sheen that follows the pointer (proposals §13 d).</summary>
     public bool ShinyFavorites { get; set; } = true;
+    /// <summary>Year in review offers itself once in the shelf's top slot in December (spec §28).</summary>
+    public bool YearReviewOffer { get; set; } = true;
+    /// <summary>The last year whose Year in review was offered on the shelf (0: none yet).</summary>
+    public int YearReviewOffered { get; set; }
 
     public DisplayMode DisplayMode { get; set; } = DisplayMode.Flyout;
     public bool TrayIcon { get; set; } = true;

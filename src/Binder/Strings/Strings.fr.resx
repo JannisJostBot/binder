@@ -2600,4 +2600,205 @@ Ralentir : mode efficacité pendant le jeu</value>
   <data name="GameKeyListNone" xml:space="preserve">
     <value>Clic droit sur un jeu dans Binder pour lui donner un chiffre</value>
   </data>
+  <data name="YearInReview" xml:space="preserve">
+    <value>Bilan de l’année</value>
+  </data>
+  <data name="YearInReviewMenu" xml:space="preserve">
+    <value>Bilan de l’année…</value>
+  </data>
+  <data name="YirYear" xml:space="preserve">
+    <value>Année</value>
+  </data>
+  <data name="YirSoFar" xml:space="preserve">
+    <value>{0} jusqu’ici</value>
+  </data>
+  <data name="YirSoFarLine" xml:space="preserve">
+    <value>{0}, jusqu’ici</value>
+  </data>
+  <data name="YirNext" xml:space="preserve">
+    <value>Suivant</value>
+  </data>
+  <data name="YirPosition" xml:space="preserve">
+    <value>{0} sur {1} · {2}</value>
+  </data>
+  <data name="YirIntroTitle" xml:space="preserve">
+    <value>Votre année en jeux</value>
+  </data>
+  <data name="YirCounted" xml:space="preserve">
+    <value>Seuls les jeux lancés avec Binder sont comptés.</value>
+  </data>
+  <data name="YirSince" xml:space="preserve">
+    <value>Depuis votre première utilisation de Binder le {0}. Seuls les jeux lancés avec Binder sont comptés.</value>
+  </data>
+  <data name="YirSayIntro" xml:space="preserve">
+    <value>Votre année {0} en jeux : {1}.</value>
+  </data>
+  <data name="YirTimeTitle" xml:space="preserve">
+    <value>Temps de jeu</value>
+  </data>
+  <data name="YirHourCountOne" xml:space="preserve">
+    <value>{0:N0} heure</value>
+  </data>
+  <data name="YirHourCount" xml:space="preserve">
+    <value>{0:N0} heures</value>
+  </data>
+  <data name="YirHourUnitOne" xml:space="preserve">
+    <value>heure</value>
+  </data>
+  <data name="YirHourUnit" xml:space="preserve">
+    <value>heures</value>
+  </data>
+  <data name="YirDayCountOne" xml:space="preserve">
+    <value>{0:N0} jour</value>
+  </data>
+  <data name="YirDayCount" xml:space="preserve">
+    <value>{0:N0} jours</value>
+  </data>
+  <data name="YirDayUnitOne" xml:space="preserve">
+    <value>jour</value>
+  </data>
+  <data name="YirDayUnit" xml:space="preserve">
+    <value>jours</value>
+  </data>
+  <data name="YirSessionCountOne" xml:space="preserve">
+    <value>{0:N0} session</value>
+  </data>
+  <data name="YirSessionCount" xml:space="preserve">
+    <value>{0:N0} sessions</value>
+  </data>
+  <data name="YirTimeLine" xml:space="preserve">
+    <value>{0} · {1} · {2} en moyenne</value>
+  </data>
+  <data name="YirBusiest" xml:space="preserve">
+    <value>Surtout en {0} · {1}</value>
+  </data>
+  <data name="YirSayTime" xml:space="preserve">
+    <value>Temps de jeu : {0} ; {1} ; {2}</value>
+  </data>
+  <data name="YirTopTitle" xml:space="preserve">
+    <value>Le plus joué</value>
+  </data>
+  <data name="YirShare" xml:space="preserve">
+    <value>{0} % de votre temps de jeu</value>
+  </data>
+  <data name="YirTopDates" xml:space="preserve">
+    <value>Première partie le {0} · dernière le {1}</value>
+  </data>
+  <data name="YirSayTop" xml:space="preserve">
+    <value>Le plus joué : {0}, {1}. {2}.</value>
+  </data>
+  <data name="YirTopN" xml:space="preserve">
+    <value>Votre top {0}</value>
+  </data>
+  <data name="YirOthersOne" xml:space="preserve">
+    <value>Et 1 autre jeu</value>
+  </data>
+  <data name="YirOthers" xml:space="preserve">
+    <value>Et {0:N0} autres jeux</value>
+  </data>
+  <data name="YirWhenTitle" xml:space="preserve">
+    <value>Quand vous avez joué</value>
+  </data>
+  <data name="YirWhenEvenings" xml:space="preserve">
+    <value>Surtout le soir</value>
+  </data>
+  <data name="YirWhenWeekdayEvenings" xml:space="preserve">
+    <value>Surtout en soirée, en semaine</value>
+  </data>
+  <data name="YirWhenWeekends" xml:space="preserve">
+    <value>Surtout le week-end</value>
+  </data>
+  <data name="YirWhenLate" xml:space="preserve">
+    <value>Surtout tard dans la nuit</value>
+  </data>
+  <data name="YirWhenAfternoons" xml:space="preserve">
+    <value>Surtout l’après-midi</value>
+  </data>
+  <data name="YirWhenMornings" xml:space="preserve">
+    <value>Surtout le matin</value>
+  </data>
+  <data name="YirPercent" xml:space="preserve">
+    <value>{0} %</value>
+  </data>
+  <data name="YirEveningShare" xml:space="preserve">
+    <value>le soir, 18 h–22 h</value>
+  </data>
+  <data name="YirWeekendShare" xml:space="preserve">
+    <value>le week-end</value>
+  </data>
+  <data name="YirLateShare" xml:space="preserve">
+    <value>après minuit</value>
+  </data>
+  <data name="YirRecordsTitle" xml:space="preserve">
+    <value>Records</value>
+  </data>
+  <data name="YirLongest" xml:space="preserve">
+    <value>Plus longue session</value>
+  </data>
+  <data name="YirStreak" xml:space="preserve">
+    <value>Le plus de jours d’affilée</value>
+  </data>
+  <data name="YirRange" xml:space="preserve">
+    <value>du {0} au {1}</value>
+  </data>
+  <data name="YirMilestones" xml:space="preserve">
+    <value>Étapes franchies</value>
+  </data>
+  <data name="YirNewTitle" xml:space="preserve">
+    <value>Nouveau cette année</value>
+  </data>
+  <data name="YirNewCountOne" xml:space="preserve">
+    <value>1 nouveau jeu</value>
+  </data>
+  <data name="YirNewCount" xml:space="preserve">
+    <value>{0:N0} nouveaux jeux</value>
+  </data>
+  <data name="YirMonthCountOne" xml:space="preserve">
+    <value>1 mois</value>
+  </data>
+  <data name="YirMonthCount" xml:space="preserve">
+    <value>{0:N0} mois</value>
+  </data>
+  <data name="YirBackAfter" xml:space="preserve">
+    <value>De retour après {0}</value>
+  </data>
+  <data name="YirLastPlayed" xml:space="preserve">
+    <value>Dernière partie : {0}</value>
+  </data>
+  <data name="YirBackOn" xml:space="preserve">
+    <value>Repris le {0}</value>
+  </data>
+  <data name="YirLaunchersTitle" xml:space="preserve">
+    <value>Par lanceur</value>
+  </data>
+  <data name="YirLaunchersLine" xml:space="preserve">
+    <value>Depuis {0} lanceurs</value>
+  </data>
+  <data name="YirSummaryTitle" xml:space="preserve">
+    <value>Résumé</value>
+  </data>
+  <data name="YirWatchAgain" xml:space="preserve">
+    <value>Revoir</value>
+  </data>
+  <data name="YirOtherYears" xml:space="preserve">
+    <value>Autres années</value>
+  </data>
+  <data name="YirRemovedGame" xml:space="preserve">
+    <value>Un jeu supprimé</value>
+  </data>
+  <data name="YirNotInstalled" xml:space="preserve">
+    <value>Non installé</value>
+  </data>
+  <data name="YirOfferTitle" xml:space="preserve">
+    <value>Votre année {0} en jeux</value>
+  </data>
+  <data name="YirOpen" xml:space="preserve">
+    <value>Ouvrir</value>
+  </data>
+  <data name="YirSetting" xml:space="preserve">
+    <value>Bilan de l’année sur l’étagère</value>
+  </data>
+  <data name="YirSettingToolTip" xml:space="preserve">
+    <value>Affiche votre année une fois en décembre, en haut de l’étagère</value>
+  </data>
 </root>

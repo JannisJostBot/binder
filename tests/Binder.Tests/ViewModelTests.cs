@@ -95,6 +95,11 @@ static partial class Tests
         vm.ShinyFavorites = false;
         Check(!settings.ShinyFavorites && spy.Changes.Count == before + 1 && spy.Changes[^1] == SettingChange.Shelf,
             "settings: Shiny favorites off writes it and reports Shelf once");
+        before = spy.Changes.Count;
+        vm.YearReviewOffer = true; // the default: no change
+        vm.YearReviewOffer = false;
+        Check(!settings.YearReviewOffer && spy.Changes.Count == before + 1 && spy.Changes[^1] == SettingChange.Shelf,
+            "settings: Year in review's offer off writes it and reports Shelf once");
 
         vm.Load(settings, games, false, refreshing: true, importedShortcuts: 3, monitors, null, hotkeyFree: false);
         Check(vm.LibraryText == "Looking for games…" && !vm.CanRefresh && vm.ShortcutsText == "3 imported" && vm.CanRestoreShortcuts,
@@ -774,6 +779,9 @@ static partial class Tests
         public void OpenLauncher(GameSource source) => Calls.Add("open " + source);
         public void StartUpdate() => Calls.Add("update");
         public void SetGameKey(string gameId, int? number) => Calls.Add($"key {gameId} {number}");
+        public bool YearReview;
+        public bool HasYearReview() => YearReview;
+        public void OpenYearReview(int? year) => Calls.Add("year review " + year);
     }
 
     /// <summary>The "…" button's update dot and first menu item (spec §25).</summary>

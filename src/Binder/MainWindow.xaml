@@ -13,6 +13,7 @@
         <v:SetupView x:Name="SetupPage" Visibility="Collapsed" />
         <v:FreeSpaceView x:Name="FreeSpacePage" Visibility="Collapsed" />
         <v:GameModeView x:Name="GameModePage" Visibility="Collapsed" />
+        <v:YearReviewView x:Name="YearReviewPage" Visibility="Collapsed" />
 
         <StackPanel VerticalAlignment="Bottom" Margin="16" Spacing="8">
             <!-- Notices (errors, Undo, …). On a solid backing so covers don't show through the InfoBar's

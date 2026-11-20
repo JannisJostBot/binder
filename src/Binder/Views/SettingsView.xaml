@@ -297,6 +297,19 @@
                                   AutomationProperties.Name="{x:Bind s:Strings.Shiny}" />
                 </Grid>
             </Border>
+            <Border Style="{StaticResource SettingCard}">
+                <Grid ColumnSpacing="16" ToolTipService.ToolTip="{x:Bind s:Strings.YirSettingToolTip}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource CardIcon}" Glyph="&#xE787;" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource RowTitle}" Text="{x:Bind s:Strings.YirSetting}" />
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.YearReviewOffer, Mode=TwoWay}" Grid.Column="2" Style="{StaticResource RowSwitch}"
+                                  AutomationProperties.Name="{x:Bind s:Strings.YirSetting}" />
+                </Grid>
+            </Border>
 
             <!-- Library -->
             <TextBlock Style="{StaticResource GroupLabel}" Text="{x:Bind s:Strings.GroupLibrary}" />

@@ -244,6 +244,17 @@ public sealed partial class App : Application
     /// <summary>The debug panel's slow motion for the toast; only Debug builds have a body for it (App.Dev.cs).</summary>
     partial void DevToastSpeed(ref float slow);
 
+    /// <summary>How much slower Year in review's motion runs: 1, or 4 with the debug panel's Quarter speed.</summary>
+    internal float MotionSlowdown
+    {
+        get
+        {
+            float slow = 1;
+            DevToastSpeed(ref slow);
+            return slow;
+        }
+    }
+
     /// <summary>Game mode's "Restored" toast (board 4), and the Game mode page's last result if it's open.</summary>
     private void ShowRestored(string encoded, bool exitWhenClosed)
     {

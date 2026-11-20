@@ -39,6 +39,7 @@ Every item follows the project brief: zero cost while idle or gaming, no third-p
 | 26 Updates from GitHub | §25 | **Built and released** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; the keys (both YubiKeys' since 2026-11-15, made on the keys with PIN and touch always) and the repository set at build time since 2026-11-15: `build/OfficialRelease.props` for `publish.ps1 -Official` (release.yml), `build/Updates.targets` checks them and generates `Services.UpdateKeys`; other builds and forks without their own keys never check (About says so); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier; notes format in `docs/releases/README.md`. Default decided: Ask before installing (2026-11-14).<br>Built 2026-11-14: `.github/workflows/release.yml` (v* tags only, actions pinned, a draft with the setup and its attestation); `Services/Updater` (check with redirects only through `IsAllowedAddress`, 15 s, a client per check, no cookies; manifest kept in `%LOCALAPPDATA%\Binder\updates\` and verified again when read; the download hashed while it streams; the setup hashed again through a handle held with read sharing only and started with `/S /update`; waits for a watcher or a Game mode journal); `App.Updates` (check after a panel's first frame at most once a day, download at once with "Install automatically" or urgent, closing the panel cancels it, install when the flyout closes or at a `--background` start, the in-panel toast "Updated to …" with What's new after `--updated`, "couldn't be installed" when `--updated` comes back on the old version); Settings › About (version card with Check for updates / Update / Restart now, progress bar, What's new with Skip this version, the Updates combo); the "…" dot and first item, the tray item; three settings fields plus the mode; 37 strings in EN/DE/FR; view model tests. The pill is the panel's toast, not board 23's separate pill window. Not built: the Authenticode same-publisher check (Binder is unsigned today).<br>Built 2026-11-15: the setup's `/update` (the widget comes back with `--updated --background` after a success, a failure or a busy setup) and the all-or-nothing swap (§25 "To decide" 3, owner: yes; `FileSwap`, unit-tested on real files), run in CI by `setup-test.ps1`.<br>Released: Windows sees both YubiKeys' certificates and `sign-release.ps1` asks which one signs; after a dry run, 0.2.0 and 0.2.1 were published on 2026-11-15 through `release.yml` and `sign-release.ps1`. Since 2026-11-16 `virustotal.yml` scans each published setup and adds the result to the release notes. An installed copy updated itself through the app on the owner's PC. Not built: the Authenticode same-publisher check (Binder is unsigned today) |
 | 27 Game shortcuts | §26 | Built 2026-11-18 (boards 35 A, 36, 37). Tried on the real PC 2026-11-18 (Debug build, keys and mouse sent with SendInput, one 4K screen with an auto-hide taskbar): Win+Shift, G, a number on the number row shows the flash, the panel stays shut, nothing on the taskbar starts; a quick tap opens the panel at once, holding opens it after 1 s; Esc cancels ("Cancelled · Balatro didn't start", gone after about 1 s) and Esc and letters reach apps normally afterwards; the same number again plays at once (Balatro started, Binder exited, only the watcher stayed, the widget came back when it closed); another number switches; "Nothing on 4"; the switch off lets the number through and opens the panel; dragging a cover or a list row raises the numbers, the line follows the slot under the pointer ("replaces Balatro", "already there"), a drop gives the number and the toast names the game that lost it, 0 refuses, releasing elsewhere removes the row; efficiency mode back on after a flash and a cancel. Fixed: the number pad (Windows lifts Shift around a pad key while Shift is held, which ended the wait, and may hand it over as Insert, End, arrows); a game without store art showed only its name (now its generated cover); the drag's caption repeated the line above the numbers. Added (owner, 2026-11-18): held past 1 s the shortcut lists what each number plays, letting go then opens the panel; and the debug panel's "Game shortcuts" buttons. Not tried: the menu's, Game detail's and Settings' number pickers by hand (their view models are unit-tested), a real keyboard (only sent keys: the Start menu on letting go of Win and the number pad with NumLock need a person), light mode, high contrast, Animation effects off, two screens, Narrator (Windows settings Claude doesn't change), the published AOT build |
 | 28 Native ARM64 build | §27 | Proposed (2026-11-17), waiting for the owner's go; choices open (§27 "To decide") |
+| 29 Year in review | §28 | Built 2026-11-20 (boards 41–43), owner's go the same day. The engine (`Library/YearFacts`, `Library/YearStory`: facts, cards, themes, colors, motion timings), the page (`Views/YearReviewView`, `YearReviewCards`, `YearReviewMotion`), the "…" item, the December offer in the top slot and its Settings switch, the debug panel's made-up years. Unit-tested on Linux (facts, story, every theme's contrast and motion budget, view model, offer; 22,000 sessions open in ~50 ms); the new WinUI files compile against WinUI 2.6.4's reference assemblies, but the app wasn't built here (the XAML compiler is Windows-only). To build with `check.ps1` and try on the real PC: the cards on screen, the motion and its count-up blur, Animation effects off, high contrast, light mode, Narrator, controller, large text |
 | Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
 | Setup: shortcuts into the logo | §6 step 2 | Built 2026-11-16 (`Views/LogoMerge`, as on the website): after Move, the moved shortcuts' rows turn into pills and fly into the logo's covers, the rest of the page fades, then step 3. At most seven fly, ~1.5 s on the compositor, no timer; skipped with Animation effects off or in high contrast. A second Move while it runs does nothing (unit test). To try on the real PC |
@@ -267,6 +268,16 @@ The build order is at the end of this file. The ideas under "Not decided" at the
   "running" as long as the launcher. Restore to desktop and Undo keep the games' settings for a later import; a copied
   shortcut whose original was deleted doesn't come back.
 - A data file another program holds at start is read from its `.bak` and never saved over in that run.
+
+**2026-11-20**
+- **Year in review** (§28, boards 41–43): go. Its card motion is a third approved exception to "no decorative
+  animations" (next to the Acrylic backdrop and the toast's melt): only when the user moves to a card, at most about a
+  second (1.3 s for a count-up, the intro's covers and the comeback's line; a unit test checks every theme), all
+  Composition, nothing while a card sits still, none with Animation effects off or in high contrast.
+- Choices made with it (change any of them): it offers itself from December 1, "so far", once a year (A on board 42);
+  a year is listed with 10 sessions and 5 hours; hidden games are left out; a game that left the library keeps its name
+  only when Binder kept its settings (`removed-games.json`), else it's "A removed game"; "Save as image" is left out for
+  now; 2026 has the Cover tint theme, every other year Calm.
 
 ---
 
@@ -2284,6 +2295,78 @@ in `CLAUDE.md`.
    test on an Arm PC.
 2. Windows 10 on Arm (end of support October 2025): proposed not to support it; it can't run the x64 setup either.
 
+## 28. Year in review (milestone 29, built 2026-11-20, boards 41–43)
+
+A short story of a year of playing, one card at a time, in the panel. Built from Binder's own sessions only (the
+intro says so), computed when the page opens, never on a timer. Designs: boards 41 (the story, interactive), 42
+(where it shows, past years, edge cases) and 43 (the engine).
+
+### Where
+
+- **The "…" menu:** "Year in review…", between Free up space and Add a game, only when a year qualifies (10 sessions
+  and 5 hours). Opens the newest year; the page's year box lists every one that qualifies, newest first, the current
+  year as "2026 so far" from December 1. The summary card has the other years as buttons.
+- **The shelf's offer:** once a year, the first opening on or after December 1, in the top slot (168 px, so nothing
+  moves): the year's top three covers, "Your 2026 in games", its hours and games, Open and ✕. After the crash card
+  and Welcome back; stored as offered when shown (`Settings.YearReviewOffered`), so it never comes back on its own.
+  Settings › Appearance › "Year in review on the shelf" (on by default) turns it off; the menu item stays.
+
+### The cards (skip rules in `YearStory.Plan`)
+
+1. **Intro:** the year's covers fan out of a stack (or are dealt in), the year's digits rise, "24 games · 312 hours".
+   The first year with Binder says since when.
+2. **Time played:** the hours count up with a light motion blur (two faint copies that close as it slows), days,
+   sessions and the average, last year's total, the month bars with the busiest in the accent.
+3. **Most played:** its banner and logo, its hours, share and sessions, first and last day, Play (or "Not installed").
+4. **Top 5** (top 3 with 3–4 games; left out with fewer).
+5. **When you played:** the 7 × 24 hour grid filling in a wave, a headline from a fixed set, three percentage tiles.
+6. **Records:** the longest session (Resumed parts joined), most days in a row (from 2) with a dot per day, the
+   playtime milestones passed that year (§13 e's hours).
+7. **New this year** and the longest comeback (a break of 3 months or more); left out in the first year with Binder.
+8. **By launcher:** a share bar and a row per launcher (badges from §3, the accent at falling strength, never brand
+   colors); left out with one launcher. Manual games, shortcuts and unknown games count as Other.
+9. **Summary:** the banner with the year, four tiles, the top five, Watch again and the other years.
+
+Moving: Next/Back buttons, → or Space, ←, controller RB/LB (A presses the focused button); Esc, B or the header's
+back arrow go to the shelf. Nothing advances on its own; the progress segments show the place, they don't fill over
+time. Narrator gets each card's sentence as a notification when it comes in; counting numbers carry their final
+value as their name; decorative parts are hidden from it. A card taller than the panel scrolls.
+
+### The engine (board 43)
+
+- `YearFacts.Build`: one pass over the sessions (plus each game's history for new games and comebacks), local time,
+  New Year clipped, sleep left out, sessions under 2 minutes and hidden games left out.
+- `YearStory.Plan`: the cards, each a list of blocks (14 kinds) with their text, data, place (flow, bottom, behind)
+  and start time. All text is the engine's (`Strings`), so a new year needs no translations.
+- `YearThemes`: a year's look is data (ground: accent, the top game's cover color or neutral; shapes: circles, stripes,
+  dot grid; type weight and number size; intro; motion preset; the time card's layout). `YearThemes.For(year)` keeps
+  a year's theme for good. `YearColors` mixes the ground far toward the dark or light base; the tests check 4.5:1 for
+  text on every theme's background over a spread of accents and cover colors, dark and light.
+- `YearMotion`: each cue's duration and the staggers; the tests check every block of every theme ends within its
+  budget. The view (`YearReviewCards`, `YearReviewMotion`) draws each block kind once and plays its cue on the
+  compositor. With Animation effects off or in high contrast nothing moves (high contrast also drops art and shapes
+  and uses system colors).
+- A new year's look: one `YearTheme` in `YearThemes` (about ten lines) and a line in `For`. A new block or cue is an
+  engine change, available to later themes; old themes don't name it, so past years look as they did.
+
+### Cost
+
+Nothing runs until the page opens (the offer's check runs at a panel opening in December only, until it was shown).
+Opening: one pass over the sessions, ~50 ms for 22,000 sessions on Linux in the tests. Covers decoded at their tile
+size, the banner only on cards that show it, all released when the page closes. While a card sits still: no timer and
+no animation; the count-up's per-frame handler exists only while a number counts.
+
+### Debug panel
+
+"Year in review": made-up years (three years of sessions for the library's own games, topped up with made-up ones,
+"now" set to December 20), the top game uninstalled, any theme, quarter speed, open the page, show the offer. Nothing
+is saved.
+
+### Not built (to decide)
+
+- "Save as image" of the summary card (standard file picker, `RenderTargetBitmap`; no sharing service).
+- Keeping a removed game's name (id, name, launcher) when Binder kept no settings for it.
+
 ## Build order (after milestone 7)
 
 8. **Quick wins:** *(Done.)*
@@ -2333,6 +2416,8 @@ in `CLAUDE.md`.
     *(Built; 0.2.0 and 0.2.1 released.)*
 27. **Game shortcuts** (§26): first check on the real PC that the hook gets the number while Win+Shift is held; then
     the flash, Esc, and the three ways to give a number. *(Built.)*
+28. **Year in review** (§28): the facts and the plan with tests, then the page and its motion, then the menu item and
+    the offer, then the debug panel's made-up years. *(Built; to try on the real PC.)*
 
 ## Not decided (don't build)
 
