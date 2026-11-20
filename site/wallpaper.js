@@ -1,8 +1,9 @@
 // Binder website: the story's wallpaper, three ribbons that move like silk in a gentle breeze while the page is at
 // the top: waves travel along each one, and each swells and narrows as it folds. It stops where it is as soon as the
 // page scrolls (story.js marks the stage is-scrolled), so nothing moves behind the story, and carries on back at the
-// top. It draws at most 30 times a second, only while the tab is visible; with reduced motion it draws one still
-// frame. Nothing is fetched. Without it, styles.css shows the same ribbons, still.
+// top. It draws at most 30 times a second, only while the tab and the desktop are visible (narrow windows hide the
+// desktop); with reduced motion it draws one still frame. Nothing is fetched. Without it, styles.css shows the same
+// ribbons, still.
 (function () {
   'use strict';
 
@@ -87,8 +88,10 @@
         parts[i].sheen.setAttribute('d', d[1]);
       }
     }
+    // Only while the desktop is shown (narrow windows hide it) and the page is at the top.
     function moving() {
-      return !document.hidden && !stage.classList.contains('is-scrolled') && !(still && still.matches);
+      return !document.hidden && wall.getClientRects().length > 0 && !stage.classList.contains('is-scrolled') &&
+        !(still && still.matches);
     }
     function tick(now) {
       frame = 0;
@@ -108,6 +111,7 @@
     draw();
     new MutationObserver(wake).observe(stage, { attributes: true, attributeFilter: ['class'] });
     document.addEventListener('visibilitychange', wake);
+    window.addEventListener('resize', wake);
     if (still && still.addEventListener) still.addEventListener('change', wake);
     wake();
   }

@@ -1295,33 +1295,35 @@ summary::-webkit-details-marker { display: none; }
   .stage:not([data-step="0"]) .mock-grid span { opacity: 1; }
 }
 
-/* Narrow windows and phones: the desktop is a picture pinned at the top, the captions scroll below it. */
+/* Narrow windows and phones: no desktop story (too small to follow). The headline sits in a frosted window on the
+   story's wallpaper, the ribbons still, and the four captions follow below as plain cards. wallpaper.js draws nothing
+   while the desktop is hidden. */
 @media (max-width: 900px) {
-  .story:not([data-step="0"]) .story-step-hero .window { opacity: 1; transform: none; pointer-events: auto; }
-  .story { --stage-h: calc(var(--header-h) + clamp(300px, 46vh, 440px)); }
-  .stage { z-index: 3; }
+  .stage { display: none; }
   .story-steps { margin-top: 0; }
   .story-steps::after { height: 0; }
-  /* One caption fills the space under the picture; story.js switches the step as a caption reaches the picture. */
-  .story-step, .story-step-hero { min-height: calc(100vh - var(--stage-h)); justify-content: flex-start; padding: 24px 16px 40px; }
-  .desk { transform: scale(0.72); transform-origin: top left; }
-  .mock-panel { width: 62%; min-width: 236px; padding: 12px; gap: 8px; }
-  .mock-continue { height: 72px; }
-  .procs { right: 12px; bottom: 12px; width: calc(100% - 24px); font-size: 12px; }
-  .procs-table { grid-template-columns: minmax(0, 1fr) 44px 72px; }
-  .procs-table > span { padding: 7px 6px; }
-  .procs-name small { display: none; }
-  .caption, .window { width: 100%; box-shadow: none; border: 1px solid var(--border); background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .caption-dark { background: #201C36; border-color: #34343A; }
+  .story-step { min-height: 0; justify-content: flex-start; padding: 0 16px 16px; }
+  .story-step[data-step="1"] { padding-top: 32px; }
+  .story-step:last-child { padding-bottom: 48px; }
+  .story-step-hero {
+    min-height: min(86svh, 760px);
+    justify-content: flex-end;
+    padding: calc(var(--header-h) + 32px) 16px 32px;
+    background: var(--ribbons) center / cover no-repeat, var(--wall-base);
+  }
+  .story:not([data-step="0"]) .story-step-hero .window { opacity: 1; transform: none; pointer-events: auto; }
+  .window { width: 100%; }
   .window-bar { display: none; }
-  .window-body { padding: 4px 0 0; border: 0; }
-  .window { border: 0; background: transparent; }
-  .story-cue { display: none; }
+  .window-body { padding: 28px 24px; }
+  .caption { width: 100%; box-shadow: none; border: 1px solid var(--border); background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .caption-dark { background: #201C36; border-color: #34343A; }
+  .caption-progress { display: none; }
 }
 @media (max-width: 600px) {
   .hero-lead { font-size: 17px; }
   .hero-actions { align-self: stretch; flex-direction: column; }
   .caption { padding: 20px; }
+  .window-body { padding: 24px 20px; }
 }
 
 /* The hidden game behind the shelf's Play (game.js): Binder's launch toast counts down, the shelf slides away as
