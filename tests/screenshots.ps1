@@ -98,11 +98,16 @@ public static class Shots {
     [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc f, IntPtr l);
     [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
     [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr h);
+    // The process's largest visible window: the panel, not a tooltip or popup.
     public static IntPtr VisibleWindowOf(int pid) {
-        IntPtr found = IntPtr.Zero;
+        IntPtr found = IntPtr.Zero; long best = 0;
         EnumWindows(delegate (IntPtr h, IntPtr l) {
             uint p; GetWindowThreadProcessId(h, out p);
-            if (p == (uint)pid && IsWindowVisible(h)) { found = h; return false; }
+            if (p == (uint)pid && IsWindowVisible(h)) {
+                RECT r = Frame(h);
+                long area = (long)(r.Right - r.Left) * (r.Bottom - r.Top);
+                if (area > best) { best = area; found = h; }
+            }
             return true;
         }, IntPtr.Zero);
         return found;
@@ -113,10 +118,12 @@ public static class Shots {
     // The window as drawn, without the invisible resize border.
     public static RECT Frame(IntPtr h) { RECT r; DwmGetWindowAttribute(h, 9, out r, Marshal.SizeOf(typeof(RECT))); return r; }
 
-    [DllImport("user32.dll")] static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
-    public static void Keys(params byte[] vks) {
-        foreach (var vk in vks) keybd_event(vk, 0, 0, UIntPtr.Zero);
-        for (int i = vks.Length - 1; i >= 0; i--) keybd_event(vks[i], 0, 2, UIntPtr.Zero);
+    [DllImport("user32.dll")] static extern bool SetCursorPos(int x, int y);
+    [DllImport("user32.dll")] static extern void mouse_event(uint flags, uint x, uint y, uint data, UIntPtr extra);
+    // A small mouse move in the screen's top left: the last input is the mouse, so no keyboard focus rings show.
+    public static void NudgeMouse() {
+        SetCursorPos(40, 40);
+        mouse_event(0x0001, 2, 2, 0, UIntPtr.Zero);
     }
 }
 '@
@@ -308,6 +315,7 @@ function Stop-Widget {
 # Starts the widget (it opens the flyout), returns its UI Automation window.
 function Start-Widget {
     Stop-Widget
+    [Shots]::NudgeMouse()
     $p = Start-Process $Exe -PassThru
     $script:widget = $p
     $cond = New-Object System.Windows.Automation.PropertyCondition($UIA::ProcessIdProperty, $p.Id)
@@ -402,9 +410,13 @@ foreach ($theme in @('light', 'dark')) {
         $box = Find-Named $window 'Space the new game needs, in gigabytes' @($CT::Edit)
         # 60 GB more than drive C: has free, so the plan has something to suggest.
         $free = [math]::Floor((Get-PSDrive C).Free / 1GB)
-        $box.SetFocus()
         $box.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue([string]($free + 60))
-        [Shots]::Keys(0x0D)
+        Start-Sleep -Seconds 1
+        # The demo games are on C:; CI machines also have a roomy D:, which Binder would suggest instead.
+        $radio = New-Object System.Windows.Automation.PropertyCondition($UIA::ControlTypeProperty, $CT::RadioButton)
+        $c = Wait-Until { $window.FindAll($Scope::Descendants, $radio) | Where-Object { $_.Current.Name -like '*C:*' } | Select-Object -First 1 } 10 'drive C: choice'
+        $c.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
+        [Shots]::NudgeMouse()
         Start-Sleep -Seconds 2
     }
     View 'list' {
