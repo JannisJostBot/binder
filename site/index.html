@@ -124,13 +124,15 @@
         </div>
       </div>
 
+      <!-- What's running while the game is: a small dark Task Manager window, in the same dark glass as the caption
+           beside it. Binder isn't running; its watcher's memory is the release's measurement. -->
       <div class="procs" aria-hidden="true">
-        <p class="procs-title">Running on this PC</p>
+        <p class="procs-bar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4CC2FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h4l2.5-6 4 11 2.5-5H21"></path></svg>Task Manager<span>Processes</span></p>
         <div class="procs-table">
-          <span class="procs-head">Name</span><span class="procs-head">Memory</span><span class="procs-head">CPU</span>
-          <span>Starfall Drift</span><span class="procs-dim">your game</span><span></span>
-          <span class="procs-gone">Binder</span><span class="procs-dim">not running</span><span class="procs-dim">0%</span>
-          <span class="procs-mark">Binder game watcher</span><span class="procs-mark"><!-- n:watcherStep -->3 MB<!-- /n --></span><span class="procs-mark">0%</span>
+          <span class="procs-head">Name</span><span class="procs-head">CPU</span><span class="procs-head">Memory</span>
+          <span class="procs-name"><i class="procs-icon pc-thumb g1"></i><b><span>Starfall Drift</span><small>Your game</small></b></span><span>31%</span><span>6,240 MB</span>
+          <span class="procs-name procs-gone"><i class="procs-icon procs-logo"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></i><b><span>Binder</span><small>Not running</small></b></span><span>&ndash;</span><span>&ndash;</span>
+          <span class="procs-name procs-mark"><i class="procs-icon procs-logo"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></i><b><span>Binder game watcher</span><small>Waits for the game to close</small></b></span><span class="procs-mark">0%</span><span class="procs-mark"><!-- n:watcherStep -->3 MB<!-- /n --></span>
         </div>
       </div>
 

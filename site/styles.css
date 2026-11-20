@@ -771,32 +771,54 @@ summary::-webkit-details-marker { display: none; }
   .sf-sector { display: none; }
 }
 
-/* What's running while the game is: Binder isn't; its helper uses what the release's measurement says. */
+/* What's running while the game is: a small Task Manager window in the caption's dark glass (.caption-dark), so the
+   two read as one set over the game. Binder's row is struck out; the watcher's row is marked in the accent, with
+   the release's measured memory. */
 .procs {
   position: absolute;
   right: 32px;
   bottom: 32px;
   z-index: 7;
-  width: min(520px, calc(100% - 64px));
-  background: #FFFFFF;
+  width: min(480px, calc(100% - 64px));
+  background: rgba(22, 18, 44, 0.62);
+  -webkit-backdrop-filter: blur(40px) saturate(1.6);
+  backdrop-filter: blur(40px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 32px 64px rgba(0, 0, 0, 0.5), 0 2px 21px rgba(0, 0, 0, 0.35);
   overflow: hidden;
-  font-size: 14px;
+  font-size: 13px;
+  color: #F3F3F5;
   opacity: 0;
   visibility: hidden;
   transform: translateY(12px);
   transition: opacity 0.3s, transform 0.3s, visibility 0s 0.3s;
 }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .procs { background: #201C36; }
+}
 .stage[data-step="3"] .procs { opacity: 1; visibility: visible; transform: none; transition: opacity 0.3s 0.4s, transform 0.3s 0.4s; }
-.procs-title { margin: 0; padding: 10px 16px; background: #F3F3F3; font-size: 12px; }
-.procs-table { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; }
-.procs-table span { padding: 11px 16px; border-bottom: 1px solid #EBEBEB; text-align: right; white-space: nowrap; }
-.procs-table span:nth-child(3n+1) { text-align: left; white-space: normal; }
-.procs-table .procs-head { padding-top: 8px; padding-bottom: 8px; font-size: 12px; color: #5D5D5D; }
-.procs-dim { color: #6E6E6E; }
-.procs-gone { color: #6E6E6E; text-decoration: line-through; }
-.procs-table .procs-mark { border-bottom: 0; background: #EAF3FC; font-weight: 600; }
+.procs-bar { margin: 0; height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 14px; font-size: 12px; color: #CFCCE0; }
+.procs-bar span { margin-left: auto; padding: 2px 10px; border-radius: 4px; background: rgba(255, 255, 255, 0.08); color: #F3F3F5; font-weight: 600; }
+.procs-table { display: grid; grid-template-columns: minmax(0, 1fr) 56px 84px; padding: 0 6px 6px; }
+.procs-table > span { display: flex; align-items: center; justify-content: flex-end; padding: 9px 8px; white-space: nowrap; font-variant-numeric: tabular-nums; color: #CFCCE0; }
+.procs-table > span:nth-child(3n+1) { justify-content: flex-start; white-space: normal; }
+.procs-table .procs-head { padding-top: 4px; padding-bottom: 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-size: 11px; color: #A9A6BE; }
+.procs-name { gap: 10px; min-width: 0; }
+.procs-name b { display: flex; flex-direction: column; min-width: 0; font-weight: 600; color: #F3F3F5; }
+.procs-name small { font-size: 11px; font-weight: 400; color: #A9A6BE; }
+.procs-icon { flex-shrink: 0; width: 20px; }
+.procs-icon.pc-thumb { width: 18px; }
+.procs-logo { height: 20px; line-height: 0; }
+.procs-logo svg { width: 20px; height: 20px; }
+.procs-gone .procs-logo { opacity: 0.45; filter: grayscale(1); }
+.procs-gone b { color: #A9A6BE; }
+.procs-gone b span { text-decoration: line-through; text-decoration-color: rgba(255, 255, 255, 0.4); }
+/* The watcher: the accent's tint across the row, with Windows' selection bar on its left. */
+.procs-table .procs-mark { background: rgba(76, 194, 255, 0.14); color: #F3F3F5; font-weight: 600; }
+.procs-table .procs-name.procs-mark { position: relative; border-radius: 4px 0 0 4px; }
+.procs-table .procs-name.procs-mark::before { content: ""; position: absolute; left: 0; top: 50%; width: 3px; height: 16px; margin-top: -8px; border-radius: 2px; background: #4CC2FF; }
+.procs-table > span.procs-mark:last-child { border-radius: 0 4px 4px 0; color: #4CC2FF; }
 
 /* The taskbar, with Binder's icon by the clock. */
 .mock-taskbar {
@@ -1236,8 +1258,10 @@ summary::-webkit-details-marker { display: none; }
   .desk { transform: scale(0.72); transform-origin: top left; }
   .mock-panel { width: 62%; min-width: 236px; padding: 12px; gap: 8px; }
   .mock-continue { height: 72px; }
-  .procs { right: 12px; bottom: 12px; width: calc(100% - 24px); font-size: 13px; }
-  .procs-table span { padding: 8px 12px; }
+  .procs { right: 12px; bottom: 12px; width: calc(100% - 24px); font-size: 12px; }
+  .procs-table { grid-template-columns: minmax(0, 1fr) 44px 72px; }
+  .procs-table > span { padding: 7px 6px; }
+  .procs-name small { display: none; }
   .caption, .window { width: 100%; box-shadow: none; border: 1px solid var(--border); background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
   .caption-dark { background: #201C36; border-color: #34343A; }
   .window-bar { display: none; }
