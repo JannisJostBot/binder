@@ -23,19 +23,29 @@ const dataUrl = (file) => `data:image/png;base64,${readFileSync(join(shots, file
 const browser = await chromium.launch();
 const page = await browser.newPage();
 
-// WebP through the browser's canvas (keeps the transparent corners), at the window's own size.
+// Each window as the page shows it: without the 1 px border Windows draws around every window (a light line that
+// stands out on the dark ones; the page draws its own shadow), its corners rounded again at 8 px like the page's
+// cards, as WebP (or PNG for the preview below), through the browser's canvas.
+await page.setContent('<!doctype html><body></body>');
+async function trimmed(file, type) {
+  return page.evaluate(async ([src, type]) => {
+    const img = new Image();
+    img.src = src;
+    await img.decode();
+    const w = img.naturalWidth - 2, h = img.naturalHeight - 2;
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const g = c.getContext('2d');
+    g.beginPath();
+    g.roundRect(0, 0, w, h, 8);
+    g.clip();
+    g.drawImage(img, -1, -1);
+    return c.toDataURL(type, 0.9);
+  }, [dataUrl(file), type]);
+}
 for (const theme of ['light', 'dark']) {
   for (const view of views) {
-    await page.setContent('<!doctype html><body></body>');
-    const webp = await page.evaluate(async (src) => {
-      const img = new Image();
-      img.src = src;
-      await img.decode();
-      const c = document.createElement('canvas');
-      c.width = img.naturalWidth; c.height = img.naturalHeight;
-      c.getContext('2d').drawImage(img, 0, 0);
-      return c.toDataURL('image/webp', 0.9);
-    }, dataUrl(`${theme}-${view}.png`));
+    const webp = await trimmed(`${theme}-${view}.png`, 'image/webp');
     const file = join(out, `${theme}-${view}.webp`);
     writeFileSync(file, Buffer.from(webp.split(',')[1], 'base64'));
     console.log(file);
@@ -63,8 +73,8 @@ await page.setContent(`<!doctype html><html><head><style>
     <h1>A game launcher that stays out of your way</h1>
     <p>Free for Windows 10 and 11</p>
   </div>
-  <img class="back" src="${dataUrl('light-detail.png')}">
-  <img class="front" src="${dataUrl('dark-welcome-back.png')}">
+  <img class="back" src="${await trimmed('light-detail.png', 'image/png')}">
+  <img class="front" src="${await trimmed('dark-welcome-back.png', 'image/png')}">
 </body></html>`);
 await page.evaluate(() => Promise.all([document.fonts.ready, ...[...document.images].map((i) => i.decode())]));
 await page.screenshot({ path: join(root, 'site', 'og-image.png'), type: 'png' });
