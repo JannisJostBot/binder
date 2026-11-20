@@ -1316,7 +1316,9 @@ summary::-webkit-details-marker { display: none; }
   .window-bar { display: none; }
   .window-body { padding: 28px 24px; }
   .caption { width: 100%; box-shadow: none; border: 1px solid var(--border); background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .caption-dark { background: #201C36; border-color: #34343A; }
+  /* Without the game behind it, "While you play" is a card like the others. */
+  .caption-dark { background: var(--surface); border-color: var(--border); color: var(--text); }
+  .caption-dark p { color: var(--text-2); }
   .caption-progress { display: none; }
 }
 @media (max-width: 600px) {
