@@ -105,6 +105,8 @@ src/Binder.Watcher/    windowless (one hidden window on its own thread, SystemEv
 src/Binder.Elevated/   Game mode's admin helper (Native AOT, windowless, run by scheduled tasks)
 src/Binder.Setup/      BinderSetup.exe: per-user installer/updater/uninstaller (docs/installer.md)
 tests/Binder.Tests/    plain console unit tests (no test framework packages); smoke.ps1 / setup-test.ps1 are CI-only
+                          screenshots.ps1 (CI-only, .github/workflows/site-screenshots.yml): the website's pictures of the
+                          app, with a made-up library whose art Screenshots/make-art.mjs draws
 build/                    Updates.targets (where updates come from: repository and keys, checked and compiled in),
                           OfficialRelease.props (the official releases' values, owner only)
 scripts/                  publish.ps1 (builds publish\app: widget folder + AOT watcher + helper, and BinderSetup.exe;

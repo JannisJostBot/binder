@@ -145,7 +145,7 @@ if ($Strict) {
         '^src/Binder/Views/PanelBackdrop\.cs$',
         '^src/Binder/Library/UpdateManifest\.cs$', '^src/Binder/Services/(UpdateKeys|Updater)\.cs$', '^docs/releases/', '^build/',
         '\.(csproj|sln|props|targets)$', '^scripts/', '^\.github/',
-        '^tests/(smoke|setup-test)\.ps1$', '^tests/FakeGame/',
+        '^tests/(smoke|setup-test|screenshots)\.ps1$', '^tests/(FakeGame|Screenshots)/',
         '^(CLAUDE|AGENTS)\.md$', '^docs/(proposals|installer)\.md$', '^docs/tasks/'
     )
     foreach ($f in $changed) {
