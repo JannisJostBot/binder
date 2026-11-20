@@ -875,7 +875,6 @@ summary::-webkit-details-marker { display: none; }
 .tb-glyph { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 6px; border-radius: 4px; color: #1B1B1B; }
 .tb-glyph svg { width: 16px; height: 16px; display: block; }
 .tb-chevron { margin-right: -8px; }
-@media (max-width: 1100px) { .tb-search { width: 40px; padding: 0; justify-content: center !important; font-size: 0; background: none; border: 0; } .tb-search svg { width: 20px; height: 20px; } }
 @media (max-width: 600px) { .mock-apps { left: 12px; transform: none; } .mock-apps .tb-app:nth-child(n+5), .tb-chevron, .tb-status { display: none; } }
 .mock-tray { position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: background-color 0s 0.87s, box-shadow 0s 0.87s; }
 .stage:not([data-step="0"]):not([data-step="3"]) .mock-tray { background: rgba(0, 0, 0, 0.08); box-shadow: inset 0 -3px 0 -1px #005FB8; }
@@ -891,6 +890,12 @@ summary::-webkit-details-marker { display: none; }
   .tb-start svg rect:nth-child(4) { fill: #2AA0E6; }
   .mock-clock { color: #F3F3F5; }
   .stage:not([data-step="0"]):not([data-step="3"]) .mock-tray { background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 -3px 0 -1px #4CC2FF; }
+}
+/* Narrower windows: Search becomes its icon alone, as Windows' "Search icon only": no box, in either theme (after
+   the dark colours, so it wins there too). */
+@media (max-width: 1100px) {
+  .tb-search { width: 40px; height: 40px !important; margin: 0; padding: 0; justify-content: center !important; border-radius: 4px !important; font-size: 0; background: none !important; border: 0; }
+  .tb-search svg { width: 20px; height: 20px; }
 }
 
 /* Binder's shelf: the app's own dark panel. */
