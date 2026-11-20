@@ -8,6 +8,12 @@
   <meta property="og:title" content="Binder for Windows">
   <meta property="og:description" content="Binder lists the games you've installed with Steam, Epic, GOG and other launchers, and starts them with one click. For Windows 10 and 11.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jannisjostbot.github.io/binder/">
+  <meta property="og:image" content="https://jannisjostbot.github.io/binder/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Binder's window with game covers, next to the words: Your desktop, without the game shortcuts.">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://api.github.com; base-uri 'none'; form-action 'none'">
@@ -207,6 +213,48 @@
           <a href="#download" class="button button-primary">Download for Windows</a>
           <p class="caption-progress" aria-hidden="true"><i></i><i></i><i></i><i></i></p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What it looks like: the real app, captured by CI (.github/workflows/site-screenshots.yml) with the website's
+       made-up games; tests/Screenshots/make-site-images.mjs turns a run into these files. Light or dark like the
+       visitor's system. -->
+  <section id="screenshots" class="section section-alt" aria-labelledby="screenshots-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="h2" id="screenshots-title">What it looks like</h2>
+        <p class="lead">Binder itself, with made-up games. It follows your Windows colours, light or dark.</p>
+      </div>
+      <div class="shots">
+        <figure class="shot">
+          <picture>
+            <source srcset="screenshots/dark-welcome-back.webp" media="(prefers-color-scheme: dark)">
+            <img src="screenshots/light-welcome-back.webp" width="546" height="1001" loading="lazy" decoding="async" alt="Binder after a game closed: Welcome back, Starfall Drift, 1 hour 50 minutes played, above a grid of game covers.">
+          </picture>
+          <figcaption><strong>Back from a game</strong>The session you just played, then all your games.</figcaption>
+        </figure>
+        <figure class="shot">
+          <picture>
+            <source srcset="screenshots/dark-detail.webp" media="(prefers-color-scheme: dark)">
+            <img src="screenshots/light-detail.webp" width="546" height="1001" loading="lazy" decoding="async" alt="The page of the game Starfall Drift: Play, playtime, last played, size on disk and a chart of the last eight weeks.">
+          </picture>
+          <figcaption><strong>A game’s page</strong>Playtime by week, recent sessions and the game’s settings.</figcaption>
+        </figure>
+        <figure class="shot">
+          <picture>
+            <source srcset="screenshots/dark-free-up-space.webp" media="(prefers-color-scheme: dark)">
+            <img src="screenshots/light-free-up-space.webp" width="546" height="1001" loading="lazy" decoding="async" alt="Free up space: the games on drive C as tiles sized by the space they use, and a suggestion to uninstall Dune Runners.">
+          </picture>
+          <figcaption><strong>Free up space</strong>What you could remove to fit a new game.</figcaption>
+        </figure>
+        <figure class="shot">
+          <picture>
+            <source srcset="screenshots/dark-game-mode.webp" media="(prefers-color-scheme: dark)">
+            <img src="screenshots/light-game-mode.webp" width="546" height="1001" loading="lazy" decoding="async" alt="The Game mode page: the best performance power mode, game priority and background services to pause, each with a switch.">
+          </picture>
+          <figcaption><strong>Game mode</strong>What Windows changes while you play, item by item.</figcaption>
+        </figure>
       </div>
     </div>
   </section>

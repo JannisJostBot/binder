@@ -1339,6 +1339,24 @@ summary::-webkit-details-marker { display: none; }
   .lead { font-size: 16px; }
 }
 
+/* What it looks like: the app's own windows, as captured (transparent rounded corners, drawn by Windows), in a row of
+   four; two per row on tablets, and on phones a strip that scrolls sideways inside itself. */
+.shots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px 24px; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 16px; }
+.shot img { display: block; width: 100%; height: auto; border-radius: var(--radius); box-shadow: var(--shadow-2); }
+.shot figcaption { display: flex; flex-direction: column; gap: 4px; font-size: 15px; color: var(--text-2); text-wrap: pretty; }
+.shot figcaption strong { font-family: var(--display); font-size: 17px; font-weight: 600; color: var(--text); }
+@media (max-width: 900px) {
+  .shots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .shots {
+    display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+    margin: 0 calc(-1 * var(--gutter)); padding: 4px var(--gutter) 24px; scroll-padding: 0 var(--gutter);
+  }
+  .shot { flex: 0 0 72%; scroll-snap-align: start; }
+}
+
 /* How much it uses: one quiet card, a row per state. A large figure, and a thin bar drawn to scale against the open
    panel (--w, set by usage.js from the numbers; fixed proportions without it), so the last row's sliver says it at a
    glance. The numbers come from each release's measurement. */
