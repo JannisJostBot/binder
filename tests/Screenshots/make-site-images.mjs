@@ -60,7 +60,7 @@ await page.setContent(`<!doctype html><html><head><style>
 </style></head><body>
   <div class="text">
     <div class="brand">${logo.replace(/<\?xml[^>]*>/, '')}<span>Binder</span></div>
-    <h1>Your desktop, without the game shortcuts</h1>
+    <h1>A game launcher that stays out of your way</h1>
     <p>Free for Windows 10 and 11</p>
   </div>
   <img class="back" src="${dataUrl('light-detail.png')}">
