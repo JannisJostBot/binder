@@ -1,0 +1,13 @@
+{
+    "watcherMB":  0.2,
+    "watcherCpuMs":  0,
+    "closedMB":  2.5,
+    "closedCpuMs":  16,
+    "openMB":  50.9,
+    "games":  9,
+    "openBigMB":  72.6,
+    "bigGames":  100,
+    "windows":  "Windows Server 2025 Datacenter",
+    "cores":  4,
+    "ramGB":  16
+}
