@@ -52,7 +52,7 @@ public static class LaunchOptions
 
     public static IReadOnlyList<LaunchSuggestion> Suggestions(GameEngine engine) => engine switch
     {
-        GameEngine.Unity =>
+        GameEngine.Unity => (LaunchSuggestion[])
         [
             new(Strings.OptBorderless, "-popupwindow"),
             new(Strings.OptWindowed, "-screen-fullscreen 0"),
@@ -61,14 +61,14 @@ public static class LaunchOptions
             new(Strings.OptVulkan, "-force-vulkan", "api"),
             new(Strings.OptSecondMonitor, "-monitor 2"),
         ],
-        GameEngine.Unreal =>
+        GameEngine.Unreal => (LaunchSuggestion[])
         [
             new(Many(Strings.OptDx11), "-dx11", "api"),
             new(Many(Strings.OptDx12), "-dx12", "api"),
             new(Many(Strings.OptWindowed), "-windowed"),
             new(Many(Strings.OptSkipIntros), "-nomovie"),
         ],
-        GameEngine.Source or GameEngine.Source2 =>
+        GameEngine.Source or GameEngine.Source2 => (LaunchSuggestion[])
         [
             new(Strings.OptSkipIntro, "-novid"),
             new(Strings.OptWindowed, "-windowed"),
@@ -76,17 +76,17 @@ public static class LaunchOptions
             new(Strings.OptVulkan, "-vulkan"),
         ],
         // id Tech 6–8 console variables (DOOM 2016, Eternal, The Dark Ages; the newer Wolfenstein games).
-        GameEngine.IdTech =>
+        GameEngine.IdTech => (LaunchSuggestion[])
         [
             new(Many(Strings.OptSkipIntros), "+com_skipIntroVideo 1"),
             new(Many(Strings.OptNoKeyPress), "+com_skipKeyPressOnLoadScreens 1"),
         ],
         // HITMAN (2016), 2 and World of Assassination open a settings launcher first.
-        GameEngine.Glacier =>
+        GameEngine.Glacier => (LaunchSuggestion[])
         [
             new(Strings.OptSkipLauncher, "-skip_launcher"),
         ],
-        GameEngine.Godot =>
+        GameEngine.Godot => (LaunchSuggestion[])
         [
             new(Strings.OptVulkan, "--rendering-driver vulkan", "api"),
             new(Strings.OptDx12, "--rendering-driver d3d12", "api"),

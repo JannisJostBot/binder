@@ -25,7 +25,7 @@ public sealed partial class MainWindow
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         }
-        return [.. drives.OrderBy(d => d.Root, StringComparer.OrdinalIgnoreCase)];
+        return (DriveSpace[])[.. drives.OrderBy(d => d.Root, StringComparer.OrdinalIgnoreCase)];
     }
 
     IReadOnlySet<string> IFreeSpaceActions.RunningGameIds(IReadOnlyList<Game> games) => RunningGames.Ids(games);

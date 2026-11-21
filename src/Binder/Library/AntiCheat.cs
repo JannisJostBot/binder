@@ -97,7 +97,7 @@ public static class AntiCheat
     /// Loaded drivers some anti-cheats block (old hardware-monitor and tuning tools): service-name prefix
     /// (lower case) → the tool to update.
     /// </summary>
-    public static readonly IReadOnlyList<(string Prefix, string Tool)> BlockedDrivers =
+    public static readonly IReadOnlyList<(string Prefix, string Tool)> BlockedDrivers = ((string Prefix, string Tool)[])
     [
         ("winring0", Strings.DriverWinRing0),
         ("rtcore64", Strings.Format(Strings.DriverOlderVersion, "MSI Afterburner")),

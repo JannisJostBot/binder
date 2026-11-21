@@ -551,8 +551,8 @@ public sealed partial class App : Application
             .ToArray();
         const int firstLauncher = 100;
         List<(int Id, string Text, bool Checked)> items = [];
-        if (UpdateMenuText is { } updateText) items.AddRange([(update, updateText, false), (0, "", false)]); // spec §25
-        items.AddRange(
+        if (UpdateMenuText is { } updateText) items.AddRange(((int Id, string Text, bool Checked)[])[(update, updateText, false), (0, "", false)]); // spec §25
+        items.AddRange(((int Id, string Text, bool Checked)[])
         [
             (open, Strings.OpenBinder, false), (0, "", false),
             (gameMode, needsUpdate ? Strings.GameModeNeedsUpdateMenu : Strings.GameModeTray, Settings.GameModeEnabled),
