@@ -101,7 +101,7 @@ public static class GameModeInfo
 
     public static bool OneDriveHoldsDocuments() =>
         OneDriveHoldsDocuments(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            [Environment.GetEnvironmentVariable("OneDrive"), Environment.GetEnvironmentVariable("OneDriveConsumer"),
+            (string?[])[Environment.GetEnvironmentVariable("OneDrive"), Environment.GetEnvironmentVariable("OneDriveConsumer"),
              Environment.GetEnvironmentVariable("OneDriveCommercial")]);
 
     /// <summary>The last restore, or null if there was none (or the file is unreadable).</summary>

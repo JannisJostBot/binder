@@ -124,7 +124,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _importedShortcuts = importedShortcuts;
         _hotkeyFree = hotkeyFree;
         LoadScreens(monitors, currentMonitor);
-        HiddenGames = [.. games.Where(g => g.Hidden).OrderBy(g => g.Name, StringComparer.CurrentCultureIgnoreCase)];
+        HiddenGames = (Game[])[.. games.Where(g => g.Hidden).OrderBy(g => g.Name, StringComparer.CurrentCultureIgnoreCase)];
         settings.SourceOverrides ??= []; // "null" in a hand-edited settings.json
         LoadSourcePaths();
         LoadGameKeys();

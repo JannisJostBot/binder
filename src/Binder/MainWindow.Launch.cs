@@ -33,8 +33,8 @@ public sealed partial class MainWindow
     {
         try
         {
-            var names = Strings.List([.. conflicts.Select(c => c.Name)]);
-            var antiCheat = Strings.List([.. game.AntiCheats!.Select(AntiCheat.Name)]);
+            var names = Strings.List((string[])[.. conflicts.Select(c => c.Name)]);
+            var antiCheat = Strings.List((string[])[.. game.AntiCheats!.Select(AntiCheat.Name)]);
             var dialog = new ContentDialog
             {
                 XamlRoot = Root.XamlRoot,

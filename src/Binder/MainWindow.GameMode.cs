@@ -36,7 +36,7 @@ public sealed partial class MainWindow
         new(GameModeInfo.LastResult(), GameModeService.HasLog, GameModeService.CanRestoreNow, GameModeService.Pending);
 
     IReadOnlyList<AppChoice> IGameModeActions.RunningApps() =>
-        [.. GameModeService.RunningApps(_games).Select(a => new AppChoice(a.Path, a.Name))];
+        (AppChoice[])[.. GameModeService.RunningApps(_games).Select(a => new AppChoice(a.Path, a.Name))];
 
     IReadOnlySet<string> IGameModeActions.RunningPaths() => GameModeService.RunningPaths();
     string IGameModeActions.AppName(string path) => GameModeService.AppName(path);
