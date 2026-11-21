@@ -70,6 +70,7 @@
             <li><a href="#pc-playing">While a game runs</a></li>
             <li><a href="#pc-keys">Keyboard shortcuts</a></li>
             <li><a href="#pc-gamekeys">Game shortcuts</a></li>
+            <li><a href="#pc-endstuck">Ending a stuck game</a></li>
           </ol>
         </li>
         <li><a href="#game-mode">Game mode</a>
@@ -137,7 +138,7 @@
           <li><strong>After a crash:</strong> with <strong>Restart if it crashes</strong> on for the game, a game that crashed after playing for at least a minute is started again after 5 seconds, at most twice in a row.</li>
           <li><strong>Shutting down or signing out:</strong> the session is saved at once and nothing is reopened.</li>
         </ul>
-        <p>Binder only stays open if a game can't be followed (it has no install folder and no Process to watch); a notice then points to that setting. Because Binder isn't running while you play, its keyboard shortcut does nothing until the game closes.</p>
+        <p>Binder only stays open if a game can't be followed (it has no install folder and no Process to watch); a notice then points to that setting. Because Binder isn't running while you play, its keyboard shortcut doesn't open it until the game closes; held, it can end a game that stopped responding (see <a href="#pc-endstuck">Ending a stuck game</a>).</p>
 
         <h3 id="pc-keys" class="docs-h3">Keyboard shortcuts</h3>
         <p>Binder's keyboard shortcut is registered with Windows the usual way, like any app's, and only while Binder runs; Windows tells Binder when it's pressed, so Binder doesn't watch the keyboard for it. Change it in Settings › Opening Binder › <strong>Keyboard shortcut</strong>: <span class="keys"><kbd>Win</kbd><kbd>Shift</kbd><kbd>G</kbd></span> (the default), <span class="keys"><kbd>Win</kbd><kbd>Shift</kbd><kbd>J</kbd></span>, <span class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>G</kbd></span> or Off. The table shows the default.</p>
@@ -151,6 +152,8 @@
           <dd>Play the last game you played.</dd>
           <dt><span class="keys"><kbd>Win</kbd><kbd>Shift</kbd><kbd>G</kbd></span><span class="keys-then">then</span>hold</dt>
           <dd>Show which game each number plays.</dd>
+          <dt><span class="keys"><kbd>Win</kbd><kbd>Shift</kbd><kbd>G</kbd></span><span class="keys-then">held during a game</span></dt>
+          <dd>End the game when it stopped responding (see <a href="#pc-endstuck">Ending a stuck game</a>).</dd>
           <dt><span class="keys"><kbd>Esc</kbd></span></dt>
           <dd>Don't start the game while its logo shows.</dd>
         </dl>
@@ -201,6 +204,9 @@
 
         <h3 id="pc-gamekeys" class="docs-h3">Game shortcuts</h3>
         <p><strong>Game shortcuts</strong> (on by default, in Settings › Opening Binder) play a game with Binder's keyboard shortcut and a number: with the default shortcut, hold Win+Shift, press G, then press a number. 0 is always the last game played; 1 to 9 are the games you give them. Windows uses Win+Shift and a number for the taskbar, so Binder can't register those keys. Instead, right after the shortcut and only while its keys are still held, Binder watches the keyboard for a number until they are let go (at most 15 seconds), and for Esc while the game's logo shows (about 1.5 seconds). Held for over a second, the keys show which game each number plays. It takes only the number or Esc it acts on and lets every other key through; nothing is recorded or stored. Letting go without a number opens Binder as before. At no other time does Binder watch the keyboard, and while a game runs Binder isn't running at all.</p>
+
+        <h3 id="pc-endstuck" class="docs-h3">Ending a stuck game</h3>
+        <p><strong>End a stuck game</strong> (in Settings › When a game starts; <strong>When it stops responding</strong> by default, or <strong>Always</strong>, or <strong>Off</strong>) ends a game that froze in full screen, where Task Manager can't get in front of it. While the game runs, Binder's game watcher registers Binder's keyboard shortcut with Windows (no keyboard hook). Hold the shortcut: after 0.3 seconds a ring with an X appears in the middle of the screen, and its four parts fill one after another over 2.5 seconds; when all four are full, the game ends. A quiet hum goes with it, a voice added with each part, so the hold is heard where the ring can't be seen. Let go earlier and nothing happens; a short press shows nothing at all. Only while the keys are held does the watcher check, every 30 milliseconds, that they still are (the shortcut's keys, or the keyboard's repeat of the shortcut); it reads nothing else and stores nothing. With <strong>When it stops responding</strong>, a game is ended only while Windows reports its window as not responding, or while Windows Error Reporting (<code>WerFault.exe</code>) is still holding a game that crashed. This is checked when the ring would appear and again when it's full; a game that responds shows "is responding · nothing was ended" above the taskbar instead. What ends: the game's own processes that the watcher follows (inside its install folder, or its Process to watch), checked by their process id and start time, and a <code>WerFault.exe</code> from <code>System32</code> that holds one of them. Never an anti-cheat service, a launcher or anything else. The ring shows over the game; a game is never minimized for it. Afterwards the session is saved as ended by you, Game mode is put back, and, if <strong>Come back when the game closes</strong> is on, Binder opens with a card: "crashed" or "stopped responding" only when Windows said so, otherwise "You ended [game]", with <strong>Play again</strong>. Restart if it crashes never restarts a game you ended. If Binder itself is open while the game runs (Keep open), the shortcut opens Binder as usual instead.</p>
       </section>
 
       <section id="game-mode" class="docs-part">

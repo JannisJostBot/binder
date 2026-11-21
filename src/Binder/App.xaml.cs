@@ -343,7 +343,7 @@ public sealed partial class App : Application
         if (_quitting) return;
         var last = returnedGame is null ? null : State.Sessions.Where(s => s.GameId == returnedGame).MaxBy(s => s.Start);
         if (last is not null && TryRestart(CrashStore.For(State.Crashes, last), returnedGame)) return;
-        var unseen = CrashStore.Unseen(State.Crashes, State.Sessions);
+        var unseen = CrashStore.Unseen(State.Crashes, State.Sessions, returnedGame);
         if (unseen is not null && unseen.GameId == returnedGame) OpenPanel();
         _panel?.CrashesChecked(unseen);
     }
@@ -524,6 +524,8 @@ public sealed partial class App : Application
     {
         var (modifiers, key) = HotkeyKeys(Settings.Hotkey);
         HotkeyFree = _messages?.RegisterHotkey(modifiers, key) ?? false;
+        // A game's watcher may hold it for "End a stuck game" (spec §28): it lets go when asked.
+        if (!HotkeyFree && key != 0 && WatcherKey.Release()) HotkeyFree = _messages?.RegisterHotkey(modifiers, key) ?? false;
         ApplyGameKeys(); // they follow the shortcut (none while it's off)
         return HotkeyFree;
     }

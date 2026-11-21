@@ -12,13 +12,36 @@ internal static partial class Footprint
     /// <summary>Call right before blocking on the game's processes.</summary>
     public static void Rest()
     {
+        _resting = true;
         GC.Collect(2, GCCollectionMode.Aggressive, blocking: true, compacting: true);
         SetEfficiencyMode(true);
         SetProcessWorkingSetSizeEx(GetCurrentProcess(), -1, -1, 0); // trim the working set, last: nothing touches it after
     }
 
     /// <summary>Call when the game exits or Windows is ending the session: saving and restoring run at full speed.</summary>
-    public static void Wake() => SetEfficiencyMode(false);
+    public static void Wake()
+    {
+        _resting = false;
+        SetEfficiencyMode(false);
+    }
+
+    private static volatile bool _resting;
+
+    /// <summary>Hands the working set back to Windows (after the ring's window and GDI+ are gone).</summary>
+    public static void Trim() => SetProcessWorkingSetSizeEx(GetCurrentProcess(), -1, -1, 0);
+
+    /// <summary>"End a stuck game" is being held (EndHold, on the system events thread): full speed while the ring
+    /// draws and its sound plays, so neither stutters.</summary>
+    public static void Pause()
+    {
+        if (_resting) SetEfficiencyMode(false);
+    }
+
+    /// <summary>The hold is over and the game still runs: back to rest (the ring's window trims the working set itself).</summary>
+    public static void Resume()
+    {
+        if (_resting) SetEfficiencyMode(true);
+    }
 
     private static void SetEfficiencyMode(bool on)
     {

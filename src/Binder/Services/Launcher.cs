@@ -1,7 +1,9 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using Binder.Library;
 using Binder.Models;
+using Binder.Views;
 
 namespace Binder.Services;
 
@@ -124,6 +126,22 @@ public static class Launcher
     /// <summary>True when the watcher can tell that the game closed (a folder or a process name to watch).</summary>
     public static bool CanWatch(Game game) => WatchFolder(game) is not null || WatchedProcess(game) is not null;
 
+    /// <summary>
+    /// "End a stuck game" (spec §28): the choice, the shortcut to hold, and the ring's texts with the game's name,
+    /// translated here (the watcher has no resources). Nothing when it's off or there's no shortcut.
+    /// </summary>
+    public static void AddEndStuckArguments(ICollection<string> args, Game game, Settings settings)
+    {
+        if (settings.EndStuckGame == EndStuckGame.Off || settings.Hotkey == Hotkey.Off) return;
+        var (modifiers, key) = App.HotkeyKeys(settings.Hotkey);
+        args.Add("--end");
+        args.Add(settings.EndStuckGame == EndStuckGame.Always ? "always" : "hung");
+        args.Add("--end-key");
+        args.Add(string.Create(CultureInfo.InvariantCulture, $"{modifiers},{key}"));
+        args.Add("--end-text");
+        args.Add(Format.EndStuckText(game.Name));
+    }
+
     /// <summary>Starts the watcher for a launched game. Returns an error message, or null on success.</summary>
     public static string? StartWatcher(Game game, bool comeBack)
     {
@@ -152,6 +170,7 @@ public static class Launcher
             psi.ArgumentList.Add("1");
         }
         GameModeService.AddWatcherArguments(psi.ArgumentList, game, App.Settings);
+        AddEndStuckArguments(psi.ArgumentList, game, App.Settings);
 
         try
         {

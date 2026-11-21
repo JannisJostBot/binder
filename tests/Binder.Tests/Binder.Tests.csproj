@@ -69,6 +69,9 @@
     <Compile Include="..\..\src\Binder.Watcher\SessionLog.cs" Link="Linked\Watcher\SessionLog.cs" />
     <Compile Include="..\..\src\Binder.Watcher\WatcherNames.cs" Link="Linked\Watcher\WatcherNames.cs" />
     <Compile Include="..\..\src\Binder.Watcher\SystemEvents.cs" Link="Linked\Watcher\SystemEvents.cs" />
+    <Compile Include="..\..\src\Binder.Watcher\EndHold.cs" Link="Linked\Watcher\EndHold.cs" />
+    <Compile Include="..\..\src\Binder.Watcher\RingWindow.cs" Link="Linked\Watcher\RingWindow.cs" />
+    <Compile Include="..\..\src\Binder.Watcher\HoldSound.cs" Link="Linked\Watcher\HoldSound.cs" />
     <Compile Include="..\..\src\Binder.Watcher\Footprint.cs" Link="Linked\Watcher\Footprint.cs" />
     <Compile Include="..\..\src\Binder.Watcher\ProcessList.cs" Link="Linked\Watcher\ProcessList.cs" />
     <Compile Include="..\..\src\Binder.Watcher\ElevatedClient.cs" Link="Linked\Watcher\ElevatedClient.cs" />

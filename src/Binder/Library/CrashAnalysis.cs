@@ -37,7 +37,8 @@ public static class CrashAnalysis
 
     /// <summary>Whether a session is worth reading the Windows logs for (most aren't, so most cost nothing).</summary>
     public static bool NeedsCheck(Session s) =>
-        s.ExitCode is { } code && (IsFailureCode(code) || (code != 0 && !s.Resumed && s.End - s.Start < StartWindow)) || s.CrashReporter;
+        s.ExitCode is { } code && (IsFailureCode(code) || (code != 0 && !s.Resumed && s.End - s.Start < StartWindow)) || s.CrashReporter ||
+        s.EndedByUser;
 
     /// <summary>The check's record for a session (same game and start), or null when it wasn't checked.</summary>
     public static CrashRecord? For(IReadOnlyList<CrashRecord> records, Session s) =>
@@ -77,13 +78,20 @@ public static class CrashAnalysis
         if (error is null && IsFailureCode(code)) error = code;
 
         var duration = s.End - s.Start;
-        var ending =
-            code != 0 && !IsBenign(code) && duration < StartWindow && !s.Resumed ? GameEnding.StartFailed
+        // Ended with "End a stuck game" (spec §28): a crash or hang only when Windows said so (its crash event,
+        // its error report holding the game, or the window hung when it was ended); otherwise just ended.
+        // A crashed game's window is hung too while its error report is written: then it's a crash, not a hang.
+        hang |= s.EndedByUser && s.Hung && !s.ErrorReport && crash is null;
+        var ending = s.EndedByUser
+            ? (crash is not null || s.ErrorReport || hang ? GameEnding.Crashed : GameEnding.EndedByUser)
+            : code != 0 && !IsBenign(code) && duration < StartWindow && !s.Resumed ? GameEnding.StartFailed
             : IsFailureCode(code) && (crash is not null || hang || s.CrashReporter) ? GameEnding.Crashed
             : IsFailureCode(code) ? GameEnding.ClosedUnexpectedly
             : GameEnding.Normal;
 
-        var culprit = ending == GameEnding.Normal ? CrashCulprit.None : CulpritOf(module, error, driverReset, ending, crash, prefix);
+        // An ended game without a crash event has nothing to point at: no "unknown error" advice.
+        var culprit = ending is GameEnding.Normal or GameEnding.EndedByUser || (s.EndedByUser && crash is null && !driverReset)
+            ? CrashCulprit.None : CulpritOf(module, error, driverReset, ending, crash, prefix);
 
         return new CrashRecord
         {
@@ -99,6 +107,8 @@ public static class CrashAnalysis
             Hang = hang,
             DriverReset = driverReset,
             CrashReporter = s.CrashReporter,
+            EndedByUser = s.EndedByUser,
+            ErrorReport = s.EndedByUser && s.ErrorReport,
             Resumed = s.Resumed,
             Seen = ending == GameEnding.Normal,
         };
@@ -141,6 +151,12 @@ public static class CrashAnalysis
         return false;
     }
 
+    /// <summary>
+    /// Whether a record's card may show now: a problem, or a game the user ended (spec §28), which shows only when
+    /// the widget came back for that game (<paramref name="returnedGame"/>), never later.
+    /// </summary>
+    public static bool ShowsCard(CrashRecord r, string? returnedGame) => r.HasCard && (!r.EndedByUser || r.GameId == returnedGame);
+
     // ---- Restart after a crash (spec §17) -----------------------------------------------------------------
 
     /// <summary>A crash is restarted only after a session at least this long (the watcher's rule too).</summary>
@@ -156,7 +172,7 @@ public static class CrashAnalysis
     /// Never a failed start (a missing runtime or a broken install; restarting won't help) or a normal exit.
     /// </summary>
     public static bool IsRestartable(CrashRecord r) =>
-        r.Ending is GameEnding.Crashed or GameEnding.ClosedUnexpectedly && (r.Resumed || r.End - r.Start >= RestartMinSession);
+        r.Ending is GameEnding.Crashed or GameEnding.ClosedUnexpectedly && !r.EndedByUser && (r.Resumed || r.End - r.Start >= RestartMinSession);
 
     /// <summary>
     /// The game's restartable crashes in a row up to and including <paramref name="latest"/>: its sessions newest
@@ -188,6 +204,7 @@ public static class CrashAnalysis
     /// <summary>"[Game] crashed after 1 h 12 min", "… closed right after starting", …</summary>
     public static string Title(string game, CrashRecord r) => r.Ending switch
     {
+        GameEnding.EndedByUser => Strings.Format(Strings.EndedTitle, game, Format.Duration(r.End - r.Start)),
         GameEnding.StartFailed => Strings.Format(Strings.CrashTitleStart, game),
         GameEnding.ClosedUnexpectedly => Strings.Format(Strings.CrashTitleClosed, game, Format.Duration(r.End - r.Start)),
         _ when r.Hang => Strings.Format(Strings.CrashTitleHang, game, Format.Duration(r.End - r.Start)),
@@ -204,6 +221,8 @@ public static class CrashAnalysis
         CrashCulprit.Overlay => Strings.Format(Strings.CrashOverlay, r.Module),
         CrashCulprit.CppRuntime => Strings.CrashCppRuntime,
         CrashCulprit.MissingRuntime => Strings.CrashMissingRuntime,
+        _ when r.Ending == GameEnding.EndedByUser => Strings.EndedResponding,
+        _ when r.EndedByUser => r.ErrorReport ? Strings.EndedWhileReport : Strings.EndedWhileHung,
         _ when r.Ending == GameEnding.ClosedUnexpectedly => Strings.CrashExitCode,
         _ => Strings.CrashUnknown,
     };
@@ -245,6 +264,8 @@ public static class CrashAnalysis
     /// <summary>"Access violation (0xC0000005)", or just the code.</summary>
     public static string WhatHappened(CrashRecord r)
     {
+        if (r.EndedByUser && r.ErrorCode is null) return r.Ending == GameEnding.EndedByUser ? Strings.EndedStillResponding
+            : r.Hang ? Strings.CrashHangEnded : Strings.CrashReportEnded;
         if (r.Hang && r.ErrorCode is null) return Strings.CrashHangClosed;
         uint code = r.ErrorCode ?? r.ExitCode;
         return CodeName(code) is { } name ? Strings.Format(Strings.CodeWithName, name, Hex(code)) : Strings.Format(Strings.ErrorCode, Hex(code));
@@ -277,6 +298,8 @@ public static class CrashAnalysis
         if (r.DriverReset) parts.Add(Strings.AlsoDriverReset);
         if (r.Hang && r.ErrorCode is not null) parts.Add(Strings.AlsoHang);
         if (r.CrashReporter) parts.Add(Strings.AlsoCrashReporter);
+        // Ended with the hold while the explanation is about the crash itself: say it here.
+        if (r.EndedByUser && r.Culprit is not (CrashCulprit.None or CrashCulprit.Unknown)) parts.Add(Strings.AlsoEndedByYou);
         return parts.Count == 0 ? null : string.Join(". ", parts);
     }
 
@@ -343,7 +366,7 @@ public static class CrashAnalysis
             GameEnding.ClosedUnexpectedly => Strings.Format(Strings.PromptClosed, game, played),
             _ => Strings.Format(Strings.PromptCrashed, game, played),
         });
-        sb.Append('\n').Append(Strings.Format(Strings.PromptReported, CodeSentence(r)));
+        if (!(r.EndedByUser && r.ErrorCode is null)) sb.Append('\n').Append(Strings.Format(Strings.PromptReported, CodeSentence(r)));
         if (AlsoAtThatTime(r) is { } also) sb.Append('\n').Append(Strings.Format(Strings.PromptAlso, Strings.LowerFirst(also)));
         sb.Append('\n').Append(Strings.Format(Strings.PromptPc, Pc(pc, ", ")));
         sb.Append('\n').Append(Strings.Format(Strings.PromptHowOften, HowOften(problemsInRecent, recentSessions)));
@@ -366,7 +389,9 @@ public static class CrashAnalysis
         var sb = new StringBuilder();
         sb.Append(Strings.Format(Strings.LabelValue, Strings.ReportGame, store is null ? game : Strings.Format(Strings.ReportGameStore, game, store))).Append('\n');
         sb.Append(Strings.Format(Strings.LabelValue, Strings.ReportWhat, what)).Append('\n');
-        sb.Append(Strings.Format(Strings.LabelValue, Strings.ReportError, CodeSentence(r, report: true))).Append('\n');
+        // Ended with the hold and no error from Windows: the exit code is the one the hold gave, not the game's.
+        sb.Append(Strings.Format(Strings.LabelValue, Strings.ReportError,
+            r.EndedByUser && r.ErrorCode is null ? WhatHappened(r) : CodeSentence(r, report: true))).Append('\n');
         if (AlsoAtThatTime(r) is { } also) sb.Append(Strings.Format(Strings.LabelValue, Strings.ReportAlso, also)).Append('\n');
         sb.Append(Strings.Format(Strings.LabelValue, Strings.ReportHowOften, problemsInRecent <= 1
             ? Strings.Format(Strings.ReportFirstTime, recentSessions) : Strings.Format(Strings.ReportTimes, problemsInRecent, recentSessions))).Append('\n');

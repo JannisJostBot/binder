@@ -76,7 +76,8 @@ src/Binder/            the WinUI widget
   Services/               Launcher, CoverCache, Storage, UpdateKeys (where updates come from, generated at build
                           time), Updater (check, download,
                           start the setup), Windows integration (DesktopLayer, Monitors, Placement,
-                          Autostart, ShellNotify, PcChecks, StartMenuGames (read Start, write "Binder games"), …), Gamepad (XInput, polled only while the panel is
+                          Autostart, ShellNotify, PcChecks, StartMenuGames (read Start, write "Binder games"),
+                          WatcherKey (takes the shortcut back from a game's watcher), …), Gamepad (XInput, polled only while the panel is
                           active and a pad is connected), GameModeService, WindowsGaming (Windows' Game Mode,
                           OneDrive; read when the Game mode page opens), Chime/Sound
   ViewModels/             MVVM: ObservableObject, RelayCommand, one <Page>ViewModel + I<Page>Actions per page (Shelf,
@@ -104,8 +105,10 @@ src/Binder/            the WinUI widget
   Dev/                    the debug panel, Debug builds only ("Binder.exe --dev"): buttons that show every toast, card
                           and message through the real code with made-up data; left out of Release builds
 src/Binder.Watcher/    windowless (one hidden window on its own thread, SystemEvents.cs: shutdown, sign-out and
-                          sleep); Program.cs, ProcessList.cs (detection's process list), Footprint.cs (rest while
-                          the game runs), GameMode.cs (apply/restore + journal), ElevatedClient.cs,
+                          sleep, and the shortcut for EndHold.cs, "End a stuck game", §28, whose ring is RingWindow.cs,
+                          GDI+, and its sound HoldSound.cs, waveOut); Program.cs, ProcessList.cs (detection's process
+                          list), Footprint.cs (rest while the game runs, paused during a hold), GameMode.cs
+                          (apply/restore + journal), ElevatedClient.cs,
                           GameModeShared.cs (also compiled into the widget, helper and setup)
 src/Binder.Elevated/   Game mode's admin helper (Native AOT, windowless, run by scheduled tasks)
 src/Binder.Setup/      BinderSetup.exe: per-user installer/updater/uninstaller (docs/installer.md)
@@ -172,6 +175,9 @@ moves an old `sessions.json` into the year files at start (kept as `sessions.jso
    - Found: **block** on the process handle; no polling while the game runs. While blocked the watcher is
      compacted, trimmed and in efficiency mode (`Footprint`), undone when the game exits. After an exit, re-check
      the folder for ~3 s (games that restart themselves).
+   - End a stuck game (§28): the watcher's hidden window holds Binder's shortcut while the game runs; holding it 2.5 s
+     ends the game (by default only while Windows says it isn't responding). A 30 ms timer runs only while it's held,
+     and efficiency mode is paused for the hold (`Footprint.Pause`/`Resume`) so the ring and its sound keep time.
    - On exit: append the session as one line to `sessions-<year>.jsonl` (the year it ended, `SessionLog`; never
      reads the file), relaunch the widget if "Come back when the game closes" is on, or with `--crashed` after a crash exit code of a game with "Restart if it crashes" (spec §17: the widget's
      restart pill counts 5 s down, then plays it again; at most twice in a row).
@@ -329,7 +335,8 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
   shelf; any other id just opens the panel. A game shortcut's number (spec §26) plays only a game on the shelf.
 - **Keyboard.** The only keyboard hook (`MessageWindow.GameKeys.cs`) exists right after the panel's shortcut while
   its modifiers are held (until they come up, at most 15 s) and while a game shortcut's flash waits; it takes only 0–9 and Esc, stores
-  nothing, and does its work after returning. Never a hook at any other time. Arguments via `ProcessStartInfo.ArgumentList`, or quoted by the Windows argv rules.
+  nothing, and does its work after returning. Never a hook at any other time. The watcher registers the same shortcut while a game runs (`RegisterHotKey`, spec §28,
+  `EndHold`) and reads only the shortcut's own keys (`GetAsyncKeyState`) and its auto-repeat while it's held; no hook. Arguments via `ProcessStartInfo.ArgumentList`, or quoted by the Windows argv rules.
 - **Native code.** Only Windows system DLLs, from System32 (`DefaultDllImportSearchPaths(System32)` in every
   assembly; the setup and helper also link with `/DEPENDENTLOADFLAG:0x800`, the setup calls
   `SetDefaultDllDirectories`).
@@ -339,6 +346,11 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
   the Public desktop (`ShortcutImporter.StoredShortcut` / `RestoreTarget`), whatever `imported-shortcuts.json` says.
   An import saves each shortcut's record before moving it (`ShortcutImporter.Store`), and a restore also puts back
   shortcuts in our folder that no record names (`Unrecorded`), except a manually added game's own copy.
+- **Ending a game (spec §28).** Only the watcher, only after the shortcut was held for the full 2.5 s (the keys checked
+  as really held), and with "When it stops responding" only while Windows calls the game's window hung or a System32
+  `WerFault.exe` holds it (checked twice). Only the processes it follows for that game, matched again by process id
+  and start time, and that `WerFault.exe` (its path checked); never anything else, never anti-cheat, launchers or
+  Windows. Never from an argument, a file or a message: a posted `WM_HOTKEY` without the keys held does nothing.
 - **Files.** Only delete inside our own AppData folders, and the `.lnk` files directly in our Start menu folder
   `Programs\Binder games\` (`StartMenuGames`, never through links; other Start entries are only read, never
   changed); never follow paths from data files to delete or overwrite anything. Never delete the user's files or shortcuts; moves stay reversible. The one exception is the

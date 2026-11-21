@@ -39,6 +39,15 @@ public sealed partial class CrashCard : UserControl
         _game = game;
         _record = record;
 
+        // Ended with "End a stuck game" while it still responded: what happened, nothing more (no details, no report).
+        bool ended = record.Ending == GameEnding.EndedByUser;
+        var resources = Application.Current.Resources;
+        CardBorder.BorderBrush = (Microsoft.UI.Xaml.Media.Brush)resources[ended ? "CardStrokeColorDefaultBrush" : "SystemFillColorCautionBrush"];
+        CardIcon.Glyph = ended ? "\uE946" : "\uE7BA";
+        CardIcon.Foreground = (Microsoft.UI.Xaml.Media.Brush)resources[ended ? "TextFillColorSecondaryBrush" : "SystemFillColorCautionBrush"];
+        DetailsBorder.Visibility = ended ? Visibility.Collapsed : Visibility.Visible;
+        ReportButton.Visibility = ended ? Visibility.Collapsed : Visibility.Visible;
+
         TitleText.Text = CrashAnalysis.Title(game.Name, record);
         ExplanationText.Text = CrashAnalysis.Explanation(record);
         bool gaveUp = CrashAnalysis.RestartLimitReached(game, record, sessions, records);
@@ -58,7 +67,7 @@ public sealed partial class CrashCard : UserControl
         _problems = Math.Max(1, recent.Count(s => CrashStore.For(records, s) is { IsProblem: true }));
 
         _logPath = GameLogs.Find(game);
-        LogButton.Visibility = _logPath is null ? Visibility.Collapsed : Visibility.Visible;
+        LogButton.Visibility = _logPath is null || ended ? Visibility.Collapsed : Visibility.Visible;
         RedistLink.Visibility = CrashAnalysis.OffersRedist(record) ? Visibility.Visible : Visibility.Collapsed;
         PromptButton.Visibility = CrashAnalysis.OffersAiPrompt(record) ? Visibility.Visible : Visibility.Collapsed;
         PlayAgainButton.Visibility = record.Ending == GameEnding.StartFailed && CrashAnalysis.OffersRedist(record)
