@@ -17,7 +17,9 @@ internal static unsafe partial class RingWindow
     private const int WidthDip = 640, HeightDip = (int)(Disc + Gap + LabelHeight + 2 * Margin);
 
     private static IntPtr _hwnd, _gdiplus, _dc, _dib, _oldBitmap, _bitmap, _graphics, _bits;
-    private static int _width, _height, _x, _y;
+    private static int _width, _height, _x, _y, _workLeft, _workRight, _taskbarTop;
+    /// <summary>The gap between a note and the taskbar, as the Game mode toast's (its shadow room, 32 DIPs).</summary>
+    private const float NoteGap = 32;
     private static float _scale = 1;
     private static Colors _colors;
 
@@ -60,12 +62,19 @@ internal static unsafe partial class RingWindow
         Present();
     }
 
-    /// <summary>A pill "main · sub" with an info mark, where the ring would be.</summary>
-    public static void ShowNote(string main, string sub)
+    /// <summary>
+    /// A pill "main · sub" with an info mark, where Binder's other pills show (the Game mode toast): centred above
+    /// the taskbar, also an auto-hide one, of the monitor of <paramref name="near"/>.
+    /// </summary>
+    public static void ShowNote(string main, string sub, IntPtr near)
     {
-        if (!Ready(Native.GetForegroundWindow())) return;
+        if (!Ready(near)) return;
         Native.GdipGraphicsClear(_graphics, 0);
-        Label(main, sub, PillTextSize, PillHeight, (_height - PillHeight * _scale) / 2, dot: true);
+        float s = _scale;
+        // The pill sits at the bottom of the surface, its lower edge NoteGap above the taskbar.
+        Label(main, sub, PillTextSize, PillHeight, _height - (Margin + PillHeight) * s, dot: true);
+        _x = (_workLeft + _workRight - _width) / 2;
+        _y = _taskbarTop - (int)(NoteGap * s) - _height + (int)(Margin * s);
         Present();
     }
 
@@ -83,8 +92,12 @@ internal static unsafe partial class RingWindow
         }
         if (_dib != IntPtr.Zero) Native.DeleteObject(_dib);
         _dc = _dib = _bits = IntPtr.Zero;
-        if (_gdiplus != IntPtr.Zero) Native.GdiplusShutdown(_gdiplus);
+        if (_gdiplus == IntPtr.Zero) return;
+        Native.GdiplusShutdown(_gdiplus);
         _gdiplus = IntPtr.Zero;
+        // GDI+, its fonts and the surface stay paged in (several MB) otherwise: hand them back to Windows now, as
+        // after detection. Only the next hold touches them again.
+        Native.SetProcessWorkingSetSize(Native.CurrentProcess, -1, -1);
     }
 
     // ---- Drawing helpers --------------------------------------------------------------------------------
@@ -210,6 +223,9 @@ internal static unsafe partial class RingWindow
             _height = (int)(HeightDip * _scale);
             _x = (info.rcMonitor.Left + info.rcMonitor.Right - _width) / 2;
             _y = (info.rcMonitor.Top + info.rcMonitor.Bottom - _height) / 2;
+            _workLeft = info.rcWork.Left;
+            _workRight = info.rcWork.Right;
+            _taskbarTop = info.rcWork.Bottom - AutoHideTaskbarHeight(info.rcMonitor);
             _colors = Colors.Now();
 
             var input = new Native.GdiplusStartupInput { GdiplusVersion = 1 };
@@ -249,6 +265,20 @@ internal static unsafe partial class RingWindow
             Hide();
             return false;
         }
+    }
+
+    /// <summary>
+    /// An auto-hide taskbar at the bottom of this monitor reserves no work area but slides up over it: its height,
+    /// else 0 (the widget's Monitors.AutoHideTaskbars, bottom edge only).
+    /// </summary>
+    private static int AutoHideTaskbarHeight(Native.RECT monitor)
+    {
+        var data = new Native.APPBARDATA { cbSize = (uint)sizeof(Native.APPBARDATA), uEdge = Native.ABE_BOTTOM, rc = monitor };
+        var bar = Native.SHAppBarMessage(Native.ABM_GETAUTOHIDEBAREX, &data);
+        if (bar == IntPtr.Zero || !Native.GetWindowRect(bar, out var r)) return 0;
+        int size = r.Bottom - r.Top;
+        // A hidden taskbar keeps its full size; ignore anything implausible.
+        return size > 0 && size <= (monitor.Bottom - monitor.Top) / 3 ? size : 0;
     }
 
     private static void Present()
@@ -341,6 +371,25 @@ internal static unsafe partial class Native
         public RECT rcMonitor, rcWork;
         public uint dwFlags;
     }
+
+    public const uint ABM_GETAUTOHIDEBAREX = 0x0B, ABE_BOTTOM = 3;
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct APPBARDATA
+    {
+        public uint cbSize;
+        public IntPtr hWnd;
+        public uint uCallbackMessage, uEdge;
+        public RECT rc;
+        public nint lParam;
+    }
+
+    [LibraryImport("shell32.dll")]
+    public static partial IntPtr SHAppBarMessage(uint message, APPBARDATA* data);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool GetWindowRect(IntPtr hwnd, out RECT rect);
 
     [StructLayout(LayoutKind.Sequential)]
     public struct BLENDFUNCTION { public byte BlendOp, BlendFlags, SourceConstantAlpha, AlphaFormat; }

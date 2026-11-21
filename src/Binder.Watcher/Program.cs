@@ -193,6 +193,9 @@ internal static class Program
 
         if (comeBack)
         {
+            // Ended with the hold: the shortcut may still be held. The widget takes it back as it starts, and the
+            // keyboard's next repeat would close the panel it just opened, so wait (briefly) until it's let go.
+            EndHold.WaitForRelease();
             // The widget comes back first; Game mode is put back while it starts (the admin part restarts services
             // and can take seconds), and its result follows as a forwarded "--restored" once the widget is up.
             StartProcess(WidgetPath, ReturnArguments(gameId, comeBack, crashed, null)!, 0, out var widget);

@@ -8,8 +8,8 @@ namespace Binder.Watcher;
 /// "End a stuck game" (spec §28, board 40): while the game runs, holding Binder's shortcut for 2 s ends it.
 /// Runs on the system events thread (SystemEvents.cs), whose hidden window takes the shortcut
 /// (<c>RegisterHotKey</c>, not a keyboard hook) once the game is found. Nothing runs until it's pressed: then a
-/// 30 ms timer reads the keys and draws the ring (<see cref="RingWindow"/>) only while it's held, and stops when
-/// it's let go. With "When it stops responding" (the default) it ends a game only while Windows calls its window
+/// 30 ms timer draws the ring (<see cref="RingWindow"/>) only while it's held (the keys, or the keyboard's
+/// auto-repeat of the shortcut when the keys can't be read: <see cref="Held"/>), and stops when it's let go. With "When it stops responding" (the default) it ends a game only while Windows calls its window
 /// hung or Windows Error Reporting holds it, checked when the ring would appear and again when it's full.
 /// Ends only the game's own processes (the ones the watcher follows, by id and start time) and a WerFault.exe from
 /// System32 that holds one of them; never anything else.
@@ -108,6 +108,18 @@ internal static unsafe partial class EndHold
 
     /// <summary>The user ended the game with the hold (read after the wait on the game returned).</summary>
     public static bool Ended => _ended;
+    private static readonly ManualResetEvent Released = new(false);
+    public const int ReleaseWaitMs = 5000;
+
+    /// <summary>
+    /// After the hold ended the game: waits (a kernel wait, at most <see cref="ReleaseWaitMs"/>) until the shortcut
+    /// is let go, so the widget coming back doesn't get its repeats. Returns at once otherwise.
+    /// </summary>
+    public static void WaitForRelease()
+    {
+        if (_ended) Released.WaitOne(ReleaseWaitMs);
+    }
+
     /// <summary>When it was ended, Windows called its window hung.</summary>
     public static bool WasHung => _wasHung;
     /// <summary>When it was ended, Windows Error Reporting was holding it (it had crashed).</summary>
@@ -119,11 +131,11 @@ internal static unsafe partial class EndHold
 
     private static IntPtr _hwnd;
     private static Phase _phase;
-    private static long _pressed, _holdFrom, _drainFrom;
+    private static long _pressed, _holdFrom, _drainFrom, _lastHotkey = long.MinValue / 2;
     private static double _progress, _drainStart;
-    private static bool _hasKey;
+    private static bool _hasKey, _repeated;
+    private static int _firstRepeatMs, _repeatGapMs;
     private static IntPtr _widget; // a widget that has the shortcut: taken again once it exits
-    private static readonly List<IntPtr> Minimized = [];
 
     /// <summary>The handle the thread's loop waits on besides messages (a widget holding the shortcut), or 0.</summary>
     public static IntPtr WaitHandle => _widget;
@@ -138,7 +150,8 @@ internal static unsafe partial class EndHold
     private static void TakeKey()
     {
         if (_hasKey) return;
-        if (Native.RegisterHotKey(_hwnd, HotkeyId, Modifiers | Native.MOD_NOREPEAT, Key))
+        // With the keyboard's auto-repeat (no MOD_NOREPEAT): while it's held, WM_HOTKEY keeps coming (see Held).
+        if (Native.RegisterHotKey(_hwnd, HotkeyId, Modifiers, Key))
         {
             _hasKey = true;
             return;
@@ -166,7 +179,7 @@ internal static unsafe partial class EndHold
         switch (msg)
         {
             case Native.WM_HOTKEY when wParam == HotkeyId:
-                Begin();
+                Pressed();
                 return true;
             case Native.WM_TIMER when wParam == TimerId:
                 Tick();
@@ -181,7 +194,7 @@ internal static unsafe partial class EndHold
     /// <summary>A widget starting meanwhile wants its shortcut: let go now, take it again once that widget is gone.</summary>
     private static void Release(uint widgetPid)
     {
-        if (_phase is not (Phase.Idle or Phase.Done)) Cancel();
+        if (_phase is not (Phase.Idle or Phase.Done)) Stop();
         if (_hasKey) Native.UnregisterHotKey(_hwnd, HotkeyId);
         _hasKey = false;
         var h = Native.OpenProcess(Native.SYNCHRONIZE | Native.PROCESS_QUERY_LIMITED_INFORMATION, false, widgetPid);
@@ -190,12 +203,21 @@ internal static unsafe partial class EndHold
         else Native.CloseHandle(h);
     }
 
-    private static void Begin()
+    /// <summary>A WM_HOTKEY: the shortcut was pressed, or (auto-repeat) is still held.</summary>
+    private static void Pressed()
     {
-        if (_phase != Phase.Idle || Setting == Mode.Off) return;
-        // A WM_HOTKEY posted by another program, without the keys really held, does nothing.
-        if (!KeysDown()) return;
-        _pressed = Environment.TickCount64;
+        long now = Environment.TickCount64, since = now - _lastHotkey;
+        _lastHotkey = now;
+        if (_phase != Phase.Idle)
+        {
+            _repeated = true;
+            return;
+        }
+        // Still held from a hold that's over (its note, a cancel, a tap): it starts again only once let go.
+        if (since < _repeatGapMs || Setting == Mode.Off) return;
+        (_firstRepeatMs, _repeatGapMs) = RepeatTimes(Native.KeyboardDelay(), Native.KeyboardSpeed());
+        _pressed = now;
+        _repeated = false;
         _phase = Phase.Armed;
         Native.SetTimer(_hwnd, TimerId, FrameMs, IntPtr.Zero);
     }
@@ -206,22 +228,24 @@ internal static unsafe partial class EndHold
         switch (_phase)
         {
             case Phase.Armed:
-                if (!KeysDown()) { Stop(); return; } // a tap: nothing was shown, nothing happens
+                if (!Held(now)) { Stop(); return; } // a tap: nothing was shown, nothing happens
                 if (now - _pressed < DelayMs) return;
+                // Not sure yet that it's held: wait for the keyboard's first repeat. A WM_HOTKEY posted by another
+                // program, without the keys really held, gets none and ends here.
+                if (!_repeated && !KeysDown()) return;
                 var seen = Look();
                 if (Setting == Mode.WhenNotResponding && !seen.Stuck)
                 {
-                    Note(Text.Responding);
+                    Note(Text.Responding, Windowed(seen.Windows));
                     return;
                 }
                 _phase = Phase.Holding;
                 _holdFrom = now;
                 _progress = 0;
-                MinimizeIfExclusive(seen.Windows);
                 RingWindow.ShowRing(0, false, Text.Ending, Text.LetGo, Windowed(seen.Windows));
                 return;
             case Phase.Holding:
-                if (!KeysDown())
+                if (!Held(now))
                 {
                     if (!RingWindow.Animations) { Cancelled(); return; }
                     _phase = Phase.Draining;
@@ -241,6 +265,11 @@ internal static unsafe partial class EndHold
             case Phase.Note:
                 Stop();
                 return;
+            case Phase.Done:
+                if (Held(now)) return;
+                Native.KillTimer(_hwnd, TimerId);
+                Released.Set();
+                return;
         }
     }
 
@@ -249,26 +278,24 @@ internal static unsafe partial class EndHold
         var seen = Look();
         if (Setting == Mode.WhenNotResponding && !seen.Stuck)
         {
-            RestoreMinimized();
-            Note(Text.RespondingAgain); // it recovered during the hold
+            Note(Text.RespondingAgain, Windowed(seen.Windows)); // it recovered during the hold
             return;
         }
         // Set before the game ends: the main thread reads them as soon as its wait on the game returns.
         _wasHung = seen.Hung;
         _wasReporting = seen.Reporters.Count > 0;
         _ended = true;
-        Native.KillTimer(_hwnd, TimerId);
         RingWindow.Hide();
         // Windows Error Reporting first: it holds the crashed game until its dump is written.
         foreach (var pid in seen.Reporters) EndReporter(pid);
         bool any = false;
         foreach (var (pid, created) in Volatile.Read(ref _game)) any |= EndGameProcess(pid, created);
-        Minimized.Clear();
         if (any)
         {
-            _phase = Phase.Done;
+            _phase = Phase.Done; // the timer keeps going until the shortcut is let go (WaitForRelease)
             return;
         }
+        Native.KillTimer(_hwnd, TimerId);
         // Nothing could be ended (protected by its anti-cheat, or gone already): not "ended by you" when it closes.
         _ended = _wasHung = _wasReporting = false;
         _phase = Phase.Idle;
@@ -277,24 +304,17 @@ internal static unsafe partial class EndHold
     /// <summary>"Cancelled · [game] is still running" for a second, after letting go early.</summary>
     private static void Cancelled()
     {
-        RestoreMinimized();
         _phase = Phase.Note;
         RingWindow.ShowRing(0, true, Text.Cancelled, Text.StillRunning, IntPtr.Zero);
         Native.SetTimer(_hwnd, TimerId, CancelledMs, IntPtr.Zero);
     }
 
-    /// <summary>A pill instead of the ring ("[game] is responding · nothing was ended"), then gone.</summary>
-    private static void Note(string text)
+    /// <summary>A pill above the taskbar instead of the ring ("[game] is responding · nothing was ended"), then gone.</summary>
+    private static void Note(string text, IntPtr near)
     {
         _phase = Phase.Note;
-        RingWindow.ShowNote(text, Text.NothingEnded);
+        RingWindow.ShowNote(text, Text.NothingEnded, near);
         Native.SetTimer(_hwnd, TimerId, NoteMs, IntPtr.Zero);
-    }
-
-    private static void Cancel()
-    {
-        RestoreMinimized();
-        Stop();
     }
 
     private static void Stop()
@@ -305,6 +325,28 @@ internal static unsafe partial class EndHold
     }
 
     // ---- Keys --------------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// The shortcut is still held. <c>GetAsyncKeyState</c> reads nothing while a process above ours has the
+    /// foreground: the "Not responding" window Windows (DWM) puts in place of a hung game as soon as it gets input,
+    /// or a game running as administrator. The keyboard's auto-repeat still brings WM_HOTKEY then, so the shortcut
+    /// counts as held until a repeat is overdue (before the first one: the keyboard's repeat delay).
+    /// </summary>
+    private static bool Held(long now) =>
+        KeysDown() || now - _lastHotkey < (_repeated ? _repeatGapMs : _firstRepeatMs);
+
+    /// <summary>
+    /// From Windows' keyboard settings (Control Panel › Keyboard; SPI_GETKEYBOARDDELAY 0–3, SPI_GETKEYBOARDSPEED
+    /// 0–31): how long after the press the first repeat may come, and the longest gap between repeats, each with
+    /// some slack. Pure, unit-tested.
+    /// </summary>
+    internal static (int FirstRepeatMs, int RepeatGapMs) RepeatTimes(int delay, int speed)
+    {
+        delay = Math.Clamp(delay, 0, 3);
+        speed = Math.Clamp(speed, 0, 31);
+        double period = 1000 / (2.5 + speed * 27.5 / 31); // about 2.5 to 30 repeats a second
+        return ((delay + 1) * 250 + (int)period + 100, (int)(2 * period) + 60);
+    }
 
     private static bool Down(int vk) => (Native.GetAsyncKeyState(vk) & 0x8000) != 0;
 
@@ -460,36 +502,35 @@ internal static unsafe partial class EndHold
     /// <summary>The exit code an ended game gets, as Task Manager's End task gives: not a failure code.</summary>
     public const uint EndedExitCode = 1;
 
-    // ---- Exclusive fullscreen ----------------------------------------------------------------------------
-
     /// <summary>
-    /// A game in exclusive fullscreen owns the screen, and the ring would never show: it's minimized while the
-    /// ring shows and restored if the hold is let go.
+    /// The window whose monitor the ring shows on: the game's first, else the one in front. The ring is top-most
+    /// over the game, never minimizing it: games in fullscreen with Windows' fullscreen optimizations (most, and
+    /// Windows reports them as exclusive too) show it; over a rare truly exclusive one it isn't seen, and holding
+    /// still ends the game.
     /// </summary>
-    private static void MinimizeIfExclusive(List<IntPtr> windows)
-    {
-        if (Native.SHQueryUserNotificationState(out int state) != 0 || state != Native.QUNS_RUNNING_D3D_FULL_SCREEN) return;
-        foreach (var w in windows)
-            if (Native.ShowWindowAsync(w, Native.SW_MINIMIZE)) Minimized.Add(w);
-    }
-
-    private static void RestoreMinimized()
-    {
-        foreach (var w in Minimized) Native.ShowWindowAsync(w, Native.SW_RESTORE);
-        Minimized.Clear();
-    }
-
-    /// <summary>The window whose monitor the ring shows on: the game's first, else the one in front.</summary>
     private static IntPtr Windowed(List<IntPtr> windows) => windows.Count > 0 ? windows[0] : Native.GetForegroundWindow();
 }
 
 internal static unsafe partial class Native
 {
     public const uint WM_HOTKEY = 0x0312, WM_TIMER = 0x0113;
-    public const uint MOD_ALT = 1, MOD_CONTROL = 2, MOD_SHIFT = 4, MOD_WIN = 8, MOD_NOREPEAT = 0x4000;
+    public const uint MOD_ALT = 1, MOD_CONTROL = 2, MOD_SHIFT = 4, MOD_WIN = 8;
+    private const uint SPI_GETKEYBOARDSPEED = 0x0A, SPI_GETKEYBOARDDELAY = 0x16;
+
+    /// <summary>Windows' keyboard repeat delay, 0 (short) to 3 (long); 1, the default, if it can't be read.</summary>
+    public static int KeyboardDelay()
+    {
+        int value = 1;
+        return SystemParametersInfoW(SPI_GETKEYBOARDDELAY, 0, &value, 0) ? value : 1;
+    }
+
+    /// <summary>Windows' keyboard repeat rate, 0 (slow) to 31 (fast); 31, the default, if it can't be read.</summary>
+    public static int KeyboardSpeed()
+    {
+        int value = 31;
+        return SystemParametersInfoW(SPI_GETKEYBOARDSPEED, 0, &value, 0) ? value : 31;
+    }
     public const uint PROCESS_TERMINATE = 0x0001;
-    public const int SW_MINIMIZE = 6, SW_RESTORE = 9;
-    public const int QUNS_RUNNING_D3D_FULL_SCREEN = 3;
     public const uint TH32CS_SNAPPROCESS = 2;
     public const int ProcessCommandLineInformation = 60;
     public static readonly IntPtr InvalidHandle = -1;
@@ -535,14 +576,8 @@ internal static unsafe partial class Native
     public static partial bool IsHungAppWindow(IntPtr hwnd);
 
     [LibraryImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static partial bool ShowWindowAsync(IntPtr hwnd, int command);
-
-    [LibraryImport("user32.dll")]
     public static partial IntPtr GetForegroundWindow();
 
-    [LibraryImport("shell32.dll")]
-    public static partial int SHQueryUserNotificationState(out int state);
 
     [LibraryImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
