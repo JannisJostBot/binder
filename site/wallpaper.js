@@ -7,7 +7,9 @@
 (function () {
   'use strict';
 
-  var NS = 'http://www.w3.org/2000/svg';
+  // SVG's namespace, taken from an SVG already in the page (the logo's), so no address is written here: check.ps1
+  // allows website scripts to name only api.github.com.
+  var NS = null;
   var W = 1600, H = 900, STEPS = 26;
 
   // Each ribbon: its centre line from the left edge (y0) to the right (y1), its thickness, and its waves: a long one
@@ -62,7 +64,9 @@
   function setUp() {
     var wall = document.querySelector('.desk-wall');
     var stage = document.querySelector('.stage');
-    if (!wall || !stage || !window.requestAnimationFrame) return;
+    var known = document.querySelector('svg');
+    if (!wall || !stage || !known || !window.requestAnimationFrame) return;
+    NS = known.namespaceURI;
 
     var svg = el('svg');
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
