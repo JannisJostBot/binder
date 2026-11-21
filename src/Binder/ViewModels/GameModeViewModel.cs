@@ -249,7 +249,7 @@ public sealed partial class GameModeViewModel : ObservableObject
 
     public string UpdatesText => Strings.Format(Strings.GmUpdatesText, ElevatedPart.UpdatePercent);
 
-    public string SmoothText => Strings.Format(Strings.GmSmoothText, Strings.List([Strings.GmTheGame, .. _status.VoiceApps]));
+    public string SmoothText => Strings.Format(Strings.GmSmoothText, Strings.List((string[])[Strings.GmTheGame, .. _status.VoiceApps]));
 
     // ---- The admin part -----------------------------------------------------------------------------------
 
@@ -372,7 +372,7 @@ public sealed partial class GameModeViewModel : ObservableObject
 
     /// <summary>Apps with a window that aren't closed while playing yet.</summary>
     public IReadOnlyList<AppChoice> AppsToClose() =>
-        [.. _actions.RunningApps().Where(a => !_settings.GameModeCloseApps.Contains(a.Path, StringComparer.OrdinalIgnoreCase))];
+        (AppChoice[])[.. _actions.RunningApps().Where(a => !_settings.GameModeCloseApps.Contains(a.Path, StringComparer.OrdinalIgnoreCase))];
 
     public void AddCloseApp(string path)
     {
@@ -399,7 +399,7 @@ public sealed partial class GameModeViewModel : ObservableObject
     public IReadOnlyList<AppChoice> AppsFor(bool smooth)
     {
         var names = smooth ? _settings.KeepSmoothApps : _settings.ThrottledUploadApps;
-        return [.. _actions.RunningApps().Where(a => ElevatedPart.IsAppName(Path.GetFileName(a.Path)) &&
+        return (AppChoice[])[.. _actions.RunningApps().Where(a => ElevatedPart.IsAppName(Path.GetFileName(a.Path)) &&
                                                       !names.Contains(Path.GetFileName(a.Path), StringComparer.OrdinalIgnoreCase))];
     }
 
@@ -427,7 +427,7 @@ public sealed partial class GameModeViewModel : ObservableObject
     public string LastDetail => _restore.Last is not { } last ? Strings.GmUndoneOnClose
         : last.Result.Success
             ? Strings.Format(last.Result.Total == 1 ? Strings.GmPutBackOfOne : Strings.GmPutBackOf, last.Result.Restored, last.Result.Total)
-            : Strings.Format(Strings.GmPutBackOfFailed, last.Result.Restored, last.Result.Total, Strings.List([.. last.Result.Failed.Select(GameModeText.ItemName)]));
+            : Strings.Format(Strings.GmPutBackOfFailed, last.Result.Restored, last.Result.Total, Strings.List((string[])[.. last.Result.Failed.Select(GameModeText.ItemName)]));
 
     /// <summary>True: all put back; false: something couldn't be; null: nothing restored yet.</summary>
     public bool? LastOk => _restore.Last?.Result.Success;

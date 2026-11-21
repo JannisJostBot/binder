@@ -71,6 +71,21 @@
     dialog.addEventListener('click', function (e) { if (e.target === dialog) dialog.close(); });
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setUp);
-  else setUp();
+  // "Before you download": once per visit, when half the notes are on screen, mark them seen; styles.css then plays
+  // their short highlight (none with reduced motion). The notes are fully shown before and without it.
+  function watchNotes() {
+    var notes = document.querySelector('.notes');
+    if (!notes || !window.IntersectionObserver) return;
+    var seen = new IntersectionObserver(function (entries) {
+      if (!entries[0].isIntersecting) return;
+      notes.classList.add('is-seen');
+      seen.disconnect();
+    }, { threshold: 0.5 });
+    seen.observe(notes);
+  }
+
+  function start() { setUp(); watchNotes(); }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 })();

@@ -36,7 +36,7 @@ public sealed partial class MainWindow
         new(GameModeInfo.LastResult(), GameModeService.HasLog, GameModeService.CanRestoreNow, GameModeService.Pending);
 
     IReadOnlyList<AppChoice> IGameModeActions.RunningApps() =>
-        [.. GameModeService.RunningApps(_games).Select(a => new AppChoice(a.Path, a.Name))];
+        (AppChoice[])[.. GameModeService.RunningApps(_games).Select(a => new AppChoice(a.Path, a.Name))];
 
     IReadOnlySet<string> IGameModeActions.RunningPaths() => GameModeService.RunningPaths();
     string IGameModeActions.AppName(string path) => GameModeService.AppName(path);
@@ -82,7 +82,7 @@ public sealed partial class MainWindow
         // the whole grid out again. The other pages refresh only while shown.
         Shelf.ViewModel!.GameModeChanged(_games);
         RefreshSettingsPage();
-        if (Detail.Visibility == Visibility.Visible && Detail.Game is { } shown && FindGame(shown.Id) is { } game)
+        if (Shown(DetailSlot) && Detail.Game is { } shown && FindGame(shown.Id) is { } game)
             Detail.ViewModel!.Show(game, _sessions, App.Settings, App.State.Crashes);
         if (toast)
             ShowToast(on ? Strings.GmIsOn : Strings.GmIsOff,
@@ -111,7 +111,7 @@ public sealed partial class MainWindow
     public void GameModeStateChanged()
     {
         Shelf.ViewModel!.GameModeChanged(_games);
-        if (GameModePage.Visibility == Visibility.Visible) GameModePage.ViewModel!.UpdateLastRestore();
+        if (Shown(GameModeSlot)) GameModePage.ViewModel!.UpdateLastRestore();
     }
 
     private void GameModeBack()

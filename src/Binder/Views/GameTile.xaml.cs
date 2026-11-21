@@ -46,7 +46,6 @@ public sealed partial class GameTile : UserControl
         EnterHintText.Text = Strings.EnterKey;
         AutomationProperties.SetAccessibilityView(EnterHint, Microsoft.UI.Xaml.Automation.Peers.AccessibilityView.Raw);
         Cover.ImageChanged += hasImage => PlaceholderTitle.Visibility = hasImage ? Visibility.Collapsed : Visibility.Visible;
-        PlayMark.Translation = new Vector3(0, PlayRise, 0);
         // The grid item handles the press itself, so listen to handled events too.
         Hit.AddHandler(PointerPressedEvent, new PointerEventHandler(OnPointerPressed), true);
         Hit.AddHandler(PointerReleasedEvent, new PointerEventHandler(OnPointerReleased), true);
@@ -165,6 +164,7 @@ public sealed partial class GameTile : UserControl
     private void Apply(bool animate)
     {
         bool up = IsUp, contrast = up && Accessibility.HighContrast;
+        if (up) EnsureRaisedParts();
         SetTransitions(animate && UiSettings.AnimationsEnabled);
         _scaleTransition.Duration = _pressed ? Faster : Fast;
 
@@ -179,10 +179,13 @@ public sealed partial class GameTile : UserControl
         float scale = !up ? 1 : _pressed ? Pressed : Raised;
         CoverArea.Scale = new Vector3(scale, scale, 1);
         CoverArea.Translation = new Vector3(0, 0, up && !contrast ? ShadowDepth : 0);
-        Scrim.Opacity = Edge.Opacity = up && !contrast ? 1 : 0;
-        HighContrastOutline.Opacity = contrast ? 1 : 0;
-        PlayMark.Opacity = up ? 1 : 0;
-        PlayMark.Translation = new Vector3(0, up ? 0 : PlayRise, 0);
+        if (_raisedParts)
+        {
+            Scrim.Opacity = Edge.Opacity = up && !contrast ? 1 : 0;
+            HighContrastOutline.Opacity = contrast ? 1 : 0;
+            PlayMark.Opacity = up ? 1 : 0;
+            PlayMark.Translation = new Vector3(0, up ? 0 : PlayRise, 0);
+        }
         DetailsButton.Opacity = up ? 1 : 0;
         DetailsButton.IsHitTestVisible = up;
     }
@@ -191,12 +194,30 @@ public sealed partial class GameTile : UserControl
     {
         CoverArea.ScaleTransition = on ? _scaleTransition : null;
         CoverArea.TranslationTransition = on ? _liftTransition : null;
+        DetailsButton.OpacityTransition = on ? _fadeDetails : null;
+        if (!_raisedParts) return;
         PlayMark.TranslationTransition = on ? _riseTransition : null;
         PlayMark.OpacityTransition = on ? _fadePlay : null;
         Scrim.OpacityTransition = on ? _fadeScrim : null;
         Edge.OpacityTransition = on ? _fadeEdge : null;
         HighContrastOutline.OpacityTransition = on ? _fadeOutline : null;
-        DetailsButton.OpacityTransition = on ? _fadeDetails : null;
+    }
+
+    private bool _raisedParts; // Scrim, Edge, HighContrastOutline and PlayMark are built (x:Load)
+
+    /// <summary>
+    /// Builds the hover parts the first time this tile rises, at their resting values (hidden, Play lowered), so the
+    /// change that follows fades them in. A recycled tile keeps them.
+    /// </summary>
+    private void EnsureRaisedParts()
+    {
+        if (_raisedParts) return;
+        FindName(nameof(Scrim));
+        FindName(nameof(Edge));
+        FindName(nameof(HighContrastOutline));
+        FindName(nameof(PlayMark));
+        PlayMark.Translation = new Vector3(0, PlayRise, 0);
+        _raisedParts = true;
     }
 
     private void OnDetailsClick(object sender, RoutedEventArgs e)

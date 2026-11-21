@@ -8,6 +8,12 @@
   <meta property="og:title" content="Binder for Windows">
   <meta property="og:description" content="Binder lists the games you've installed with Steam, Epic, GOG and other launchers, and starts them with one click. For Windows 10 and 11.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jannisjostbot.github.io/binder/">
+  <meta property="og:image" content="https://jannisjostbot.github.io/binder/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Binder's window with game covers, next to the words: A game launcher that stays out of your way.">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://api.github.com; base-uri 'none'; form-action 'none'">
@@ -16,6 +22,7 @@
   <script src="release.js" defer></script>
   <script src="clock.js" defer></script>
   <script src="story.js" defer></script>
+  <script src="wallpaper.js" defer></script>
   <script src="game.js" defer></script>
   <script src="nav.js" defer></script>
   <script src="download.js" defer></script>
@@ -35,23 +42,17 @@
         <span>Binder</span>
       </a>
       <nav aria-label="Sections" class="header-nav">
-        <a href="#how">How it works</a>
         <a href="#features">Features</a>
-        <a href="#privacy">Privacy</a>
-        <a href="#faq">FAQ</a>
         <a href="docs.html">Docs</a>
         <a href="releases.html">Releases</a>
       </nav>
       <div class="header-actions">
-        <a href="https://github.com/JannisJostBot/binder" class="header-github" title="Source code on GitHub"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"></path><path d="M16 7l5 5-5 5"></path></svg><span>GitHub</span></a>
+        <a href="https://github.com/JannisJostBot/binder" class="header-github" title="Source code on GitHub" aria-label="Source code on GitHub"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"></path><path d="M16 7l5 5-5 5"></path></svg></a>
         <a href="#download" class="button button-small header-download"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download</a>
         <details class="header-menu">
           <summary aria-label="Menu"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></summary>
           <nav aria-label="Menu" class="header-menu-list">
-            <a href="#how">How it works</a>
             <a href="#features">Features</a>
-            <a href="#privacy">Privacy</a>
-            <a href="#faq">FAQ</a>
             <a href="docs.html">Docs</a>
             <a href="releases.html">Releases</a>
             <a href="https://github.com/JannisJostBot/binder">Source code on GitHub</a>
@@ -118,13 +119,15 @@
         </div>
       </div>
 
+      <!-- What's running while the game is: a small dark Task Manager window, in the same dark glass as the caption
+           beside it. Binder isn't running; its watcher's memory is the release's measurement. -->
       <div class="procs" aria-hidden="true">
-        <p class="procs-title">Running on this PC</p>
+        <p class="procs-bar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4CC2FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h4l2.5-6 4 11 2.5-5H21"></path></svg>Task Manager<span>Processes</span></p>
         <div class="procs-table">
-          <span class="procs-head">Name</span><span class="procs-head">Memory</span><span class="procs-head">CPU</span>
-          <span>Starfall Drift</span><span class="procs-dim">your game</span><span></span>
-          <span class="procs-gone">Binder</span><span class="procs-dim">not running</span><span class="procs-dim">0%</span>
-          <span class="procs-mark">Binder game watcher</span><span class="procs-mark"><!-- n:watcherStep -->3 MB<!-- /n --></span><span class="procs-mark">0%</span>
+          <span class="procs-head">Name</span><span class="procs-head">CPU</span><span class="procs-head">Memory</span>
+          <span class="procs-name"><i class="procs-icon pc-thumb g1"></i><b><span>Starfall Drift</span><small>Your game</small></b></span><span>31%</span><span>6,240 MB</span>
+          <span class="procs-name procs-gone"><i class="procs-icon procs-logo"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></i><b><span>Binder</span><small>Not running</small></b></span><span>&ndash;</span><span>&ndash;</span>
+          <span class="procs-name procs-mark"><i class="procs-icon procs-logo"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></i><b><span>Binder game watcher</span><small>Waits for the game to close</small></b></span><span class="procs-mark">0%</span><span class="procs-mark"><!-- n:watcherStep -->3 MB<!-- /n --></span>
         </div>
       </div>
 
@@ -148,8 +151,19 @@
       <!-- Pinned to the desktop; fades as soon as the page scrolls (story.js sets is-scrolled). -->
       <p class="story-cue" aria-hidden="true">Scroll to tidy this desktop<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></p>
       <div class="mock-taskbar" aria-hidden="true">
-        <span class="mock-apps"><span></span><span></span><span></span><span></span></span>
+        <!-- Windows 11's taskbar, drawn generically (no real apps' logos): Start, Search, File Explorer (open), a browser,
+             Settings and a terminal; on the right the hidden-icons chevron, Binder's icon, network and volume, the clock. -->
+        <span class="mock-apps">
+          <span class="tb-start"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8.4" height="8.4" rx="1.2"></rect><rect x="12.6" y="3" width="8.4" height="8.4" rx="1.2"></rect><rect x="3" y="12.6" width="8.4" height="8.4" rx="1.2"></rect><rect x="12.6" y="12.6" width="8.4" height="8.4" rx="1.2"></rect></svg></span>
+          <span class="tb-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="m20 20-4.2-4.2"></path></svg>Search</span>
+          <span class="tb-app tb-open"><svg viewBox="0 0 48 48"><use href="#e-folder"></use></svg></span>
+          <span class="tb-app"><svg viewBox="0 0 24 24"><defs><linearGradient id="tb-web" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5CC8FF"></stop><stop offset="0.55" stop-color="#1A86E0"></stop><stop offset="1" stop-color="#0B4FA8"></stop></linearGradient></defs><circle cx="12" cy="12" r="9.5" fill="url(#tb-web)"></circle><g fill="none" stroke="#FFFFFF" stroke-width="1.15" stroke-opacity="0.85"><ellipse cx="12" cy="12" rx="4" ry="9.5"></ellipse><path d="M3 9h18M3 15h18"></path></g><path d="M5.5 6.5A9.5 9.5 0 0 1 12 2.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="1.4" stroke-linecap="round"></path></svg></span>
+          <span class="tb-app"><svg viewBox="0 0 24 24"><defs><linearGradient id="tb-gear" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A3ABB8"></stop><stop offset="1" stop-color="#5B6372"></stop></linearGradient></defs><path d="M19.48 10.17 L22.09 10.48 L22.09 13.52 L19.48 13.83 L18.58 15.99 L20.21 18.05 L18.05 20.21 L15.99 18.58 L13.83 19.48 L13.52 22.09 L10.48 22.09 L10.17 19.48 L8.01 18.58 L5.95 20.21 L3.79 18.05 L5.42 15.99 L4.52 13.83 L1.91 13.52 L1.91 10.48 L4.52 10.17 L5.42 8.01 L3.79 5.95 L5.95 3.79 L8.01 5.42 L10.17 4.52 L10.48 1.91 L13.52 1.91 L13.83 4.52 L15.99 5.42 L18.05 3.79 L20.21 5.95 L18.58 8.01Z" fill="url(#tb-gear)"></path><circle cx="12" cy="12" r="6.4" fill="url(#tb-gear)"></circle><circle cx="12" cy="12" r="3.3" fill="#E9ECF1"></circle></svg></span>
+          <span class="tb-app"><svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="3" fill="#2B2B33"></rect><path d="M6.5 9l3 3-3 3M11.5 15.5h5" fill="none" stroke="#E8E8EE" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        </span>
+        <span class="tb-glyph tb-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7 14 5-5 5 5"></path></svg></span>
         <span class="mock-tray"><i class="cursor"><svg viewBox="0 0 20 28"><path d="M2 2 L2 22 L7.2 17.2 L10.6 25.2 L13.8 23.9 L10.4 16 L17.4 16 Z" fill="#FFFFFF" stroke="#111111" stroke-width="1.4" stroke-linejoin="round"></path></svg></i><svg width="18" height="18" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
+        <span class="tb-glyph tb-status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3.5 9.5a12 12 0 0 1 17 0M6.5 12.8a7.5 7.5 0 0 1 11 0M9.5 16a3 3 0 0 1 5 0"></path><circle cx="12" cy="19" r="0.9" fill="currentColor"></circle></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"></path><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"></path></svg></span>
         <span class="mock-clock" id="mock-clock">21:14<br>17/11/2026</span>
       </div>
     </figure>
@@ -163,7 +177,7 @@
             <i class="window-min"></i><i class="window-max"></i><i class="window-close"></i>
           </div>
           <div class="window-body">
-            <h1 class="h1">Your desktop, without the game shortcuts</h1>
+            <h1 class="h1">A game launcher that stays out of your way</h1>
             <p class="hero-lead">Binder keeps the games from Steam, Epic, GOG, the other launchers and your desktop shortcuts in one panel by the clock. Click a cover to play. While you play, Binder closes.</p>
             <div class="hero-actions">
               <a href="#download" class="button button-primary"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download for Windows</a>
@@ -177,14 +191,16 @@
 
       <div class="story-step" data-step="1" id="how">
         <div class="caption">
+          <div class="caption-pic cp-desk" aria-hidden="true"><span class="cp-ico"><svg viewBox="0 0 48 48"><use href="#e1"></use></svg></span><span class="cp-ico"><svg viewBox="0 0 48 48"><use href="#e2"></use></svg></span><span class="cp-ico"><svg viewBox="0 0 48 48"><use href="#e4"></use></svg></span><svg class="cp-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"></path></svg><span class="cp-logo"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span></div>
           <h2 class="h3">Your game shortcuts move into Binder</h2>
-          <p>You tick which shortcuts are games. Binder moves them into its own folder and can put them back on the desktop at any time. Your other icons stay where they are.</p>
+          <p>You tick which shortcuts are games. Binder moves them into its own folder and can put them back on the desktop at any time. Your other icons stay on the desktop.</p>
           <p class="caption-progress" aria-hidden="true"><i></i><i></i><i></i><i></i></p>
         </div>
       </div>
 
       <div class="story-step" data-step="2">
         <div class="caption">
+          <div class="caption-pic cp-shelf" aria-hidden="true"><i class="pc-thumb g1"></i><i class="pc-thumb g2"></i><i class="pc-thumb g3"></i><i class="pc-thumb g4"></i><span class="cp-tray"><span class="cp-tray-icon"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span><span>21:14</span></span></div>
           <h2 class="h3">Every launcher's games, by the clock</h2>
           <p>Binder finds what you've installed and keeps the list up to date. Open it with the icon next to the clock or Win + Shift + G, and click a cover to play.</p>
           <p class="caption-list">Steam · Epic Games · GOG · EA app · Ubisoft Connect · Xbox app · Rockstar Games Launcher · your desktop shortcuts · any game you add</p>
@@ -194,6 +210,7 @@
 
       <div class="story-step" data-step="3">
         <div class="caption caption-dark">
+          <div class="caption-pic cp-procs" aria-hidden="true"><p class="cp-gone"><span class="cp-mini"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span><span class="cp-strike">Binder</span><span>Not running</span></p><p class="cp-mark"><span class="cp-mini"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span><b>Binder game watcher</b><span>0% CPU</span></p></div>
           <h2 class="h3">While you play, Binder is closed</h2>
           <p>Ten seconds after the game starts, Binder quits. Only a small helper stays to notice when the game ends. Once it has found the game, it just waits and uses no processor time.</p>
           <p class="caption-progress" aria-hidden="true"><i></i><i></i><i></i><i></i></p>
@@ -202,6 +219,7 @@
 
       <div class="story-step" data-step="4">
         <div class="caption">
+          <div class="caption-pic cp-welcome" aria-hidden="true"><i class="pc-thumb g1"></i><span class="cp-welcome-text"><small>Welcome back</small><b>Starfall Drift · 1 h 42 min</b></span><span class="cp-play">Play</span></div>
           <h2 class="h3">When the game closes, Binder comes back</h2>
           <p>It adds the session to the game's playtime and shows it at the top. If you'd rather it stayed closed, turn this off in Settings.</p>
           <a href="#download" class="button button-primary">Download for Windows</a>
@@ -211,12 +229,54 @@
     </div>
   </section>
 
+  <!-- What it looks like: the real app, captured by CI (.github/workflows/site-screenshots.yml) with the website's
+       made-up games; tests/Screenshots/make-site-images.mjs turns a run into these files. Light or dark like the
+       visitor's system. -->
+  <section id="screenshots" class="section section-alt" aria-labelledby="screenshots-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="h2" id="screenshots-title">What it looks like</h2>
+        <p class="lead">Binder itself, with made-up games. It follows your Windows colours, light or dark.</p>
+      </div>
+      <div class="shots">
+        <figure class="shot">
+          <picture>
+            <source srcset="screenshots/dark-welcome-back.webp" media="(prefers-color-scheme: dark)">
+            <img src="screenshots/light-welcome-back.webp" width="544" height="999" loading="lazy" decoding="async" alt="Binder after a game closed: Welcome back, Starfall Drift, 1 hour 50 minutes played, above a grid of game covers.">
+          </picture>
+          <figcaption><strong>Back from a game</strong>The session you just played, then all your games.</figcaption>
+        </figure>
+        <figure class="shot">
+          <picture>
+            <source srcset="screenshots/dark-detail.webp" media="(prefers-color-scheme: dark)">
+            <img src="screenshots/light-detail.webp" width="544" height="999" loading="lazy" decoding="async" alt="The page of the game Starfall Drift: Play, playtime, last played, size on disk and a chart of the last eight weeks.">
+          </picture>
+          <figcaption><strong>A game’s page</strong>Playtime by week, recent sessions and the game’s settings.</figcaption>
+        </figure>
+        <figure class="shot">
+          <picture>
+            <source srcset="screenshots/dark-free-up-space.webp" media="(prefers-color-scheme: dark)">
+            <img src="screenshots/light-free-up-space.webp" width="544" height="999" loading="lazy" decoding="async" alt="Free up space: the games on drive C as tiles sized by the space they use, and a suggestion to uninstall Dune Runners.">
+          </picture>
+          <figcaption><strong>Free up space</strong>What you could remove to fit a new game.</figcaption>
+        </figure>
+        <figure class="shot">
+          <picture>
+            <source srcset="screenshots/dark-game-mode.webp" media="(prefers-color-scheme: dark)">
+            <img src="screenshots/light-game-mode.webp" width="544" height="999" loading="lazy" decoding="async" alt="The Game mode page: the best performance power mode, game priority and background services to pause, each with a switch.">
+          </picture>
+          <figcaption><strong>Game mode</strong>What Windows changes while you play, item by item.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
   <!-- How much it uses: the numbers between the n: markers are written for each release (scripts/site-numbers.ps1). -->
   <section class="section" aria-labelledby="usage-title">
     <div class="wrap split">
       <div class="split-head">
         <h2 class="h2" id="usage-title">How much it uses</h2>
-        <p class="footnote"><!-- n:measured -->Approximate, measured on [TEST PC]<!-- /n -->. Your numbers will vary with the size of your library.</p>
+        <p class="footnote"><!-- n:measured -->Expected figures for now. Each release is measured on a GitHub Actions test machine, and its numbers replace these<!-- /n -->. Your numbers will vary with the size of your library.</p>
       </div>
       <!-- Each bar is drawn to scale against the open panel (usage.js reads the numbers; fixed proportions without it). -->
       <div class="usage">
@@ -295,7 +355,7 @@
         </article>
       </div>
       <div class="split also">
-        <h2 class="h3">Also</h2>
+        <h2 class="h3">More in Binder</h2>
         <ul class="also-list">
           <li><strong>Game mode</strong>: if you turn it on, Binder can switch Windows to its best performance power mode, pause a few background services and give the game's network traffic priority while you play. Everything is put back when the game closes. <a href="docs.html#game-mode">What Game mode changes</a></li>
           <li><strong>A tidy desktop</strong>: Binder keeps the shortcuts you moved in its own folder and can put them back anytime.</li>
@@ -362,6 +422,10 @@
         <details class="faq-item">
           <summary>What does it cost?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
           <p>Nothing, it's free. Binder is open source under the GNU GPL, version 3: anyone can read, change and share <a href="https://github.com/JannisJostBot/binder">the code on GitHub</a>, and changed versions stay open too.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How does it compare with Playnite, GOG GALAXY and others?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p>They do more: games you own but haven't installed, emulators, themes, add-ons, full-screen modes. Binder is smaller, closes while you play and is much younger. The <a href="compare.html">comparison</a> puts them side by side, with what Binder doesn't do.</p>
         </details>
       </div>
     </div>
@@ -430,7 +494,9 @@
       <nav aria-label="Footer" class="footer-nav">
         <a href="#disclaimer">Disclaimer</a>
         <a href="#privacy">Privacy</a>
+        <a href="#faq">FAQ</a>
         <a href="docs.html">Documentation</a>
+        <a href="compare.html">Compare</a>
         <a href="releases.html">Releases</a>
         <a href="https://github.com/JannisJostBot/binder">Source code</a>
       </nav>

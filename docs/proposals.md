@@ -28,12 +28,12 @@ Every item follows the project brief: zero cost while idle or gaming, no third-p
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | **In progress.** Done: a, the logo on banners (`ArtKind.Logo`, `BannerLogo`; Steam keeps `librarycache\{appid}\logo.png`, 188 of 400 games on the owner's PC, the rest downloaded once; shadow from the logo's alpha via `Image.GetAlphaMask`; in Detail it sits right of the cover, which overlaps the banner's bottom left). Built: b–e, to try on the real PC.<br>b (the cover growing into details) was built and then removed on 2026-11-09, owner's choice: it looked bad.<br>c and e are `Library/Moments`, picked each time the panel opens; tested live with a session written into the sessions file. With a crash, the crash card still takes the slot.<br>d is `Views/Sheen`, plain alpha layers tuned below the prototype's "Medium", since blend modes would need Win2D (approved for the Game mode toast only). The rest look was checked on screen; following the pointer couldn't be tested here, because injected mouse input didn't reach the panel |
 | 17 Advanced: sources and artwork | §14 | Built: `Library/SourceDefaults` (every default, `Validate` per kind, `Use` at start and after a change; invalid or unknown values fall back), read by the Steam, Epic, GOG, Ubisoft and Rockstar sources and `CoverCache` (cover names tried in order, the first downloaded; `ForgetSteamLookups` after an artwork change drops resolved paths and `.none` markers). Settings › Advanced: one card at the bottom (closed), per launcher a Check (`Services/SourceCheck`, no downloads) and a text box per entry with Reset and its error, Reset all, the host named when the address differs. Values take effect from the next scan. Unit-tested (each kind's validation, the view model); network and validation rules in `CLAUDE.md`. Still to try on the real PC: the page on screen, Check per launcher |
-| 18 Performance | §15 | To do |
+| 18 Performance | §15 | **In progress.** Built 2026-11-17 (§15 g): a rescan with nothing new skips the save and the grid redraw; pages other than the shelf built on first visit (`MainWindow.Pages`, in code, so the page-level part of c; checked on the real PC 2026-11-18: same as main on every first opening, open panel 103 → 86 MB private working set, commit 180 → 160 MB, shortcut to visible 77 → 47 ms); tile hover parts built on first raise (checked: the first hover fades like the next); the watcher rests while the game runs and opens only new processes while detecting (measured on the real PC 2026-11-21 with real games: commit 3.7 MB, ~0.1 MB under main, after a fix to the process list's buffer; less CPU while detecting; behaviour unchanged); sessions read incrementally after a game. The data side (rescan with and without changes, sessions after a game, the imported count, compact files) checked on the real PC 2026-11-19, two fixes then (a hand-edited sessions file read from the wrong offset; no `library.json` after a `.bak` fallback); not yet with a real game or "Restore to desktop" (§15 g). d: the watcher's part done and measured on the real PC (2026-11-18, see d). To do: a, b, the rest of c, the widget's part of d, e; f is proposed, waiting for measurements and the owner's go |
 | 19 Quick actions | §16 | Done (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); tried on the real PC |
 | 20 Restart after a crash | §17 | Built: the Detail toggle, `CrashAnalysis.ShouldRestart` (in a row from `crashes.json`, at most 2), the watcher's `--restart` / `--crashed`, the restart pill (Game mode's pill with a 5 s countdown, bar and Cancel, owner's change) and the crash card's "Restarted twice already" line; unit-tested. To try on the real PC with a game that crashes (or a test exe that exits with 0xC0000005 after a minute) |
 | 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
 | 22 Open a launcher | §21 | Done; the owner tried it on the real PC on 2026-11-11 and it works. `GameActions.OpenLauncher` / `LauncherTarget` (Free up space's launcher step uses it too), names in `Format.LauncherAppName`, the tray group (`ShelfViewModel.LaunchersByGames`, chip order) and the launcher chips' right-click menu with the launcher's icon; unit-tested. On the owner's PC every launcher with games resolves (Steam, Epic, GOG Galaxy, EA app, Ubisoft Connect, Xbox app, Hytale); Steam, already running, comes to the front without a second copy |
-| 23 Faster than Start | §22 | Built 2026-11-17, all five parts; to try on the real PC. a: `Library/GameSearch` (prefix, word start, initials with whole numbers, anywhere; recent first within a rank), Enter in the search box plays the top match, an "Enter" key on its tile or row, the box's help text. b: with nothing typed Enter plays the Continue playing / Welcome back game, and the placeholder says so ("Search 72 games · Enter plays Hades II"). c: `--play <id>` (`App.Play`: plays without opening the panel; a game that's gone, the anti-cheat question or an error open it), "Add my games to Start search" (Settings › Opening and setup step 1, off by default; `Services/StartMenuGames` writes `Programs\Binder games\` after each rescan, only when the stamp in settings changed; off and uninstall delete it). d: setup step 1's "N of them aren't in Start search" (`Library/StartMenuMatch` over the Start menu's shortcuts, read once per run), the import toast "Your desktop has N fewer icons" with Undo for that import, Welcome back's one-time "Binder was closed the whole time you played" (only when the game's end started the process). e: the cover's Play tooltip. Unit-tested (ranking, initials, matching, plan, file names, view models).<br>Tried on the owner's PC 2026-11-17 (published AOT build): search by initials, the Enter key (tile, list row), Enter plays the top match and the Continue playing game, Down into the grid, Esc clears, nothing with This week; the folder written with the games' icons and found by Start search; `--play` from Start with Binder running and closed (no panel, the watcher brings it back), an unknown id opens the panel; off deletes the folder; step 1's count matches the folder; the import toast and Undo of only that import; the closed-time line once (not on the next Welcome back); the Play tooltips. Fixed then: imported shortcuts matched by name (a launcher's own Start entry was duplicated), their own icons, the folder follows imports/Undo/Add/Hide at once, the Return symbol on narrow covers, list rows trim long names, a shorter German closed-time line. Not tried: German/French on screen (no per-app language switch; lengths checked), high contrast and Animation effects off (Windows settings), the uninstaller (CI's setup test checks the folder) |
+| 23 Faster than Start | §22 | Built 2026-11-17, all five parts; to try on the real PC. a: `Library/GameSearch` (prefix, word start, initials with whole numbers, anywhere; recent first within a rank), Enter in the search box plays the top match, an "Enter" key on its tile or row, the box's help text. b: with nothing typed Enter plays the Continue playing / Welcome back game, and the placeholder says so ("Search 72 games · Enter plays Hades II"). c: `--play <id>` (`App.Play`: plays without opening the panel; a game that's gone, the anti-cheat question or an error open it), "Add my games to Start search" (Settings › Opening and setup step 1, off by default; `Services/StartMenuGames` writes `Programs\Binder games\` after each rescan, only when the stamp in settings changed; off and uninstall delete it). d: setup step 1's "N of them aren't in Start search" (`Library/StartMenuMatch` over the Start menu's shortcuts, read once per run), the import toast "Your desktop has N fewer icons" with Undo for that import, Welcome back's one-time "Binder was closed the whole time you played" (only when the game's end started the process). e: the cover's Play tooltip. Unit-tested (ranking, initials, matching, plan, file names, view models).<br>Tried on the owner's PC 2026-11-17 (published AOT build): search by initials, the Enter key (tile, list row), Enter plays the top match and the Continue playing game, Down into the grid, Esc clears, nothing with This week; the folder written with the games' icons and found by Start search; `--play` from Start with Binder running and closed (no panel, the watcher brings it back), an unknown id opens the panel; off deletes the folder; step 1's count matches the folder; the import toast and Undo of only that import; the closed-time line once (not on the next Welcome back); the Play tooltips. Fixed then: imported shortcuts matched by name (a launcher's own Start entry was duplicated), their own icons, the folder follows imports/Undo/Add/Hide at once, the Return symbol on narrow covers, list rows trim long names, a shorter German closed-time line. Not tried: German/French on screen (no per-app language switch; lengths checked), high contrast and Animation effects off (Windows settings), the uninstaller (CI's setup test checks the folder).<br>f (Copy play command and its docs section, proposed 2026-11-17): to do |
 | 24 Lean speed-ups | §23 | To do |
 | 25 Weekly chart details | §24 | Proposed (2026-11-12), waiting for the owner's go; two choices open (§24 "To decide") |
 | 26 Updates from GitHub | §25 | **Built and released** (owner's go 2026-11-14). Done: `Library/UpdateManifest` (signature on the raw bytes first, then the strict rules; urgent only with two keys; downgrade, replay and clock checks; GitHub-only addresses; the download's size and hash check), unit-tested with generated P-384 keys; the keys (both YubiKeys' since 2026-11-15, made on the keys with PIN and touch always) and the repository set at build time since 2026-11-15: `build/OfficialRelease.props` for `publish.ps1 -Official` (release.yml), `build/Updates.targets` checks them and generates `Services.UpdateKeys`; other builds and forks without their own keys never check (About says so); `scripts/sign-release.ps1` (`-ExportPublicKey`, sign, `-Urgent`, `-DryRun`), its manifest and signature checked against the app's verifier; notes format in `docs/releases/README.md`. Default decided: Ask before installing (2026-11-14).<br>Built 2026-11-14: `.github/workflows/release.yml` (v* tags only, actions pinned, a draft with the setup and its attestation); `Services/Updater` (check with redirects only through `IsAllowedAddress`, 15 s, a client per check, no cookies; manifest kept in `%LOCALAPPDATA%\Binder\updates\` and verified again when read; the download hashed while it streams; the setup hashed again through a handle held with read sharing only and started with `/S /update`; waits for a watcher or a Game mode journal); `App.Updates` (check after a panel's first frame at most once a day, download at once with "Install automatically" or urgent, closing the panel cancels it, install when the flyout closes or at a `--background` start, the in-panel toast "Updated to …" with What's new after `--updated`, "couldn't be installed" when `--updated` comes back on the old version); Settings › About (version card with Check for updates / Update / Restart now, progress bar, What's new with Skip this version, the Updates combo); the "…" dot and first item, the tray item; three settings fields plus the mode; 37 strings in EN/DE/FR; view model tests. The pill is the panel's toast, not board 23's separate pill window. Not built: the Authenticode same-publisher check (Binder is unsigned today).<br>Built 2026-11-15: the setup's `/update` (the widget comes back with `--updated --background` after a success, a failure or a busy setup) and the all-or-nothing swap (§25 "To decide" 3, owner: yes; `FileSwap`, unit-tested on real files), run in CI by `setup-test.ps1`.<br>Released: Windows sees both YubiKeys' certificates and `sign-release.ps1` asks which one signs; after a dry run, 0.2.0 and 0.2.1 were published on 2026-11-15 through `release.yml` and `sign-release.ps1`. Since 2026-11-16 `virustotal.yml` scans each published setup and adds the result to the release notes. An installed copy updated itself through the app on the owner's PC. Not built: the Authenticode same-publisher check (Binder is unsigned today) |
@@ -982,8 +982,9 @@ smooth scrolling through the grid, and the published size. Report the numbers in
 
 ### c. Load hidden parts of the UI only when needed
 
-- Nothing in the XAML uses deferred loading yet (`x:Load`). Mark elements that aren't visible when a view first
-  shows, so WinUI builds them only when they're needed:
+- The pages are built on first visit and the tiles' hover parts on first raise (g). Mark elements that aren't
+  visible when a view first shows, so WinUI builds them only when they're needed (`x:Load` works inside a
+  UserControl; in MainWindow itself `FindName` doesn't realize it, so build in code there):
   - the Settings page and its sections (it's only shown when opened);
   - the Detail view's parts that are collapsed at first (crash card, launch options, anti-cheat details, the
     "This game only" settings);
@@ -1027,6 +1028,157 @@ smooth scrolling through the grid, and the published size. Report the numbers in
 - CsWinRT connects .NET to WinUI. Version 3.0 rewrites it for Native AOT (smaller and faster) but is only a preview
   so far (3.0.0-preview in 2026-03). Move to it once there's a stable 3.0 that the stable Windows App SDK supports,
   and only through the Windows App SDK's own version (no separate package).
+
+### f. Start in the tray without WinUI (proposed 2026-11-17, waiting for measurements and the owner's go)
+
+- Today a start with Windows (`--background`) brings up all of WinUI (the XAML framework, `App.xaml`'s resources
+  and theme), reads `library.json`, every sessions file and `crashes.json`, then shrinks (`Footprint.Shrink`) and
+  waits in the tray. Trimming gives back the working set, not the committed memory WinUI keeps.
+- Proposal: in a `--background` start, run only the tray icon, the shortcut and the single-instance window
+  (`MessageWindow`, plain Win32 on the main thread) with a message loop of its own, and start WinUI and read the
+  data at the first open. Later closes work as today (Stay ready keeps WinUI loaded).
+- What it costs: the first open after signing in becomes a cold start (the ~1 s budget, with the panel's
+  covers-first reveal) instead of a warm one. Every other open is unchanged. The crash check for sessions that
+  ended while Binder wasn't running moves to that first open.
+- Measure first, on the real PC (Task Manager › Details, "Memory (private working set)", and Commit size):
+  the tray state after `--background` today, the same with WinUI not started (a quick prototype), and the first
+  open's time both ways. Build it only if the saving is worth the slower first open; the owner decides.
+- Touches: `Program.cs` (a message loop before WinUI), `MessageWindow`, `App.OnLaunched` (data read at first
+  open), `Autostart` (unchanged argument).
+
+### g. Built 2026-11-17 (measure on the real PC)
+
+- **Rescan without changes:** `MainWindow.RescanAsync` compares the merged library with the shown one
+  (`Storage.SameLibrary`, as saved); when nothing changed (no game dropped, no icon changed), the games on screen
+  stay, with no save of `library.json` and no rebuild of the grid. Start search is still synced. Checked on the real
+  PC 2026-11-19 (Release build, driven through UI Automation): Refresh from the shelf and from Settings left
+  `library.json`/`.bak` untouched, the same tile elements, the grid's scroll position kept (focus not checked: the
+  panel wasn't the foreground window); a renamed game (Epic manifest) rewrote `library.json`, updated the shelf and
+  renamed its Start entry; a game that left went to `removed-games.json` with its settings; with nothing new, a
+  launcher's own new Start entry still removed ours, and ours came back when it went. Fixed then: after a damaged
+  `library.json` fell back to its `.bak`, a rescan with nothing new left no `library.json` behind; it now saves
+  when the file is missing (`Storage.LibraryFileExists`).
+- **Pages on first visit:** every page but the shelf is built in code and initialized when first shown
+  (`MainWindow.Pages`: `new T()`, inserted in `Root` right above the shelf, below the notices; `…Slot` fields);
+  `Shown(…Slot)` checks without building. First built as `x:Load="False"` in MainWindow.xaml, which failed on the
+  real PC (2026-11-18): a Window's `Root.FindName` doesn't realize them, so the first Detail threw ("Something went
+  wrong") and no page could open.
+  Checked on the real PC (2026-11-18, Native AOT build, 81 games, Medium covers, dark): each page's first opening
+  after a fresh panel (closed with Stay ready, reopened) screenshotted at 50 and 750 ms and after Esc, against
+  main's build. Pixel-identical (apart from a moving chart tab, the caret and a fading tooltip): Detail from the
+  (i) button, Space and right-click › Details (focus on Play, its focus rectangle after Space; Esc back to the tile,
+  raised); Settings from the "…" menu; Import shortcuts (Esc back to Settings, then the shelf); Game mode from the
+  "…" menu and from Settings (its switches still fade into On at 50 ms, the same as main's from ~120 ms); Free up
+  space (the (i) tip opens, closes on Esc and when the page is left by Back); first-run setup again (step 1 the
+  same, Skip). What's new after an update (debug panel's "Updated to 9.9.9" pill) opens Settings scrolled to About on
+  its first build. Not checked here: the controller (Y, Menu), the "…" menu's update item (needs an available update;
+  same `ShowSettings` + `ShowAbout` as What's new), the smoke test (it rewrites the PC's Binder data, Steam path and
+  Run key: CI only).
+  Measured (the same PC and library, `--background`, then 6 opens with Win+Shift+G, 4 s open, 6 s closed; two rounds
+  each, main 53b7db2 against this branch):
+
+  | | main | branch |
+  |---|---|---|
+  | Shortcut to visible, first open | 118–126 ms | 85–89 ms |
+  | Shortcut to visible, later opens (median) | 76–77 ms | 47 ms |
+  | Open (1st): private working set / commit | 103 / 180 MB | 86 / 160 MB |
+  | Open (1st): managed heap live | 9.3 MB | 7.2 MB |
+  | Closed, Stay ready (1st): private working set / commit | 1.6 / 157 MB | 1.6 / 136 MB |
+  | Never opened (`--background`) | 13 / 68 MB | 13 / 68 MB |
+
+  Found on both: the commit size grows by ~20 MB at every open and close (closed after the 6th: main 269 MB, branch
+  241 MB), all outside the managed heap; the private working set while closed stays ~1.7 MB. Not this branch's.
+  **Fixed (2026-11-18):** every closed panel window stayed alive, with its views and covers. Three causes, each
+  measured on the real PC: a handler added in code to each launcher chip's `ContextRequested` (now one on the
+  bar, in XAML); handlers on the Window's own events, including the one x:Bind adds to `Activated` (removed in
+  `OnClosed`; MainWindow.xaml has no x:Bind); and `CompositionTarget.Rendering`, which keeps its last handler
+  (`Views/FrameTicks`, one static handler). 30 open/close cycles: commit 140 → 220 MB (was ~+21 MB per cycle),
+  closed working set ~18 MB. Left: the latest closed panel stays alive until the next open (cause not found), and
+  ~2.5 MB commit and ~26 handles per cycle, native. `--memory-report` now prints "panel windows alive".
+  The same fix for the small windows (2026-11-19): Game mode's toast and the game shortcuts' flash lose their x:Bind
+  and their `Closed` handlers (theirs and App's) go through `Views/WindowClosed` (run once, then removed); checked
+  through the debug panel that their texts, buttons and closing are unchanged, not measured.
+- **Still open (to look at again; found 2026-11-18/19 on the real PC, Release build, 81 games):**
+  - *How to measure.* Start `Binder.exe --background`, then open and close the flyout N times with Win+Shift+G
+    (2 s open, 2.5 s closed; Shrink runs 1 s after a close), then `Binder.exe --memory-report` and read
+    `%LOCALAPPDATA%\Binder\memory.txt` ("panel windows alive", "private bytes"). "Private bytes" is the commit
+    size. Watch the process's handle count too.
+  - *The latest closed panel stays alive until the next open.* Always exactly one (the newest), with its 37 tiles,
+    also after a forced GC and 15 s more. Ruled out by switching each off: focusing the search box (`BringForward`),
+    the update check (`PanelShown`), the controller (no pad connected, so its timers never start), the slide and
+    first-frame handler (`FrameTicks`), `CoverQueue`/`OpeningGate` (empty, released), and the Acrylic backdrop.
+    A MainWindow made, `Open()`ed, closed and dropped outside App's open/close path was freed, so the holder is
+    on that path (`App.OpenPanel`/`ClosePanel`, `CloseAnimated`, activation) or inside WinUI (e.g. its last active
+    window or focus). Not yet tried: dotnet-gcdump on a JIT build, which shows the roots (the owner's OK first:
+    it's a download).
+  - *Native growth.* ~2.5 MB commit and ~26 handles per open/close, steady over 30 cycles (140 → 220 MB,
+    1309 → 2094 handles); the managed heap stays ~3 MB and the closed working set ~18 MB. Probably inside WinUI
+    (a window, its DirectComposition and input objects each open); not looked into. Worth comparing with a bare
+    WinUI `Window` opened and closed the same way, to see whether it's ours at all.
+  - *An occasional crash on fast open/close.* Twice, during rapid open/close loops (main and this branch, same
+    place): `Microsoft.UI.Xaml.dll`, exception 0xc000027b (a stowed exception), 8000ffff, offset 0x3d1699, in the
+    Windows event log. Not reproduced in 15 more minutes with a debug output listener; no dump kept. Next time:
+    turn on local crash dumps (WER `LocalDumps` for Binder.exe) and read the stowed exception from the dump.
+- **Tile hover parts:** `GameTile`'s scrim, edge, high contrast outline and Play mark are `x:Load` and built when
+  the tile first rises (a UserControl's `FindName` does realize them). The Details button stays in the tree (UI
+  Automation). Checked on the real PC (2026-11-18): the tile area and the Play mark captured every ~4 ms after the
+  pointer arrives: the first hover of a never-raised tile fades in on the same curve as the second and third (Play
+  mark ~140 ms, whole tile ~210 ms; the first starts ≤ 10 ms later); the same after scrolling 25 notches so tiles
+  recycle (no tile left raised), and for keyboard focus (Right arrow onto a fresh tile). Not checked here: the
+  controller, Animation effects off and high contrast (Windows settings a person changes).
+- **Watcher**, on top of d's smaller build: while blocked on the game it's compacted (an aggressive collection that
+  also decommits free GC memory), trimmed and in efficiency mode with very low memory priority (`Footprint`, in
+  place of d's working-set trim alone), undone when the game exits or Windows ends the session; `ConserveMemory`.
+  The aim is the commit size, which d's change left as it was (3.3–4.1 MB). Detection takes the process list in one call
+  (`ProcessList`, `NtQuerySystemInformation`) and opens only processes it hasn't turned down before (by id and
+  start time; crash reporters and processes it couldn't open are always looked at again); without that list it
+  falls back to opening every process.
+  Measured on the real PC 2026-11-19/21, Windows 11 25H2 (build 26200.9974), as in d: each game played from the
+  branch's `publish.ps1` build with `--play`, read 10 s into the game (Memory = private working set, Commit size =
+  private bytes), CPU time over the next 10 s; main's watcher (6ebd7c1, d's build) swapped into the same app folder
+  and run the same way, alternating. As first built, the commit size went *up* to 4.2–5.0 MB (main 3.8): the process
+  list's 512 KB buffer came from the process heap (`NativeMemory.Alloc`), which on x64 keeps a freed block that size
+  committed (seen in the watcher's committed regions: default heap 432 → 880 KB). Fixed: the buffer comes from
+  `VirtualAlloc` and goes back with `VirtualFree`. And the working-set trim now runs last in `Footprint.Rest`, after
+  efficiency mode is set (setting it after the trim paged ~150 KB back in). With both fixes:
+
+  | Game (source)                | Private WS (KB)   | Working set (KB)      | Commit (KB)               | CPU |
+  |------------------------------|-------------------|-----------------------|---------------------------|-----|
+  | Balatro (Steam, Game mode on)| 612 → 576–592     | 3,356–3,392 → 3,180–3,288 | 3,820–3,828 → 3,708–3,732 | 0 → 0 |
+  | Little Inferno (Epic)        | 596 → 576         | 3,352 → 3,144         | 3,808 → 3,732             | 0 → 0 |
+  | Magical Drop VI (GOG, exe)   | 604 → 584         | 3,312 → 3,200         | 3,760 → 3,728             | 0 → 0 |
+
+  Commit about 0.1 MB under main's, the rest a little under. Of the parts (Balatro, two runs each): without the
+  aggressive collection 3,736–3,752 KB (it saves ~40 KB), without `ConserveMemory` 3,704–3,728 KB (no measurable
+  difference; kept, it costs nothing). Exe 1,645 → 1,622 KB. The rest of the commit is the runtime's own (GC
+  bookkeeping, thread stacks, the image's data), not ours to trim further.
+  Detection with Steam closed (`steam.exe -silent` first, the game found 26–31 s later, two runs each): the
+  watcher's CPU time until the game was found 47–62 ms (main) → 16–47 ms.
+  Efficiency mode (read with `GetProcessInformation`): on, with very low memory priority, while the game runs; off
+  within 0.6 s of the game's exit, until the watcher exits. Behaviour, all with the new build: each game detected and
+  its session saved, the widget back after it closed; Game mode applied and put back (helper: "Restored 5 of 5");
+  WARDOGS (Steam, Unreal) followed from its launcher to its client (the launcher exits ~30 s after the client
+  starts, the re-check finds the client and raises it); Balatro with "Restart if it crashes" ended by force after
+  72 s: recorded as closed unexpectedly, the restart pill played it again 9.7 s later; a crash reporter still
+  running after the game exited noted (`"CrashReporter":true`: a stand-in, `ping.exe` copies named `game.exe` and
+  `CrashReportClient.exe` in a scratch folder followed by the watcher directly, its line removed after; WARDOGS' own
+  `CrashReportClient.exe` exits at once when started without a crash). Not checked: Task Manager's own Status
+  column and leaf icon (a person's eye), a real engine crash.
+- **Smaller things:** after a game only the appended session lines are read (`Storage.ReloadSessions`); the
+  imported shortcut count is read once; the crash check looks games up by id; data files are saved compact.
+  Checked on the real PC 2026-11-19, with the real watcher following a stand-in process under a library game's id
+  (no real game played): a 2 min session showed at once in Detail, This week, Recent and Welcome back, with the
+  widget running and when the watcher started it; two in a row; the week's total matched the file (none doubled).
+  A file cut short by hand was read again whole. Fixed then: a hand edit that made a line a few bytes shorter, with
+  a longer session appended before the next read, left the file longer than the last read, so the new session was
+  read from the wrong offset and missing until the next start; each read now also keeps the 64 bytes before its
+  end (`Storage.ReadMark`) and reads the file again whole when they moved (unit-tested). The imported count was
+  right after an import, an Undo and a hand edit of `imported-shortcuts.json` with Binder closed ("Restore to
+  desktop" not run: it would have put the store's 119 shortcuts on the desktop). Indented 0.2.1-style
+  `settings.json` and `library.json` loaded; later saves were compact and loaded; a damaged `library.json` went to
+  `.bad` and the `.bak` was used. Note: processes started from the Claude desktop app see its MSIX copy of
+  `%APPDATA%` (`%LOCALAPPDATA%\Packages\Claude_…\LocalCache\Roaming`), so these checks ran on that copy, not the
+  one a Binder started from Explorer uses.
 
 ## 16. Quick actions (board 18, milestone 19)
 
@@ -1686,6 +1838,22 @@ Instead of competing with Start, put the games there, launched through Binder.
   one: Steam "Plays without opening Steam's window", any game with Game mode on "Plays with Game mode", otherwise
   just "Play". One line, from facts the game already has.
 
+### f. Copy play command (proposed 2026-11-17)
+
+`--play <id>` (c) also works from anything the user sets up themselves: a pinned shortcut, a Stream Deck button,
+AutoHotkey, Task Scheduler, a script, an AI assistant that can run commands. Each launch then gets everything Play
+adds (silent Steam, the watcher, Game mode, playtime, crash help) instead of starting the exe or store link bare.
+The ids aren't guessable (manual and shortcut games are `manual:`/`shortcut:` + a hash), so:
+- The game's context menu and Detail's "…" menu get **"Copy play command"**: puts `"<install path>\Binder.exe"
+  --play <id>` on the clipboard (the real install location, quoted by the Windows argv rules), with a short
+  "Copied" notice. Text in the three languages, as always.
+- **Website:** `site/docs.html` gets a short section after "Your games in Start search" (`#pc-play`, "Start a game
+  from a shortcut or script", with its link in the page's contents): what the command does, where to get it (the
+  menu item), that it plays the game exactly like Play, and that an id that isn't in the list just opens Binder.
+- No URI scheme and no AI integration (see "Not decided"): `--play` plus the plain data files already cover
+  scripts, buttons and assistants.
+- Cost: nothing while idle; the command is built when the menu item is clicked.
+
 ### Not chosen
 
 - Opening the panel when a controller is picked up: XInput can't notify, so it would need constant polling, which
@@ -1700,7 +1868,8 @@ New `Library/GameSearch` (ranking, initials; tested), `ShelfView` (Enter, hint, 
 (`--play`), new `Services/StartMenuGames` (read Start entries for d; write our folder for c), `SetupView`,
 `MainWindow` (import toast), `Moments` (the one-time line), `GameTile` (tooltip), `Settings` (one setting), the
 installer's uninstall step. Security rules in `CLAUDE.md`: add the Start menu folder to the files we own, and
-`--play` to "only launch validated library entries".
+`--play` to "only launch validated library entries". For f: `GameAction` / `Services/GameActions` (the menu item),
+the strings, `site/docs.html` (the section and its contents link).
 
 ## 23. Lean speed-ups (milestone 24, no board yet)
 
@@ -2413,4 +2582,8 @@ Suggested but neither approved nor rejected yet:
 - Backup / restore
 - Portable mode (likely dropped, since it conflicts with the installer)
 - A Windows 11 Widgets-board card
+- A `binder://play/<id>` URI scheme for links from a browser or chat: any web page could fire it, and store games
+  already have their own URIs; `--play` (§22 c, f) covers scripts and buttons
+- An AI/MCP integration: game names and manifests are untrusted text that would reach the AI, and `--play` plus
+  the plain `library.json` / `sessions-<year>.jsonl` files already let an assistant launch games and read playtime
 - "Use the high-performance GPU" per game (noticed in §20; it would belong in Game detail, not Game mode)

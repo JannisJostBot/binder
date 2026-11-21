@@ -25,6 +25,7 @@
 
     <!-- Kept small: it is the one Binder process that stays up while a game runs (budget ~3 MB, CLAUDE.md). -->
     <!-- No background GC thread: the watcher allocates almost nothing, and never while the game runs. -->
+    <ServerGarbageCollection>false</ServerGarbageCollection>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <!-- Its work is a few hundred API calls; size over speed (spec §15 d). -->
     <OptimizationPreference>Size</OptimizationPreference>
@@ -35,5 +36,9 @@
     <MetricsSupport>false</MetricsSupport>
     <DebuggerSupport>false</DebuggerSupport>
   </PropertyGroup>
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="9" />
+  </ItemGroup>
 
 </Project>

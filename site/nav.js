@@ -1,6 +1,6 @@
 // Binder website: the header and the docs page's side navigation. On the home page the section link of the part
 // you're reading gets the accent bar under it (aria-current="location"), as Windows' selector bars do; on the docs
-// page "On this page" marks the part being read; on phones the Menu flyout closes when you pick a link, press Esc
+// page "On this page" marks the part being read and opens only that part's list; on phones the Menu flyout closes when you pick a link, press Esc
 // or click elsewhere. Nothing is fetched; it only reacts to scrolling (at most once a frame),
 // clicks and keys.
 (function () {
@@ -13,6 +13,9 @@
     var links = document.querySelectorAll('.docs-toc a[href^="#"]');
     if (!links.length) return;
     var marks = [], current = null, ticking = 0;
+    var toc = document.querySelector('.docs-toc');
+    var parts = toc.querySelectorAll(':scope > ol > li');
+    toc.classList.add('is-folding');
     for (var i = 0; i < links.length; i++) {
       var target = document.getElementById(links[i].getAttribute('href').slice(1));
       if (target) marks.push({ link: links[i], target: target, top: 0 });
@@ -34,6 +37,9 @@
         if (parent) parent.classList.add('is-within');
       }
       current = link;
+      // Only the part being read shows its sections (CSS, wide windows only); the others list just their name.
+      var part = link ? (parentOf(link) || link).parentNode : null;
+      for (var j = 0; j < parts.length; j++) parts[j].classList.toggle('is-open', parts[j] === part);
     }
     function parentOf(link) {
       var item = link.parentNode.parentNode.closest('li');

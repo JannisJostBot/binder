@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Binder compared</title>
+  <meta name="description" content="How Binder compares with Playnite, GOG GALAXY, LaunchBox, the Xbox app, Steam and Windows itself, including what Binder doesn't do.">
+  <meta property="og:title" content="Binder compared">
+  <meta property="og:description" content="How Binder compares with Playnite, GOG GALAXY, LaunchBox, the Xbox app, Steam and Windows itself, including what Binder doesn't do.">
+  <meta property="og:type" content="website">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="nav.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<!-- The logo's gradients, used by every logo on the page. -->
+<svg class="defs" aria-hidden="true" width="0" height="0"><defs><linearGradient id="la" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7BD8FF"></stop><stop offset="1" stop-color="#0C78D2"></stop></linearGradient><linearGradient id="lm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B4E6FF"></stop><stop offset="1" stop-color="#4AA6E6"></stop></linearGradient><linearGradient id="ls" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E3F5FF"></stop><stop offset="1" stop-color="#9CCDEF"></stop></linearGradient></defs></svg>
+<div class="page">
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-bar">
+      <a href="index.html" class="brand" aria-label="Binder home">
+        <svg aria-hidden="true" width="30" height="30" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
+        <span>Binder</span>
+      </a>
+      <nav aria-label="Sections" class="header-nav">
+        <a href="index.html#features">Features</a>
+        <a href="docs.html">Docs</a>
+        <a href="releases.html">Releases</a>
+      </nav>
+      <div class="header-actions">
+        <a href="https://github.com/JannisJostBot/binder" class="header-github" title="Source code on GitHub" aria-label="Source code on GitHub"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"></path><path d="M16 7l5 5-5 5"></path></svg></a>
+        <a href="index.html#download" class="button button-small header-download"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download</a>
+        <details class="header-menu">
+          <summary aria-label="Menu"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></summary>
+          <nav aria-label="Menu" class="header-menu-list">
+            <a href="index.html#features">Features</a>
+            <a href="docs.html">Docs</a>
+            <a href="releases.html">Releases</a>
+            <a href="https://github.com/JannisJostBot/binder">Source code on GitHub</a>
+          </nav>
+        </details>
+      </div>
+    </div>
+  </header>
+
+<main id="main" class="docs compare">
+  <div class="compare-intro">
+    <h1 class="h2">Binder compared</h1>
+    <p class="lead">Other ways to start your PC games, side by side, so you can pick the one that fits. Binder is new, small and does less than most of them; this page tries to say so plainly.</p>
+    <p class="compare-note">Checked in November 2026 against each maker's own pages, which change. <strong>Not checked</strong> means it couldn't be confirmed there, not that the feature is missing; <strong>No statement found</strong> means the maker hasn't said, not that AI isn't used. If something here is wrong or out of date, <a href="https://github.com/JannisJostBot/binder/issues">open an issue on GitHub</a>.</p>
+  </div>
+
+  <section class="compare-part" aria-labelledby="cmp-short">
+    <h2 id="cmp-short" class="docs-h2">In short</h2>
+    <dl class="doc-facts doc-facts-plain compare-short">
+      <dt>Playnite</dt>
+      <dd>If you want one library for many stores, emulators, themes, extensions and a full-screen controller mode, for free and open source. It has been around for years, with many community themes and add-ons.</dd>
+      <dt>GOG GALAXY 2.0</dt>
+      <dd>If you want games and friends from several platforms in one place, including games you own but haven't installed, tied to a GOG account.</dd>
+      <dt>LaunchBox</dt>
+      <dd>If emulation and retro collections matter most, or you're building an arcade or TV setup with Big Box.</dd>
+      <dt>Xbox app</dt>
+      <dd>If you already use it: on current Windows it lists installed games from other stores too, with nothing else to install.</dd>
+      <dt>Steam</dt>
+      <dd>If nearly all your games are on Steam: the rest can be added by hand, and Big Picture works with a controller.</dd>
+      <dt>Windows alone</dt>
+      <dd>If Start search and a few desktop shortcuts are enough. Nothing to install, nothing running.</dd>
+      <dt>Binder</dt>
+      <dd>If you want a small panel of your installed games that closes while you play, tidies away desktop shortcuts and can optionally tune Windows for the game. Expect fewer features and a young project.</dd>
+    </dl>
+  </section>
+
+  <section class="compare-part" aria-labelledby="cmp-fit">
+    <h2 id="cmp-fit" class="docs-h2">Is Binder right for you?</h2>
+    <div class="compare-fit">
+      <div class="doc-item">
+        <h3 class="compare-fit-h">It may suit you if</h3>
+        <ul class="docs-list">
+          <li>your games are installed from Steam, Epic, GOG, the EA app, Ubisoft Connect, the Xbox app or Rockstar, on one Windows PC;</li>
+          <li>you want game shortcuts off your desktop, with a way to put them back;</li>
+          <li>you want the launcher itself gone while you play, with only a helper of about 3 MB waiting;</li>
+          <li>you'd like Windows tuned while a game runs and put back afterwards, with <a href="docs.html#game-mode">every change documented</a>;</li>
+          <li>you want open source software that needs no account and sends nothing about you;</li>
+          <li>you're fine with a new project, made by one person, with code written by an AI.</li>
+        </ul>
+      </div>
+      <div class="doc-item">
+        <h3 class="compare-fit-h">Something else may suit you better if</h3>
+        <ul class="docs-list">
+          <li>you want games you own but haven't installed in the list: GOG GALAXY or Playnite;</li>
+          <li>you play emulated or retro games: LaunchBox or Playnite;</li>
+          <li>you want themes, extensions or a full-screen mode for the TV: Playnite, LaunchBox's Big Box or Steam's Big Picture;</li>
+          <li>many of your games are on Battle.net, Riot, Amazon Games, itch.io, Humble or Meta: Playnite, or the Xbox app for Battle.net;</li>
+          <li>you want friends and achievements from several platforms in one place: GOG GALAXY;</li>
+          <li>you use a PlayStation or Switch controller: Steam's Big Picture or Playnite's Fullscreen mode, until Binder supports them;</li>
+          <li>you'd rather use software that has been around for years, or code reviewed by people: any of the others.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="compare-part" aria-labelledby="cmp-table">
+    <h2 id="cmp-table" class="docs-h2">Side by side</h2>
+    <p class="compare-hint">The table scrolls sideways on narrow screens.</p>
+    <div class="compare-scroll" tabindex="0" role="region" aria-labelledby="cmp-table">
+      <table class="compare-table">
+        <thead>
+          <tr><th scope="col"><span class="cmp-sr">Feature</span></th><th scope="col">Binder</th><th scope="col">Playnite</th><th scope="col">GOG GALAXY 2.0</th><th scope="col">LaunchBox</th><th scope="col">Xbox app</th><th scope="col">Steam</th><th scope="col">Windows alone</th></tr>
+        </thead>
+        <tbody>
+            <tr><th scope="row">Made by</th><td>One person</td><td>Josef Nemec, with community add-ons</td><td>GOG (independent of CD PROJEKT since 2026)</td><td>The LaunchBox team</td><td>Microsoft</td><td>Valve</td><td>Microsoft</td></tr>
+            <tr><th scope="row">AI in its code</th><td>Written by an AI (Claude); not reviewed line by line by a person</td><td><span class="cmp-unknown">No statement found</span></td><td>GOG asks its Galaxy developers to use AI-assisted tools (job listing, January 2026)</td><td><span class="cmp-unknown">No statement found</span></td><td>Microsoft says 20–30% of its code is written by AI (company-wide, April 2025)</td><td><span class="cmp-unknown">No statement found</span></td><td>Microsoft says 20–30% of its code is written by AI (company-wide, April 2025)</td></tr>
+            <tr><th scope="row">Around since</th><td>November 2026 (version 0.2)</td><td>Many years (version 10)</td><td>2019 (2.0 beta)</td><td>Many years (version 13 in 2023)</td><td>Other stores' games since 2025</td><td>2003</td><td>Always</td></tr>
+            <tr><th scope="row">Price</th><td>Free</td><td>Free</td><td>Free</td><td>Free version; Premium $30 (a year of updates) or $75 (lifetime)</td><td>Free (Game Pass is a separate subscription)</td><td>Free</td><td>Included</td></tr>
+            <tr><th scope="row">Source code</th><td>Open (GPL 3.0)</td><td>Open (MIT)</td><td>Closed</td><td>Closed</td><td>Closed</td><td>Closed</td><td>Closed</td></tr>
+            <tr><th scope="row">Account needed</th><td>No</td><td>No</td><td>A GOG account</td><td><span class="cmp-unknown">Not checked</span></td><td>A Microsoft account</td><td>A Steam account</td><td>No</td></tr>
+            <tr><th scope="row">Runs on</th><td>Windows 10 and 11 (64-bit)</td><td>Windows</td><td>Windows, macOS</td><td>Windows</td><td>Windows 10 and 11</td><td>Windows, macOS, Linux</td><td>Windows</td></tr>
+            <tr><th scope="row">Finds games from</th><td>Steam, Epic, GOG, EA app, Ubisoft Connect, Xbox app, Rockstar, Hytale, desktop shortcuts; others added by hand</td><td>Steam, Epic, GOG, EA app, Battle.net, Ubisoft Connect, Xbox and more, through library add-ons</td><td>Platforms you connect: some official integrations, others community plugins</td><td>Steam, GOG, Epic, EA, Xbox, Amazon</td><td>Battle.net and other PC stores; Microsoft publishes no full list</td><td>Only games you add one by one (Add a Non-Steam Game)</td><td>What installers put in Start and on the desktop</td></tr>
+            <tr><th scope="row">Games you own but haven't installed</th><td>No, installed games only</td><td>Yes, through store add-ons</td><td>Yes, from connected platforms</td><td><span class="cmp-unknown">Not checked</span></td><td>No, installed games only</td><td>Not applicable</td><td>No</td></tr>
+            <tr><th scope="row">Emulators and retro games</th><td>No</td><td>Yes, built-in emulator manager</td><td>Not built in</td><td>Yes, its main focus</td><td>No</td><td>Only added by hand</td><td>No</td></tr>
+            <tr><th scope="row">Full-screen controller mode</th><td>No; Xbox controllers work in the panel</td><td>Yes, Fullscreen mode (free)</td><td><span class="cmp-unknown">Not checked</span></td><td>Yes, Big Box (Premium; free in 30-minute sessions)</td><td><span class="cmp-unknown">Not checked</span></td><td>Yes, Big Picture</td><td>No</td></tr>
+            <tr><th scope="row">Themes and add-ons</th><td>No</td><td>Yes, themes and extensions</td><td>Community integration plugins</td><td><span class="cmp-unknown">Not checked</span></td><td>No</td><td>Custom artwork per game</td><td>No</td></tr>
+            <tr><th scope="row">Friends and achievements</th><td>No</td><td>Through extensions</td><td>Yes, across connected platforms</td><td><span class="cmp-unknown">Not checked</span></td><td>Yes, for Xbox</td><td>Yes, for Steam games</td><td>No</td></tr>
+            <tr><th scope="row">While a game runs</th><td>Closes itself; a helper of about 3 MB waits for the game to close, then reopens it</td><td>Has a setting for what it does when a game starts, such as minimizing</td><td><span class="cmp-unknown">Not checked</span></td><td><span class="cmp-unknown">Not checked</span></td><td><span class="cmp-unknown">Not checked</span></td><td>Keeps running for the games it starts</td><td>Nothing extra runs</td></tr>
+            <tr><th scope="row">Changes to Windows while playing</th><td>Optional Game mode (power mode, background services, network, apps), put back afterwards</td><td>Can run your own scripts before and after a game</td><td><span class="cmp-unknown">Not checked</span></td><td><span class="cmp-unknown">Not checked</span></td><td><span class="cmp-unknown">Not checked</span></td><td>No</td><td>Windows' own Game Mode, on by default, for every game</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="compare-note">Binder's memory and processor figures are measured by its author (see <a href="index.html#usage-title">How much it uses</a>); the others weren't measured here, so the page makes no claims about how much they use.</p>
+  </section>
+
+  <section class="compare-part" aria-labelledby="cmp-limits">
+    <h2 id="cmp-limits" class="docs-h2">What Binder doesn't do</h2>
+    <ul class="docs-list">
+      <li><strong>It's young.</strong> The first version came out in November 2026, and it's made by one person. Expect bugs and missing pieces.</li>
+      <li><strong>Its code is written by an AI</strong> (Claude, by Anthropic) and isn't reviewed line by line by a human developer. Its author designs it and tests each version on real PCs.</li>
+      <li><strong>The installer isn't code-signed,</strong> so Windows SmartScreen may warn before it runs.</li>
+      <li><strong>Installed games only.</strong> Games you own but haven't installed don't appear.</li>
+      <li><strong>Some stores aren't supported yet:</strong> Battle.net, Riot, Amazon Games, itch.io, Humble and Meta. Their games can be added by hand or through their desktop shortcuts.</li>
+      <li><strong>No emulators,</strong> no themes, no add-ons, no full-screen mode, no friends or achievements.</li>
+      <li><strong>Covers come only from Steam;</strong> other games get a plain cover made from their icon.</li>
+      <li><strong>Xbox controllers only</strong> for now; PlayStation and Switch controllers are planned.</li>
+      <li><strong>One PC.</strong> Your list and playtime stay on the PC; nothing syncs to other PCs.</li>
+      <li><strong>Windows 10 and 11 (64-bit) only.</strong></li>
+    </ul>
+  </section>
+
+  <section class="compare-part" aria-labelledby="cmp-same">
+    <h2 id="cmp-same" class="docs-h2">The same for all of them</h2>
+    <p>Every option here, Binder included, starts a game through the store it belongs to. Steam, Epic and the others still have to be installed, and they still run while you play their games: that's where saves, updates and friends lists come from.</p>
+  </section>
+
+  <section class="compare-part" aria-labelledby="cmp-sources">
+    <h2 id="cmp-sources" class="docs-h2">Sources</h2>
+    <ul class="docs-list compare-sources">
+      <li>Playnite: <a href="https://playnite.net/">playnite.net</a>, and its manual's <a href="https://api.playnite.link/docs/manual/gettingStarted/comparisonWithOtherSoftware.html">comparison with other software</a>, <a href="https://api.playnite.link/docs/manual/gettingStarted/playniteFullscreenMode.html">Fullscreen mode</a>, <a href="https://api.playnite.link/docs/manual/features/emulationSupport/addingNewEmulators.html">emulators</a> and <a href="https://api.playnite.link/docs/manual/gameScripts.html">game scripts</a></li>
+      <li>GOG GALAXY 2.0: <a href="https://www.gog.com/galaxy">gog.com/galaxy</a> and <a href="https://support.gog.com/hc/en-us/articles/360003905618-How-do-I-connect-my-accounts-from-other-platforms-in-GOG-GALAXY">connecting other platforms</a></li>
+      <li>LaunchBox: <a href="https://www.launchbox-app.com/">launchbox-app.com</a>, <a href="https://www.launchbox-app.com/premium">Premium</a> and <a href="https://www.launchbox-app.com/about/changelog">changelog</a></li>
+      <li>Xbox app: Xbox Wire, <a href="https://news.xbox.com/en-us/2025/09/15/access-gaming-library-xbox-on-windows-pc-and-handheld/">your gaming library in one place</a> (September 2025)</li>
+      <li>Steam: <a href="https://help.steampowered.com/">Steam Support</a>, adding a non-Steam game</li>
+      <li>AI in the code: Microsoft, <a href="https://www.techrepublic.com/article/news-microsoft-meta-code-written-by-ai/">Satya Nadella at LlamaCon</a> (April 2025); GOG, <a href="https://www.pcgamer.com/software/platforms/hooray-linux-is-gogs-next-major-frontier-oh-no-it-wants-to-actively-use-and-promote-ai-assisted-development-tools/">its GOG GALAXY job listing</a> (January 2026)</li>
+      <li>GOG's owner: <a href="https://en.wikipedia.org/wiki/GOG.com">GOG.com on Wikipedia</a></li>
+      <li>Binder: <a href="docs.html">documentation</a> and <a href="https://github.com/JannisJostBot/binder">source code</a></li>
+    </ul>
+    <p class="compare-note">Binder isn't affiliated with or endorsed by any of the products named here. Their names belong to their owners.</p>
+  </section>
+</main>
+
+</main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <a href="index.html" class="brand brand-small" aria-label="Binder home">
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
+        <span>Binder</span>
+      </a>
+      <nav aria-label="Footer" class="footer-nav">
+        <a href="index.html#disclaimer">Disclaimer</a>
+        <a href="index.html#privacy">Privacy</a>
+        <a href="index.html#faq">FAQ</a>
+        <a href="docs.html">Documentation</a>
+        <a href="compare.html">Compare</a>
+        <a href="releases.html">Releases</a>
+        <a href="https://github.com/JannisJostBot/binder">Source code</a>
+      </nav>
+      <span class="footer-copy">© 2026 Jannis Jost</span>
+    </div>
+  </footer>
+</div>
+</body>
+</html>

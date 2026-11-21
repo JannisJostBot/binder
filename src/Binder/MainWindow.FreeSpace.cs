@@ -25,7 +25,7 @@ public sealed partial class MainWindow
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         }
-        return [.. drives.OrderBy(d => d.Root, StringComparer.OrdinalIgnoreCase)];
+        return (DriveSpace[])[.. drives.OrderBy(d => d.Root, StringComparer.OrdinalIgnoreCase)];
     }
 
     IReadOnlySet<string> IFreeSpaceActions.RunningGameIds(IReadOnlyList<Game> games) => RunningGames.Ids(games);
@@ -66,7 +66,7 @@ public sealed partial class MainWindow
     private async Task CheckFreeSpaceAgainAsync()
     {
         await RescanAsync();
-        if (FreeSpacePage.Visibility == Visibility.Visible && App.State.FreeSpace is { } state)
+        if (Shown(FreeSpaceSlot) && App.State.FreeSpace is { } state)
             FreeSpacePage.ViewModel!.Show(state, _games, _sessions);
     }
 }

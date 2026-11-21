@@ -63,7 +63,7 @@ public sealed partial class MainWindow
     private async Task ReadStartMenuForSetupAsync()
     {
         var entries = await Task.Run(StartMenuGames.ReadEntries);
-        if (!IsClosing && SetupPage.Visibility == Visibility.Visible) SetupPage.ViewModel!.SetStartEntries(entries);
+        if (!IsClosing && Shown(SetupSlot)) SetupPage.ViewModel!.SetStartEntries(entries);
     }
 
     private HashSet<GameSource> _sourcesBeforeSetup = [];
@@ -74,7 +74,7 @@ public sealed partial class MainWindow
         Dictionary<GameSource, int> counts;
         try { counts = await Task.Run(LibraryScanner.CountAll); }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return; }
-        if (!IsClosing && SetupPage.Visibility == Visibility.Visible) SetupPage.ViewModel!.SetFoundCounts(counts);
+        if (!IsClosing && Shown(SetupSlot)) SetupPage.ViewModel!.SetFoundCounts(counts);
     }
 
     private async Task LoadSetupShortcutsAsync()

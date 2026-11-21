@@ -143,19 +143,25 @@ internal static class Program
             }
         }
         EndHold.Follow(handles);
-        SystemEvents.Listen(() => Save(DateTimeOffset.Now, default, false));
+        SystemEvents.Listen(() =>
+        {
+            Footprint.Wake(); // Windows allows only a few seconds: save at full speed
+            Save(DateTimeOffset.Now, default, false);
+        });
 
         DateTimeOffset end;
         GameExit exit;
         while (true)
         {
-            // Block until every matched process has exited. No polling while the game runs.
+            // Block until every matched process has exited. No polling while the game runs, and while it waits the
+            // watcher is compacted, trimmed and in efficiency mode (Footprint.Rest also hands the pages detection used
+            // back to Windows now, for the game, rather than whenever it trims us).
             var waitOn = handles.ToArray();
             EndHold.Follow(handles); // what "End a stuck game" may end: these processes, nothing else
-            // Hand the pages detection used back to Windows now, for the game, rather than whenever it trims us:
-            // nothing touches them until the game exits (a few page faults then).
-            Native.SetProcessWorkingSetSize(Native.CurrentProcess, -1, -1);
+            matcher.ReleaseList();
+            Footprint.Rest();
             Native.WaitForMultipleObjects((uint)waitOn.Length, waitOn, true, Native.INFINITE);
+            Footprint.Wake();
             end = DateTimeOffset.Now;
             exit = matcher.ExitOf(handles);
             CloseAll(handles);
@@ -363,35 +369,67 @@ internal static class Program
         public bool NoteReporters { get; set; }
         public bool ReporterSeen { get; private set; }
 
+        private readonly ProcessList _list = new();
+        private readonly List<(uint Pid, long Created)> _running = [];
+        private readonly RejectedProcesses _rejected = new();
+
+        /// <summary>
+        /// Adds handles to the matching processes. Each pass opens only processes it hasn't turned down before
+        /// (by id and start time, from one system call), so a long wait for a store launcher costs little; when
+        /// Windows doesn't give that list, every process is looked at.
+        /// </summary>
         public void FindMatches(List<IntPtr> handles)
         {
+            if (_list.Take(_running))
+            {
+                foreach (var (pid, created) in _running)
+                {
+                    if (handles.Count >= MaxWaitHandles) break;
+                    if (_rejected.Known(pid, created)) continue;
+                    if (Check(pid, handles) == Look.NotTheGame) _rejected.Add(pid, created);
+                }
+                _rejected.EndPass();
+                return;
+            }
             if (!Native.EnumProcesses(_pids, (uint)(_pids.Length * sizeof(uint)), out var bytes)) return;
             int count = (int)(bytes / sizeof(uint));
-            for (int i = 0; i < count && handles.Count < MaxWaitHandles; i++)
+            for (int i = 0; i < count && handles.Count < MaxWaitHandles; i++) Check(_pids[i], handles);
+        }
+
+        /// <summary>Detection is over: the process list's buffer goes (made again if the game restarts itself).</summary>
+        public void ReleaseList() => _list.Release();
+
+        private enum Look { Matched, NotTheGame, Unknown }
+
+        /// <summary>Opens one process and keeps its handle if it's the game.</summary>
+        private Look Check(uint pid, List<IntPtr> handles)
+        {
+            if (pid == 0 || pid == _self) return Look.Unknown;
+            var h = Native.OpenProcess(Native.PROCESS_QUERY_LIMITED_INFORMATION | Native.SYNCHRONIZE, false, pid);
+            if (h == IntPtr.Zero) return Look.Unknown; // tried again next pass
+            uint len = (uint)_path.Length;
+            if (!Native.QueryFullProcessImageNameW(h, 0, _path, ref len))
             {
-                uint pid = _pids[i];
-                if (pid == 0 || pid == _self) continue;
-                var h = Native.OpenProcess(Native.PROCESS_QUERY_LIMITED_INFORMATION | Native.SYNCHRONIZE, false, pid);
-                if (h == IntPtr.Zero) continue;
-                uint len = (uint)_path.Length;
-                if (Native.QueryFullProcessImageNameW(h, 0, _path, ref len) && IsMatch(_path.AsSpan(0, (int)len)))
-                {
-                    var fileName = Path.GetFileName(_path.AsSpan(0, (int)len));
-                    if (IsCrashReporter(fileName))
-                    {
-                        if (NoteReporters) ReporterSeen = true;
-                        Native.CloseHandle(h);
-                        continue;
-                    }
-                    handles.Add(h);
-                    _names[h] = fileName.ToString();
-                    if (RaisePriority && _raised.Add(pid)) Raise(pid, _names[h]);
-                }
-                else
-                {
-                    Native.CloseHandle(h);
-                }
+                Native.CloseHandle(h);
+                return Look.Unknown;
             }
+            if (!IsMatch(_path.AsSpan(0, (int)len)))
+            {
+                Native.CloseHandle(h);
+                return Look.NotTheGame;
+            }
+            var fileName = Path.GetFileName(_path.AsSpan(0, (int)len));
+            if (IsCrashReporter(fileName))
+            {
+                // Never remembered as turned down: one still running after the game exited is a sign of a crash.
+                if (NoteReporters) ReporterSeen = true;
+                Native.CloseHandle(h);
+                return Look.Unknown;
+            }
+            handles.Add(h);
+            _names[h] = fileName.ToString();
+            if (RaisePriority && _raised.Add(pid)) Raise(pid, _names[h]);
+            return Look.Matched;
         }
 
         private static void Raise(uint pid, string name)
@@ -603,14 +641,6 @@ internal static partial class Native
     [LibraryImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool CloseHandle(IntPtr handle);
-
-    /// <summary>GetCurrentProcess()'s pseudo handle.</summary>
-    public const nint CurrentProcess = -1;
-
-    /// <summary>With -1, -1: empties the process's working set (its pages go to the standby list).</summary>
-    [LibraryImport("kernel32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static partial bool SetProcessWorkingSetSize(IntPtr process, nint min, nint max);
 
     [LibraryImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]

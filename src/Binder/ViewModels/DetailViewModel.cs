@@ -618,7 +618,7 @@ public sealed partial class DetailViewModel : ObservableObject
     private IReadOnlyList<AntiCheatKind> Kinds => _scan?.Result?.AntiCheats ?? Game?.AntiCheats ?? [];
 
     public bool HasAntiCheat => Kinds.Count > 0;
-    public string AntiCheatNames => Strings.List([.. Kinds.Select(AntiCheat.Name)]);
+    public string AntiCheatNames => Strings.List((string[])[.. Kinds.Select(AntiCheat.Name)]);
     /// <summary>The PC checks haven't finished for this game yet.</summary>
     public bool Checking => _scan is null;
     public bool Checked => _scan is not null;

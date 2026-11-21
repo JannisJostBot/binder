@@ -72,6 +72,8 @@
     <Compile Include="..\..\src\Binder.Watcher\EndHold.cs" Link="Linked\Watcher\EndHold.cs" />
     <Compile Include="..\..\src\Binder.Watcher\RingWindow.cs" Link="Linked\Watcher\RingWindow.cs" />
     <Compile Include="..\..\src\Binder.Watcher\HoldSound.cs" Link="Linked\Watcher\HoldSound.cs" />
+    <Compile Include="..\..\src\Binder.Watcher\Footprint.cs" Link="Linked\Watcher\Footprint.cs" />
+    <Compile Include="..\..\src\Binder.Watcher\ProcessList.cs" Link="Linked\Watcher\ProcessList.cs" />
     <Compile Include="..\..\src\Binder.Watcher\ElevatedClient.cs" Link="Linked\Watcher\ElevatedClient.cs" />
     <Compile Include="..\..\src\Binder.Elevated\Helper.cs" Link="Linked\Elevated\Helper.cs" />
     <Compile Include="..\..\src\Binder.Elevated\Qos.cs" Link="Linked\Elevated\Qos.cs" />

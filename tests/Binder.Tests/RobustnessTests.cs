@@ -50,6 +50,14 @@ static partial class Tests
         var fresh = new Game { Id = "steam:2", Name = "Fresh", Source = GameSource.Steam };
         var withFresh = LibraryScanner.Reconcile([fresh], new HashSet<string>(), []);
         Check(withFresh.Count == 1 && withFresh[0] == fresh, "scan: newly found games are added");
+
+        // A rescan that found nothing new is neither saved nor redrawn (MainWindow.RescanAsync).
+        static List<Game> Library(bool favorite, long size) =>
+            [new Game { Id = "steam:1", Name = "A", Favorite = favorite, SizeOnDisk = size }, new Game { Id = "manual:b", Name = "B" }];
+        Check(Storage.SameLibrary(Library(false, 10), Library(false, 10)), "scan: the same games in new objects count as unchanged");
+        Check(!Storage.SameLibrary(Library(true, 10), Library(false, 10)), "scan: a changed setting counts as a change");
+        Check(!Storage.SameLibrary(Library(false, 11), Library(false, 10)), "scan: a changed size counts as a change");
+        Check(!Storage.SameLibrary(Library(false, 10), Library(false, 10)[..1]), "scan: a game more or less counts as a change");
     }
 
     /// <summary>Data files: a damaged one never becomes an empty library or default settings.</summary>

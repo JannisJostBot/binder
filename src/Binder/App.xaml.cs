@@ -200,7 +200,7 @@ public sealed partial class App : Application
         if (notice is { NotDetected: false })
         {
             // A game ended (the watcher brought us back): pick up the session it wrote.
-            State.Sessions = Storage.LoadSessions();
+            State.Sessions = Storage.ReloadSessions(State.Sessions); // only what was appended since
             bool cameBack = firstStart || _startedForRestore; // Binder wasn't running while the game was
             _startedForRestore = false;
             if (cameBack) State.ClosedDuringGame = notice.GameId;
@@ -289,11 +289,11 @@ public sealed partial class App : Application
         float slow = 1;
         DevToastSpeed(ref slow);
         var toast = new Views.GameModeToast(kind, result, slow);
-        toast.Closed += (_, _) =>
+        Views.WindowClosed.Once(toast, () =>
         {
             if (ReferenceEquals(_gameModeToast, toast)) _gameModeToast = null;
             if (exitWhenClosed) QuitIfIdle();
-        };
+        });
         _gameModeToast = toast;
         toast.ShowQuietly();
     }
@@ -460,6 +460,7 @@ public sealed partial class App : Application
 
     private void OnPanelClosed(object sender, WindowEventArgs e)
     {
+        ((Window)sender).Closed -= OnPanelClosed;
         if (ReferenceEquals(sender, _kept)) _kept = null;
         if (!ReferenceEquals(sender, _panel)) return;
         _panel = null;
@@ -553,8 +554,8 @@ public sealed partial class App : Application
             .ToArray();
         const int firstLauncher = 100;
         List<(int Id, string Text, bool Checked)> items = [];
-        if (UpdateMenuText is { } updateText) items.AddRange([(update, updateText, false), (0, "", false)]); // spec §25
-        items.AddRange(
+        if (UpdateMenuText is { } updateText) items.AddRange(((int Id, string Text, bool Checked)[])[(update, updateText, false), (0, "", false)]); // spec §25
+        items.AddRange(((int Id, string Text, bool Checked)[])
         [
             (open, Strings.OpenBinder, false), (0, "", false),
             (gameMode, needsUpdate ? Strings.GameModeNeedsUpdateMenu : Strings.GameModeTray, Settings.GameModeEnabled),

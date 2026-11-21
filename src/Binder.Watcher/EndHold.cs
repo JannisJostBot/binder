@@ -226,6 +226,7 @@ internal static unsafe partial class EndHold
         _pressed = now;
         _repeated = false;
         _phase = Phase.Armed;
+        Footprint.Pause(); // the watcher rests in efficiency mode during the game: full speed for the hold
         Native.SetTimer(_hwnd, TimerId, FrameMs, IntPtr.Zero);
     }
 
@@ -310,6 +311,7 @@ internal static unsafe partial class EndHold
         // Nothing could be ended (protected by its anti-cheat, or gone already): not "ended by you" when it closes.
         _ended = _wasHung = _wasReporting = false;
         _phase = Phase.Idle;
+        Footprint.Resume();
     }
 
     /// <summary>"Cancelled · [game] is still running" for a second, after letting go early.</summary>
@@ -334,6 +336,7 @@ internal static unsafe partial class EndHold
         HoldSound.Release();
         RingWindow.Hide(); // last: it trims the working set
         _phase = Phase.Idle;
+        Footprint.Resume();
     }
 
     // ---- Keys --------------------------------------------------------------------------------------------

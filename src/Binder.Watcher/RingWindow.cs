@@ -99,7 +99,7 @@ internal static unsafe partial class RingWindow
         _gdiplus = IntPtr.Zero;
         // GDI+, its fonts and the surface stay paged in (several MB) otherwise: hand them back to Windows now, as
         // after detection. Only the next hold touches them again.
-        Native.SetProcessWorkingSetSize(Native.CurrentProcess, -1, -1);
+        Footprint.Trim();
     }
 
     // ---- Drawing helpers --------------------------------------------------------------------------------

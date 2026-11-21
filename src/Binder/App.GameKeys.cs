@@ -45,10 +45,10 @@ public sealed partial class App
         Footprint.Wake();
         var shelf = ShelfGames();
         var list = new Views.GameKeyFlash(GameKeys.LastPlayedGame(shelf, State.Sessions), GameKeys.Given(shelf, Settings.GameKeySlots));
-        list.Closed += (_, _) =>
+        Views.WindowClosed.Once(list, () =>
         {
             if (ReferenceEquals(_keyList, list)) _keyList = null;
-        };
+        });
         _keyList = list;
         list.ShowQuietly();
     }
@@ -79,7 +79,7 @@ public sealed partial class App
                 ? (Strings.NoGamePlayedYet, (string?)null)
                 : (Strings.Format(Strings.NothingOnNumber, number), Strings.NothingOnNumberDetail);
             var notice = new Views.GameKeyFlash(number, title, detail);
-            notice.Closed += (_, _) => RestIfIdle();
+            Views.WindowClosed.Once(notice, RestIfIdle);
             notice.ShowQuietly();
             return;
         }
@@ -87,12 +87,12 @@ public sealed partial class App
         _flashGame = game;
         _flashNumber = number;
         var flash = new Views.GameKeyFlash(game, number, Format.HotkeyLetter(Settings.Hotkey));
-        flash.Closed += (_, _) =>
+        Views.WindowClosed.Once(flash, () =>
         {
             if (!ReferenceEquals(_flash, flash)) return;
             _flash = null;
             RestIfIdle();
-        };
+        });
         _flash = flash;
         flash.ShowQuietly();
         flash.StartWait(GameKeys.Wait);
@@ -118,7 +118,7 @@ public sealed partial class App
         if (_flash is not { } flash) return;
         StopFlashWait();
         _flash = null; // it closes by itself after showing "Cancelled"
-        flash.Closed += (_, _) => RestIfIdle();
+        Views.WindowClosed.Once(flash, RestIfIdle);
         flash.ShowCancelled();
     }
 
