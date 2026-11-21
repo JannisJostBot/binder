@@ -168,7 +168,8 @@
                 <Border Style="{StaticResource PadPill}" Margin="12,0,0,0" Visibility="{x:Bind ViewModel.PadMode, Mode=OneWay}">
                     <TextBlock Text="LB" Style="{StaticResource PadPillText}" />
                 </Border>
-                <SelectorBar x:Name="Filters" AutomationProperties.Name="{x:Bind s:Strings.Filter}" SelectionChanged="OnFilterChanged" />
+                <SelectorBar x:Name="Filters" AutomationProperties.Name="{x:Bind s:Strings.Filter}" SelectionChanged="OnFilterChanged"
+                             ContextRequested="OnChipContextRequested" />
                 <Border Style="{StaticResource PadPill}" Visibility="{x:Bind ViewModel.PadMode, Mode=OneWay}">
                     <TextBlock Text="RB" Style="{StaticResource PadPillText}" />
                 </Border>

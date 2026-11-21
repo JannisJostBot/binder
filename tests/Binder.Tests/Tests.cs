@@ -110,6 +110,7 @@ static partial class Tests
         SourceDefaultsTests(dir);
         SessionLogTests(dir);
         RobustnessTests(dir);
+        WatcherDetectionTests();
         UpdateTests(dir);
         FileSwapTests(dir);
 

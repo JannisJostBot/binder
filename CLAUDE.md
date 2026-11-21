@@ -37,7 +37,9 @@ their games, and it must feel like part of Windows. When an idea doesn't clearly
 ## Tech stack
 
 - C# / WinUI 3 (Windows App SDK, unpackaged, self-contained, Native AOT) on the current LTS .NET (.NET 10). Windows
-  10/11 x64. `System.Text.Json` for storage. No third-party UI frameworks.
+  10/11 x64. `System.Text.Json` for storage. No third-party UI frameworks. `global.json` keeps the build on the
+  .NET 10 SDK (any 10.0.x, never a newer major that a PC or CI runner happens to have: SDK 11 brings its own
+  Windows SDK projection and analyzers); a move to a new SDK is a decision, made there.
 - AOT rules: no `[ComImport]` (use `[GeneratedComInterface]`), `LibraryImport` not `DllImport`, `x:Bind` or
   code-behind instead of `{Binding}`, `[UnmanagedCallersOnly]` for native callbacks, no reflection in app code.
 
@@ -83,13 +85,15 @@ src/Binder/            the WinUI widget
                           GameModeToast, ToastMelt (its changes melt in, Win2D), GameKeyFlash (a game shortcut's
                           logo before the game starts), BannerLogo, Sheen (shiny
                           favorites), LogoMerge (setup step 2's moved shortcuts fly into the logo, as on the
-                          website); Format.cs the text formatting,
+                          website), FrameTicks (per-frame callbacks, one static handler), WindowClosed (close
+                          handlers that remove themselves); Format.cs the text formatting,
                           GameAction.cs (menu actions, chart bars)
   Themes/Theme.xaml        shared styles and brushes
   Strings/                the app's text: Strings.resx (English), Strings.de.resx, Strings.fr.resx, one property per
                           entry in Strings.Entries.cs; Strings.cs has Format, Plural, List, LowerFirst
   MainWindow.xaml.cs      the panel: start, first frame, page navigation, rescan; partial files by area:
-                          MainWindow.<Page>.cs (that page's actions), .Flyout (slide, placement), .Games (import,
+                          MainWindow.<Page>.cs (that page's actions), .Pages (every page but the shelf is built on its
+                          first visit, in code; `Shown(…Slot)` checks without building), .Flyout (slide, placement), .Games (import,
                           add, game actions), .Input (Esc, controller, type-to-search), .Launch (play, countdown,
                           return), .Notices (toast, errors, crash card), .Updates (About's buttons, the "…" item,
                           the pill after an update)
@@ -100,7 +104,8 @@ src/Binder/            the WinUI widget
   Dev/                    the debug panel, Debug builds only ("Binder.exe --dev"): buttons that show every toast, card
                           and message through the real code with made-up data; left out of Release builds
 src/Binder.Watcher/    windowless (one hidden window on its own thread, SystemEvents.cs: shutdown, sign-out and
-                          sleep); Program.cs, GameMode.cs (apply/restore + journal), ElevatedClient.cs,
+                          sleep); Program.cs, ProcessList.cs (detection's process list), Footprint.cs (rest while
+                          the game runs), GameMode.cs (apply/restore + journal), ElevatedClient.cs,
                           GameModeShared.cs (also compiled into the widget, helper and setup)
 src/Binder.Elevated/   Game mode's admin helper (Native AOT, windowless, run by scheduled tasks)
 src/Binder.Setup/      BinderSetup.exe: per-user installer/updater/uninstaller (docs/installer.md)
@@ -161,9 +166,12 @@ moves an old `sessions.json` into the year files at start (kept as `sessions.jso
    `WatcherNames.Ended` event is set while it looks for a restart) keeps it up to 8 s more for the `--returned`.
 5. The watcher:
    - Detection: any process whose exe is inside the install folder, or the explicit process name. Polling every
-     ~2 s is allowed here only, for up to ~3 min. Never found: relaunch the widget with "Couldn't detect the game".
-   - Found: **block** on the process handle; no polling while the game runs. After an exit, re-check the folder
-     for ~3 s (games that restart themselves).
+     ~2 s is allowed here only, for up to ~3 min; each pass takes the process list in one call (`ProcessList`) and
+     opens only processes it hasn't turned down before (by id and start time). Never found: relaunch the widget
+     with "Couldn't detect the game".
+   - Found: **block** on the process handle; no polling while the game runs. While blocked the watcher is
+     compacted, trimmed and in efficiency mode (`Footprint`), undone when the game exits. After an exit, re-check
+     the folder for ~3 s (games that restart themselves).
    - On exit: append the session as one line to `sessions-<year>.jsonl` (the year it ended, `SessionLog`; never
      reads the file), relaunch the widget if "Come back when the game closes" is on, or with `--crashed` after a crash exit code of a game with "Restart if it crashes" (spec §17: the widget's
      restart pill counts 5 s down, then plays it again; at most twice in a row).
@@ -194,6 +202,13 @@ hidden `MessageWindow` (WM_COPYDATA). With no arguments that toggles the flyout.
   `ItemsSource` from a view model is a plain array (`string[]`), never a collection expression typed as an interface
   (`IReadOnlyList<T> x = [..]` makes a hidden compiler type AOT can't pass to WinUI); bind a ComboBox's selection by
   item, not index, when its list changes with it.
+- Closed windows must be collectable (measured: each closed panel kept ~20 MB while anything held it). WinUI's
+  Window doesn't let the GC see through a cycle that runs through its own events: no x:Bind in a Window's XAML (it
+  adds a handler to `Activated`; set those texts in code), a handler on a window's `Closed` goes through
+  `WindowClosed.Once`, and any other handler on its own events is removed when it closes (`MainWindow.OnClosed`).
+  `CompositionTarget.Rendering` keeps its last handler after removal: use `FrameTicks`. Handlers on elements go in
+  XAML or on a container, not added in code to items rebuilt at each open (the shelf's chips). Check with
+  `Binder.exe --memory-report` ("panel windows alive") after a few opens and closes.
 - What a page asks its owner to do is an interface (`I<Page>Actions`), implemented by `MainWindow` with explicit
   interface members in the page's partial file (`MainWindow.<Page>.cs`), so a missing action is a compile error,
   not a dead button. What the page needs from Windows (drives, running apps, the helper) goes through it too.

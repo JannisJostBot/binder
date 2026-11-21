@@ -72,13 +72,13 @@ public sealed partial class GameModeToast : Window
         _announce = RestartText;
         _dot = RestartDot;
         Root.SizeChanged += OnFirstLayout;
-        Closed += (_, _) =>
+        WindowClosed.Once(this, () =>
         {
             restart.PropertyChanged -= OnRestartChanged;
             _timer?.Stop();
             _restartBar?.Stop();
             ShowStoryboard.Stop();
-        };
+        });
     }
 
     private void OnRestartChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -185,18 +185,25 @@ public sealed partial class GameModeToast : Window
             _announce = TitleText;
         }
         Root.SizeChanged += OnFirstLayout;
-        Closed += (_, _) =>
+        WindowClosed.Once(this, () =>
         {
             _timer?.Stop();
             ShowStoryboard.Stop();
             _drawCheck?.Stop();
-            CompositionTarget.Rendering -= StartMeltOnFirstFrame;
+            FrameTicks.Remove(StartMeltOnFirstFrame);
             _melting?.Remove();
-        };
+        });
     }
 
     private void SetUpWindow()
     {
+        // Set here, not with x:Bind, which would add a handler to the window's Activated (see WindowClosed).
+        RestartCancel.Content = Strings.Cancel;
+        AutomationProperties.SetName(RestartCancel, Strings.RestartCancelName);
+        ToolTipService.SetToolTip(RestartCancel, Strings.RestartCancelName);
+        AutomationProperties.SetName(CloseButton, Strings.Dismiss);
+        ToolTipService.SetToolTip(CloseButton, Strings.Dismiss);
+        DetailsButton.Content = Strings.OpenLog;
         // The context-menu kind is a plain popup: no frame at all (the borderless overlapped one keeps a thin
         // dialog frame that WinUI puts back whenever it's taken away).
         var presenter = OverlappedPresenter.CreateForContextMenu();
@@ -347,12 +354,12 @@ public sealed partial class GameModeToast : Window
 
         NativeWindow.Cloak(_hwnd, false);
         FrameworkElementAutomationPeer.CreatePeerForElement(_announce)?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
-        CompositionTarget.Rendering += StartMeltOnFirstFrame;
+        FrameTicks.Add(StartMeltOnFirstFrame);
     }
 
-    private void StartMeltOnFirstFrame(object? sender, object e)
+    private void StartMeltOnFirstFrame()
     {
-        CompositionTarget.Rendering -= StartMeltOnFirstFrame;
+        FrameTicks.Remove(StartMeltOnFirstFrame);
         if (_melting is not { } melt) return;
         var body = VisualOf(Body);
         var c = body.Compositor;

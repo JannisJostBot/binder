@@ -66,7 +66,7 @@ public sealed partial class MainWindow
     private async Task CheckFreeSpaceAgainAsync()
     {
         await RescanAsync();
-        if (FreeSpacePage.Visibility == Visibility.Visible && App.State.FreeSpace is { } state)
+        if (Shown(FreeSpaceSlot) && App.State.FreeSpace is { } state)
             FreeSpacePage.ViewModel!.Show(state, _games, _sessions);
     }
 }

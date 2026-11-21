@@ -43,18 +43,16 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     public MainWindow()
     {
         InitializeComponent();
-        Closed += (_, _) => CloseTips();
+        Footprint.TrackPanel(this); // counted in --memory-report
+        // Set here, not with x:Bind: an x:Bind on a Window subscribes to its Activated event (see OnClosed).
+        KeepOpenButton.Content = Strings.KeepOpen;
+        Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(KeepOpenButton, Strings.KeepOpenToolTip);
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(KeepOpenButton, Strings.KeepOpenName);
         _dispatcher = DispatcherQueue.GetForCurrentThread();
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
         Shelf.Initialize(this); // its actions: MainWindow.Shelf.cs
-        Detail.Initialize(this); // its actions: MainWindow.Detail.cs
-        SettingsPage.Initialize(this); // its actions: MainWindow.Settings.cs
-        GameModePage.Initialize(this); // its actions: MainWindow.GameMode.cs
-        FreeSpacePage.Initialize(this); // its actions: MainWindow.FreeSpace.cs
-        ImportPage.Cancelled += ShowSettings;
-        ImportPage.ImportRequested += ImportShortcuts;
-        SetupPage.Initialize(this); // its actions: MainWindow.Setup.cs
+        // The other pages are built and initialized on their first visit (MainWindow.Pages.cs).
         Shelf.ViewModel!.SetFlyout(IsFlyout, App.Pinned);
         Shelf.ViewModel!.SetData(_games, _sessions, App.Settings);
         ListenForUpdates(); // its part: MainWindow.Updates.cs
@@ -121,7 +119,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         NativeWindow.Cloak(_hwnd, true);
         CoverQueue.HoldFrom(0); // no grid covers until the first layout says which ones are in view
         Activate();
-        CompositionTarget.Rendering += OnFirstFrame;
+        FrameTicks.Add(OnFirstFrame);
     }
 
     /// <summary>Longest the panel waits for the covers in view before it shows anyway (slow disk, huge art).</summary>
@@ -138,7 +136,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     /// window shows complete, the slide starts and, once per run, the library scan. Covers below the fold load
     /// after the slide.
     /// </summary>
-    private void OnFirstFrame(object? sender, object e)
+    private void OnFirstFrame()
     {
         if (--_framesBeforeShowing > 0) return;
         if (_coverWait is null)
@@ -151,7 +149,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         bool drawn = _framesAfterCovers >= 0 && --_framesAfterCovers <= 0;
         if (!drawn && _coverWait.Elapsed.TotalMilliseconds < MaxCoverWaitMilliseconds) return;
 
-        CompositionTarget.Rendering -= OnFirstFrame;
+        FrameTicks.Remove(OnFirstFrame);
         NativeWindow.Cloak(_hwnd, false);
         _shown = true;
         if (_startSlide is { } slide)
@@ -201,11 +199,25 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
         // Bring the result up to date with what changed while the scan ran: settings (a favorite set meanwhile isn't
         // lost), games removed meanwhile stay removed, games added meanwhile stay.
         var games = LibraryScanner.Reconcile(result.Games, before, _games);
+        bool iconChanged = false;
         foreach (var game in games)
-            if (game.IconChanged) CoverCache.ForgetIcon(game);
+        {
+            if (!game.IconChanged) continue;
+            iconChanged = true;
+            CoverCache.ForgetIcon(game);
+        }
 
-        _games = games;
         App.State.Scanned = true;
+        // The usual case: nothing changed. Keep the games already shown (their objects, so nothing on screen goes
+        // stale), with no save and no redraw of the grid. Start search is still brought in line (spec §22 c: a
+        // launcher may have added its own Start entries). Not when library.json is gone (it was damaged and its .bak
+        // used): then this save puts it back.
+        if (!iconChanged && result.Dropped.Count == 0 && Storage.SameLibrary(games, _games) && Storage.LibraryFileExists())
+        {
+            if (App.Settings.StartMenuGames) SyncStartMenu();
+            return;
+        }
+        _games = games;
         // Spec §22 c: after a rescan always (a launcher may have added its own Start entries), so not through
         // SaveLibrary's check, which would sync a second time.
         _startMenuShelfKey = StartMenuShelfKey();
@@ -263,8 +275,8 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     {
         Shelf.ViewModel!.SetData(_games, _sessions, App.Settings);
         RefreshSettingsPage();
-        if (SetupPage.Visibility == Visibility.Visible) SetupPage.ViewModel!.UpdateLibrary(_games);
-        if (Detail.Visibility != Visibility.Visible || Detail.Game is not { } shown) return;
+        if (Shown(SetupSlot)) SetupPage.ViewModel!.UpdateLibrary(_games);
+        if (!Shown(DetailSlot) || Detail.Game is not { } shown) return;
 
         var game = FindGame(shown.Id);
         if (game is null || game.Hidden || !App.Settings.IsSourceEnabled(game.Source)) ShowShelf();
@@ -273,19 +285,19 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
 
     private void RefreshSettingsPage()
     {
-        if (SettingsPage.Visibility != Visibility.Visible) return;
+        if (!Shown(SettingsSlot)) return;
         var bounds = NativeWindow.GetBounds(_hwnd);
         var current = Monitors.FromPoint(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2);
         SettingsPage.ViewModel!.SetUpdate(App.CurrentUpdate);
         SettingsPage.ViewModel!.Load(App.Settings, _games, Autostart.IsEnabled(), App.State.Scanning,
-            Storage.LoadImportedShortcuts().Count, Monitors.All(), current.Device, App.HotkeyFree);
+            Storage.ImportedShortcutCount(), Monitors.All(), current.Device, App.HotkeyFree);
     }
 
     /// <summary>Closes the pages' (i) tips: they are popups of their own and would stay on screen.</summary>
     private void CloseTips()
     {
-        SettingsPage.CloseTips();
-        FreeSpacePage.CloseTips();
+        SettingsSlot?.CloseTips();
+        FreeSpaceSlot?.CloseTips();
     }
 
     private Game? FindGame(string id) => _games.FirstOrDefault(g => g.Id == id);
@@ -295,17 +307,18 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     {
         CloseTips();
         Shelf.Visibility = page == Shelf ? Visibility.Visible : Visibility.Collapsed;
-        Detail.Visibility = page == Detail ? Visibility.Visible : Visibility.Collapsed;
-        SettingsPage.Visibility = page == SettingsPage ? Visibility.Visible : Visibility.Collapsed;
-        ImportPage.Visibility = page == ImportPage ? Visibility.Visible : Visibility.Collapsed;
-        SetupPage.Visibility = page == SetupPage ? Visibility.Visible : Visibility.Collapsed;
-        GameModePage.Visibility = page == GameModePage ? Visibility.Visible : Visibility.Collapsed;
-        if (page != FreeSpacePage && FreeSpacePage.Visibility == Visibility.Visible)
+        // Pages not built yet stay unbuilt: only the one being shown is loaded (Show… asks for it first).
+        SetShown(DetailSlot, page);
+        SetShown(SettingsSlot, page);
+        SetShown(ImportSlot, page);
+        SetShown(SetupSlot, page);
+        SetShown(GameModeSlot, page);
+        if (page != FreeSpaceSlot && FreeSpaceSlot is { Visibility: Visibility.Visible } freeSpace)
         {
-            FreeSpacePage.Release();
+            freeSpace.Release();
             App.State.FreeSpace = null;
         }
-        FreeSpacePage.Visibility = page == FreeSpacePage ? Visibility.Visible : Visibility.Collapsed;
+        SetShown(FreeSpaceSlot, page);
     }
 
     private void ShowDetail(Game game)
@@ -328,7 +341,7 @@ public sealed partial class MainWindow : Window, ISettingsActions, IDetailAction
     private void ShowShelf()
     {
         if (Shelf.Visibility == Visibility.Visible) return;
-        var shown = Detail.Visibility == Visibility.Visible ? Detail.Game : null;
+        var shown = Shown(DetailSlot) ? Detail.Game : null;
         ShowPage(Shelf);
         Shelf.UpdateLayout();
         if (shown is not null) Shelf.FocusGame(shown);
