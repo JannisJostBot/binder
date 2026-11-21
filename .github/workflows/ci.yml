@@ -17,6 +17,12 @@ on:
 permissions:
   contents: write   # only for pushing the ci-results/<branch> branch
 
+# A newer push to the same branch replaces a run still going (its ci-results would be overwritten anyway), so the
+# latest commit's result comes sooner. Runs on main always finish.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   windows:
     # A pull request from a branch of this repository already gets the push run on the same commit (shown on the
@@ -28,6 +34,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # check.ps1 compares with where the branch left origin/main
+          # Every commit, but file contents only for the checked-out one (others are fetched when a diff needs them):
+          # a full clone also downloads each ci-results/* branch's setup exe, ~800 MB and a minute in all.
+          filter: blob:none
 
       # The project's hard rules (AGENTS.md). On agent/* branches also the strict rules and the task card's file
       # list; the card is found by the branch name (agent/T001 -> docs/tasks/T001-*.md). Build and tests run below.
@@ -49,17 +58,16 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Build
-        run: |
-          New-Item -ItemType Directory -Force artifacts | Out-Null
-          dotnet build Binder.sln -c Release 2>&1 | Tee-Object artifacts/build.txt
-
       # The debug panel (src/Binder/Dev) is only compiled in Debug builds, which nothing else here makes: build the
       # widget once in Debug too, so a change that breaks the panel fails here instead of on someone's PC.
       - name: Build (Debug, with the debug panel)
-        run: dotnet build src/Binder -c Debug 2>&1 | Tee-Object artifacts/build-debug.txt
+        run: |
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          dotnet build src/Binder -c Debug 2>&1 | Tee-Object artifacts/build-debug.txt
 
-      # Test what ships: the published WinUI widget folder and the Native AOT watcher (publish.ps1).
+      # Test what ships: the published WinUI widget folder and the Native AOT watcher (publish.ps1). This is also the
+      # Release build: it compiles every project of Binder.sln in Release for win-x64 (a separate
+      # "dotnet build Binder.sln -c Release" compiled the same code again, 80 s); compiler output is in publish.txt.
       - name: Publish
         run: |
           ./scripts/publish.ps1 -Output publish 2>&1 | Tee-Object artifacts/publish.txt
