@@ -25,21 +25,18 @@ on:
 
 permissions:
   contents: read    # reading site/ and the list of releases
-  pages: write      # publishing
-  id-token: write   # proving to Pages that this run is the one publishing
 
 concurrency:
   group: pages
   cancel-in-progress: false   # let a deployment that started finish
 
+# Two jobs, as in GitHub's own Pages workflows: deploy-pages looks the artifact up through the API, which may not
+# list an artifact uploaded a moment earlier in the same job ("No artifacts named github-pages", 2026-11-21).
 jobs:
-  deploy:
+  build:
     if: github.repository == 'JannisJostBot/binder'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -62,5 +59,16 @@ jobs:
         with:
           path: site
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write      # publishing
+      id-token: write   # proving to Pages that this run is the one publishing
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
