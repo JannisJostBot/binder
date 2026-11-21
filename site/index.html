@@ -127,7 +127,7 @@
           <span class="procs-head">Name</span><span class="procs-head">CPU</span><span class="procs-head">Memory</span>
           <span class="procs-name"><i class="procs-icon pc-thumb g1"></i><b><span>Starfall Drift</span><small>Your game</small></b></span><span>31%</span><span>6,240 MB</span>
           <span class="procs-name procs-gone"><i class="procs-icon procs-logo"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></i><b><span>Binder</span><small>Not running</small></b></span><span>&ndash;</span><span>&ndash;</span>
-          <span class="procs-name procs-mark"><i class="procs-icon procs-logo"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></i><b><span>Binder game watcher</span><small>Waits for the game to close</small></b></span><span class="procs-mark">0%</span><span class="procs-mark"><!-- n:watcherStep -->3 MB<!-- /n --></span>
+          <span class="procs-name procs-mark"><i class="procs-icon procs-logo"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></i><b><span>Binder game watcher</span><small>Waits for the game to close</small></b></span><span class="procs-mark">0%</span><span class="procs-mark"><!-- n:watcherStep -->1.2 MB<!-- /n --></span>
         </div>
       </div>
 
@@ -276,7 +276,7 @@
     <div class="wrap split">
       <div class="split-head">
         <h2 class="h2" id="usage-title">How much it uses</h2>
-        <p class="footnote"><!-- n:measured -->Expected figures for now. Each release is measured on a GitHub Actions test machine, and its numbers replace these<!-- /n -->. Your numbers will vary with the size of your library.</p>
+        <p class="footnote"><!-- n:measured -->Binder 0.3.0, measured on 21 November 2026 on a GitHub Actions test machine (Windows Server 2025 Datacenter, 4 cores, 16 GB), with Steam covers. Memory as Task Manager shows it<!-- /n -->. Your numbers will vary with the size of your library.</p>
       </div>
       <!-- Each bar is drawn to scale against the open panel (usage.js reads the numbers; fixed proportions without it). -->
       <div class="usage">
@@ -284,19 +284,19 @@
         <ul class="usage-list">
           <li class="usage-item">
             <p class="usage-when">Binder is open<span>Processor: only while you use it</span></p>
-            <p class="usage-num"><strong data-mb><!-- n:open -->130–230<!-- /n --></strong> MB</p>
+            <p class="usage-num"><strong data-mb><!-- n:open -->41<!-- /n --></strong> MB</p>
             <p class="usage-bar" aria-hidden="true"><i></i></p>
-            <p class="usage-note"><!-- n:openNote -->More with many covers<!-- /n --><span class="usage-share">The full bar</span></p>
+            <p class="usage-note"><!-- n:openNote -->With 9 games; 76 MB with 100<!-- /n --><span class="usage-share">The full bar</span></p>
           </li>
           <li class="usage-item">
             <p class="usage-when">Closed, waiting by the clock<span>Processor: none</span></p>
-            <p class="usage-num"><strong data-mb><!-- n:closed -->12<!-- /n --></strong> MB</p>
+            <p class="usage-num"><strong data-mb><!-- n:closed -->2.4<!-- /n --></strong> MB</p>
             <p class="usage-bar" aria-hidden="true"><i></i></p>
             <p class="usage-note">Binder's window is closed, ready to open<span class="usage-share"></span></p>
           </li>
           <li class="usage-item usage-game">
             <p class="usage-when">A game is running<span>Processor: none once the game is found</span></p>
-            <p class="usage-num"><strong data-mb><!-- n:watcher -->3<!-- /n --></strong> MB</p>
+            <p class="usage-num"><strong data-mb><!-- n:watcher -->1.2<!-- /n --></strong> MB</p>
             <p class="usage-bar" aria-hidden="true"><i></i></p>
             <p class="usage-note">The helper only; Binder itself is closed<span class="usage-share"></span></p>
           </li>
