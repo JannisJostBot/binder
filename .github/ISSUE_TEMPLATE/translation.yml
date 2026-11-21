@@ -1,0 +1,43 @@
+name: Translation or wording
+description: A German or French text is wrong, unclear or cut off, or an English one could be plainer.
+labels: [translation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Binder speaks English, German and French. For a new language, please ask in an issue first
+        (see [CONTRIBUTING.md](https://github.com/JannisJostBot/binder/blob/main/CONTRIBUTING.md)).
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - German
+        - French
+        - English
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where it appears
+      placeholder: "Settings › Opening, the shortcut card's tooltip"
+    validations:
+      required: true
+  - type: input
+    id: current
+    attributes:
+      label: Current text
+    validations:
+      required: true
+  - type: input
+    id: suggested
+    attributes:
+      label: Suggested text
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: For example the word Windows uses for the same thing, or that the text is cut off.

@@ -1,0 +1,60 @@
+name: Feature request
+description: Suggest something Binder could do. A few questions first show whether it fits.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Binder is a **launcher, not a game toolbox**, and stays small on purpose. Its first rule: while a game runs,
+        Binder isn't running at all, and while it's idle it does nothing. Ideas are welcome, but only ones that fit
+        those rules get built.
+
+        The questions below are the same ones every idea goes through, including the owner's own. Tick the ones that
+        are true for your idea. They aren't a test: an idea that can't tick all of them can still be worth writing
+        down, but it's much less likely to be built.
+  - type: checkboxes
+    id: fit
+    attributes:
+      label: Does it fit?
+      description: Tick each one that's true for your idea.
+      options:
+        - label: "**Launcher:** it helps me start, find or manage the games installed on my PC."
+        - label: "**Windows:** it would look and work like part of Windows 11: Fluent controls, no custom look, nothing drawn over a game."
+        - label: "**Nothing while I play:** it doesn't need Binder running while a game runs (no overlay, no in-game counter, no monitoring)."
+        - label: "**Nothing while idle:** it works when I do something or when a game starts or closes, without background checks, timers or services."
+        - label: "**Offline and private:** it needs no account, sign-in or new internet connection, and sends nothing about me or my PC."
+        - label: "**No new packages:** it can be built with what Windows and .NET already have."
+  - type: markdown
+    attributes:
+      value: |
+        **Usually declined:** social features and friends lists, overlays and FPS counters, stats dashboards,
+        achievement tracking, mod managers, store browsing or deals, cloud sync, game tweaks and "boosters", themes
+        and custom looks. Ideas the owner has already thought about and set aside are under "Not decided" in
+        [docs/proposals.md](https://github.com/JannisJostBot/binder/blob/main/docs/proposals.md#not-decided-dont-build).
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the problem?
+      description: What you're trying to do and what gets in the way today. Start from the problem, not the solution.
+      placeholder: "I play the same three games most evenings and still have to open the panel and find them."
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What Binder could do about it. A sketch or screenshot of a similar Windows feature helps.
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: How you do it today
+      description: A workaround, another app, or a Windows feature that comes close.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you send
+      options:
+        - label: I searched the existing issues and "Not decided" in docs/proposals.md, and this isn't already there.
+          required: true
