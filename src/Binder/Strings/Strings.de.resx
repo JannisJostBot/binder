@@ -2463,16 +2463,16 @@ Dämpfen: Effizienzmodus während des Spielens</value>
     <value>Windows hat keine Berechtigung erhalten, daher wurde nichts eingeschaltet. Wählen Sie eine andere Option oder versuchen Sie es erneut.</value>
   </data>
   <data name="SetupAllowAndFinish" xml:space="preserve">
-    <value>Zulassen und fertigstellen…</value>
+    <value>Zulassen und abschließen…</value>
   </data>
   <data name="SetupGmCouldntAllow" xml:space="preserve">
     <value>Admin-Hilfsprogramm konnte nicht zugelassen werden</value>
   </data>
   <data name="SearchEnterPlays" xml:space="preserve">
-    <value>{0} · Eingabetaste spielt {1}</value>
+    <value>{0} · Eingabetaste startet {1}</value>
   </data>
   <data name="SearchEnterHelp" xml:space="preserve">
-    <value>Die Eingabetaste spielt das erste Ergebnis</value>
+    <value>Die Eingabetaste startet das erste Ergebnis</value>
   </data>
   <data name="EnterKey" xml:space="preserve">
     <value>Eingabe</value>
@@ -2493,19 +2493,19 @@ Dämpfen: Effizienzmodus während des Spielens</value>
     <value>Binder war geschlossen, solange Sie gespielt haben</value>
   </data>
   <data name="PlayTipSteam" xml:space="preserve">
-    <value>Spielt, ohne das Steam-Fenster zu öffnen</value>
+    <value>Startet, ohne das Steam-Fenster zu öffnen</value>
   </data>
   <data name="PlayTipGameMode" xml:space="preserve">
-    <value>Spielt mit Spielmodus</value>
+    <value>Startet mit dem Spielmodus</value>
   </data>
   <data name="PlayTipSteamGameMode" xml:space="preserve">
-    <value>Spielt mit Spielmodus, ohne das Steam-Fenster zu öffnen</value>
+    <value>Startet mit dem Spielmodus, ohne das Steam-Fenster zu öffnen</value>
   </data>
   <data name="StartMenuGames" xml:space="preserve">
     <value>Meine Spiele zur Startsuche hinzufügen</value>
   </data>
   <data name="StartMenuGamesToolTip" xml:space="preserve">
-    <value>Spiele, die Start nicht findet, erhalten eine Startverknüpfung, die sie über Binder startet</value>
+    <value>Spiele, die Start nicht findet, erhalten eine Verknüpfung im Startmenü, die sie über Binder startet</value>
   </data>
   <data name="GameKeys" xml:space="preserve">
     <value>Tastenkombinationen für Spiele</value>
