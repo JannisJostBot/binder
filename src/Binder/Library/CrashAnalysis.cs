@@ -37,7 +37,7 @@ public static class CrashAnalysis
 
     /// <summary>Whether a session is worth reading the Windows logs for (most aren't, so most cost nothing).</summary>
     public static bool NeedsCheck(Session s) =>
-        s.ExitCode is { } code && (IsFailureCode(code) || (code != 0 && s.End - s.Start < StartWindow)) || s.CrashReporter;
+        s.ExitCode is { } code && (IsFailureCode(code) || (code != 0 && !s.Resumed && s.End - s.Start < StartWindow)) || s.CrashReporter;
 
     /// <summary>The check's record for a session (same game and start), or null when it wasn't checked.</summary>
     public static CrashRecord? For(IReadOnlyList<CrashRecord> records, Session s) =>
@@ -78,7 +78,7 @@ public static class CrashAnalysis
 
         var duration = s.End - s.Start;
         var ending =
-            code != 0 && !IsBenign(code) && duration < StartWindow ? GameEnding.StartFailed
+            code != 0 && !IsBenign(code) && duration < StartWindow && !s.Resumed ? GameEnding.StartFailed
             : IsFailureCode(code) && (crash is not null || hang || s.CrashReporter) ? GameEnding.Crashed
             : IsFailureCode(code) ? GameEnding.ClosedUnexpectedly
             : GameEnding.Normal;
@@ -99,6 +99,7 @@ public static class CrashAnalysis
             Hang = hang,
             DriverReset = driverReset,
             CrashReporter = s.CrashReporter,
+            Resumed = s.Resumed,
             Seen = ending == GameEnding.Normal,
         };
     }
@@ -151,11 +152,11 @@ public static class CrashAnalysis
     public const int MaxRestarts = 2;
 
     /// <summary>
-    /// Crashed or closed unexpectedly after at least a minute. Never a failed start (a missing runtime or a broken
-    /// install; restarting won't help) or a normal exit.
+    /// Crashed or closed unexpectedly after at least a minute (a part after the PC slept: the game ran before it).
+    /// Never a failed start (a missing runtime or a broken install; restarting won't help) or a normal exit.
     /// </summary>
     public static bool IsRestartable(CrashRecord r) =>
-        r.Ending is GameEnding.Crashed or GameEnding.ClosedUnexpectedly && r.End - r.Start >= RestartMinSession;
+        r.Ending is GameEnding.Crashed or GameEnding.ClosedUnexpectedly && (r.Resumed || r.End - r.Start >= RestartMinSession);
 
     /// <summary>
     /// The game's restartable crashes in a row up to and including <paramref name="latest"/>: its sessions newest

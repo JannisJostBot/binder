@@ -28,7 +28,7 @@ internal static class CrashStore
         if (todo.Count == 0) return records;
 
         var byId = new Dictionary<string, Game>(games.Count);
-        foreach (var game in games) byId.TryAdd(game.Id, game);
+        foreach (var g in games) byId.TryAdd(g.Id, g);
         foreach (var session in todo)
         {
             var game = byId.GetValueOrDefault(session.GameId);

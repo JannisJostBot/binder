@@ -19,6 +19,7 @@ static partial class Tests
         UnrecordedShortcutTests(dir);
         RepeatGuardTests();
         SleepSplitTests();
+        EdgeCaseTests(root);
     }
 
     /// <summary>A scan's result against the library as it is when the scan ends.</summary>

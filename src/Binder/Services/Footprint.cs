@@ -91,7 +91,7 @@ internal static partial class Footprint
         SetProcessInformation(process, ProcessPowerThrottling, ref throttling, Marshal.SizeOf<PROCESS_POWER_THROTTLING_STATE>());
 
         var priority = new MEMORY_PRIORITY_INFORMATION { MemoryPriority = on ? MEMORY_PRIORITY_VERY_LOW : MEMORY_PRIORITY_NORMAL };
-        SetProcessInformation(process, ProcessMemoryPriority, ref priority, Marshal.SizeOf<MEMORY_PRIORITY_INFORMATION>());
+        SetMemoryPriority(process, ProcessMemoryPriority, ref priority, Marshal.SizeOf<MEMORY_PRIORITY_INFORMATION>());
     }
 
     private const int ProcessMemoryPriority = 0, ProcessPowerThrottling = 4;
@@ -111,11 +111,11 @@ internal static partial class Footprint
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool SetProcessWorkingSetSizeEx(IntPtr process, nint minimum, nint maximum, uint flags);
 
-    [LibraryImport("kernel32.dll")]
+    [LibraryImport("kernel32.dll", EntryPoint = "SetProcessInformation")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool SetProcessInformation(IntPtr process, int infoClass, ref PROCESS_POWER_THROTTLING_STATE info, int size);
 
-    [LibraryImport("kernel32.dll")]
+    [LibraryImport("kernel32.dll", EntryPoint = "SetProcessInformation")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool SetProcessInformation(IntPtr process, int infoClass, ref MEMORY_PRIORITY_INFORMATION info, int size);
+    private static partial bool SetMemoryPriority(IntPtr process, int infoClass, ref MEMORY_PRIORITY_INFORMATION info, int size);
 }

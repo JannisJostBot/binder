@@ -153,8 +153,10 @@ moves an old `sessions.json` into the year files at start (kept as `sessions.jso
 
 1. Play: `Launcher` starts the game via the launcher's URI/command, or the exe directly (GOG, manual, shortcut).
 2. The in-panel launch toast: "Starting [Game]", a countdown (default 10 s, per-game override) and **Keep open**.
-3. The widget starts `Binder.Watcher.exe` (game id, install folder, optional process name, timeout).
-4. When the countdown ends the widget **exits** (unless Keep open).
+3. The widget starts `Binder.Watcher.exe` (game id, install folder, optional process name, timeout). One watcher per
+   game (`Local\Binder.Watcher.<hash>`): a second one for a game already followed exits at once.
+4. When the countdown ends the widget **exits** (unless Keep open). A game that has already closed (the watcher's
+   `WatcherNames.Ended` event is set while it looks for a restart) keeps it up to 8 s more for the `--returned`.
 5. The watcher:
    - Detection: any process whose exe is inside the install folder, or the explicit process name. Polling every
      ~2 s is allowed here only, for up to ~3 min; each pass takes the process list in one call (`ProcessList`) and
@@ -166,9 +168,10 @@ moves an old `sessions.json` into the year files at start (kept as `sessions.jso
    - On exit: append the session as one line to `sessions-<year>.jsonl` (the year it ended, `SessionLog`; never
      reads the file), relaunch the widget if "Come back when the game closes" is on, or with `--crashed` after a crash exit code of a game with "Restart if it crashes" (spec §17: the widget's
      restart pill counts 5 s down, then plays it again; at most twice in a row).
-   - Time the PC slept isn't playtime: the session is saved as its awake parts. Shutdown or sign-out during the
+   - The session starts when the game's process did, never before the watcher. Time the PC slept isn't playtime:
+     the session is saved as its awake parts (later parts marked `Resumed`). Shutdown or sign-out during the
      game: the session is saved at once (`SystemEvents`), nothing is relaunched, Game mode's journal is put back
-     at the next start.
+     at the next start; a cancelled shutdown carries on as usual.
    - Game mode (when on for the game): apply right after start (and tell a widget that is still up, never starting
      it for that), Above normal priority once found, restore after the game: with "Come back" on, the widget is
      started first and the result follows as a forwarded `--restored` once it's up (`WaitForInputIdle`); with it off,
@@ -212,13 +215,15 @@ hidden `MessageWindow` (WM_COPYDATA). With no arguments that toggles the flyout.
 Steam, Epic, GOG, EA app, Ubisoft Connect, Xbox app, Rockstar, Hytale, imported desktop shortcuts and manual adds;
 each `*Source.cs` documents where it reads and how it launches. Rescan on startup, on manual refresh and when the
 panel opens over an hour after the last scan, never on a timer. Uninstalled or deleted games leave the shelf (rescan,
-or at once on Play/Details via `GameFiles`, never for an unplugged drive); their settings wait in `removed-games.json`.
+or at once on Play/Details via `GameFiles`, never for an unplugged drive: `GameFiles.IsOffline`); their settings wait
+in `removed-games.json`.
 
 - Steam: skip non-games (redistributables, Proton, SDKs, servers). When Steam isn't running, start
   `steam.exe -silent <link>` so its window doesn't open.
 - Shortcut import: scan the user's and the Public Desktop; the user ticks which are games; chosen shortcuts are
   **moved** to `%APPDATA%\Binder\Shortcuts\` (reversible, "Restore to desktop"); Steam/Epic URIs merge with the
-  detected entry.
+  detected entry. A shortcut that starts a launcher or a Windows program (`ShortcutImporter.IsLauncher`) watches
+  nothing of it ("Process to watch").
 - Covers: store art where a source has it (Steam: local cache, else the CDN once, cached); otherwise a generated
   cover (the game's icon on its own muted color, or a monogram), no network.
 

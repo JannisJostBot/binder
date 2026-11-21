@@ -15,9 +15,22 @@ internal static unsafe partial class SystemEvents
     private static DateTimeOffset? _asleepSince;
     private static Action? _onEnding;
     private static volatile bool _ending;
+    /// <summary>Set once Windows has decided (WM_ENDSESSION): the session ends, or the shutdown was called off.</summary>
+    private static readonly ManualResetEvent Decided = new(false);
+    private const int OutcomeWaitMs = 30 * 60 * 1000;
 
     /// <summary>Windows is shutting down or the user is signing out.</summary>
     public static bool Ending => _ending;
+
+    /// <summary>
+    /// After <see cref="Ending"/>: waits (a kernel wait) until Windows has decided whether the session really ends.
+    /// True when it does; false when the shutdown was cancelled (another app held it up and the user went back).
+    /// </summary>
+    public static bool WaitForOutcome()
+    {
+        Decided.WaitOne(OutcomeWaitMs);
+        return _ending;
+    }
 
     /// <summary>
     /// Starts listening. <paramref name="onEnding"/> runs once, on the listening thread, when the session ends
@@ -43,7 +56,8 @@ internal static unsafe partial class SystemEvents
 
     /// <summary>
     /// A session cut at the times the PC slept: the parts the game was really running, in order. Parts under a
-    /// second are left out. Pure logic, unit-tested.
+    /// second are left out, except the last: it carries how the game ended (a game that crashed within a second of
+    /// being found, or right after the PC woke up). Pure logic, unit-tested.
     /// </summary>
     internal static List<(DateTimeOffset Start, DateTimeOffset End)> Awake(DateTimeOffset start, DateTimeOffset end,
         IEnumerable<(DateTimeOffset From, DateTimeOffset To)> sleeps)
@@ -56,12 +70,13 @@ internal static unsafe partial class SystemEvents
             if (sleepFrom - from >= TimeSpan.FromSeconds(1)) parts.Add((from, sleepFrom));
             from = sleepTo > from ? sleepTo : from;
         }
-        if (end - from >= TimeSpan.FromSeconds(1)) parts.Add((from, end));
+        if (end > from) parts.Add((from, end));
         return parts;
     }
 
     private const uint WM_QUERYENDSESSION = 0x0011, WM_ENDSESSION = 0x0016, WM_POWERBROADCAST = 0x0218;
     private const nuint PBT_APMSUSPEND = 0x4, PBT_APMRESUMESUSPEND = 0x7, PBT_APMRESUMEAUTOMATIC = 0x12;
+    private const int DEVICE_NOTIFY_WINDOW_HANDLE = 0;
     private const uint WS_POPUP = 0x80000000, WS_EX_TOOLWINDOW = 0x80, WS_EX_NOACTIVATE = 0x08000000;
 
     private static void Run()
@@ -83,6 +98,9 @@ internal static unsafe partial class SystemEvents
                 var hwnd = CreateWindowExW(WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE, name, null, WS_POPUP, 0, 0, 0, 0,
                     IntPtr.Zero, IntPtr.Zero, instance, IntPtr.Zero);
                 if (hwnd == IntPtr.Zero) return;
+                // PCs with Modern Standby tell sleep and wake only to windows that ask for it (the broadcast is
+                // for classic sleep); asking is harmless on others, where both arrive and count once.
+                RegisterSuspendResumeNotification(hwnd, DEVICE_NOTIFY_WINDOW_HANDLE);
             }
             MSG msg;
             while (GetMessageW(&msg, IntPtr.Zero, 0, 0) > 0) DispatchMessageW(&msg);
@@ -101,6 +119,7 @@ internal static unsafe partial class SystemEvents
             switch (msg)
             {
                 case WM_QUERYENDSESSION:
+                    Decided.Reset();
                     _ending = true; // from now on the main thread saves at once instead of waiting for a restart
                     return 1;
                 case WM_ENDSESSION:
@@ -113,6 +132,7 @@ internal static unsafe partial class SystemEvents
                     {
                         _ending = false; // the shutdown was cancelled
                     }
+                    Decided.Set();
                     return 0;
                 case WM_POWERBROADCAST:
                     lock (Sync)
@@ -166,6 +186,9 @@ internal static unsafe partial class SystemEvents
     [LibraryImport("user32.dll")]
     private static partial IntPtr CreateWindowExW(uint exStyle, char* className, char* windowName, uint style,
         int x, int y, int width, int height, IntPtr parent, IntPtr menu, IntPtr instance, IntPtr param);
+
+    [LibraryImport("user32.dll")]
+    private static partial IntPtr RegisterSuspendResumeNotification(IntPtr recipient, int flags);
 
     [LibraryImport("user32.dll")]
     private static partial int GetMessageW(MSG* msg, IntPtr hwnd, uint min, uint max);

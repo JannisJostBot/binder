@@ -21,8 +21,6 @@ public sealed partial class App : IRestartActions
     /// </summary>
     private bool _crashedOnly;
 
-    private bool _checkingCrashes;
-
     /// <summary>
     /// After the crash check of the game that just ended: shows the restart pill and returns true when this crash
     /// is one to restart from. Not while a Game mode message waits for the user (the pill would cover it).
@@ -108,7 +106,7 @@ public sealed partial class App : IRestartActions
     /// <summary>Exits once nothing is on screen or pending (a "--crashed" or "--restored" start that's done).</summary>
     private void QuitIfIdle()
     {
-        if (_quitting || _panel is not null || _kept is not null || _restarting is not null || _checkingCrashes || _gameModeToast is not null) return;
+        if (_quitting || _panel is not null || _kept is not null || _restarting is not null || _crashChecks > 0 || _gameModeToast is not null) return;
         if (_sound != 0) _quitAfterSound = true; // after the sound has played
         else Quit();
     }

@@ -56,12 +56,33 @@ public static class GameFiles
         return Check(game.InstallDir) == PathState.Gone;
     }
 
+    /// <summary>
+    /// True when the drive or share the game is on isn't there now (unplugged, locked by BitLocker, offline): its
+    /// launcher can't list it, but it isn't uninstalled either. One attribute read.
+    /// </summary>
+    public static bool IsOffline(Game game) => DriveMissing(game.InstallDir ?? game.ExePath);
+
+    /// <summary>True for a full path whose drive or share can't be reached; false when it can, or for no path.</summary>
+    public static bool DriveMissing(string? path)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(path) || !Path.IsPathFullyQualified(path) || Path.GetPathRoot(path) is not { Length: > 0 } root) return false;
+            File.GetAttributes(root);
+            return false;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+        {
+            return true;
+        }
+    }
+
     private static string? Exe(string? path) =>
         path is not null && path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? path : null;
 }
 
 /// <summary>
-/// The settings of games that left the library (uninstalled, deleted, on a drive that's unplugged), so a game that
+/// The settings of games that left the library (uninstalled or deleted), so a game that
 /// comes back gets its favorite, launch options, Game mode choice and custom cover again. Kept in
 /// <c>removed-games.json</c>, never shown. Only games with settings of their own are kept, the newest
 /// <see cref="Max"/>.

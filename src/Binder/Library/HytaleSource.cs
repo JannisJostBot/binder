@@ -42,7 +42,7 @@ public static class HytaleSource
             StoreId = "hytale",
             Name = "Hytale",
             InstallDir = install,
-            SizeOnDisk = SizeOf(install),
+            SizeOnDisk = SizeOf(install, client),
             IconPath = client,
         };
     }
@@ -64,8 +64,28 @@ public static class HytaleSource
         return null;
     }
 
-    /// <summary>The install folder's size (a few thousand files, mostly one big asset archive); bounded.</summary>
-    private static long SizeOf(string folder)
+    /// <summary>
+    /// The install folder's size (a few thousand files, mostly one big asset archive); bounded. Counted again only
+    /// when the client changed (an update), not at every rescan.
+    /// </summary>
+    private static long SizeOf(string folder, string client)
+    {
+        string key;
+        try { key = folder + "|" + client + "|" + File.GetLastWriteTimeUtc(client).Ticks; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { key = ""; }
+        lock (SizeLock)
+        {
+            if (key.Length > 0 && s_size is { } known && known.Key == key) return known.Bytes;
+        }
+        long bytes = CountSize(folder);
+        lock (SizeLock) s_size = (key, bytes);
+        return bytes;
+    }
+
+    private static readonly Lock SizeLock = new();
+    private static (string Key, long Bytes)? s_size;
+
+    private static long CountSize(string folder)
     {
         long total = 0;
         int count = 0;
