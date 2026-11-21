@@ -1,0 +1,37 @@
+Time to window: 1065 ms (includes UI Automation lookup)
+Epic scan: fake game found, drive-root manifest rejected
+GOG scan: fake game found
+Steam scan: 6 games found, malicious manifest rejected
+Idle CPU over 10 s: 0 ms
+Working set: 142 MB, private: 72 MB
+Launcher badges on screen: 9 (Dota 2 x1, Steam x6, Epic Games x1, GOG x1)
+Generated cover: icon of the manual game cached
+Cover size (List, Small, Medium) and sort by name: applied and saved
+Top slot: switched to This week and saved
+Hide and show again from Settings: yes
+Start with Windows: quoted Run entry added and removed
+Z-order at start: widget 80, desktop (Progman) 81
+Desktop layer: behind a new window: True, still behind after clicking the widget: True
+Win+D: widget visible: True, minimized: False, z-order widget 13 vs foreground 16 (Progman)
+Win+D: top visible windows: 3:Shell_TrayWnd, 13:WinUIDesktopWin32WindowClass (widget), 16:Progman, 53:#32770, 75:DummyDWMListenerWindow, 76:EdgeUiInputTopWndClass, 77:DummyDWMListenerWindow, 78:DummyDWMListenerWindow
+Shortcut import: 2 moved off the desktop, Steam link merged, web link left alone
+Shortcut restore: both back on the desktop, removed from the shelf
+Auto-hide taskbar: widget bottom 692 -> 692 (screen 768, taskbar 48 px), back to 692 when turned off
+Widget exited after launch: yes
+Watcher while game runs: 3.4 MB working set, 3.3 MB private, 0.6 MB private working set, CPU over 5 s: 0 ms (Native AOT build)
+Widget came back and the session was recorded: yes
+First-run setup: four steps, saved, flyout kept as the default, Game mode left off
+Memory report (closed after use): private bytes: 81.5 MB; working set: 4.7 MB; managed heap (live): 2.3 MB; managed heap (committed): 2.3 MB; not managed (private - committed): 79.2 MB; threads: 29
+Stay ready (closed after use): working set 4.2 MB, private 80.5 MB, private working set 1.3 MB
+Stay ready: CPU over 10 s while closed: 0 ms
+Time to open (Win+Shift+G, warm process): 310 ms to visible
+Esc closes the flyout: yes
+Click-away closes the flyout: yes
+Time to open (second start forwarding to the running one): 317 ms
+Second start toggles the running instance: yes
+Memory report (never opened): private bytes: 12.9 MB; working set: 7.5 MB; managed heap (live): 0.6 MB; managed heap (committed): 0.6 MB; not managed (private - committed): 12.3 MB; threads: 10
+Stay ready (started with Windows, never opened): working set 6.8 MB, private 11.9 MB
+Time to open (first open after starting with Windows): 304 ms to visible
+Memory report (open): private bytes: 67.8 MB; working set: 120.3 MB; managed heap (live): 3.3 MB; managed heap (committed): 9.9 MB; not managed (private - committed): 57.8 MB; threads: 26
+Flyout open: working set 120.3 MB, private 67.8 MB, private working set 50.8 MB
+Flyout open with 100 games (scrolled through once): working set 164.1 MB, private 94.6 MB, private working set 75 MB
