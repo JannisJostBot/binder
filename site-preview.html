@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Binder for Windows</title>
+  <meta name="description" content="Binder lists the games you've installed with Steam, Epic, GOG and other launchers, and starts them with one click. For Windows 10 and 11.">
+  <meta property="og:title" content="Binder for Windows">
+  <meta property="og:description" content="Binder lists the games you've installed with Steam, Epic, GOG and other launchers, and starts them with one click. For Windows 10 and 11.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jannisjostbot.github.io/binder/">
+  <meta property="og:image" content="https://jannisjostbot.github.io/binder/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Binder's window with game covers, next to the words: A game launcher that stays out of your way.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://api.github.com; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <link rel="stylesheet" href="styles.css">
+  <script src="release.js" defer></script>
+  <script src="clock.js" defer></script>
+  <script src="story.js" defer></script>
+  <script src="wallpaper.js" defer></script>
+  <script src="game.js" defer></script>
+  <script src="nav.js" defer></script>
+  <script src="download.js" defer></script>
+  <script src="usage.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#top">Skip to content</a>
+<!-- The logo's gradients, used by every logo on the page. -->
+<svg class="defs" aria-hidden="true" width="0" height="0"><defs><linearGradient id="la" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7BD8FF"></stop><stop offset="1" stop-color="#0C78D2"></stop></linearGradient><linearGradient id="lm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B4E6FF"></stop><stop offset="1" stop-color="#4AA6E6"></stop></linearGradient><linearGradient id="ls" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E3F5FF"></stop><stop offset="1" stop-color="#9CCDEF"></stop></linearGradient><linearGradient id="eg-planet" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F7D7A0"></stop><stop offset="0.55" stop-color="#D9893F"></stop><stop offset="1" stop-color="#7A3420"></stop></linearGradient><linearGradient id="eg-ember" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFB25C"></stop><stop offset="1" stop-color="#B8402A"></stop></linearGradient><linearGradient id="eg-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B86C5"></stop><stop offset="1" stop-color="#0E3D63"></stop></linearGradient><linearGradient id="eg-sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD36E"></stop><stop offset="1" stop-color="#FF4FA0"></stop></linearGradient><linearGradient id="eg-ice" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D8F0FC"></stop><stop offset="1" stop-color="#6FA6D6"></stop></linearGradient><linearGradient id="eg-pine" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C9A5E"></stop><stop offset="1" stop-color="#1D4A2A"></stop></linearGradient><linearGradient id="eg-steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7A818C"></stop><stop offset="1" stop-color="#3A3F47"></stop></linearGradient><radialGradient id="eg-glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FFF6C8"></stop><stop offset="0.35" stop-color="rgba(255,226,130,0.75)"></stop><stop offset="1" stop-color="rgba(255,226,130,0)"></stop></radialGradient><linearGradient id="eg-dune" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBE3B0"></stop><stop offset="1" stop-color="#EE9F4E"></stop></linearGradient><linearGradient id="eg-rift" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3A2B38"></stop><stop offset="1" stop-color="#120E16"></stop></linearGradient><linearGradient id="eg-lamp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE7A6"></stop><stop offset="1" stop-color="#F28A2E"></stop></linearGradient><linearGradient id="eg-bin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F3F7FC"></stop><stop offset="1" stop-color="#AFC2D8"></stop></linearGradient><linearGradient id="eg-fold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE38A"></stop><stop offset="1" stop-color="#F2B530"></stop></linearGradient><symbol id="e1" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="#141838"></circle><circle cx="11" cy="14" r="1" fill="#FFFFFF"></circle><circle cx="37" cy="11" r="1.3" fill="#FFFFFF"></circle><circle cx="35" cy="36" r="0.9" fill="#DCE6FF"></circle><circle cx="24" cy="24" r="10" fill="url(#eg-planet)"></circle><ellipse cx="24" cy="24.5" rx="17" ry="5" fill="none" stroke="#F2C78C" stroke-width="2.2" transform="rotate(-18 24 24)"></ellipse></symbol><symbol id="e2" viewBox="0 0 48 48"><path d="M24 3 L42 9 V22 C42 34 34 41 24 45 C14 41 6 34 6 22 V9 Z" fill="url(#eg-ember)" stroke="#7A2A18" stroke-width="1.2"></path><circle cx="24" cy="19" r="6" fill="#FFE1A0" opacity="0.85"></circle><path d="M13 36 V24 h3 v3 h3 v-3 h10 v3 h3 v-3 h3 V36 Z" fill="#2A1410"></path><path d="M22 36 v-5 a2 2 0 0 1 4 0 v5 Z" fill="#FFB25C"></path></symbol><symbol id="e3" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="url(#eg-sea)"></circle><path d="M5 30 C10 18 20 15 27 21 C31 25 35 24 38 19 C41 31 32 40 22 40 C13 40 7 36 5 30 Z" fill="#8FD6F2"></path><path d="M9 29 C14 22 21 21 26 25" fill="none" stroke="#E8F7FF" stroke-width="2.4" stroke-linecap="round"></path><circle cx="37" cy="16" r="2" fill="#E8F7FF"></circle></symbol><symbol id="e4" viewBox="0 0 48 48"><path d="M24 3 L42 13.5 V34.5 L24 45 L6 34.5 V13.5 Z" fill="#1A0B3A" stroke="#FF6FA8" stroke-width="2"></path><circle cx="24" cy="22" r="9" fill="url(#eg-sun)"></circle><path d="M15 22 h18 M15.6 25 h16.8 M17 28 h14" stroke="#1A0B3A" stroke-width="1.6"></path><path d="M12 34 L36 34 M16 31 L12 38 M24 31 V39 M32 31 L36 38" stroke="#FF6FA8" stroke-width="1.2" opacity="0.8"></path></symbol><symbol id="e5" viewBox="0 0 48 48"><rect x="4" y="4" width="40" height="40" rx="10" fill="url(#eg-ice)"></rect><path d="M6 38 L19 17 L27 29 L32 22 L42 38 Z" fill="#FFFFFF"></path><path d="M19 17 L23 23.5 L20 22 L17 25 Z M32 22 L35 27 L32.5 26 L30 28 Z" fill="#9CC6E6"></path><circle cx="34" cy="12" r="3" fill="#FFFFFF" opacity="0.9"></circle></symbol><symbol id="e6" viewBox="0 0 48 48"><path d="M24 3 L35 18 H30 L39 30 H32 L41 40 H7 L16 30 H9 L18 18 H13 Z" fill="url(#eg-pine)" stroke="#173C22" stroke-width="1"></path><rect x="21.5" y="40" width="5" height="6" rx="1" fill="#6B4B32"></rect><path d="M24 8 L29 15" stroke="#7FC48E" stroke-width="1.6" stroke-linecap="round" opacity="0.7"></path></symbol><symbol id="e7" viewBox="0 0 48 48"><path d="M24 4 L43 14 V34 L24 44 L5 34 V14 Z" fill="url(#eg-steel)"></path><path d="M24 4 L43 14 L24 24 L5 14 Z" fill="#9AA1AC"></path><path d="M24 24 V44" stroke="#2E3239" stroke-width="1.2"></path><path d="M5 26 L24 36 L43 26 V30 L24 40 L5 30 Z" fill="#F0B429"></path><path d="M9 28 l3 1.6 v4 l-3 -1.6 Z M17 32.2 l3 1.6 v4 l-3 -1.6 Z M28 33.8 l3 -1.6 v4 l-3 1.6 Z M36 29.6 l3 -1.6 v4 l-3 1.6 Z" fill="#2E3239"></path></symbol><symbol id="e8" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="#0B2328"></circle><circle cx="24" cy="24" r="17" fill="url(#eg-glow)"></circle><path d="M24 24 C17 13 8 15 9 22 C10 28 18 28 24 24 C30 28 38 28 39 22 C40 15 31 13 24 24 Z" fill="rgba(180,255,230,0.45)" stroke="#B4FFE6" stroke-width="1"></path><path d="M24 24 C20 30 15 34 13 31 C12 28 18 26 24 24 C30 26 36 28 35 31 C33 34 28 30 24 24 Z" fill="rgba(180,255,230,0.3)"></path><ellipse cx="24" cy="24" rx="1.6" ry="5" fill="#FFF6C8"></ellipse></symbol><symbol id="e9" viewBox="0 0 48 48"><rect x="4" y="4" width="40" height="40" rx="10" fill="url(#eg-dune)"></rect><circle cx="31" cy="17" r="5" fill="#FFF6DD"></circle><path d="M4 32 C14 24 24 26 34 33 C38 35 41 35 44 34 V34 C44 40 40 44 34 44 H14 C8 44 4 40 4 34 Z" fill="#C97A30"></path><path d="M4 38 C16 31 30 33 44 40 C43 42.5 40 44 34 44 H14 C9 44 5.5 41.5 4 38 Z" fill="#9C5A20"></path></symbol><symbol id="e10" viewBox="0 0 48 48"><ellipse cx="13" cy="12" rx="7" ry="3" fill="#FFFFFF" opacity="0.9"></ellipse><path d="M8 24 C8 19 40 19 40 24 C40 27 8 27 8 24 Z" fill="#4FA35A"></path><path d="M9 25 L24 44 L39 25 C30 28 18 28 9 25 Z" fill="#7A5638"></path><path d="M18 30 L24 44 L22 31 Z" fill="#5C3F27"></path><path d="M30 21 C30 14 36 13 36 20" fill="#2F7A3D"></path><rect x="32" y="18" width="1.6" height="5" fill="#5C3F27"></rect></symbol><symbol id="e11" viewBox="0 0 48 48"><path d="M24 2 L46 24 L24 46 L2 24 Z" fill="url(#eg-rift)" stroke="#5A1620" stroke-width="1.2"></path><path d="M30 7 L21 22 L27 24 L17 41" fill="none" stroke="#FF5A4E" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path><path d="M30 7 L21 22 L27 24 L17 41" fill="none" stroke="#FFD2C8" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"></path></symbol><symbol id="e12" viewBox="0 0 48 48"><circle cx="24" cy="27" r="15" fill="rgba(255,170,60,0.16)"></circle><path d="M18 9 C18 4 30 4 30 9" fill="none" stroke="#3A2414" stroke-width="2.2"></path><rect x="15" y="9" width="18" height="5" rx="2" fill="#3A2414"></rect><path d="M16 14 H32 L30 36 H18 Z" fill="url(#eg-lamp)" stroke="#3A2414" stroke-width="1.6"></path><path d="M24 17 V34 M20 15 L20.8 35 M28 15 L27.2 35" stroke="#3A2414" stroke-width="1" opacity="0.6"></path><ellipse cx="24" cy="26" rx="3" ry="5" fill="#FFF6DD"></ellipse><rect x="15" y="36" width="18" height="4" rx="1.5" fill="#3A2414"></rect></symbol><symbol id="e-bin" viewBox="0 0 48 48"><path d="M11 13 H37 L34 43 C33.8 44.2 32.8 45 31.6 45 H16.4 C15.2 45 14.2 44.2 14 43 Z" fill="url(#eg-bin)" stroke="#7F93AE" stroke-width="1.2"></path><rect x="9" y="8" width="30" height="6" rx="2" fill="#E6EDF6" stroke="#7F93AE" stroke-width="1.2"></rect><path d="M19 18 L20 40 M24 18 V40 M29 18 L28 40" stroke="#8EA3BE" stroke-width="1.4" opacity="0.7"></path><path d="M20 5 h8" stroke="#7F93AE" stroke-width="2.4" stroke-linecap="round"></path></symbol><symbol id="e-doc" viewBox="0 0 48 48"><path d="M11 4 H29 L38 13 V44 H11 Z" fill="#FFFFFF" stroke="#A9B4C2" stroke-width="1.2"></path><path d="M29 4 V13 H38" fill="#E3E8EF" stroke="#A9B4C2" stroke-width="1.2" stroke-linejoin="round"></path><path d="M16 20 h17 M16 25 h17 M16 30 h17 M16 35 h11" stroke="#9AA6B5" stroke-width="1.6" stroke-linecap="round"></path></symbol><symbol id="e-folder" viewBox="0 0 48 48"><path d="M4 12 C4 10 5 9 7 9 H18 L22 13 H41 C43 13 44 14 44 16 V38 C44 40 43 41 41 41 H7 C5 41 4 40 4 38 Z" fill="#E9A93A"></path><path d="M4 18 C4 16.5 5 15.5 6.5 15.5 H41.5 C43 15.5 44 16.5 44 18 V38 C44 40 43 41 41 41 H7 C5 41 4 40 4 38 Z" fill="url(#eg-fold)"></path></symbol></defs></svg>
+<div class="page">
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-bar">
+      <a href="#top" class="brand" aria-label="Binder home">
+        <svg aria-hidden="true" width="30" height="30" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
+        <span>Binder</span>
+      </a>
+      <nav aria-label="Sections" class="header-nav">
+        <a href="#features">Features</a>
+        <a href="docs.html">Docs</a>
+        <a href="releases.html">Releases</a>
+      </nav>
+      <div class="header-actions">
+        <a href="https://github.com/JannisJostBot/binder" class="header-github" title="Source code on GitHub" aria-label="Source code on GitHub"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"></path><path d="M16 7l5 5-5 5"></path></svg></a>
+        <a href="#download" class="button button-small header-download"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download</a>
+        <details class="header-menu">
+          <summary aria-label="Menu"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></summary>
+          <nav aria-label="Menu" class="header-menu-list">
+            <a href="#features">Features</a>
+            <a href="docs.html">Docs</a>
+            <a href="releases.html">Releases</a>
+            <a href="https://github.com/JannisJostBot/binder">Source code on GitHub</a>
+          </nav>
+        </details>
+      </div>
+    </div>
+  </header>
+
+  <!-- The story: one Windows desktop, pinned while the captions scroll past (story.js sets data-step from the caption
+       in view; styles.css moves the scene). It is a picture of a PC, so it keeps its own fixed colours. Without
+       scripts it shows the open shelf; with reduced motion the steps change without moving. -->
+  <section class="story" id="top" data-step="0" aria-label="What Binder does">
+    <figure class="stage" data-step="0" aria-label="A Windows desktop with Binder by the clock">
+      <div class="desk-wall" aria-hidden="true"></div>
+      <div class="desk" aria-hidden="true">
+        <span class="ico ico-plain"><i><svg viewBox="0 0 48 48"><use href="#e-bin"></use></svg></i><span>Recycle Bin</span></span>
+        <span class="ico" data-tile="1"><i><b class="cover g1"></b><svg viewBox="0 0 48 48"><use href="#e1"></use></svg></i><span>Starfall Drift</span></span>
+        <span class="ico" data-tile="2"><i><b class="cover g2"></b><svg viewBox="0 0 48 48"><use href="#e2"></use></svg></i><span>Ember Keep</span></span>
+        <span class="ico" data-tile="3"><i><b class="cover g3"></b><svg viewBox="0 0 48 48"><use href="#e3"></use></svg></i><span>Tidebreak</span></span>
+        <span class="ico" data-tile="4"><i><b class="cover g4"></b><svg viewBox="0 0 48 48"><use href="#e4"></use></svg></i><span>Neon Circuit</span></span>
+        <span class="ico" data-tile="5"><i><b class="cover g5"></b><svg viewBox="0 0 48 48"><use href="#e5"></use></svg></i><span>Frostline</span></span>
+        <span class="ico" data-tile="6"><i><b class="cover g6"></b><svg viewBox="0 0 48 48"><use href="#e6"></use></svg></i><span>Hollow Pines</span></span>
+        <span class="ico" data-tile="7"><i><b class="cover g7"></b><svg viewBox="0 0 48 48"><use href="#e7"></use></svg></i><span>Iron Courier</span></span>
+        <span class="ico" data-tile="8"><i><b class="cover g8"></b><svg viewBox="0 0 48 48"><use href="#e8"></use></svg></i><span>Glowmoth</span></span>
+        <span class="ico" data-tile="9"><i><b class="cover g9"></b><svg viewBox="0 0 48 48"><use href="#e9"></use></svg></i><span>Dune Runners</span></span>
+        <span class="ico" data-tile="10"><i><b class="cover g10"></b><svg viewBox="0 0 48 48"><use href="#e10"></use></svg></i><span>Skyward Isles</span></span>
+        <span class="ico" data-tile="11"><i><b class="cover g11"></b><svg viewBox="0 0 48 48"><use href="#e11"></use></svg></i><span>Rift Tactics</span></span>
+        <span class="ico" data-tile="12"><i><b class="cover g12"></b><svg viewBox="0 0 48 48"><use href="#e12"></use></svg></i><span>Little Lantern</span></span>
+        <span class="ico" data-tile="2"><i><b class="cover g2"></b><svg viewBox="0 0 48 48"><use href="#e2"></use></svg></i><span>Ember Keep - Demo</span></span>
+        <span class="ico ico-plain"><i><svg viewBox="0 0 48 48"><use href="#e-doc"></use></svg></i><span>Notes.txt</span></span>
+        <span class="ico" data-tile="4"><i><b class="cover g4"></b><svg viewBox="0 0 48 48"><use href="#e4"></use></svg></i><span>Neon Circuit Mod Tool</span></span>
+        <span class="ico ico-plain"><i><svg viewBox="0 0 48 48"><use href="#e-folder"></use></svg></i><span>Screenshots</span></span>
+        <span class="ico" data-tile="7"><i><b class="cover g7"></b><svg viewBox="0 0 48 48"><use href="#e7"></use></svg></i><span>Iron Courier Launcher</span></span>
+        <span class="ico" data-tile="1"><i><b class="cover g1"></b><svg viewBox="0 0 48 48"><use href="#e1"></use></svg></i><span>Starfall Drift Server</span></span>
+        <span class="ico" data-tile="9"><i><b class="cover g9"></b><svg viewBox="0 0 48 48"><use href="#e9"></use></svg></i><span>Dune Runners (2)</span></span>
+      </div>
+
+      <!-- The game while it runs: Starfall Drift (made up, like the shelf's games), drawn in CSS and SVG. It moves only
+           while this step is on screen; with reduced motion it's a still frame. -->
+      <div class="game-scene" aria-hidden="true">
+        <i class="sf-stars sf-far"></i><i class="sf-stars sf-mid"></i><i class="sf-stars sf-near"></i>
+        <i class="sf-nebula"></i>
+        <div class="sf-planet"><i class="sf-ring-back"></i><i class="sf-globe"></i><i class="sf-ring-front"></i><i class="sf-moon"></i></div>
+        <!-- One 9-second piece of gameplay, every part on the same clock: a hit, a near miss, a shield pickup and a
+             second hit. Each burst (.sf-boom) starts as its shot lands; story.js adds its data-points to the score. -->
+        <div class="sf-rock sf-far-rock"><svg viewBox="0 0 60 52"><path d="M14 6 L38 2 L54 14 L58 32 L46 48 L22 50 L6 38 L2 18 Z" fill="#4B4060"></path><path d="M14 6 L38 2 L54 14 L40 20 L22 18 Z" fill="#6E6286"></path><path d="M54 14 L58 32 L46 48 L40 20 Z" fill="#3A3150"></path><circle cx="24" cy="32" r="5" fill="#3A3150"></circle><circle cx="40" cy="36" r="3" fill="#3A3150"></circle><circle cx="18" cy="16" r="2.5" fill="#5A4E72"></circle></svg></div>
+        <div class="sf-rock sf-a"><svg viewBox="0 0 60 52"><path d="M14 6 L38 2 L54 14 L58 32 L46 48 L22 50 L6 38 L2 18 Z" fill="#4B4060"></path><path d="M14 6 L38 2 L54 14 L40 20 L22 18 Z" fill="#6E6286"></path><path d="M54 14 L58 32 L46 48 L40 20 Z" fill="#3A3150"></path><circle cx="24" cy="32" r="5" fill="#3A3150"></circle><circle cx="40" cy="36" r="3" fill="#3A3150"></circle><circle cx="18" cy="16" r="2.5" fill="#5A4E72"></circle></svg></div>
+        <div class="sf-rock sf-b"><svg viewBox="0 0 60 52"><path d="M14 6 L38 2 L54 14 L58 32 L46 48 L22 50 L6 38 L2 18 Z" fill="#4B4060"></path><path d="M14 6 L38 2 L54 14 L40 20 L22 18 Z" fill="#6E6286"></path><path d="M54 14 L58 32 L46 48 L40 20 Z" fill="#3A3150"></path><circle cx="24" cy="32" r="5" fill="#3A3150"></circle><circle cx="40" cy="36" r="3" fill="#3A3150"></circle><circle cx="18" cy="16" r="2.5" fill="#5A4E72"></circle></svg></div>
+        <div class="sf-rock sf-c"><svg viewBox="0 0 60 52"><path d="M14 6 L38 2 L54 14 L58 32 L46 48 L22 50 L6 38 L2 18 Z" fill="#4B4060"></path><path d="M14 6 L38 2 L54 14 L40 20 L22 18 Z" fill="#6E6286"></path><path d="M54 14 L58 32 L46 48 L40 20 Z" fill="#3A3150"></path><circle cx="24" cy="32" r="5" fill="#3A3150"></circle><circle cx="40" cy="36" r="3" fill="#3A3150"></circle><circle cx="18" cy="16" r="2.5" fill="#5A4E72"></circle></svg></div>
+        <i class="sf-crystal"></i>
+        <i class="sf-shot sf-s1"></i><i class="sf-shot sf-s2"></i>
+        <div class="sf-boom sf-boom-a" data-points="250"><i class="sf-flash"></i><i class="sf-shard"></i><i class="sf-shard"></i><i class="sf-shard"></i><i class="sf-shard"></i><b class="sf-pop">+250</b></div>
+        <div class="sf-boom sf-boom-c" data-points="100"><i class="sf-flash"></i><i class="sf-shard"></i><i class="sf-shard"></i><i class="sf-shard"></i><i class="sf-shard"></i><b class="sf-pop">+100</b></div>
+        <div class="sf-boom sf-boom-pick" data-points="50"><i class="sf-flash"></i><b class="sf-pop">Shield +50</b></div>
+        <div class="sf-ship">
+          <i class="sf-flame"></i>
+          <i class="sf-muzzle"></i>
+          <svg viewBox="0 0 140 60"><defs><linearGradient id="sf-hull" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2F5FA"></stop><stop offset="0.55" stop-color="#B9C3D4"></stop><stop offset="1" stop-color="#6E7A92"></stop></linearGradient><linearGradient id="sf-wing" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C879C"></stop><stop offset="1" stop-color="#454E63"></stop></linearGradient><linearGradient id="sf-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C8F4FF"></stop><stop offset="0.6" stop-color="#3D9BD6"></stop><stop offset="1" stop-color="#1B4E7A"></stop></linearGradient></defs><path d="M24 23 L33 6 H42 L48 22 Z" fill="url(#sf-wing)"></path><path d="M34 9 H41" stroke="#FF8A4C" stroke-width="2.4" stroke-linecap="round"></path><rect x="4" y="24" width="18" height="13" rx="4" fill="#394259"></rect><rect x="2" y="26" width="5" height="9" rx="2" fill="#20263A"></rect><path d="M12 32 C12 26 20 23 32 22.5 L98 21 C114 21 128 25.5 137 30.5 C128 35.5 114 39 98 39 L32 39 C20 39 12 37 12 32 Z" fill="url(#sf-hull)"></path><path d="M14 34 C30 37 70 38 98 37.5 C114 37 126 34 134 31.5 C127 36 113 39 98 39 L32 39 C21 39 15 37.5 14 34 Z" fill="#5E6A82" opacity="0.55"></path><path d="M80 22.5 C86 13.5 102 12.5 114 22 C104 22.6 92 22.8 80 22.5 Z" fill="url(#sf-glass)"></path><path d="M89 18 C93 15.5 99 15 104 16.5" fill="none" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round" opacity="0.8"></path><path d="M44 35 L86 36.5 L66 55 L46 55 Z" fill="url(#sf-wing)"></path><path d="M52 51 H64 L72 43.5" fill="none" stroke="#FF8A4C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M40 26 H70 M58 22.6 V38.6" stroke="#8F9BB0" stroke-width="0.9" opacity="0.7"></path><path d="M120 27 L136 30.5" stroke="#FFFFFF" stroke-width="1" opacity="0.6"></path></svg>
+        </div>
+        <div class="sf-hud">
+          <p class="sf-hud-left"><span class="sf-title">Starfall Drift</span><span class="sf-score">Score <b class="sf-points">24,180</b></span></p>
+          <p class="sf-hud-right"><span class="sf-shield">Shield <i><b></b></i></span><span class="sf-sector">Sector 7 · Orion Reach</span></p>
+        </div>
+      </div>
+
+      <!-- What's running while the game is: a small dark Task Manager window, in the same dark glass as the caption
+           beside it. Binder isn't running; its watcher's memory is the release's measurement. -->
+      <div class="procs" aria-hidden="true">
+        <p class="procs-bar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4CC2FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h4l2.5-6 4 11 2.5-5H21"></path></svg>Task Manager<span>Processes</span></p>
+        <div class="procs-table">
+          <span class="procs-head">Name</span><span class="procs-head">CPU</span><span class="procs-head">Memory</span>
+          <span class="procs-name"><i class="procs-icon pc-thumb g1"></i><b><span>Starfall Drift</span><small>Your game</small></b></span><span>31%</span><span>6,240 MB</span>
+          <span class="procs-name procs-gone"><i class="procs-icon procs-logo"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></i><b><span>Binder</span><small>Not running</small></b></span><span>&ndash;</span><span>&ndash;</span>
+          <span class="procs-name procs-mark"><i class="procs-icon procs-logo"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></i><b><span>Binder game watcher</span><small>Waits for the game to close</small></b></span><span class="procs-mark">0%</span><span class="procs-mark"><!-- n:watcherStep -->0.6 MB<!-- /n --></span>
+        </div>
+      </div>
+
+      <div class="mock-panel">
+        <div class="mock-greeting" id="mock-greeting" aria-hidden="true">Good evening</div>
+        <div class="mock-search" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A9A9B2" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>Search 12 games</div>
+        <div class="mock-continue">
+          <div class="mock-continue-text" aria-hidden="true"><span>Continue playing</span><strong>Starfall Drift</strong></div>
+          <div class="mock-welcome" aria-hidden="true"><span>Welcome back</span><strong>Starfall Drift · 1 h 42 min</strong><small>10 hours played in total</small></div>
+          <button type="button" class="mock-play" id="mock-play">Play</button>
+        </div>
+        <div class="mock-chips" aria-hidden="true"><span class="on">All</span><span>Favorites</span><span>Recent</span><span>Steam</span></div>
+        <!-- Made-up games with drawn covers (styles.css, .g1 to .g12): not real games. -->
+        <div class="mock-grid" aria-hidden="true">
+          <span class="g1"><b>Starfall Drift</b></span><span class="g2"><b>Ember Keep</b></span><span class="g3"><b>Tidebreak</b></span><span class="g4"><b>Neon Circuit</b></span>
+          <span class="g5"><b>Frostline</b></span><span class="g6"><b>Hollow Pines</b></span><span class="g7"><b>Iron Courier</b></span><span class="g8"><b>Glowmoth</b></span>
+          <span class="g9"><b>Dune Runners</b></span><span class="g10"><b>Skyward Isles</b></span><span class="g11"><b>Rift Tactics</b></span><span class="g12"><b>Little Lantern</b></span>
+        </div>
+      </div>
+
+      <!-- Pinned to the desktop; fades as soon as the page scrolls (story.js sets is-scrolled). -->
+      <p class="story-cue" aria-hidden="true">Scroll to tidy this desktop<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></p>
+      <div class="mock-taskbar" aria-hidden="true">
+        <!-- Windows 11's taskbar, drawn generically (no real apps' logos): Start, Search, File Explorer (open), a browser,
+             Settings and a terminal; on the right the hidden-icons chevron, Binder's icon, network and volume, the clock. -->
+        <span class="mock-apps">
+          <span class="tb-start"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8.4" height="8.4" rx="1.2"></rect><rect x="12.6" y="3" width="8.4" height="8.4" rx="1.2"></rect><rect x="3" y="12.6" width="8.4" height="8.4" rx="1.2"></rect><rect x="12.6" y="12.6" width="8.4" height="8.4" rx="1.2"></rect></svg></span>
+          <span class="tb-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="m20 20-4.2-4.2"></path></svg>Search</span>
+          <span class="tb-app tb-open"><svg viewBox="0 0 48 48"><use href="#e-folder"></use></svg></span>
+          <span class="tb-app"><svg viewBox="0 0 24 24"><defs><linearGradient id="tb-web" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5CC8FF"></stop><stop offset="0.55" stop-color="#1A86E0"></stop><stop offset="1" stop-color="#0B4FA8"></stop></linearGradient></defs><circle cx="12" cy="12" r="9.5" fill="url(#tb-web)"></circle><g fill="none" stroke="#FFFFFF" stroke-width="1.15" stroke-opacity="0.85"><ellipse cx="12" cy="12" rx="4" ry="9.5"></ellipse><path d="M3 9h18M3 15h18"></path></g><path d="M5.5 6.5A9.5 9.5 0 0 1 12 2.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="1.4" stroke-linecap="round"></path></svg></span>
+          <span class="tb-app"><svg viewBox="0 0 24 24"><defs><linearGradient id="tb-gear" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A3ABB8"></stop><stop offset="1" stop-color="#5B6372"></stop></linearGradient></defs><path d="M19.48 10.17 L22.09 10.48 L22.09 13.52 L19.48 13.83 L18.58 15.99 L20.21 18.05 L18.05 20.21 L15.99 18.58 L13.83 19.48 L13.52 22.09 L10.48 22.09 L10.17 19.48 L8.01 18.58 L5.95 20.21 L3.79 18.05 L5.42 15.99 L4.52 13.83 L1.91 13.52 L1.91 10.48 L4.52 10.17 L5.42 8.01 L3.79 5.95 L5.95 3.79 L8.01 5.42 L10.17 4.52 L10.48 1.91 L13.52 1.91 L13.83 4.52 L15.99 5.42 L18.05 3.79 L20.21 5.95 L18.58 8.01Z" fill="url(#tb-gear)"></path><circle cx="12" cy="12" r="6.4" fill="url(#tb-gear)"></circle><circle cx="12" cy="12" r="3.3" fill="#E9ECF1"></circle></svg></span>
+          <span class="tb-app"><svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="3" fill="#2B2B33"></rect><path d="M6.5 9l3 3-3 3M11.5 15.5h5" fill="none" stroke="#E8E8EE" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        </span>
+        <span class="tb-glyph tb-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7 14 5-5 5 5"></path></svg></span>
+        <span class="mock-tray"><i class="cursor"><svg viewBox="0 0 20 28"><path d="M2 2 L2 22 L7.2 17.2 L10.6 25.2 L13.8 23.9 L10.4 16 L17.4 16 Z" fill="#FFFFFF" stroke="#111111" stroke-width="1.4" stroke-linejoin="round"></path></svg></i><svg width="18" height="18" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
+        <span class="tb-glyph tb-status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3.5 9.5a12 12 0 0 1 17 0M6.5 12.8a7.5 7.5 0 0 1 11 0M9.5 16a3 3 0 0 1 5 0"></path><circle cx="12" cy="19" r="0.9" fill="currentColor"></circle></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"></path><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"></path></svg></span>
+        <span class="mock-clock" id="mock-clock">21:14<br>17/11/2026</span>
+      </div>
+    </figure>
+
+    <div class="story-steps">
+      <div class="story-step story-step-hero" data-step="0">
+        <div class="window">
+          <div class="window-bar" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
+            <span>Binder</span>
+            <i class="window-min"></i><i class="window-max"></i><i class="window-close"></i>
+          </div>
+          <div class="window-body">
+            <h1 class="h1">A game launcher that stays out of your way</h1>
+            <p class="hero-lead">Binder keeps the games from Steam, Epic, GOG, the other launchers and your desktop shortcuts in one panel by the clock. Click a cover to play. While you play, Binder closes.</p>
+            <div class="hero-actions">
+              <a href="#download" class="button button-primary"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download for Windows</a>
+              <a href="#how" class="button button-secondary">How it works</a>
+            </div>
+            <p class="touch-hint" role="note"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5"></rect><path d="M8 20h8M12 16v4"></path></svg><span>Binder is an app for Windows PCs. To install it, open this page on your PC.</span></p>
+            <p class="hero-facts">Windows 10 and 11 (64-bit) · Free and open source · No account needed · Installs without admin rights<sup class="fn-ref"><a href="#fn-admin" aria-label="Footnote 1: what needs administrator rights">1</a></sup></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="story-step" data-step="1" id="how">
+        <div class="caption">
+          <div class="caption-pic cp-desk" aria-hidden="true"><span class="cp-ico"><svg viewBox="0 0 48 48"><use href="#e1"></use></svg></span><span class="cp-ico"><svg viewBox="0 0 48 48"><use href="#e2"></use></svg></span><span class="cp-ico"><svg viewBox="0 0 48 48"><use href="#e4"></use></svg></span><svg class="cp-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"></path></svg><span class="cp-logo"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span></div>
+          <h2 class="h3">Your game shortcuts move into Binder</h2>
+          <p>You tick which shortcuts are games. Binder moves them into its own folder and can put them back on the desktop at any time. Your other icons stay on the desktop.</p>
+          <p class="caption-progress" aria-hidden="true"><i></i><i></i><i></i><i></i></p>
+        </div>
+      </div>
+
+      <div class="story-step" data-step="2">
+        <div class="caption">
+          <div class="caption-pic cp-shelf" aria-hidden="true"><i class="pc-thumb g1"></i><i class="pc-thumb g2"></i><i class="pc-thumb g3"></i><i class="pc-thumb g4"></i><span class="cp-tray"><span class="cp-tray-icon"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span><span>21:14</span></span></div>
+          <h2 class="h3">Every launcher's games, by the clock</h2>
+          <p>Binder finds what you've installed and keeps the list up to date. Open it with the icon next to the clock or Win + Shift + G, and click a cover to play.</p>
+          <p class="caption-list">Steam · Epic Games · GOG · EA app · Ubisoft Connect · Xbox app · Rockstar Games Launcher · your desktop shortcuts · any game you add</p>
+          <p class="caption-progress" aria-hidden="true"><i></i><i></i><i></i><i></i></p>
+        </div>
+      </div>
+
+      <div class="story-step" data-step="3">
+        <div class="caption caption-dark">
+          <div class="caption-pic cp-procs" aria-hidden="true"><p class="cp-gone"><span class="cp-mini"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span><span class="cp-strike">Binder</span><span>Not running</span></p><p class="cp-mark"><span class="cp-mini"><svg viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span><b>Binder game watcher</b><span>0% CPU</span></p></div>
+          <h2 class="h3">While you play, Binder is closed</h2>
+          <p>Ten seconds after the game starts, Binder quits. Only a small helper stays to notice when the game ends. Once it has found the game, it just waits and uses no processor time.</p>
+          <p class="caption-progress" aria-hidden="true"><i></i><i></i><i></i><i></i></p>
+        </div>
+      </div>
+
+      <div class="story-step" data-step="4">
+        <div class="caption">
+          <div class="caption-pic cp-welcome" aria-hidden="true"><i class="pc-thumb g1"></i><span class="cp-welcome-text"><small>Welcome back</small><b>Starfall Drift · 1 h 42 min</b></span><span class="cp-play">Play</span></div>
+          <h2 class="h3">When the game closes, Binder comes back</h2>
+          <p>It adds the session to the game's playtime and shows it at the top. If you'd rather it stayed closed, turn this off in Settings.</p>
+          <a href="#download" class="button button-primary">Download for Windows</a>
+          <p class="caption-progress" aria-hidden="true"><i></i><i></i><i></i><i></i></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What it looks like: the real app, captured by CI (.github/workflows/site-screenshots.yml) with the website's
+       made-up games; tests/Screenshots/make-site-images.mjs turns a run into these files. Light or dark like the
+       visitor's system. -->
+  <section id="screenshots" class="section section-alt" aria-labelledby="screenshots-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="h2" id="screenshots-title">What it looks like</h2>
+        <p class="lead">Binder itself, with made-up games. It follows your Windows colours, light or dark.</p>
+      </div>
+      <div class="shots">
+        <figure class="shot">
+          <picture>
+            <source srcset="screenshots/dark-welcome-back.webp" media="(prefers-color-scheme: dark)">
+            <img src="screenshots/light-welcome-back.webp" width="544" height="999" loading="lazy" decoding="async" alt="Binder after a game closed: Welcome back, Starfall Drift, 1 hour 50 minutes played, above a grid of game covers.">
+          </picture>
+          <figcaption><strong>Back from a game</strong>The session you just played, then all your games.</figcaption>
+        </figure>
+        <figure class="shot">
+          <picture>
+            <source srcset="screenshots/dark-detail.webp" media="(prefers-color-scheme: dark)">
+            <img src="screenshots/light-detail.webp" width="544" height="999" loading="lazy" decoding="async" alt="The page of the game Starfall Drift: Play, playtime, last played, size on disk and a chart of the last eight weeks.">
+          </picture>
+          <figcaption><strong>A game’s page</strong>Playtime by week, recent sessions and the game’s settings.</figcaption>
+        </figure>
+        <figure class="shot">
+          <picture>
+            <source srcset="screenshots/dark-free-up-space.webp" media="(prefers-color-scheme: dark)">
+            <img src="screenshots/light-free-up-space.webp" width="544" height="999" loading="lazy" decoding="async" alt="Free up space: the games on drive C as tiles sized by the space they use, and a suggestion to uninstall Dune Runners.">
+          </picture>
+          <figcaption><strong>Free up space</strong>What you could remove to fit a new game.</figcaption>
+        </figure>
+        <figure class="shot">
+          <picture>
+            <source srcset="screenshots/dark-game-mode.webp" media="(prefers-color-scheme: dark)">
+            <img src="screenshots/light-game-mode.webp" width="544" height="999" loading="lazy" decoding="async" alt="The Game mode page: the best performance power mode, game priority and background services to pause, each with a switch.">
+          </picture>
+          <figcaption><strong>Game mode</strong>What Windows changes while you play, item by item.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- How much it uses: the numbers between the n: markers are written for each release (scripts/site-numbers.ps1). -->
+  <section class="section" aria-labelledby="usage-title">
+    <div class="wrap split">
+      <div class="split-head">
+        <h2 class="h2" id="usage-title">How much it uses</h2>
+        <p class="footnote"><!-- n:measured -->Binder 0.2.1, measured on 21 November 2026 on a GitHub Actions test machine (Windows Server 2025 Datacenter, 4 cores, 16 GB), with Steam covers. Memory as Task Manager shows it<!-- /n -->. Your numbers will vary with the size of your library.</p>
+      </div>
+      <!-- Each bar is drawn to scale against the open panel (usage.js reads the numbers; fixed proportions without it). -->
+      <div class="usage">
+        <p class="usage-scale"><i aria-hidden="true"></i>Bars compare memory with Binder open</p>
+        <ul class="usage-list">
+          <li class="usage-item">
+            <p class="usage-when">Binder is open<span>Processor: only while you use it</span></p>
+            <p class="usage-num"><strong data-mb><!-- n:open -->51<!-- /n --></strong> MB</p>
+            <p class="usage-bar" aria-hidden="true"><i></i></p>
+            <p class="usage-note"><!-- n:openNote -->With 9 games; 73 MB with 100<!-- /n --><span class="usage-share">The full bar</span></p>
+          </li>
+          <li class="usage-item">
+            <p class="usage-when">Closed, waiting by the clock<span>Processor: none</span></p>
+            <p class="usage-num"><strong data-mb><!-- n:closed -->1.3<!-- /n --></strong> MB</p>
+            <p class="usage-bar" aria-hidden="true"><i></i></p>
+            <p class="usage-note">Binder's window is closed, ready to open<span class="usage-share"></span></p>
+          </li>
+          <li class="usage-item usage-game">
+            <p class="usage-when">A game is running<span>Processor: none once the game is found</span></p>
+            <p class="usage-num"><strong data-mb><!-- n:watcher -->0.6<!-- /n --></strong> MB</p>
+            <p class="usage-bar" aria-hidden="true"><i></i></p>
+            <p class="usage-note">The helper only; Binder itself is closed<span class="usage-share"></span></p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features: three with pictures drawn like the app's own screens, the rest as one list -->
+  <section id="features" class="section section-alt" aria-label="Features">
+    <div class="wrap">
+      <div class="features">
+        <article class="feature">
+          <!-- Each picture is a slice of the story's desktop with Binder showing that feature. -->
+          <div class="feature-picture scene" aria-hidden="true">
+            <div class="pc-window pc-space">
+              <p class="pc-title"><svg width="14" height="14" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg><span>Free up space</span></p>
+              <p class="pc-need"><span>Space needed</span><b>60 GB</b></p>
+              <p class="pc-drive"><span>Local Disk (C:)</span><span>48 of 60 GB found</span></p>
+              <p class="pc-bar"><i class="used"></i><i class="pick"></i><i class="pick2"></i></p>
+              <p class="pc-row"><i class="pc-thumb g9"></i><span>Dune Runners<small>Last played in March</small></span><b>42 GB</b></p>
+              <p class="pc-row"><i class="pc-thumb g7"></i><span>Iron Courier<small>Not played yet</small></span><b>27 GB</b></p>
+            </div>
+            <p class="scene-taskbar"><span class="scene-tray"><svg width="14" height="14" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span><span class="scene-clock">21:14</span></p>
+          </div>
+          <h2 class="h3">Make room for a new game</h2>
+          <p>Enter the size of the game you want to install. Binder suggests what you could remove on each drive, the games you play least first. Each one is uninstalled by its own launcher; Binder never deletes game files itself.</p>
+        </article>
+        <article class="feature">
+          <div class="feature-picture scene" aria-hidden="true">
+            <div class="pc-window pc-crash">
+              <i class="pc-thumb g4"></i>
+              <div>
+                <p class="pc-crash-title"><svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#E5484D"></circle><path d="M12 7v6.5M12 16.5v.5" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"></path></svg>Neon Circuit crashed</p>
+                <p>Likely cause: the graphics driver stopped responding.</p>
+                <p class="pc-try">Try updating the driver, then lower the graphics preset.</p>
+              </div>
+            </div>
+            <p class="scene-taskbar"><span class="scene-tray"><svg width="14" height="14" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span><span class="scene-clock">21:14</span></p>
+          </div>
+          <h2 class="h3">See why a game crashed</h2>
+          <p>If a game crashes, Binder shows what Windows recorded about it, with a likely cause and things to try. It's a best guess from Windows' event log, not a guaranteed diagnosis.</p>
+        </article>
+        <article class="feature">
+          <div class="feature-picture scene" aria-hidden="true">
+            <div class="pc-window pc-week">
+              <p class="pc-week-head"><span>This week</span><b>9 h 40 min</b></p>
+              <p class="pc-week-bars"><i style="--h: 30%"></i><i style="--h: 55%"></i><i style="--h: 12%"></i><i style="--h: 70%"></i><i style="--h: 40%"></i><i class="now" style="--h: 100%"></i><i style="--h: 4%"></i></p>
+              <p class="pc-week-days"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span class="now">S</span><span>S</span></p>
+              <p class="pc-week-top"><i class="pc-thumb g1"></i><span>Most played: Starfall Drift</span></p>
+            </div>
+            <p class="scene-taskbar"><span class="scene-tray"><svg width="14" height="14" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span><span class="scene-clock">21:14</span></p>
+          </div>
+          <h2 class="h3">See your playtime</h2>
+          <p>See how long you've played each game, by week and month. Binder counts the sessions you start from Binder.</p>
+        </article>
+      </div>
+      <div class="split also">
+        <h2 class="h3">More in Binder</h2>
+        <ul class="also-list">
+          <li><strong>Game mode</strong>: if you turn it on, Binder can switch Windows to its best performance power mode, pause a few background services and give the game's network traffic priority while you play. Everything is put back when the game closes. <a href="docs.html#game-mode">What Game mode changes</a></li>
+          <li><strong>A tidy desktop</strong>: Binder keeps the shortcuts you moved in its own folder and can put them back anytime.</li>
+          <li><strong>Keyboard and screen readers</strong>: type to search, use the arrow keys to move and Enter to play. Every control is labelled for screen readers.</li>
+          <li><strong>Works like Windows</strong>: open it from the notification area or with Win + Shift + G. It uses your accent colour, light or dark mode and display scaling.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Privacy -->
+  <section id="privacy" class="section" aria-labelledby="privacy-title">
+    <div class="wrap split">
+      <h2 class="h2" id="privacy-title">Your data stays on your PC</h2>
+      <div class="privacy">
+        <p class="lead">Binder only connects to the internet to download cover art for Steam games, from Steam's servers, and once a day to look for a new version on GitHub (you can turn that off). It sends nothing about you or your PC, and installs only updates signed by its maker.</p>
+        <ul class="privacy-list">
+          <li>No account, no telemetry, no analytics</li>
+          <li>Installs for your account only, without admin rights<sup class="fn-ref"><a href="#fn-admin" aria-label="Footnote 1: what needs administrator rights">1</a></sup></li>
+          <li>Your library, playtime and settings are saved in your user folder (AppData)</li>
+          <li>Uninstall from Settings › Apps. Your shortcuts go back on the desktop, and you choose whether to keep your data</li>
+        </ul>
+        <p class="footnote" id="fn-admin"><sup>1</sup> Binder and its installer run with your account's normal rights. Only Game mode's optional admin helper asks for administrator rights: once when you choose <strong>Allow…</strong> to let Game mode pause background services and set network priority, again if a Binder update changes the helper, and when you remove it or uninstall Binder. <a href="docs.html#gm-helper">What the helper does</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="section section-alt">
+    <div class="wrap faq-grid">
+      <div class="section-head faq-head">
+        <h2 class="h2">Frequently asked questions</h2>
+        <p class="lead">What Binder changes on your PC, item by item, is in the <a href="docs.html">documentation</a>.</p>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item" open>
+          <summary>Will it slow down my games?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p>It shouldn't. Binder closes 10 seconds after the game starts. Only the helper keeps running, and it uses no processor time once it has found the game. Its memory is under <a href="#usage-title">How much it uses</a>.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Does it delete my desktop shortcuts?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p>No. The shortcuts you choose are moved into Binder's own folder, and you can put them back anytime. Uninstalling Binder puts them back too.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Do I still need Steam, Epic and the others?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p>Yes. Binder starts each game through the launcher it belongs to, so saves, updates and friends lists work as before.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Why does Windows warn me when I run the installer?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p>The installer isn't code-signed yet, so SmartScreen may show "Windows protected your PC". If you downloaded it from this page, choose More info, then Run anyway.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What if Binder doesn't notice the game?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p>If the helper can't find the game within about 3 minutes, Binder opens again and tells you. You can then pick the game's process in its settings so it's found next time.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Which launchers aren't supported yet?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p>Battle.net, Riot, Amazon Games, itch.io, Humble and Meta are planned but not there yet. Until then, add those games yourself or import their desktop shortcuts. Xbox controllers work already; PlayStation and Switch controllers are planned.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Where does Binder keep my data?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p>On your PC, in your user folder: your library, playtime, settings and imported shortcuts in %APPDATA%\Binder, and the cover pictures in %LOCALAPPDATA%\Binder. When you uninstall Binder, it asks whether to delete them.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What does it cost?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p>Nothing, it's free. Binder is open source under the GNU GPL, version 3: anyone can read, change and share <a href="https://github.com/JannisJostBot/binder">the code on GitHub</a>, and changed versions stay open too.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How does it compare with Playnite, GOG GALAXY and others?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p>They do more: games you own but haven't installed, emulators, themes, add-ons, full-screen modes. Binder is smaller, closes while you play and is much younger. The <a href="compare.html">comparison</a> puts them side by side, with what Binder doesn't do.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Before you download: the AI disclaimer and "Not affiliated", worded as they are -->
+  <section id="disclaimer" class="section section-tight" aria-labelledby="disclaimer-title">
+    <div class="wrap wrap-narrow">
+      <h2 id="disclaimer-title" class="h2 h2-small">Before you download</h2>
+      <div class="notes">
+        <div class="note note-caution" role="note">
+          <span class="note-icon"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><path d="M10.5 3.5c.6 3.6 2 5 5.6 5.6-3.6.6-5 2-5.6 5.6-.6-3.6-2-5-5.6-5.6 3.6-.6 5-2 5.6-5.6z"></path><path d="M17.5 14c.3 1.7.9 2.3 2.6 2.6-1.7.3-2.3.9-2.6 2.6-.3-1.7-.9-2.3-2.6-2.6 1.7-.3 2.3-.9 2.6-2.6z"></path></svg></span>
+          <div class="note-text">
+            <strong>AI-generated code, provided as is.</strong>
+        <span>Binder was built with Claude, Anthropic's AI. Its author designed and directed it and tests every version on real PCs; the code itself was written by the AI and isn't reviewed line by line by a human developer.</span>
+        <span>It's provided "as is", without warranty of any kind. In no event shall the author or anyone involved be liable for any claim, damages or other liability arising from its use.</span>
+          </div>
+        </div>
+        <div class="note" role="note">
+          <span class="note-icon"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="13.25" width="10" height="5.5" rx="2.75" transform="rotate(-45 7.5 16)"></rect><rect x="11.5" y="5.25" width="10" height="5.5" rx="2.75" transform="rotate(-45 16.5 8)"></rect><path d="M8.6 8.6L7 7M15.4 15.4L17 17"></path></svg></span>
+          <div class="note-text">
+            <strong>Not affiliated with any game store</strong>
+        <span>Binder isn't affiliated with or endorsed by Valve, Epic Games, CD PROJEKT (GOG), Electronic Arts, Ubisoft, Rockstar Games, Microsoft or any other company whose launchers it works with. Their names and icons belong to their owners.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download -->
+  <section id="download" class="section">
+    <div class="wrap">
+      <div class="download-panel">
+        <div class="download-cards" aria-hidden="true"><span></span><span></span><span></span></div>
+        <span class="download-logo"><svg aria-hidden="true" width="80" height="80" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
+        <h2 class="h2">Download Binder</h2>
+        <p class="touch-hint touch-hint-download" role="note"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.5"></rect><path d="M8 20h8M12 16v4"></path></svg><span>Binder is an app for Windows PCs. To install it, open this page on your PC.</span></p>
+        <a class="button button-light download-button" id="download-link" href="https://github.com/JannisJostBot/binder/releases/download/v0.2.1/BinderSetup-0.2.1.exe" data-version="0.2.1" data-flagged="1" data-engines="69" data-scanned="2026-11-16" data-sha256="e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10.5l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download for Windows
+        </a>
+        <p class="download-meta"><span id="download-version">Version 0.2.1 · 34 MB</span> · Windows 10 and 11, 64-bit · <a href="releases.html">Release notes and earlier versions</a> · <a href="https://github.com/JannisJostBot/binder">Source code</a></p>
+        <!-- The link, the version line and the VirusTotal box hold the last release's values; release.js replaces them
+             with the latest release on GitHub when the page opens (the box from the release notes' "VirusTotal"
+             section, .github/workflows/virustotal.yml). Like the notes, the box says how many engines flagged the
+             setup, not which; the report lists them. -->
+        <div class="scan" id="scan">
+          <span class="scan-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg></span>
+          <div class="scan-text">
+            <p class="scan-title" id="scan-title">VirusTotal: 1 of 69 antivirus engines flagged this installer</p>
+            <p id="scan-detail">Installers that aren't code-signed yet are sometimes flagged. Scanned on <time id="scan-date" datetime="2026-11-16">16 November 2026</time> · <a id="scan-report" href="https://www.virustotal.com/gui/file/e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5">Full report</a></p>
+            <p class="scan-hash">SHA-256 <code id="scan-hash">e991075c636aca3c2c0abb55d52d2c1ee816a02b76894ac617cea82aa09b80b5</code></p>
+          </div>
+        </div>
+        <p class="download-text">Run the installer and follow the short setup: pick your launchers and, if you like, which desktop shortcuts to tidy away. Binder tells you when there's an update, or you can run a newer installer yourself, even while a game is running.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <a href="#top" class="brand brand-small" aria-label="Binder home">
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg>
+        <span>Binder</span>
+      </a>
+      <nav aria-label="Footer" class="footer-nav">
+        <a href="#disclaimer">Disclaimer</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#faq">FAQ</a>
+        <a href="docs.html">Documentation</a>
+        <a href="compare.html">Compare</a>
+        <a href="releases.html">Releases</a>
+        <a href="https://github.com/JannisJostBot/binder">Source code</a>
+      </nav>
+      <span class="footer-copy">© 2026 Jannis Jost</span>
+    </div>
+  </footer>
+  <!-- Shown by download.js once a download has started (download.js fills in the version and its VirusTotal result).
+       Styled as part of this website (the download panel's blue, the logo), not like a Windows dialog, so it can't be
+       taken for a message from Windows. -->
+  <dialog class="dl-dialog" id="download-dialog" aria-labelledby="download-dialog-title" aria-describedby="download-dialog-text">
+    <div class="dl-dialog-head">
+      <span class="dl-dialog-logo"><svg aria-hidden="true" width="44" height="44" viewBox="0 0 48 48"><rect x="11" y="8" width="20" height="28" rx="3" fill="url(#ls)" transform="rotate(-14 21 40)"></rect><rect x="17" y="8" width="20" height="28" rx="3" fill="url(#lm)" transform="rotate(10 27 40)"></rect><rect x="14" y="10" width="20" height="28" rx="3" fill="url(#la)"></rect><path d="M21 18.5v11l8.5-5.5z" fill="#FFFFFF"></path></svg></span>
+      <h2 class="dl-dialog-title" id="download-dialog-title">Binder <span data-part="version">0.2.1</span> is downloading</h2>
+      <button type="button" class="dl-dialog-x" data-part="close" aria-label="Close"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+    </div>
+    <div class="dl-dialog-body">
+      <p id="download-dialog-text">Before you run it: Binder's setup isn't code-signed yet, so Windows may show its own warning, "Windows protected your PC" from Microsoft Defender SmartScreen, and your antivirus app may warn about the file or remove it. To run it anyway, select More info, then Run anyway.</p>
+      <div class="dl-dialog-scan">
+        <span class="dl-dialog-scan-icon"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"></path></svg></span>
+        <div class="dl-dialog-scan-text">
+          <p class="dl-dialog-scan-title" data-part="scan-title">VirusTotal</p>
+          <p data-part="scan-detail"></p>
+          <p class="dl-dialog-scan-hash">SHA-256 <code data-part="scan-hash"></code></p>
+        </div>
+      </div>
+      <p class="dl-dialog-caution"><strong>If you're not comfortable with that, don't install Binder.</strong> Delete the downloaded file instead: nothing has been installed yet.</p>
+      <button type="button" class="button button-primary dl-dialog-ok" data-part="close" autofocus>Got it</button>
+    </div>
+  </dialog>
+</div>
+</body>
+</html>
