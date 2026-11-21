@@ -3470,7 +3470,7 @@ Calm: efficiency mode while you play</value>
     <comment>Setting card title (Settings, When a game starts): holding the panel's keyboard shortcut during a game ends the game. Also the name of its drop-down for screen readers.</comment>
   </data>
   <data name="EndStuckToolTip" xml:space="preserve">
-    <value>Hold the shortcut for 2 seconds during a game to end it. A short press does nothing.</value>
+    <value>Hold the shortcut for 2.5 seconds during a game to end it. A short press does nothing.</value>
     <comment>Tooltip of the End a stuck game card. "Shortcut" = the panel's keyboard shortcut, e.g. Win+Shift+G.</comment>
   </data>
   <data name="EndStuckHold" xml:space="preserve">

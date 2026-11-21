@@ -5,47 +5,43 @@ namespace Binder.Watcher;
 /// <summary>
 /// The sound of the hold (spec §28, board 44, "Rising hum" with "Top note"), for games the ring can't be seen over.
 /// A quiet low hum swells in as the ring appears, and each of the ring's four parts adds a voice above it as it starts
-/// filling (D2, D3, A3, D4, every half second) while a low-pass opens from 280 Hz to 2.4 kHz. Full: the voices stop
-/// growing and ring out, and a soft high D (D5) blooms on top. Let go early: the hum sinks away (<see cref="Cancel"/>).
-/// The board's Web Audio numbers, sample by sample, in mono. Made in native memory when it starts (a few ms, about
-/// 200 KB, no managed arrays) and played at the system sounds volume with PlaySound (winmm.dll); freed when it's
-/// over or replaced.
+/// filling (D2, D3, A3, D4) while a low-pass opens from 280 Hz to 2.4 kHz. Full: the voices stop growing and ring out,
+/// and a soft high D (D5) blooms on top. Let go early: the hum sinks away from where it is (<see cref="Cancel"/>).
+/// The board's Web Audio numbers, sample by sample, in mono. Rendered in native memory when the ring appears (a few
+/// ms, about 220 KB, no managed arrays) and played as one buffer through waveOut (winmm.dll), so letting go fades the
+/// samples not yet played in place: no second sound, no switch, no click. Freed when it's over.
 /// </summary>
 internal static unsafe partial class HoldSound
 {
     public const int SampleRate = 22050; // the hum is low-passed under 2.4 kHz and the top note is 587 Hz
-    public const double Seconds = 4.5, FullAt = 2.0, CancelSeconds = 0.6;
+    public const double FullAt = EndHold.HoldMs / 1000.0, Part = FullAt / EndHold.Segments, Seconds = FullAt + 2.5;
+    /// <summary>Letting go: how far ahead of what's playing the fade starts (what Windows may already have taken), and how long it takes.</summary>
+    public const double FadeAhead = 0.08, FadeSeconds = 0.35;
 
     private readonly record struct Voice(double Frequency, double At, double Level, double Attack, double Harmonic, bool Filtered, double Release);
 
     // board 44: the hum's voices (one per part of the ring), then the top note when it's full.
     private static readonly Voice[] Voices =
     [
-        new(73.42, 0.0, 0.14, 0.25, 0.3, true, 0.35),
-        new(146.83, 0.5, 0.09, 0.25, 0.3, true, 0.35),
-        new(220.00, 1.0, 0.07, 0.25, 0.3, true, 0.35),
-        new(293.66, 1.5, 0.06, 0.25, 0.3, true, 0.35),
+        new(73.42, 0 * Part, 0.14, 0.25, 0.3, true, 0.35),
+        new(146.83, 1 * Part, 0.09, 0.25, 0.3, true, 0.35),
+        new(220.00, 2 * Part, 0.07, 0.25, 0.3, true, 0.35),
+        new(293.66, 3 * Part, 0.06, 0.25, 0.3, true, 0.35),
         new(587.33, FullAt, 0.075, 0.08, 0.1, false, 0.55),
     ];
     // The board's output gain, and Web Audio's equal-power pan of a centred mono voice (each ear gets cos 45°).
-    private const double Master = 0.9 * 0.70710678, CutFrom = 280, CutTo = 2400, CutQ = 0.5;
-    private const double EndFade = 0.3, CancelTau = 0.1, Warm = 0.05;
+    private const double Master = 0.9 * 0.70710678, CutFrom = 280, CutTo = 2400, CutQ = 0.5, EndFade = 0.3;
 
-    /// <summary>
-    /// Renders <paramref name="into"/>.Length samples starting at <paramref name="from"/> s into the hold. With a
-    /// <paramref name="fadeTau"/>, everything fades out from there (the sound when it's let go early); otherwise the
-    /// last <see cref="EndFade"/> s of a full-length render fade to silence. Pure, unit-tested.
-    /// </summary>
-    internal static void Render(double from, double fadeTau, Span<short> into)
+    /// <summary>Renders the whole hold into <paramref name="into"/>, its last <see cref="EndFade"/> s fading to silence. Pure, unit-tested.</summary>
+    internal static void Render(Span<short> into)
     {
         double cut = -1;
         Biquad lp = default;
-        int warm = from > 0 ? (int)(Warm * SampleRate) : 0; // the filter settles before the first sample kept
         int total = into.Length;
-        for (int k = -warm; k < total; k++)
+        for (int k = 0; k < total; k++)
         {
-            double t = from + (double)k / SampleRate;
-            double c = t <= 0 ? CutFrom : t >= FullAt ? CutTo : CutFrom * Math.Pow(CutTo / CutFrom, t / FullAt);
+            double t = (double)k / SampleRate;
+            double c = t >= FullAt ? CutTo : CutFrom * Math.Pow(CutTo / CutFrom, t / FullAt);
             if (Math.Abs(c - cut) > 1) { lp.SetLowpass(c, CutQ); cut = c; }
             double hum = 0, top = 0;
             foreach (var v in Voices)
@@ -53,12 +49,22 @@ internal static unsafe partial class HoldSound
                 double s = Tone(v, t);
                 if (v.Filtered) hum += s; else top += s;
             }
-            double y = lp.Process(hum) + top;
-            if (k < 0) continue;
             double g = Master;
-            if (fadeTau > 0) g *= Math.Exp(-(double)k / SampleRate / fadeTau);
-            else if (total - k < EndFade * SampleRate) g *= (total - k) / (EndFade * SampleRate);
-            into[k] = (short)Math.Clamp(Math.Round(y * g * 32767), -32768, 32767);
+            if (total - k < EndFade * SampleRate) g *= (total - k) / (EndFade * SampleRate);
+            into[k] = (short)Math.Clamp(Math.Round((lp.Process(hum) + top) * g * 32767), -32768, 32767);
+        }
+    }
+
+    /// <summary>
+    /// Fades <paramref name="samples"/> out from <paramref name="from"/> over <paramref name="length"/> samples (a
+    /// raised cosine: it leaves the level smoothly, so nothing clicks) and silences the rest. Pure, unit-tested.
+    /// </summary>
+    internal static void FadeOut(Span<short> samples, int from, int length)
+    {
+        for (int k = Math.Max(from, 0); k < samples.Length; k++)
+        {
+            int i = k - from;
+            samples[k] = i >= length ? (short)0 : (short)Math.Round(samples[k] * 0.5 * (1 + Math.Cos(Math.PI * i / length)));
         }
     }
 
@@ -102,48 +108,80 @@ internal static unsafe partial class HoldSound
         }
     }
 
-    // ---- Playing (the system events thread starts and stops it; the main thread waits for its end) -----------
+    // ---- Playing (the system events thread starts and fades it; the main thread waits for its end) ------------
 
     private static readonly Lock Gate = new();
-    private static byte* _playing;
+    private static IntPtr _device;
+    private static byte* _block; // the WAVEHDR, then the samples: native memory, read by Windows while it plays
+    private static int _count;
     private static long _endsAt;
 
     /// <summary>The ring appeared: the whole hold, its ending included.</summary>
-    public static void Start() => Play(0, Seconds, 0);
-
-    /// <summary>Let go (or nothing was ended) at <paramref name="progress"/>: the hum from there, sinking away.</summary>
-    public static void Cancel(double progress)
+    public static void Start()
     {
-        lock (Gate) if (_playing is null) return;
-        Play(Math.Clamp(progress, 0, 1) * FullAt * 0.999, CancelSeconds, CancelTau);
-    }
-
-    private static void Play(double from, double seconds, double fadeTau)
-    {
-        int samples = (int)(seconds * SampleRate), size = 44 + samples * 2;
-        var buffer = (byte*)NativeMemory.Alloc((nuint)size);
-        WriteHeader(new Span<byte>(buffer, 44), samples);
-        Render(from, fadeTau, new Span<short>(buffer + 44, samples));
+        Release();
+        int count = (int)(Seconds * SampleRate);
+        var block = (byte*)NativeMemory.AllocZeroed((nuint)(sizeof(WAVEHDR) + count * 2));
+        var header = (WAVEHDR*)block;
+        var samples = (short*)(block + sizeof(WAVEHDR));
+        Render(new Span<short>(samples, count));
+        var format = new WAVEFORMATEX
+        {
+            wFormatTag = 1, nChannels = 1, nSamplesPerSec = SampleRate, nAvgBytesPerSec = SampleRate * 2, nBlockAlign = 2, wBitsPerSample = 16,
+        };
+        IntPtr device;
+        if (waveOutOpen(&device, WAVE_MAPPER, &format, 0, 0, CALLBACK_NULL) != 0)
+        {
+            NativeMemory.Free(block); // no audio device: the ring alone
+            return;
+        }
+        header->lpData = (IntPtr)samples;
+        header->dwBufferLength = (uint)(count * 2);
+        if (waveOutPrepareHeader(device, header, (uint)sizeof(WAVEHDR)) != 0 || waveOutWrite(device, header, (uint)sizeof(WAVEHDR)) != 0)
+        {
+            waveOutReset(device);
+            waveOutUnprepareHeader(device, header, (uint)sizeof(WAVEHDR));
+            waveOutClose(device);
+            NativeMemory.Free(block);
+            return;
+        }
         lock (Gate)
         {
-            // Starting a sound stops the one before it, so its buffer is free once this one has started.
-            bool started = PlaySoundW(buffer, IntPtr.Zero, SND_MEMORY | SND_ASYNC | SND_NODEFAULT | SND_SYSTEM);
-            if (_playing is not null) NativeMemory.Free(_playing);
-            _playing = started ? buffer : null;
-            if (!started) NativeMemory.Free(buffer);
-            _endsAt = Environment.TickCount64 + (long)(seconds * 1000);
+            _device = device;
+            _block = block;
+            _count = count;
+            _endsAt = Environment.TickCount64 + (long)(Seconds * 1000);
         }
     }
 
-    /// <summary>Stops it if it's still playing and frees its buffer.</summary>
+    /// <summary>Let go (or nothing was ended): the hum sinks away from where it's playing.</summary>
+    public static void Cancel()
+    {
+        lock (Gate)
+        {
+            if (_device == IntPtr.Zero) return;
+            var time = new MMTIME { wType = TIME_SAMPLES };
+            long played = waveOutGetPosition(_device, &time, (uint)sizeof(MMTIME)) == 0 && time.wType == TIME_SAMPLES ? time.u : 0;
+            int from = (int)Math.Min(_count, played + (long)(FadeAhead * SampleRate));
+            int length = (int)(FadeSeconds * SampleRate);
+            FadeOut(new Span<short>(_block + sizeof(WAVEHDR), _count), from, length);
+            _endsAt = Math.Min(_endsAt, Environment.TickCount64 + (long)((FadeAhead + FadeSeconds) * 1000) + 50);
+        }
+    }
+
+    /// <summary>Stops it if it's still playing and frees it.</summary>
     public static void Release()
     {
         lock (Gate)
         {
-            if (_playing is null) return;
-            PlaySoundW(null, IntPtr.Zero, 0);
-            NativeMemory.Free(_playing);
-            _playing = null;
+            if (_device == IntPtr.Zero) return;
+            waveOutReset(_device);
+            waveOutUnprepareHeader(_device, (WAVEHDR*)_block, (uint)sizeof(WAVEHDR));
+            waveOutClose(_device);
+            NativeMemory.Free(_block);
+            _device = IntPtr.Zero;
+            _block = null;
+            _count = 0;
         }
     }
 
@@ -151,31 +189,58 @@ internal static unsafe partial class HoldSound
     public static void WaitUntilDone()
     {
         long left;
-        lock (Gate) left = _playing is null ? 0 : _endsAt - Environment.TickCount64;
+        lock (Gate) left = _device == IntPtr.Zero ? 0 : _endsAt - Environment.TickCount64;
         if (left > 0) Thread.Sleep((int)Math.Min(left, (long)(Seconds * 1000)));
         Release();
     }
 
-    internal static void WriteHeader(Span<byte> span, int samples)
+    private const uint WAVE_MAPPER = uint.MaxValue, CALLBACK_NULL = 0, TIME_SAMPLES = 2;
+
+    [StructLayout(LayoutKind.Sequential, Pack = 2)]
+    private struct WAVEFORMATEX
     {
-        int dataSize = samples * 2;
-        "RIFF"u8.CopyTo(span);
-        BitConverter.TryWriteBytes(span[4..], 36 + dataSize);
-        "WAVEfmt "u8.CopyTo(span[8..]);
-        BitConverter.TryWriteBytes(span[16..], 16);             // fmt chunk size
-        BitConverter.TryWriteBytes(span[20..], (short)1);       // PCM
-        BitConverter.TryWriteBytes(span[22..], (short)1);       // mono
-        BitConverter.TryWriteBytes(span[24..], SampleRate);
-        BitConverter.TryWriteBytes(span[28..], SampleRate * 2); // bytes a second
-        BitConverter.TryWriteBytes(span[32..], (short)2);       // block align
-        BitConverter.TryWriteBytes(span[34..], (short)16);      // bits per sample
-        "data"u8.CopyTo(span[36..]);
-        BitConverter.TryWriteBytes(span[40..], dataSize);
+        public ushort wFormatTag, nChannels;
+        public uint nSamplesPerSec, nAvgBytesPerSec;
+        public ushort nBlockAlign, wBitsPerSample, cbSize;
     }
 
-    private const uint SND_ASYNC = 0x1, SND_NODEFAULT = 0x2, SND_MEMORY = 0x4, SND_SYSTEM = 0x200000;
+    [StructLayout(LayoutKind.Sequential)]
+    private struct WAVEHDR
+    {
+        public IntPtr lpData;
+        public uint dwBufferLength, dwBytesRecorded;
+        public nuint dwUser;
+        public uint dwFlags, dwLoops;
+        public IntPtr lpNext;
+        public nuint reserved;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MMTIME
+    {
+        public uint wType;
+        public uint u;
+        private uint _rest; // the union's larger members (SMPTE)
+    }
 
     [LibraryImport("winmm.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool PlaySoundW(void* sound, IntPtr module, uint flags);
+    private static partial uint waveOutOpen(IntPtr* device, uint deviceId, WAVEFORMATEX* format, nuint callback, nuint instance, uint flags);
+
+    [LibraryImport("winmm.dll")]
+    private static partial uint waveOutPrepareHeader(IntPtr device, WAVEHDR* header, uint size);
+
+    [LibraryImport("winmm.dll")]
+    private static partial uint waveOutWrite(IntPtr device, WAVEHDR* header, uint size);
+
+    [LibraryImport("winmm.dll")]
+    private static partial uint waveOutGetPosition(IntPtr device, MMTIME* time, uint size);
+
+    [LibraryImport("winmm.dll")]
+    private static partial uint waveOutReset(IntPtr device);
+
+    [LibraryImport("winmm.dll")]
+    private static partial uint waveOutUnprepareHeader(IntPtr device, WAVEHDR* header, uint size);
+
+    [LibraryImport("winmm.dll")]
+    private static partial uint waveOutClose(IntPtr device);
 }

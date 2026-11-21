@@ -2604,7 +2604,7 @@ Dämpfen: Effizienzmodus während des Spielens</value>
     <value>Hängendes Spiel beenden</value>
   </data>
   <data name="EndStuckToolTip" xml:space="preserve">
-    <value>Halten Sie die Tastenkombination während eines Spiels 2 Sekunden lang gedrückt, um es zu beenden. Kurzes Drücken bewirkt nichts.</value>
+    <value>Halten Sie die Tastenkombination während eines Spiels 2,5 Sekunden lang gedrückt, um es zu beenden. Kurzes Drücken bewirkt nichts.</value>
   </data>
   <data name="EndStuckHold" xml:space="preserve">
     <value>{0} gedrückt halten</value>

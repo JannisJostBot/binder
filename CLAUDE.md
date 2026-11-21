@@ -102,7 +102,7 @@ src/Binder/            the WinUI widget
                           and message through the real code with made-up data; left out of Release builds
 src/Binder.Watcher/    windowless (one hidden window on its own thread, SystemEvents.cs: shutdown, sign-out and
                           sleep, and the shortcut for EndHold.cs, "End a stuck game", §28, whose ring is RingWindow.cs,
-                          GDI+, and its sound HoldSound.cs); Program.cs, GameMode.cs (apply/restore + journal), ElevatedClient.cs,
+                          GDI+, and its sound HoldSound.cs, waveOut); Program.cs, GameMode.cs (apply/restore + journal), ElevatedClient.cs,
                           GameModeShared.cs (also compiled into the widget, helper and setup)
 src/Binder.Elevated/   Game mode's admin helper (Native AOT, windowless, run by scheduled tasks)
 src/Binder.Setup/      BinderSetup.exe: per-user installer/updater/uninstaller (docs/installer.md)
@@ -161,7 +161,7 @@ moves an old `sessions.json` into the year files at start (kept as `sessions.jso
      ~2 s is allowed here only, for up to ~3 min. Never found: relaunch the widget with "Couldn't detect the game".
    - Found: **block** on the process handle; no polling while the game runs. After an exit, re-check the folder
      for ~3 s (games that restart themselves).
-   - End a stuck game (§28): the watcher's hidden window holds Binder's shortcut while the game runs; holding it 2 s
+   - End a stuck game (§28): the watcher's hidden window holds Binder's shortcut while the game runs; holding it 2.5 s
      ends the game (by default only while Windows says it isn't responding). A 30 ms timer runs only while it's held.
    - On exit: append the session as one line to `sessions-<year>.jsonl` (the year it ended, `SessionLog`; never
      reads the file), relaunch the widget if "Come back when the game closes" is on, or with `--crashed` after a crash exit code of a game with "Restart if it crashes" (spec §17: the widget's
@@ -324,7 +324,7 @@ shortcuts, downloaded images, and the places typed in Settings › Advanced.
   the Public desktop (`ShortcutImporter.StoredShortcut` / `RestoreTarget`), whatever `imported-shortcuts.json` says.
   An import saves each shortcut's record before moving it (`ShortcutImporter.Store`), and a restore also puts back
   shortcuts in our folder that no record names (`Unrecorded`), except a manually added game's own copy.
-- **Ending a game (spec §28).** Only the watcher, only after the shortcut was held for the full 2 s (the keys checked
+- **Ending a game (spec §28).** Only the watcher, only after the shortcut was held for the full 2.5 s (the keys checked
   as really held), and with "When it stops responding" only while Windows calls the game's window hung or a System32
   `WerFault.exe` holds it (checked twice). Only the processes it follows for that game, matched again by process id
   and start time, and that `WerFault.exe` (its path checked); never anything else, never anti-cheat, launchers or

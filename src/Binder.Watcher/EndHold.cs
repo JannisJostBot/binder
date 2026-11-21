@@ -5,7 +5,7 @@ using Binder.Shared;
 namespace Binder.Watcher;
 
 /// <summary>
-/// "End a stuck game" (spec §28, board 40): while the game runs, holding Binder's shortcut for 2 s ends it.
+/// "End a stuck game" (spec §28, board 40): while the game runs, holding Binder's shortcut for 2.5 s ends it.
 /// Runs on the system events thread (SystemEvents.cs), whose hidden window takes the shortcut
 /// (<c>RegisterHotKey</c>, not a keyboard hook) once the game is found. Nothing runs until it's pressed: then a
 /// 30 ms timer draws the ring (<see cref="RingWindow"/>) only while it's held (the keys, or the keyboard's
@@ -27,7 +27,7 @@ internal static unsafe partial class EndHold
             "The game is responding", "The game is responding again", "nothing was ended");
     }
 
-    public const int DelayMs = 300, HoldMs = 2000, DrainMs = 300, CancelledMs = 1000, NoteMs = 2200, FrameMs = 30;
+    public const int DelayMs = 300, HoldMs = 2500, DrainMs = 300, CancelledMs = 1000, NoteMs = 2200, FrameMs = 30;
     private const int HotkeyId = 1, TimerId = 1;
 
     public static Mode Setting { get; set; } = Mode.Off;
@@ -255,7 +255,7 @@ internal static unsafe partial class EndHold
             case Phase.Holding:
                 if (!Held(now))
                 {
-                    HoldSound.Cancel(_progress);
+                    HoldSound.Cancel();
                     if (!RingWindow.Animations) { Cancelled(); return; }
                     _phase = Phase.Draining;
                     _drainFrom = now;
@@ -287,7 +287,7 @@ internal static unsafe partial class EndHold
         var seen = Look();
         if (Setting == Mode.WhenNotResponding && !seen.Stuck)
         {
-            HoldSound.Cancel(1);
+            HoldSound.Cancel();
             Note(Text.RespondingAgain, Windowed(seen.Windows)); // it recovered during the hold
             return;
         }
@@ -306,7 +306,7 @@ internal static unsafe partial class EndHold
             return;
         }
         Native.KillTimer(_hwnd, TimerId);
-        HoldSound.Cancel(1);
+        HoldSound.Cancel();
         // Nothing could be ended (protected by its anti-cheat, or gone already): not "ended by you" when it closes.
         _ended = _wasHung = _wasReporting = false;
         _phase = Phase.Idle;
@@ -331,8 +331,8 @@ internal static unsafe partial class EndHold
     private static void Stop()
     {
         Native.KillTimer(_hwnd, TimerId);
-        RingWindow.Hide();
         HoldSound.Release();
+        RingWindow.Hide(); // last: it trims the working set
         _phase = Phase.Idle;
     }
 

@@ -2604,7 +2604,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Arrêter un jeu bloqué</value>
   </data>
   <data name="EndStuckToolTip" xml:space="preserve">
-    <value>Maintenez le raccourci pendant 2 secondes pendant une partie pour arrêter le jeu. Un appui bref ne fait rien.</value>
+    <value>Maintenez le raccourci pendant 2,5 secondes pendant une partie pour arrêter le jeu. Un appui bref ne fait rien.</value>
   </data>
   <data name="EndStuckHold" xml:space="preserve">
     <value>Maintenir {0}</value>

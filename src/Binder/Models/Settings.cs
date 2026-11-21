@@ -14,7 +14,7 @@ public enum SortBy { RecentlyPlayed, MostPlayed, Name, RecentlyAdded, Size }
 public enum GridDensity { Medium, Small, Large, List }
 
 /// <summary>
-/// "End a stuck game" (spec §28): holding the shortcut for 2 s during a game ends it, only while Windows says it
+/// "End a stuck game" (spec §28): holding the shortcut for 2.5 s during a game ends it, only while Windows says it
 /// stopped responding (default), always, or never.
 /// </summary>
 public enum EndStuckGame { WhenNotResponding, Always, Off }
