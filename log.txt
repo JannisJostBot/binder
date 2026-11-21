@@ -1,0 +1,20 @@
+Time zone: Cen. Australia Standard Time, local time 21:59
+Display modes: 640x480, 800x600, 1024x768, 1152x864, 1280x720, 1280x800, 1280x1024, 1366x768, 1440x900, 1600x900, 1600x1200, 1680x1050, 1920x1080
+Resolution change: 0 (1920x1080)
+Screen: 1920x1080
+light-welcome-back: 546x1001 at 100%
+light-shelf: 546x1001 at 100%
+light-detail: 546x1001 at 100%
+light-settings: 546x1001 at 100%
+light-game-mode: 546x1001 at 100%
+light-free-up-space: 546x1001 at 100%
+light-list: 546x1001 at 100%
+light-this-week: 546x1001 at 100%
+dark-welcome-back: 546x1001 at 100%
+dark-shelf: 546x1001 at 100%
+dark-detail: 546x1001 at 100%
+dark-settings: 546x1001 at 100%
+dark-game-mode: 546x1001 at 100%
+dark-free-up-space: 546x1001 at 100%
+dark-list: 546x1001 at 100%
+dark-this-week: 546x1001 at 100%
