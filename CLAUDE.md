@@ -37,7 +37,9 @@ their games, and it must feel like part of Windows. When an idea doesn't clearly
 ## Tech stack
 
 - C# / WinUI 3 (Windows App SDK, unpackaged, self-contained, Native AOT) on the current LTS .NET (.NET 10). Windows
-  10/11 x64. `System.Text.Json` for storage. No third-party UI frameworks.
+  10/11 x64. `System.Text.Json` for storage. No third-party UI frameworks. `global.json` keeps the build on the
+  .NET 10 SDK (any 10.0.x, never a newer major that a PC or CI runner happens to have: SDK 11 brings its own
+  Windows SDK projection and analyzers); a move to a new SDK is a decision, made there.
 - AOT rules: no `[ComImport]` (use `[GeneratedComInterface]`), `LibraryImport` not `DllImport`, `x:Bind` or
   code-behind instead of `{Binding}`, `[UnmanagedCallersOnly]` for native callbacks, no reflection in app code.
 
