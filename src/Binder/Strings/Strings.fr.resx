@@ -2133,7 +2133,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>{0} emplacements modifiés</value>
   </data>
   <data name="SourcePathsIntro" xml:space="preserve">
-    <value>Ne les modifiez que si des jeux ou des images ont disparu après une mise à jour d'un lanceur.</value>
+    <value>Ne les modifiez que si des jeux ou des images ont disparu après une mise à jour d’un lanceur.</value>
   </data>
   <data name="DisclosureSourcePaths" xml:space="preserve">
     <value>emplacements des jeux et des images</value>
@@ -2145,7 +2145,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Dossier des illustrations</value>
   </data>
   <data name="EntrySteamCoverFiles" xml:space="preserve">
-    <value>Noms des fichiers de jaquette (essayés dans l'ordre)</value>
+    <value>Noms des fichiers de jaquette (essayés dans l’ordre)</value>
   </data>
   <data name="EntrySteamBannerFile" xml:space="preserve">
     <value>Nom du fichier de bannière</value>
@@ -2169,7 +2169,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Clé de registre du lanceur</value>
   </data>
   <data name="InvalidFolder" xml:space="preserve">
-    <value>Saisissez le chemin complet d'un dossier sur ce PC.</value>
+    <value>Saisissez le chemin complet d’un dossier sur ce PC.</value>
   </data>
   <data name="InvalidRegistryKey" xml:space="preserve">
     <value>Saisissez une clé sous HKLM\SOFTWARE ou HKCU\Software.</value>
@@ -2178,7 +2178,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Saisissez un nom de fichier se terminant par .jpg, .jpeg ou .png, sans dossier.</value>
   </data>
   <data name="InvalidFileNames" xml:space="preserve">
-    <value>Saisissez jusqu'à 5 noms de fichier se terminant par .jpg, .jpeg ou .png, séparés par des virgules.</value>
+    <value>Saisissez jusqu’à 5 noms de fichier se terminant par .jpg, .jpeg ou .png, séparés par des virgules.</value>
   </data>
   <data name="InvalidAddress" xml:space="preserve">
     <value>Saisissez une adresse https:// contenant {appid}.</value>
@@ -2220,10 +2220,10 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>À propos de {0}</value>
   </data>
   <data name="HelpSourcePaths1" xml:space="preserve">
-    <value>Chaque champ affiche sa valeur par défaut en gris. Laissez-le vide pour continuer à l'utiliser.</value>
+    <value>Chaque champ affiche sa valeur par défaut en gris. Laissez-le vide pour continuer à l’utiliser.</value>
   </data>
   <data name="HelpSourcePaths2" xml:space="preserve">
-    <value>Saisissez une nouvelle valeur, puis appuyez sur Entrée ou quittez le champ pour l'enregistrer. Une valeur inutilisable indique pourquoi et n'est pas enregistrée.</value>
+    <value>Saisissez une nouvelle valeur, puis appuyez sur Entrée ou quittez le champ pour l’enregistrer. Une valeur inutilisable indique pourquoi et n’est pas enregistrée.</value>
   </data>
   <data name="HelpSourcePaths3" xml:space="preserve">
     <value>Les nouvelles valeurs sont utilisées dès la prochaine actualisation (F5) ou le prochain démarrage. « Vérifier » les essaie tout de suite, sans rien télécharger.</value>
@@ -2232,13 +2232,13 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>« Réinitialiser » revient à la valeur par défaut. Les images déjà sur ce PC restent.</value>
   </data>
   <data name="HelpSteamFolder" xml:space="preserve">
-    <value>Le dossier où Steam est installé, celui qui contient steam.exe. Par défaut, il est lu dans l'entrée de registre de Steam. Exemple : D:\Steam</value>
+    <value>Le dossier où Steam est installé, celui qui contient steam.exe. Par défaut, il est lu dans l’entrée de registre de Steam. Exemple : D:\Steam</value>
   </data>
   <data name="HelpSteamArtFolder" xml:space="preserve">
-    <value>L'endroit où Steam conserve les images des jeux sur ce PC. Par défaut, le dossier appcache\librarycache du dossier Steam. Exemple : D:\Steam\appcache\librarycache</value>
+    <value>L’endroit où Steam conserve les images des jeux sur ce PC. Par défaut, le dossier appcache\librarycache du dossier Steam. Exemple : D:\Steam\appcache\librarycache</value>
   </data>
   <data name="HelpSteamCoverFiles" xml:space="preserve">
-    <value>Les noms de fichier de la jaquette verticale, séparés par des virgules et essayés dans l'ordre. Le premier est aussi celui téléchargé quand aucune jaquette n'est sur ce PC. Jusqu'à 5 noms se terminant par .jpg, .jpeg ou .png.</value>
+    <value>Les noms de fichier de la jaquette verticale, séparés par des virgules et essayés dans l’ordre. Le premier est aussi celui téléchargé quand aucune jaquette n’est sur ce PC. Jusqu’à 5 noms se terminant par .jpg, .jpeg ou .png.</value>
   </data>
   <data name="HelpSteamBannerFile" xml:space="preserve">
     <value>Le nom de fichier de la bannière large derrière « Reprendre » et dans les détails du jeu. Un nom se terminant par .jpg, .jpeg ou .png, sans dossier.</value>
@@ -2247,19 +2247,19 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Le nom de fichier du logo transparent du jeu, affiché sur les bannières à la place de son nom. Un nom se terminant par .jpg, .jpeg ou .png, sans dossier.</value>
   </data>
   <data name="HelpSteamDownload" xml:space="preserve">
-    <value>L'adresse d'où les images absentes de ce PC sont téléchargées, une fois chacune. Elle doit commencer par https:// et contenir {appid}, remplacé par le numéro Steam du jeu ; {file} est remplacé par le nom du fichier. Exemple : https://cdn.example.com/apps/{appid}/{file}</value>
+    <value>L’adresse d’où les images absentes de ce PC sont téléchargées, une fois chacune. Elle doit commencer par https:// et contenir {appid}, remplacé par le numéro Steam du jeu ; {file} est remplacé par le nom du fichier. Exemple : https://cdn.example.com/apps/{appid}/{file}</value>
   </data>
   <data name="HelpEpicManifests" xml:space="preserve">
-    <value>Le dossier où l'Epic Games Launcher répertorie les jeux installés, un fichier .item par jeu.</value>
+    <value>Le dossier où l’Epic Games Launcher répertorie les jeux installés, un fichier .item par jeu.</value>
   </data>
   <data name="HelpGogKey" xml:space="preserve">
-    <value>La clé de registre où GOG répertorie les jeux installés, une sous-clé par jeu. Elle doit se trouver sous HKLM\SOFTWARE ou HKCU\Software et n'est que lue.</value>
+    <value>La clé de registre où GOG répertorie les jeux installés, une sous-clé par jeu. Elle doit se trouver sous HKLM\SOFTWARE ou HKCU\Software et n’est que lue.</value>
   </data>
   <data name="HelpUbisoftKey" xml:space="preserve">
-    <value>La clé de registre où Ubisoft Connect répertorie les jeux installés, une sous-clé par jeu. Elle doit se trouver sous HKLM\SOFTWARE ou HKCU\Software et n'est que lue.</value>
+    <value>La clé de registre où Ubisoft Connect répertorie les jeux installés, une sous-clé par jeu. Elle doit se trouver sous HKLM\SOFTWARE ou HKCU\Software et n’est que lue.</value>
   </data>
   <data name="HelpRockstarKey" xml:space="preserve">
-    <value>La clé de registre du Rockstar Games Launcher ; sa valeur InstallFolder indique où se trouve Launcher.exe. Elle doit se trouver sous HKLM\SOFTWARE ou HKCU\Software et n'est que lue.</value>
+    <value>La clé de registre du Rockstar Games Launcher ; sa valeur InstallFolder indique où se trouve Launcher.exe. Elle doit se trouver sous HKLM\SOFTWARE ou HKCU\Software et n’est que lue.</value>
   </data>
   <data name="RestartOnCrash" xml:space="preserve">
     <value>Redémarrer en cas de plantage</value>
@@ -2421,19 +2421,19 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Utiliser le mode jeu ?</value>
   </data>
   <data name="SetupStep4Text" xml:space="preserve">
-    <value>Pendant qu'un jeu est lancé, Binder peut préparer Windows pour le jeu. Tout est rétabli à la fermeture du jeu.</value>
+    <value>Pendant qu’un jeu est lancé, Binder peut préparer Windows pour le jeu. Tout est rétabli à la fermeture du jeu.</value>
   </data>
   <data name="SetupGmAll" xml:space="preserve">
     <value>Toutes les options</value>
   </data>
   <data name="SetupGmAllText" xml:space="preserve">
-    <value>Windows demande l'autorisation une fois</value>
+    <value>Windows demande l’autorisation une fois</value>
   </data>
   <data name="SetupGmAllReady" xml:space="preserve">
-    <value>L'assistant administrateur est déjà installé</value>
+    <value>L’assistant administrateur est déjà installé</value>
   </data>
   <data name="SetupGmNoAdmin" xml:space="preserve">
-    <value>Uniquement les options sans droits d'administrateur</value>
+    <value>Uniquement les options sans droits d’administrateur</value>
   </data>
   <data name="SetupGmOff" xml:space="preserve">
     <value>Désactivé</value>
@@ -2445,28 +2445,28 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Ce qui change pendant que vous jouez</value>
   </data>
   <data name="SetupGmAdminMark" xml:space="preserve">
-    <value>Nécessite l'assistant administrateur</value>
+    <value>Nécessite l’assistant administrateur</value>
   </data>
   <data name="SetupGmHelperTitle" xml:space="preserve">
-    <value>Ce que fait l'assistant administrateur</value>
+    <value>Ce que fait l’assistant administrateur</value>
   </data>
   <data name="DisclosureHelper" xml:space="preserve">
-    <value>les détails de l'assistant administrateur</value>
+    <value>les détails de l’assistant administrateur</value>
   </data>
   <data name="SetupGmHelperText" xml:space="preserve">
-    <value>Windows demande l'autorisation une fois. Binder copie ensuite un petit assistant dans Program Files et ajoute deux tâches planifiées pour votre compte. L'assistant ne peut faire que les modifications marquées du bouclier. Il enregistre chacune d'abord et la rétablit à la fermeture du jeu. Pour le supprimer, utilisez Paramètres › Mode jeu ou désinstallez Binder.</value>
+    <value>Windows demande l’autorisation une fois. Binder copie ensuite un petit assistant dans « Programmes » et ajoute deux tâches planifiées pour votre compte. L’assistant ne peut faire que les modifications marquées du bouclier. Il enregistre chacune d’abord et la rétablit à la fermeture du jeu. Pour le supprimer, utilisez Paramètres › Mode jeu ou désinstallez Binder.</value>
   </data>
   <data name="SetupGmChangeLater" xml:space="preserve">
     <value>Vous pourrez modifier ce choix plus tard dans Paramètres › Mode jeu.</value>
   </data>
   <data name="SetupGmDeclined" xml:space="preserve">
-    <value>Windows n'a pas reçu l'autorisation, rien n'a donc été activé. Choisissez une autre option ou réessayez.</value>
+    <value>Windows n’a pas reçu l’autorisation, rien n’a donc été activé. Choisissez une autre option ou réessayez.</value>
   </data>
   <data name="SetupAllowAndFinish" xml:space="preserve">
     <value>Autoriser et terminer…</value>
   </data>
   <data name="SetupGmCouldntAllow" xml:space="preserve">
-    <value>Impossible d'autoriser l'assistant administrateur</value>
+    <value>Impossible d’autoriser l’assistant administrateur</value>
   </data>
   <data name="SearchEnterPlays" xml:space="preserve">
     <value>{0} · Entrée lance {1}</value>
@@ -2478,10 +2478,10 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Entrée</value>
   </data>
   <data name="NotInStartOne" xml:space="preserve">
-    <value>1 d'entre eux n'apparaît pas dans la recherche du menu Démarrer</value>
+    <value>1 d’entre eux n’apparaît pas dans la recherche du menu Démarrer</value>
   </data>
   <data name="NotInStart" xml:space="preserve">
-    <value>{0} d'entre eux n'apparaissent pas dans la recherche du menu Démarrer</value>
+    <value>{0} d’entre eux n’apparaissent pas dans la recherche du menu Démarrer</value>
   </data>
   <data name="DesktopFewerIconsOne" xml:space="preserve">
     <value>Votre bureau compte 1 icône de moins</value>
@@ -2505,7 +2505,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Ajouter mes jeux à la recherche du menu Démarrer</value>
   </data>
   <data name="StartMenuGamesToolTip" xml:space="preserve">
-    <value>Les jeux que le menu Démarrer ne trouve pas reçoivent un raccourci qui les lance via Binder</value>
+    <value>Les jeux que le menu Démarrer ne trouve pas reçoivent un raccourci dans le menu Démarrer qui les lance via Binder</value>
   </data>
   <data name="GameKeys" xml:space="preserve">
     <value>Raccourcis clavier des jeux</value>
@@ -2541,7 +2541,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>{0} est sur le {1}</value>
   </data>
   <data name="GameKeyTaken" xml:space="preserve">
-    <value>{0} n'en a plus</value>
+    <value>{0} n’en a plus</value>
   </data>
   <data name="GameKeyLastPlayed" xml:space="preserve">
     <value>Dernier jeu joué</value>
@@ -2580,16 +2580,16 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>Annulé</value>
   </data>
   <data name="GameDidntStart" xml:space="preserve">
-    <value>{0} n'a pas été lancé</value>
+    <value>{0} n’a pas été lancé</value>
   </data>
   <data name="NoGamePlayedYet" xml:space="preserve">
-    <value>Aucun jeu joué pour l'instant</value>
+    <value>Aucun jeu joué pour l’instant</value>
   </data>
   <data name="NothingOnNumber" xml:space="preserve">
     <value>Rien sur le {0}</value>
   </data>
   <data name="NothingOnNumberDetail" xml:space="preserve">
-    <value>clic droit sur un jeu dans Binder</value>
+    <value>cliquez avec le bouton droit sur un jeu dans Binder</value>
   </data>
   <data name="GameKeyListTitle" xml:space="preserve">
     <value>Appuyez sur un chiffre</value>
@@ -2598,7 +2598,7 @@ Ralentir : mode efficacité pendant le jeu</value>
     <value>relâchez pour ouvrir Binder</value>
   </data>
   <data name="GameKeyListNone" xml:space="preserve">
-    <value>Clic droit sur un jeu dans Binder pour lui donner un chiffre</value>
+    <value>Cliquez avec le bouton droit sur un jeu dans Binder pour lui attribuer un chiffre</value>
   </data>
   <data name="EndStuck" xml:space="preserve">
     <value>Arrêter un jeu bloqué</value>
