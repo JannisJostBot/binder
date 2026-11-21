@@ -113,6 +113,16 @@
         icons[i].style.setProperty('--lift', (Math.max(24, Math.min(140, room)) / k).toFixed(0) + 'px');
         measured = true;
       }
+      // What's left once the games have gone (Recycle Bin, Notes.txt, Screenshots) is arranged down the first column,
+      // as Windows does: the n-th one moves to the cell in row n, column 1 (the desktop is a 4-column grid). Desktop
+      // units, like the flights.
+      var all = desk.children, plain = desk.querySelectorAll('.ico-plain');
+      for (var p = 0; p < plain.length; p++) {
+        var cell = all[p * 4];
+        if (!cell) continue;
+        plain[p].style.setProperty('--tx', (cell.offsetLeft - plain[p].offsetLeft) + 'px');
+        plain[p].style.setProperty('--ty', (cell.offsetTop - plain[p].offsetTop) + 'px');
+      }
     }
 
     // Phones change the window's height while scrolling (the address bar): that moves the line, not the scene, so
@@ -141,6 +151,32 @@
     stage.classList.add('is-live');
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setUp);
-  else setUp();
+  // Narrow windows (no desktop story): each caption's small picture plays once when it has scrolled up to about the
+  // middle of the window, where it's being looked at (styles.css has the animations; none with reduced motion).
+  // Checked on scroll, at most once a frame, like the story above (an IntersectionObserver's margins are ignored in
+  // a frame from another site); the listener goes once all have played.
+  function watchPictures() {
+    var waiting = Array.prototype.slice.call(document.querySelectorAll('.caption-pic'));
+    if (!waiting.length) return;
+    var ticking = 0;
+    function check() {
+      ticking = 0;
+      var line = window.innerHeight * 0.6;
+      waiting = waiting.filter(function (pic) {
+        var r = pic.getBoundingClientRect();
+        if (!r.height || r.bottom > line || r.bottom < 0) return true;
+        pic.classList.add('is-seen');
+        return false;
+      });
+      if (!waiting.length) window.removeEventListener('scroll', onScroll);
+    }
+    function onScroll() { if (!ticking) ticking = requestAnimationFrame(check); }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    check();
+  }
+
+  function start() { setUp(); watchPictures(); }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 })();

@@ -1,0 +1,80 @@
+name: Website screenshots
+
+# Screenshots of Binder for the website: builds the app, runs tests/screenshots.ps1 on GitHub's Windows machine
+# with a made-up library (the website's games, art from tests/Screenshots/art), in light and dark, and uploads the
+# PNGs as the "site-screenshots" artifact. On a push they also go to the "ci-results/screenshots-<branch>" branch,
+# so they can be read with plain git. Nothing is put on the website by this: the owner picks the pictures.
+#
+# Rules for this file (protected, AGENTS.md "Don't touch"): every action pinned to a commit hash (its version in
+# the comment); no secrets beyond the run's own token, which only the last step gets; no pull_request_target.
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - 'ci-results/**'
+    paths:
+      - 'tests/screenshots.ps1'
+      - 'tests/Screenshots/**'
+      - '.github/workflows/site-screenshots.yml'
+
+permissions:
+  contents: write   # only for pushing the ci-results/screenshots-<branch> branch
+
+concurrency:
+  group: site-screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  screenshots:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish
+        run: |
+          ./scripts/publish.ps1 -Output publish
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Screenshots
+        shell: powershell
+        run: ./tests/screenshots.ps1 -Exe publish/app/Binder.exe -Out artifacts/screenshots
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: site-screenshots
+          path: artifacts/screenshots/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      # Readable without the Actions API: one commit with this run's pictures, force-pushed so the branch never grows.
+      - name: Publish screenshots to a ci-results branch
+        if: always() && github.event_name == 'push'
+        env:
+          BRANCH: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $out = Join-Path $env:RUNNER_TEMP 'screenshots'
+          New-Item -ItemType Directory -Force $out | Out-Null
+          Copy-Item artifacts/screenshots/* $out -Recurse -ErrorAction SilentlyContinue
+          "# Website screenshots for $env:BRANCH`n`n- Commit: $env:GITHUB_SHA`n- Run: $env:RUN_URL" |
+            Set-Content (Join-Path $out 'README.md')
+          Set-Location $out
+          git init -q -b results
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -q -m "Website screenshots for $env:BRANCH at $env:GITHUB_SHA"
+          $auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$env:GH_TOKEN"))
+          git -c http.extraheader="AUTHORIZATION: basic $auth" push -q -f `
+            "https://github.com/$env:GITHUB_REPOSITORY.git" "results:refs/heads/ci-results/screenshots-$env:BRANCH"

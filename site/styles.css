@@ -327,23 +327,38 @@ summary::-webkit-details-marker { display: none; }
   line-height: 1.3;
 }
 
-/* The wallpaper: our own, quiet, nothing that looks like content. */
-.desk-wall {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(70% 60% at 15% 10%, #DCE8F7 0%, rgba(220, 232, 247, 0) 60%),
-    radial-gradient(80% 70% at 100% 100%, #33558C 0%, rgba(51, 85, 140, 0) 70%),
-    linear-gradient(155deg, #B7CBE6, #7C98C6 55%, #4D6A9E);
+/* The wallpaper (the story's desktop and the feature pictures, which are slices of it): our own, nothing that looks
+   like content: three soft blurred ribbons (blue, violet, sky) flowing across, on a blue that's a little deeper at
+   the top left so the icons' white labels stay readable. The ribbons are their own layer (--ribbons) on a base. */
+:root {
+  --ribbons: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='18'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url%28%23b%29' opacity='0.8'%3E%3Cpath d='M-100 700 C300 380 700 820 1100 460 C1300 290 1500 320 1700 260 L1700 420 C1500 470 1320 470 1120 620 C720 940 320 560 -100 860Z' fill='%234F7FE0'/%3E%3Cpath d='M-100 820 C380 560 760 900 1180 600 C1380 470 1560 480 1700 440 L1700 560 C1540 600 1400 610 1200 740 C780 1010 380 700 -100 960Z' fill='%238C6BE8'/%3E%3Cpath d='M300 -50 C520 160 760 120 1000 260 C1200 380 1400 300 1700 360 L1700 300 C1400 230 1220 300 1020 190 C780 60 560 100 380 -80Z' fill='%236DB8F2'/%3E%3C/g%3E%3C/svg%3E");
+  --wall-base:
+    radial-gradient(60% 55% at 0% 0%, rgba(62, 94, 158, 0.55), rgba(62, 94, 158, 0) 70%),
+    linear-gradient(160deg, #A9BEE6, #C4D3EF 50%, #B3C3EC);
 }
 @media (prefers-color-scheme: dark) {
-  .desk-wall {
-    background:
-      radial-gradient(70% 60% at 15% 10%, #3C5A82 0%, rgba(60, 90, 130, 0) 60%),
-      radial-gradient(80% 70% at 100% 100%, #0D1F3C 0%, rgba(13, 31, 60, 0) 70%),
-      linear-gradient(155deg, #2C4566, #1D3150 55%, #12223B);
+  :root {
+    --ribbons: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='18'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url%28%23b%29' opacity='0.7'%3E%3Cpath d='M-100 700 C300 380 700 820 1100 460 C1300 290 1500 320 1700 260 L1700 420 C1500 470 1320 470 1120 620 C720 940 320 560 -100 860Z' fill='%232D5BC4'/%3E%3Cpath d='M-100 820 C380 560 760 900 1180 600 C1380 470 1560 480 1700 440 L1700 560 C1540 600 1400 610 1200 740 C780 1010 380 700 -100 960Z' fill='%236A45C9'/%3E%3Cpath d='M300 -50 C520 160 760 120 1000 260 C1200 380 1400 300 1700 360 L1700 300 C1400 230 1220 300 1020 190 C780 60 560 100 380 -80Z' fill='%232F8FC9'/%3E%3C/g%3E%3C/svg%3E");
+    --wall-base: linear-gradient(160deg, #141B33, #10162B 55%, #0B0F22);
   }
+}
+.scene { background: var(--ribbons) center / cover no-repeat, var(--wall-base); }
+/* On the story's desktop the ribbons move like silk in a breeze while the page is at the top (wallpaper.js draws
+   them into an SVG and pauses on scroll); this still layer is what shows without scripts. The moving ribbons are
+   softened like the still ones, and their colours come from here, light and dark. */
+.desk-wall { position: absolute; inset: 0; z-index: -1; overflow: hidden; background: var(--wall-base); }
+.desk-wall::before { content: ""; position: absolute; inset: 0; background: var(--ribbons) center / cover no-repeat; }
+.desk-wall.has-ribbons::before { display: none; }
+.desk-wall svg { position: absolute; inset: -3%; width: 106%; height: 106%; filter: blur(16px); }
+.wall-r1 { opacity: 0.8; fill: #4F7FE0; }
+.wall-r2 { opacity: 0.8; fill: #8C6BE8; }
+.wall-r3 { opacity: 0.8; fill: #6DB8F2; }
+.wall-sheen { fill: #E4EEFF; opacity: 0.45; }
+@media (prefers-color-scheme: dark) {
+  .wall-r1 { opacity: 0.7; fill: #2D5BC4; }
+  .wall-r2 { opacity: 0.7; fill: #6A45C9; }
+  .wall-r3 { opacity: 0.7; fill: #2F8FC9; }
+  .wall-sheen { fill: #8DB8FF; opacity: 0.3; }
 }
 
 /* Desktop icons, in Windows' columns from the top left. Game shortcuts carry the little arrow. */
@@ -424,6 +439,13 @@ summary::-webkit-details-marker { display: none; }
 @keyframes ico-shape {
   0%, 35% { height: 46px; margin: 0; border-radius: 8px; }
   100% { height: 61.33px; margin: -7.67px 0; border-radius: 6px; }
+}
+/* Tidying the rest: once the last shortcut has landed, the icons that aren't games slide up the first column into the
+   gaps (story.js sets each one's --tx/--ty), as Windows arranges a desktop; scrolling back puts them where they were. */
+.ico-plain { transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
+.stage:not([data-step="0"]) .ico-plain {
+  transform: translate(var(--tx, 0px), var(--ty, 0px));
+  transition: transform 0.45s cubic-bezier(0.1, 0.9, 0.2, 1) calc(var(--t0) + 1.75s);
 }
 /* Scrolling back after they've flown: the shortcuts reappear on the shelf's tiles and fly home together. */
 .stage.has-flown[data-step="0"] .ico[data-tile] { animation: ico-home 0.55s cubic-bezier(0.1, 0.9, 0.2, 1) both; }
@@ -772,32 +794,54 @@ summary::-webkit-details-marker { display: none; }
   .sf-sector { display: none; }
 }
 
-/* What's running while the game is: Binder isn't; its helper uses what the release's measurement says. */
+/* What's running while the game is: a small Task Manager window in the caption's dark glass (.caption-dark), so the
+   two read as one set over the game. Binder's row is struck out; the watcher's row is marked in the accent, with
+   the release's measured memory. */
 .procs {
   position: absolute;
   right: 32px;
   bottom: 32px;
   z-index: 7;
-  width: min(520px, calc(100% - 64px));
-  background: #FFFFFF;
+  width: min(480px, calc(100% - 64px));
+  background: rgba(22, 18, 44, 0.62);
+  -webkit-backdrop-filter: blur(40px) saturate(1.6);
+  backdrop-filter: blur(40px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 32px 64px rgba(0, 0, 0, 0.5), 0 2px 21px rgba(0, 0, 0, 0.35);
   overflow: hidden;
-  font-size: 14px;
+  font-size: 13px;
+  color: #F3F3F5;
   opacity: 0;
   visibility: hidden;
   transform: translateY(12px);
   transition: opacity 0.3s, transform 0.3s, visibility 0s 0.3s;
 }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .procs { background: #201C36; }
+}
 .stage[data-step="3"] .procs { opacity: 1; visibility: visible; transform: none; transition: opacity 0.3s 0.4s, transform 0.3s 0.4s; }
-.procs-title { margin: 0; padding: 10px 16px; background: #F3F3F3; font-size: 12px; }
-.procs-table { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; }
-.procs-table span { padding: 11px 16px; border-bottom: 1px solid #EBEBEB; text-align: right; white-space: nowrap; }
-.procs-table span:nth-child(3n+1) { text-align: left; white-space: normal; }
-.procs-table .procs-head { padding-top: 8px; padding-bottom: 8px; font-size: 12px; color: #5D5D5D; }
-.procs-dim { color: #6E6E6E; }
-.procs-gone { color: #6E6E6E; text-decoration: line-through; }
-.procs-table .procs-mark { border-bottom: 0; background: #EAF3FC; font-weight: 600; }
+.procs-bar { margin: 0; height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 14px; font-size: 12px; color: #CFCCE0; }
+.procs-bar span { margin-left: auto; padding: 2px 10px; border-radius: 4px; background: rgba(255, 255, 255, 0.08); color: #F3F3F5; font-weight: 600; }
+.procs-table { display: grid; grid-template-columns: minmax(0, 1fr) 56px 84px; padding: 0 6px 6px; }
+.procs-table > span { display: flex; align-items: center; justify-content: flex-end; padding: 9px 8px; white-space: nowrap; font-variant-numeric: tabular-nums; color: #CFCCE0; }
+.procs-table > span:nth-child(3n+1) { justify-content: flex-start; white-space: normal; }
+.procs-table .procs-head { padding-top: 4px; padding-bottom: 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-size: 11px; color: #A9A6BE; }
+.procs-name { gap: 10px; min-width: 0; }
+.procs-name b { display: flex; flex-direction: column; min-width: 0; font-weight: 600; color: #F3F3F5; }
+.procs-name small { font-size: 11px; font-weight: 400; color: #A9A6BE; }
+.procs-icon { flex-shrink: 0; width: 20px; }
+.procs-icon.pc-thumb { width: 18px; }
+.procs-logo { height: 20px; line-height: 0; }
+.procs-logo svg { width: 20px; height: 20px; }
+.procs-gone .procs-logo { opacity: 0.45; filter: grayscale(1); }
+.procs-gone b { color: #A9A6BE; }
+.procs-gone b span { text-decoration: line-through; text-decoration-color: rgba(255, 255, 255, 0.4); }
+/* The watcher: the accent's tint across the row, with Windows' selection bar on its left. */
+.procs-table .procs-mark { background: rgba(76, 194, 255, 0.14); color: #F3F3F5; font-weight: 600; }
+.procs-table .procs-name.procs-mark { position: relative; border-radius: 4px 0 0 4px; }
+.procs-table .procs-name.procs-mark::before { content: ""; position: absolute; left: 0; top: 50%; width: 3px; height: 16px; margin-top: -8px; border-radius: 2px; background: #4CC2FF; }
+.procs-table > span.procs-mark:last-child { border-radius: 0 4px 4px 0; color: #4CC2FF; }
 
 /* The taskbar, with Binder's icon by the clock. */
 .mock-taskbar {
@@ -816,16 +860,43 @@ summary::-webkit-details-marker { display: none; }
   background: rgba(243, 243, 243, 0.88);
   border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
-.mock-apps { position: absolute; left: 50%; display: flex; gap: 6px; transform: translateX(-50%); }
-.mock-apps span { width: 32px; height: 32px; border-radius: 4px; background: rgba(0, 0, 0, 0.08); }
+/* The apps in the middle, as Windows 11 lays them out: 40 px buttons with 24 px icons, the open app's short bar under
+   it; the search box on wider windows only. Icons keep their own colours (a picture of a PC). */
+.mock-apps { position: absolute; left: 50%; display: flex; align-items: center; gap: 4px; transform: translateX(-50%); color: #1B1B1B; }
+.mock-apps > span { position: relative; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+.mock-apps svg { width: 24px; height: 24px; display: block; }
+.tb-start, .tb-app { width: 40px; }
+.tb-start svg { fill: #0078D4; }
+.tb-start svg rect:nth-child(1) { fill: #3AA0F3; }
+.tb-start svg rect:nth-child(4) { fill: #005FB8; }
+.tb-search { gap: 8px; width: 190px; height: 32px !important; margin: 0 4px; padding: 0 12px; box-sizing: border-box; justify-content: flex-start !important; border-radius: 16px !important; background: rgba(255, 255, 255, 0.75); border: 1px solid rgba(0, 0, 0, 0.06); font-size: 12px; color: #5D5D5D; }
+.tb-search svg { width: 16px; height: 16px; }
+.tb-open { background: rgba(255, 255, 255, 0.55); }
+.tb-open::after { content: ""; position: absolute; left: 50%; bottom: 2px; width: 6px; height: 3px; margin-left: -3px; border-radius: 2px; background: #8A8A8A; }
+.tb-glyph { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 6px; border-radius: 4px; color: #1B1B1B; }
+.tb-glyph svg { width: 16px; height: 16px; display: block; }
+.tb-chevron { margin-right: -8px; }
+@media (max-width: 600px) { .mock-apps { left: 12px; transform: none; } .mock-apps .tb-app:nth-child(n+5), .tb-chevron, .tb-status { display: none; } }
 .mock-tray { position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: background-color 0s 0.87s, box-shadow 0s 0.87s; }
 .stage:not([data-step="0"]):not([data-step="3"]) .mock-tray { background: rgba(0, 0, 0, 0.08); box-shadow: inset 0 -3px 0 -1px #005FB8; }
 .mock-clock { font-size: 12px; line-height: 1.3; color: #1B1B1B; text-align: right; }
 @media (prefers-color-scheme: dark) {
   .mock-taskbar { background: rgba(28, 28, 32, 0.92); border-top-color: rgba(255, 255, 255, 0.08); }
-  .mock-apps span { background: rgba(255, 255, 255, 0.1); }
+  .mock-apps, .tb-glyph { color: #F3F3F5; }
+  .tb-search { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.08); color: #C8C8D0; }
+  .tb-open { background: rgba(255, 255, 255, 0.08); }
+  .tb-open::after { background: #A9A9B2; }
+  .tb-start svg rect:nth-child(1) { fill: #7BD8FF; }
+  .tb-start svg { fill: #4CC2FF; }
+  .tb-start svg rect:nth-child(4) { fill: #2AA0E6; }
   .mock-clock { color: #F3F3F5; }
   .stage:not([data-step="0"]):not([data-step="3"]) .mock-tray { background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 -3px 0 -1px #4CC2FF; }
+}
+/* Narrower windows: Search becomes its icon alone, as Windows' "Search icon only": no box, in either theme (after
+   the dark colours, so it wins there too). */
+@media (max-width: 1100px) {
+  .tb-search { width: 40px; height: 40px !important; margin: 0; padding: 0; justify-content: center !important; border-radius: 4px !important; font-size: 0; background: none !important; border: 0; }
+  .tb-search svg { width: 20px; height: 20px; }
 }
 
 /* Binder's shelf: the app's own dark panel. */
@@ -1225,31 +1296,125 @@ summary::-webkit-details-marker { display: none; }
   .stage:not([data-step="0"]) .mock-grid span { opacity: 1; }
 }
 
-/* Narrow windows and phones: the desktop is a picture pinned at the top, the captions scroll below it. */
+/* Narrow windows and phones: no desktop story (too small to follow). The headline sits in a frosted window on the
+   story's wallpaper, the ribbons still, and the four captions follow below as plain cards. wallpaper.js draws nothing
+   while the desktop is hidden. */
 @media (max-width: 900px) {
-  .story:not([data-step="0"]) .story-step-hero .window { opacity: 1; transform: none; pointer-events: auto; }
-  .story { --stage-h: calc(var(--header-h) + clamp(300px, 46vh, 440px)); }
-  .stage { z-index: 3; }
+  .stage { display: none; }
   .story-steps { margin-top: 0; }
   .story-steps::after { height: 0; }
-  /* One caption fills the space under the picture; story.js switches the step as a caption reaches the picture. */
-  .story-step, .story-step-hero { min-height: calc(100vh - var(--stage-h)); justify-content: flex-start; padding: 24px 16px 40px; }
-  .desk { transform: scale(0.72); transform-origin: top left; }
-  .mock-panel { width: 62%; min-width: 236px; padding: 12px; gap: 8px; }
-  .mock-continue { height: 72px; }
-  .procs { right: 12px; bottom: 12px; width: calc(100% - 24px); font-size: 13px; }
-  .procs-table span { padding: 8px 12px; }
-  .caption, .window { width: 100%; box-shadow: none; border: 1px solid var(--border); background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .caption-dark { background: #201C36; border-color: #34343A; }
+  .story-step { min-height: 0; justify-content: flex-start; padding: 0 16px 16px; }
+  .story-step[data-step="1"] { padding-top: 32px; }
+  .story-step:last-child { padding-bottom: 48px; }
+  .story-step-hero {
+    min-height: min(86svh, 760px);
+    justify-content: flex-end;
+    padding: calc(var(--header-h) + 32px) 16px 32px;
+    background: var(--ribbons) center / cover no-repeat, var(--wall-base);
+  }
+  .story:not([data-step="0"]) .story-step-hero .window { opacity: 1; transform: none; pointer-events: auto; }
+  .window { width: 100%; }
   .window-bar { display: none; }
-  .window-body { padding: 4px 0 0; border: 0; }
-  .window { border: 0; background: transparent; }
-  .story-cue { display: none; }
+  .window-body { padding: 28px 24px; }
+  .caption { width: 100%; box-shadow: none; border: 1px solid var(--border); background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  /* Without the game behind it, "While you play" is a card like the others. */
+  .caption-dark { background: var(--surface); border-color: var(--border); color: var(--text); }
+  .caption-dark p { color: var(--text-2); }
+  .caption-progress { display: none; }
 }
 @media (max-width: 600px) {
   .hero-lead { font-size: 17px; }
   .hero-actions { align-self: stretch; flex-direction: column; }
   .caption { padding: 20px; }
+  .window-body { padding: 24px 20px; }
+}
+
+/* On narrow windows each story caption starts with a small picture of its moment, in the desktop story's style
+   (the story itself isn't shown there): shortcuts going into Binder, the shelf by the clock, Task Manager during a
+   game, Welcome back. Pictures of the app and the PC, so fixed colours in both themes. Hidden on wider windows. */
+.caption-pic { display: none; }
+@media (max-width: 900px) {
+  .caption-pic { display: flex; align-items: center; gap: 10px; height: 64px; padding: 0 14px; box-sizing: border-box; border-radius: 8px; align-self: stretch; margin-bottom: 4px; overflow: hidden; }
+  .caption .caption-pic p { margin: 0; color: inherit; }
+  .caption-pic svg { display: block; }
+  /* 1: three game shortcuts on the wallpaper, an arrow, Binder. */
+  .cp-desk { background: var(--ribbons) center / cover no-repeat, var(--wall-base); color: #FFFFFF; }
+  .cp-ico { position: relative; width: 34px; height: 34px; }
+  .cp-ico svg { width: 100%; height: 100%; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35)); }
+  /* Windows' shortcut mark, as on the story's icons. */
+  .cp-ico::after { content: ""; position: absolute; left: -3px; bottom: -3px; width: 13px; height: 13px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='.5' y='.5' width='15' height='15' rx='2.5' fill='%23FFFFFF' stroke='%23B9C0CB'/%3E%3Cpath d='M4.6 12.2c0-3.9 2.1-5.7 5.6-5.7' fill='none' stroke='%231C6DD0' stroke-width='1.9' stroke-linecap='round'/%3E%3Cpath d='M8.4 3.7l2.9 2.8-2.9 2.8' fill='none' stroke='%231C6DD0' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35)); }
+  .cp-arrow { width: 22px; height: 22px; margin: 0 2px 0 auto; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4)); }
+  .cp-logo { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: #202024; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35); }
+  .cp-logo svg { width: 28px; height: 28px; }
+  /* 2: the shelf's first covers and the taskbar corner with Binder by the clock. */
+  .cp-shelf { background: #202024; border: 1px solid #34343A; }
+  .cp-shelf .pc-thumb { width: 33px; border-radius: 4px; }
+  .cp-tray { margin-left: auto; display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px 0 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.06); font-size: 13px; color: #F3F3F5; font-variant-numeric: tabular-nums; }
+  .cp-tray-icon { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 -2px 0 -0.5px #4CC2FF; }
+  .cp-tray-icon svg { width: 16px; height: 16px; }
+  /* 3: Task Manager while a game runs: Binder gone, its watcher at 0%. */
+  .cp-procs { flex-direction: column; align-items: stretch; justify-content: center; gap: 3px; height: auto; padding: 8px; background: rgba(22, 18, 44, 0.96); border: 1px solid rgba(255, 255, 255, 0.1); font-size: 12px; color: #F3F3F5; }
+  .cp-procs p { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 4px; }
+  .cp-procs p > span:last-child { margin-left: auto; font-variant-numeric: tabular-nums; }
+  .cp-mini { width: 16px; height: 16px; flex-shrink: 0; }
+  .cp-mini svg { width: 16px; height: 16px; }
+  .caption .cp-procs .cp-gone { color: #A9A6BE; }
+  .cp-gone .cp-mini { opacity: 0.45; filter: grayscale(1); }
+  /* The struck-out name: a drawn line, so it can be drawn across when the card comes into view. */
+  .cp-strike { position: relative; }
+  .cp-strike::after { content: ""; position: absolute; left: -1px; right: -1px; top: 52%; height: 1.5px; background: rgba(255, 255, 255, 0.45); transform-origin: left; }
+  .cp-mark { position: relative; background: rgba(76, 194, 255, 0.16); }
+  .cp-mark::before { content: ""; position: absolute; left: 0; top: 50%; width: 3px; height: 12px; margin-top: -6px; border-radius: 2px; background: #4CC2FF; }
+  .cp-mark b { font-weight: 600; }
+  .cp-mark span:last-child { color: #4CC2FF; font-weight: 600; }
+  /* 4: the shelf's top slot after the game: Welcome back. */
+  .cp-welcome {
+    color: #F3F3F5;
+    box-shadow: inset 0 0 0 2px #4CC2FF;
+    background:
+      radial-gradient(1px 1px at 52% 22%, #FFFFFF 99%, transparent), radial-gradient(1px 1px at 70% 70%, #FFFFFF 99%, transparent),
+      radial-gradient(1.5px 1.5px at 84% 18%, #FFFFFF 99%, transparent),
+      radial-gradient(70% 140% at 30% 0%, #3B2A6E, rgba(59, 42, 110, 0) 70%),
+      linear-gradient(180deg, #0B1030, #1D1645);
+  }
+  .cp-welcome .pc-thumb { width: 33px; }
+  .cp-welcome-text { display: flex; flex-direction: column; min-width: 0; }
+  .cp-welcome-text small { font-size: 11px; color: #C8C8D0; }
+  .cp-welcome-text b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cp-play { margin-left: auto; flex-shrink: 0; padding: 4px 12px; border-radius: 4px; background: #4CC2FF; color: #0A1A24; font-size: 12px; font-weight: 600; }
+}
+
+/* Each picture plays once as its card comes into view (story.js adds is-seen), ending exactly as it looks at rest:
+   the shortcuts hop into Binder, the covers rise onto the shelf, Binder is struck out and its watcher marked,
+   Welcome back glows. Never with reduced motion; without scripts the pictures simply show. */
+@media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .cp-desk.is-seen .cp-ico { animation: cp-hop 0.7s cubic-bezier(0.3, 0, 0.2, 1) both; }
+  .cp-desk.is-seen .cp-ico:nth-child(2) { animation-delay: 0.15s; }
+  .cp-desk.is-seen .cp-ico:nth-child(3) { animation-delay: 0.3s; }
+  .cp-desk.is-seen .cp-arrow { animation: cp-nudge 0.8s ease-in-out 0.35s both; }
+  .cp-desk.is-seen .cp-logo { animation: cp-bump 0.5s cubic-bezier(0.3, 0, 0.2, 1) 0.8s both; }
+  .cp-shelf.is-seen .pc-thumb { animation: cp-rise 0.5s cubic-bezier(0.1, 0.9, 0.2, 1) both; }
+  .cp-shelf.is-seen .pc-thumb:nth-child(2) { animation-delay: 0.08s; }
+  .cp-shelf.is-seen .pc-thumb:nth-child(3) { animation-delay: 0.16s; }
+  .cp-shelf.is-seen .pc-thumb:nth-child(4) { animation-delay: 0.24s; }
+  .cp-shelf.is-seen .cp-tray-icon { animation: cp-tray 0.8s ease-out 0.45s both; }
+  .cp-procs.is-seen .cp-strike::after { animation: cp-strike 0.45s ease-out 0.2s both; }
+  .cp-procs.is-seen .cp-mark { animation: cp-mark 0.6s ease-out 0.6s both; }
+  .cp-procs.is-seen .cp-mark::before { animation: cp-bar 0.4s cubic-bezier(0.1, 0.9, 0.2, 1) 0.7s both; }
+  .cp-welcome.is-seen { animation: cp-ring 1.2s ease-out 0.15s both; }
+  .cp-welcome.is-seen .cp-play { animation: cp-bump 0.45s cubic-bezier(0.3, 0, 0.2, 1) 0.5s both; }
+}
+@keyframes cp-hop { 0%, 100% { transform: none; } 40% { transform: translate(5px, -6px); } 70% { transform: translate(2px, 0); } }
+@keyframes cp-nudge { 0%, 100% { transform: none; } 50% { transform: translateX(5px); } }
+@keyframes cp-bump { 0%, 100% { transform: none; } 45% { transform: scale(1.1); } }
+@keyframes cp-rise { from { transform: translateY(8px); opacity: 0.3; } }
+@keyframes cp-tray { 0% { box-shadow: inset 0 -2px 0 -0.5px rgba(76, 194, 255, 0); } 100% { box-shadow: inset 0 -2px 0 -0.5px #4CC2FF; } }
+@keyframes cp-strike { from { transform: scaleX(0); } }
+@keyframes cp-mark { from { background: rgba(76, 194, 255, 0); } }
+@keyframes cp-bar { from { transform: scaleY(0); } }
+@keyframes cp-ring {
+  0% { box-shadow: inset 0 0 0 2px #4CC2FF, 0 0 0 0 rgba(76, 194, 255, 0.5); }
+  100% { box-shadow: inset 0 0 0 2px #4CC2FF, 0 0 0 10px rgba(76, 194, 255, 0); }
 }
 
 /* The hidden game behind the shelf's Play (game.js): Binder's launch toast counts down, the shelf slides away as
@@ -1340,6 +1505,24 @@ summary::-webkit-details-marker { display: none; }
   .lead { font-size: 16px; }
 }
 
+/* What it looks like: the app's own windows, as captured (transparent rounded corners, drawn by Windows), in a row of
+   four; two per row on tablets, and on phones a strip that scrolls sideways inside itself. */
+.shots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px 24px; }
+.shot { margin: 0; display: flex; flex-direction: column; gap: 16px; }
+.shot img { display: block; width: 100%; height: auto; border-radius: var(--radius); box-shadow: var(--shadow-2); }
+.shot figcaption { display: flex; flex-direction: column; gap: 4px; font-size: 15px; color: var(--text-2); text-wrap: pretty; }
+.shot figcaption strong { font-family: var(--display); font-size: 17px; font-weight: 600; color: var(--text); }
+@media (max-width: 900px) {
+  .shots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .shots {
+    display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+    margin: 0 calc(-1 * var(--gutter)); padding: 4px var(--gutter) 24px; scroll-padding: 0 var(--gutter);
+  }
+  .shot { flex: 0 0 72%; scroll-snap-align: start; }
+}
+
 /* How much it uses: one quiet card, a row per state. A large figure, and a thin bar drawn to scale against the open
    panel (--w, set by usage.js from the numbers; fixed proportions without it), so the last row's sliver says it at a
    glance. The numbers come from each release's measurement. */
@@ -1403,21 +1586,9 @@ summary::-webkit-details-marker { display: none; }
   font-size: 12px;
   line-height: 1.35;
 }
-.scene {
-  background:
-    radial-gradient(70% 60% at 15% 10%, #DCE8F7 0%, rgba(220, 232, 247, 0) 60%),
-    radial-gradient(80% 70% at 100% 100%, #33558C 0%, rgba(51, 85, 140, 0) 70%),
-    linear-gradient(155deg, #B7CBE6, #7C98C6 55%, #4D6A9E);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
-}
+.scene { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06); }
 @media (prefers-color-scheme: dark) {
-  .scene {
-    background:
-      radial-gradient(70% 60% at 15% 10%, #3C5A82 0%, rgba(60, 90, 130, 0) 60%),
-      radial-gradient(80% 70% at 100% 100%, #0D1F3C 0%, rgba(13, 31, 60, 0) 70%),
-      linear-gradient(155deg, #2C4566, #1D3150 55%, #12223B);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-  }
+  .scene { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); }
 }
 .feature .scene p { margin: 0; color: inherit; font-size: inherit; text-wrap: wrap; }
 .scene-taskbar {
@@ -1546,6 +1717,21 @@ summary::-webkit-details-marker { display: none; }
 .note-caution { background: var(--caution-bg); border-color: var(--caution-border); }
 .note-text { display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.5; }
 .note-text strong { font-size: 15px; }
+/* When the section first comes into view (download.js adds is-seen, once per visit), the AI-code note asks quietly
+   to be read: one soft amber glow from its edge and one twinkle of its sparkle. The notes are fully shown before and
+   without it, and nothing moves with reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .notes.is-seen .note-caution { animation: note-glow 1.6s ease-out 0.2s; }
+  .notes.is-seen .note-caution .note-icon svg { animation: note-twinkle 1s ease-in-out 0.3s; }
+}
+@keyframes note-glow {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--caution-icon) 35%, transparent); }
+  100% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--caution-icon) 0%, transparent); }
+}
+@keyframes note-twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  45% { transform: scale(1.15) rotate(12deg); }
+}
 .accent-fill { fill: var(--accent); }
 .caution-fill { fill: var(--caution-icon); }
 @media (max-width: 600px) {

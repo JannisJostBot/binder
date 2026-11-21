@@ -12,6 +12,44 @@ comes back when the game closes.
 
 > **AI-generated code, provided as is.** See the [disclaimer](#disclaimer) below.
 
+## Screenshots
+
+Binder itself, with made-up games (light or dark, following your GitHub theme). The pictures are taken by CI on a
+Windows machine ([`site-screenshots.yml`](.github/workflows/site-screenshots.yml)).
+
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="site/screenshots/dark-welcome-back.webp">
+        <img src="site/screenshots/light-welcome-back.webp" alt="Binder after a game closed: Welcome back, Starfall Drift, above a grid of game covers">
+      </picture>
+      <br><b>Back from a game</b>
+    </td>
+    <td align="center" width="25%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="site/screenshots/dark-detail.webp">
+        <img src="site/screenshots/light-detail.webp" alt="The page of the game Starfall Drift: Play, playtime, last played, size on disk and a chart of the last eight weeks">
+      </picture>
+      <br><b>A game's page</b>
+    </td>
+    <td align="center" width="25%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="site/screenshots/dark-free-up-space.webp">
+        <img src="site/screenshots/light-free-up-space.webp" alt="Free up space: the games on drive C as tiles sized by the space they use, and a suggestion to uninstall one">
+      </picture>
+      <br><b>Free up space</b>
+    </td>
+    <td align="center" width="25%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="site/screenshots/dark-game-mode.webp">
+        <img src="site/screenshots/light-game-mode.webp" alt="The Game mode page: power mode, game priority and background services to pause, each with a switch">
+      </picture>
+      <br><b>Game mode</b>
+    </td>
+  </tr>
+</table>
+
 ## What it does
 
 - **Finds your games:** Steam, Epic Games, GOG, EA app, Ubisoft Connect, the Xbox app (Game Pass), the

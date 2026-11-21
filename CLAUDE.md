@@ -105,6 +105,8 @@ src/Binder.Watcher/    windowless (one hidden window on its own thread, SystemEv
 src/Binder.Elevated/   Game mode's admin helper (Native AOT, windowless, run by scheduled tasks)
 src/Binder.Setup/      BinderSetup.exe: per-user installer/updater/uninstaller (docs/installer.md)
 tests/Binder.Tests/    plain console unit tests (no test framework packages); smoke.ps1 / setup-test.ps1 are CI-only
+                          screenshots.ps1 (CI-only, .github/workflows/site-screenshots.yml): the website's pictures of the
+                          app, with a made-up library whose art Screenshots/make-art.mjs draws
 build/                    Updates.targets (where updates come from: repository and keys, checked and compiled in),
                           OfficialRelease.props (the official releases' values, owner only)
 scripts/                  publish.ps1 (builds publish\app: widget folder + AOT watcher + helper, and BinderSetup.exe;
@@ -119,10 +121,13 @@ site/                     the website: HTML + CSS, nothing loaded from other ser
                           for the latest release (download link, version, VirusTotal box; the website only: the app's
                           network rules below don't change), clock.js sets the story's clock, story.js runs the
                           desktop story at the top of index.html (a cluttered desktop tidied into Binder, a game,
-                          welcome back), game.js is the hidden game behind the shelf's Play (catch the covers, then
+                          welcome back), wallpaper.js its desktop's ribbons moving like silk until the page scrolls, game.js is the hidden game behind the shelf's Play (catch the covers, then
                           "Welcome back"), nav.js marks the header's current section and closes the phone menu,
                           usage.js draws the "How much it uses" bars to scale from the measured figures,
-                          download.js the dialog once a download starts (Defender may warn, the VirusTotal result);
+                          download.js the dialog once a download starts (Defender may warn, the VirusTotal result) and the
+                          "Before you download" notes' one-time highlight when they come into view;
+                          screenshots/ and og-image.png the app's pictures ("What it looks like", the README's Screenshots, the link preview),
+                          made from a site-screenshots.yml run by tests/Screenshots/make-site-images.mjs;
                           index.html,
                           docs.html (what Binder changes on the PC: every Game mode item, autostart, updates, …),
                           releases.html (every version's notes and setup; its list written by
