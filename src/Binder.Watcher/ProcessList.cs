@@ -7,6 +7,8 @@ namespace Binder.Watcher;
 /// Every running process's id and start time in one system call (NtQuerySystemInformation, the list Task Manager
 /// reads), without opening any of them. Detection uses it to open only processes it hasn't already turned down
 /// (<see cref="RejectedProcesses"/>). The buffer exists only while detecting; <see cref="Release"/> frees it.
+/// It comes from VirtualAlloc, not the process heap: a heap keeps a freed block of this size committed (measured on
+/// the real PC: ~450 KB more commit size for the whole game), VirtualFree gives the pages back to Windows.
 /// </summary>
 internal sealed unsafe partial class ProcessList
 {
@@ -28,7 +30,8 @@ internal sealed unsafe partial class ProcessList
         if (_buffer is null)
         {
             _size = 512 * 1024; // enough for a few hundred processes with their threads
-            _buffer = NativeMemory.Alloc((nuint)_size);
+            _buffer = Allocate(_size);
+            if (_buffer is null) return false;
         }
         for (int attempt = 0; attempt < 4; attempt++)
         {
@@ -42,18 +45,21 @@ internal sealed unsafe partial class ProcessList
             // Grown since the size was asked for: room for more.
             int size = (int)Math.Min((long)Math.Max(needed, (uint)_size) + 128 * 1024, MaxBytes);
             if (size <= _size) return false;
-            NativeMemory.Free(_buffer);
+            Release();
             _size = size;
-            _buffer = NativeMemory.Alloc((nuint)_size);
+            _buffer = Allocate(_size);
+            if (_buffer is null) return false;
         }
         return false;
     }
+
+    private static void* Allocate(int size) => VirtualAlloc(null, (nuint)size, MemCommit | MemReserve, PageReadWrite);
 
     /// <summary>Frees the buffer (detection is over); <see cref="Take"/> makes a new one when needed.</summary>
     public void Release()
     {
         if (_buffer is null) return;
-        NativeMemory.Free(_buffer);
+        VirtualFree(_buffer, 0, MemRelease);
         _buffer = null;
     }
 
@@ -75,6 +81,15 @@ internal sealed unsafe partial class ProcessList
 
     [LibraryImport("ntdll.dll")]
     private static partial uint NtQuerySystemInformation(int infoClass, void* info, uint length, out uint returnLength);
+
+    private const uint MemCommit = 0x1000, MemReserve = 0x2000, MemRelease = 0x8000, PageReadWrite = 0x04;
+
+    [LibraryImport("kernel32.dll")]
+    private static partial void* VirtualAlloc(void* address, nuint size, uint allocationType, uint protect);
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool VirtualFree(void* address, nuint size, uint freeType);
 }
 
 /// <summary>

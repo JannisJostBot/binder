@@ -13,8 +13,8 @@ internal static partial class Footprint
     public static void Rest()
     {
         GC.Collect(2, GCCollectionMode.Aggressive, blocking: true, compacting: true);
-        SetProcessWorkingSetSizeEx(GetCurrentProcess(), -1, -1, 0); // trim the working set
         SetEfficiencyMode(true);
+        SetProcessWorkingSetSizeEx(GetCurrentProcess(), -1, -1, 0); // trim the working set, last: nothing touches it after
     }
 
     /// <summary>Call when the game exits or Windows is ending the session: saving and restoring run at full speed.</summary>

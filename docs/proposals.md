@@ -28,7 +28,7 @@ Every item follows the project brief: zero cost while idle or gaming, no third-p
 | 15 Free up space | §12 | Done (built ahead of 13 and 14, owner's choice). Steam's `LastPlayed` verified on the real PC (Unix seconds, 0 = never). Mid-uninstall the plan survives the flyout closing (memory only; with "Stay ready" off it's lost). Games without a known size (Xbox, GOG, some Ubisoft) are listed under the map, never suggested |
 | 16 Look and moments | §13 | **In progress.** Done: a, the logo on banners (`ArtKind.Logo`, `BannerLogo`; Steam keeps `librarycache\{appid}\logo.png`, 188 of 400 games on the owner's PC, the rest downloaded once; shadow from the logo's alpha via `Image.GetAlphaMask`; in Detail it sits right of the cover, which overlaps the banner's bottom left). Built: b–e, to try on the real PC.<br>b (the cover growing into details) was built and then removed on 2026-11-09, owner's choice: it looked bad.<br>c and e are `Library/Moments`, picked each time the panel opens; tested live with a session written into the sessions file. With a crash, the crash card still takes the slot.<br>d is `Views/Sheen`, plain alpha layers tuned below the prototype's "Medium", since blend modes would need Win2D (approved for the Game mode toast only). The rest look was checked on screen; following the pointer couldn't be tested here, because injected mouse input didn't reach the panel |
 | 17 Advanced: sources and artwork | §14 | Built: `Library/SourceDefaults` (every default, `Validate` per kind, `Use` at start and after a change; invalid or unknown values fall back), read by the Steam, Epic, GOG, Ubisoft and Rockstar sources and `CoverCache` (cover names tried in order, the first downloaded; `ForgetSteamLookups` after an artwork change drops resolved paths and `.none` markers). Settings › Advanced: one card at the bottom (closed), per launcher a Check (`Services/SourceCheck`, no downloads) and a text box per entry with Reset and its error, Reset all, the host named when the address differs. Values take effect from the next scan. Unit-tested (each kind's validation, the view model); network and validation rules in `CLAUDE.md`. Still to try on the real PC: the page on screen, Check per launcher |
-| 18 Performance | §15 | **In progress.** Built 2026-11-17 (§15 g): a rescan with nothing new skips the save and the grid redraw; pages other than the shelf built on first visit (`MainWindow.Pages`, in code, so the page-level part of c; checked on the real PC 2026-11-18: same as main on every first opening, open panel 103 → 86 MB private working set, commit 180 → 160 MB, shortcut to visible 77 → 47 ms); tile hover parts built on first raise (checked: the first hover fades like the next); the watcher rests while the game runs and opens only new processes while detecting; sessions read incrementally after a game. The data side (rescan with and without changes, sessions after a game, the imported count, compact files) checked on the real PC 2026-11-19, two fixes then (a hand-edited sessions file read from the wrong offset; no `library.json` after a `.bak` fallback); not yet with a real game or "Restore to desktop" (§15 g). d: the watcher's part done and measured on the real PC (2026-11-18, see d). To do: a, b, the rest of c, the widget's part of d, e; f is proposed, waiting for measurements and the owner's go |
+| 18 Performance | §15 | **In progress.** Built 2026-11-17 (§15 g): a rescan with nothing new skips the save and the grid redraw; pages other than the shelf built on first visit (`MainWindow.Pages`, in code, so the page-level part of c; checked on the real PC 2026-11-18: same as main on every first opening, open panel 103 → 86 MB private working set, commit 180 → 160 MB, shortcut to visible 77 → 47 ms); tile hover parts built on first raise (checked: the first hover fades like the next); the watcher rests while the game runs and opens only new processes while detecting (measured on the real PC 2026-11-21 with real games: commit 3.7 MB, ~0.1 MB under main, after a fix to the process list's buffer; less CPU while detecting; behaviour unchanged); sessions read incrementally after a game. The data side (rescan with and without changes, sessions after a game, the imported count, compact files) checked on the real PC 2026-11-19, two fixes then (a hand-edited sessions file read from the wrong offset; no `library.json` after a `.bak` fallback); not yet with a real game or "Restore to desktop" (§15 g). d: the watcher's part done and measured on the real PC (2026-11-18, see d). To do: a, b, the rest of c, the widget's part of d, e; f is proposed, waiting for measurements and the owner's go |
 | 19 Quick actions | §16 | Done (header menu, `Ctrl+G` and `F5`, tray items, Back to the shelf from Game mode and Free up space); tried on the real PC |
 | 20 Restart after a crash | §17 | Built: the Detail toggle, `CrashAnalysis.ShouldRestart` (in a row from `crashes.json`, at most 2), the watcher's `--restart` / `--crashed`, the restart pill (Game mode's pill with a 5 s countdown, bar and Cancel, owner's change) and the crash card's "Restarted twice already" line; unit-tested. To try on the real PC with a game that crashes (or a test exe that exits with 0xC0000005 after a minute) |
 | 21 Softer sound and hover | §19 Lullaby sound, Media tile hover | Built (boards 25, 26); to try on the real PC (press, keyboard, controller, animations off, high contrast) |
@@ -1107,8 +1107,38 @@ smooth scrolling through the grid, and the published size. Report the numbers in
   The aim is the commit size, which d's change left as it was (3.3–4.1 MB). Detection takes the process list in one call
   (`ProcessList`, `NtQuerySystemInformation`) and opens only processes it hasn't turned down before (by id and
   start time; crash reporters and processes it couldn't open are always looked at again); without that list it
-  falls back to opening every process. Measure as in d (the same three games, 10 s in, Task Manager › Details)
-  against d's numbers, and the watcher's CPU while Steam starts a game with Steam closed.
+  falls back to opening every process.
+  Measured on the real PC 2026-11-19/21, Windows 11 25H2 (build 26200.9974), as in d: each game played from the
+  branch's `publish.ps1` build with `--play`, read 10 s into the game (Memory = private working set, Commit size =
+  private bytes), CPU time over the next 10 s; main's watcher (6ebd7c1, d's build) swapped into the same app folder
+  and run the same way, alternating. As first built, the commit size went *up* to 4.2–5.0 MB (main 3.8): the process
+  list's 512 KB buffer came from the process heap (`NativeMemory.Alloc`), which on x64 keeps a freed block that size
+  committed (seen in the watcher's committed regions: default heap 432 → 880 KB). Fixed: the buffer comes from
+  `VirtualAlloc` and goes back with `VirtualFree`. And the working-set trim now runs last in `Footprint.Rest`, after
+  efficiency mode is set (setting it after the trim paged ~150 KB back in). With both fixes:
+
+  | Game (source)                | Private WS (KB)   | Working set (KB)      | Commit (KB)               | CPU |
+  |------------------------------|-------------------|-----------------------|---------------------------|-----|
+  | Balatro (Steam, Game mode on)| 612 → 576–592     | 3,356–3,392 → 3,180–3,288 | 3,820–3,828 → 3,708–3,732 | 0 → 0 |
+  | Little Inferno (Epic)        | 596 → 576         | 3,352 → 3,144         | 3,808 → 3,732             | 0 → 0 |
+  | Magical Drop VI (GOG, exe)   | 604 → 584         | 3,312 → 3,200         | 3,760 → 3,728             | 0 → 0 |
+
+  Commit about 0.1 MB under main's, the rest a little under. Of the parts (Balatro, two runs each): without the
+  aggressive collection 3,736–3,752 KB (it saves ~40 KB), without `ConserveMemory` 3,704–3,728 KB (no measurable
+  difference; kept, it costs nothing). Exe 1,645 → 1,622 KB. The rest of the commit is the runtime's own (GC
+  bookkeeping, thread stacks, the image's data), not ours to trim further.
+  Detection with Steam closed (`steam.exe -silent` first, the game found 26–31 s later, two runs each): the
+  watcher's CPU time until the game was found 47–62 ms (main) → 16–47 ms.
+  Efficiency mode (read with `GetProcessInformation`): on, with very low memory priority, while the game runs; off
+  within 0.6 s of the game's exit, until the watcher exits. Behaviour, all with the new build: each game detected and
+  its session saved, the widget back after it closed; Game mode applied and put back (helper: "Restored 5 of 5");
+  WARDOGS (Steam, Unreal) followed from its launcher to its client (the launcher exits ~30 s after the client
+  starts, the re-check finds the client and raises it); Balatro with "Restart if it crashes" ended by force after
+  72 s: recorded as closed unexpectedly, the restart pill played it again 9.7 s later; a crash reporter still
+  running after the game exited noted (`"CrashReporter":true`: a stand-in, `ping.exe` copies named `game.exe` and
+  `CrashReportClient.exe` in a scratch folder followed by the watcher directly, its line removed after; WARDOGS' own
+  `CrashReportClient.exe` exits at once when started without a crash). Not checked: Task Manager's own Status
+  column and leaf icon (a person's eye), a real engine crash.
 - **Smaller things:** after a game only the appended session lines are read (`Storage.ReloadSessions`); the
   imported shortcut count is read once; the crash check looks games up by id; data files are saved compact.
   Checked on the real PC 2026-11-19, with the real watcher following a stand-in process under a library game's id
