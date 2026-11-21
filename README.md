@@ -126,6 +126,41 @@ test and an installer test.
 Don't run `tests/smoke.ps1` or `tests/setup-test.ps1` on your own PC. They replace your Binder data and
 Steam settings with test data, and are meant for CI only.
 
+## Dependencies
+
+Binder uses as little as it can: two NuGet packages, both from Microsoft, and Windows itself. Each new one
+needs the owner's approval (`CLAUDE.md`, "Dependencies policy"); the versions are pinned exactly.
+
+**In the installed app** (licenses in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) and the install
+folder's `licenses` folder):
+
+| Component | Version | What for | License |
+|---|---|---|---|
+| .NET runtime | 10 | Compiled into every exe by Native AOT | MIT |
+| Windows App SDK: WinUI 3 (`Microsoft.WindowsAppSDK.WinUI`) | 2.6.4 | The panel's UI. Brings `Microsoft.WindowsAppSDK.Base`, `.Foundation` and `.InteractiveExperiences` 2.6.4 | Microsoft Software License Terms for the Windows App SDK |
+| WebView2 SDK (`Microsoft.Web.WebView2`) | 1.0.3719.77 | Brought along by WinUI; Binder doesn't use it | BSD-style |
+| Win2D (`Microsoft.Graphics.Win2D`) | 1.4.0 | Only the Game mode toast's melt animation | MIT |
+
+Only the widget (`Binder.exe`) uses packages. The watcher, the Game mode helper and the setup use nothing but the
+.NET runtime and Windows. Everything else comes from Windows' own system DLLs in System32 (for example XInput for
+controllers, GDI+ for the ring when ending a stuck game, the Task Scheduler and WMI for Game mode's admin part).
+Nothing else needs to be installed, not even the WebView2 Runtime.
+
+**Only to build it** (nothing from these is shipped):
+
+| Tool | Version | What for |
+|---|---|---|
+| .NET SDK | 10.0.x (`global.json`) | Building, including `Microsoft.NET.ILLink.Tasks` for trimming |
+| Visual Studio or Build Tools, "Desktop development with C++" | current | The Native AOT linker |
+| `Microsoft.Windows.SDK.BuildTools` (and `.MSIX`) | 10.0.26100.4654 (1.7.251221100) | Brought along by WinUI for its build steps |
+| PowerShell | 7 (7.2 for `sign-release.ps1`) | `scripts/` (publish, check, signing) and the CI tests |
+
+**Elsewhere:** the unit tests use no test framework. CI runs on GitHub Actions with these actions, each pinned to a
+commit: `actions/checkout`, `actions/setup-dotnet`, `actions/upload-artifact`, `actions/attest-build-provenance`,
+`actions/upload-pages-artifact` and `actions/deploy-pages`. The website (`site/`) loads nothing from other servers;
+only its release box asks GitHub's API for the latest release. Its pictures are made with Node and Playwright
+(`tests/Screenshots/`), which aren't part of the app or the website.
+
 ## Privacy
 
 - No account, no telemetry, no analytics.
