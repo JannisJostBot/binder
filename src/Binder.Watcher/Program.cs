@@ -207,6 +207,7 @@ internal static class Program
                 StartWidget("--restored", restored);
             }
             if (widget != IntPtr.Zero) Native.CloseHandle(widget);
+            HoldSound.WaitUntilDone(); // ended with the hold: its sound rings out before the watcher exits
             return 0;
         }
 
@@ -214,6 +215,7 @@ internal static class Program
         // for the result instead of being asked twice.
         var result = ToastArgument(gameMode?.End(), toast);
         if (ReturnArguments(gameId, comeBack, crashed, result) is { } widgetArgs) StartWidget(widgetArgs);
+        HoldSound.WaitUntilDone();
         return 0;
     }
 

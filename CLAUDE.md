@@ -102,7 +102,7 @@ src/Binder/            the WinUI widget
                           and message through the real code with made-up data; left out of Release builds
 src/Binder.Watcher/    windowless (one hidden window on its own thread, SystemEvents.cs: shutdown, sign-out and
                           sleep, and the shortcut for EndHold.cs, "End a stuck game", §28, whose ring is RingWindow.cs,
-                          GDI+); Program.cs, GameMode.cs (apply/restore + journal), ElevatedClient.cs,
+                          GDI+, and its sound HoldSound.cs); Program.cs, GameMode.cs (apply/restore + journal), ElevatedClient.cs,
                           GameModeShared.cs (also compiled into the widget, helper and setup)
 src/Binder.Elevated/   Game mode's admin helper (Native AOT, windowless, run by scheduled tasks)
 src/Binder.Setup/      BinderSetup.exe: per-user installer/updater/uninstaller (docs/installer.md)

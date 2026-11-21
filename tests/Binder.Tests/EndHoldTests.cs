@@ -32,6 +32,30 @@ static partial class Tests
             "end: the four parts grow one after another");
         Check(EndHold.SegmentFill(EndHold.Shown(0.6, false), 2) == 0 && EndHold.SegmentFill(EndHold.Shown(0.8, false), 2) == 1,
             "end: with animations off a part lights up whole");
+        // The hold's sound (board 44): rises from silence, grows with each part, ends ringing out, never clips.
+        var hum = new short[(int)(HoldSound.Seconds * HoldSound.SampleRate)];
+        HoldSound.Render(0, 0, hum);
+        double Rms(short[] s, double from, double to)
+        {
+            int a = (int)(from * HoldSound.SampleRate), b = (int)(to * HoldSound.SampleRate);
+            double sum = 0;
+            for (int k = a; k < b; k++) sum += (double)s[k] * s[k];
+            return Math.Sqrt(sum / (b - a));
+        }
+        int peak = hum.Max(s => Math.Abs((int)s));
+        Check(Math.Abs((int)hum[0]) < 50 && peak is > 3000 and < 32000, $"end sound: starts silent and stays clear of clipping (peak {peak})");
+        Check(Rms(hum, 0.35, 0.45) < Rms(hum, 0.85, 0.95) && Rms(hum, 0.85, 0.95) < Rms(hum, 1.35, 1.45) && Rms(hum, 1.35, 1.45) < Rms(hum, 1.85, 1.95),
+            "end sound: each part of the ring adds to it");
+        Check(Rms(hum, 2.1, 2.3) > 300 && Rms(hum, 4.0, 4.1) < Rms(hum, 2.1, 2.3) / 10 && Math.Abs((int)hum[^1]) < 20,
+            "end sound: full, it rings out to silence");
+        var sink = new short[(int)(HoldSound.CancelSeconds * HoldSound.SampleRate)];
+        HoldSound.Render(1.2, 0.1, sink);
+        Check(Rms(sink, 0, 0.05) > 300 && Rms(sink, 0.5, 0.6) < 20, "end sound: let go, the hum from there sinks away");
+        var header = new byte[44];
+        HoldSound.WriteHeader(header, 1000);
+        Check(header.AsSpan(0, 4).SequenceEqual("RIFF"u8) && BitConverter.ToInt32(header, 40) == 2000 && BitConverter.ToInt16(header, 22) == 1,
+            "end sound: a mono 16-bit WAV");
+
         // Held while the keys can't be read (a hung game's "Not responding" window, an admin game): the auto-repeat.
         Check(EndHold.RepeatTimes(1, 31) == (633, 126), "end: Windows' default keyboard: first repeat by 0.63 s, then every 0.13 s at most");
         Check(EndHold.RepeatTimes(3, 0) == (1500, 860) && EndHold.RepeatTimes(9, -4) == EndHold.RepeatTimes(3, 0),

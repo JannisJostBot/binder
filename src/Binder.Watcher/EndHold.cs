@@ -9,7 +9,8 @@ namespace Binder.Watcher;
 /// Runs on the system events thread (SystemEvents.cs), whose hidden window takes the shortcut
 /// (<c>RegisterHotKey</c>, not a keyboard hook) once the game is found. Nothing runs until it's pressed: then a
 /// 30 ms timer draws the ring (<see cref="RingWindow"/>) only while it's held (the keys, or the keyboard's
-/// auto-repeat of the shortcut when the keys can't be read: <see cref="Held"/>), and stops when it's let go. With "When it stops responding" (the default) it ends a game only while Windows calls its window
+/// auto-repeat of the shortcut when the keys can't be read: <see cref="Held"/>), and stops when it's let go. A sound
+/// (<see cref="HoldSound"/>) goes with it, for games the ring can't be seen over. With "When it stops responding" (the default) it ends a game only while Windows calls its window
 /// hung or Windows Error Reporting holds it, checked when the ring would appear and again when it's full.
 /// Ends only the game's own processes (the ones the watcher follows, by id and start time) and a WerFault.exe from
 /// System32 that holds one of them; never anything else.
@@ -249,10 +250,12 @@ internal static unsafe partial class EndHold
                 _holdFrom = now;
                 _progress = 0;
                 RingWindow.ShowRing(0, false, Text.Ending, Text.LetGo, Windowed(seen.Windows));
+                HoldSound.Start(); // heard even where the ring can't be seen
                 return;
             case Phase.Holding:
                 if (!Held(now))
                 {
+                    HoldSound.Cancel(_progress);
                     if (!RingWindow.Animations) { Cancelled(); return; }
                     _phase = Phase.Draining;
                     _drainFrom = now;
@@ -284,6 +287,7 @@ internal static unsafe partial class EndHold
         var seen = Look();
         if (Setting == Mode.WhenNotResponding && !seen.Stuck)
         {
+            HoldSound.Cancel(1);
             Note(Text.RespondingAgain, Windowed(seen.Windows)); // it recovered during the hold
             return;
         }
@@ -302,6 +306,7 @@ internal static unsafe partial class EndHold
             return;
         }
         Native.KillTimer(_hwnd, TimerId);
+        HoldSound.Cancel(1);
         // Nothing could be ended (protected by its anti-cheat, or gone already): not "ended by you" when it closes.
         _ended = _wasHung = _wasReporting = false;
         _phase = Phase.Idle;
@@ -327,6 +332,7 @@ internal static unsafe partial class EndHold
     {
         Native.KillTimer(_hwnd, TimerId);
         RingWindow.Hide();
+        HoldSound.Release();
         _phase = Phase.Idle;
     }
 
