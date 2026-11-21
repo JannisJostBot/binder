@@ -12,7 +12,7 @@ namespace Binder.Watcher;
 internal static unsafe partial class RingWindow
 {
     // Sizes in DIPs, as on board 40.
-    private const float Disc = 168, Track = 140, TrackWidth = 6, Cross = 44, CrossWidth = 4,
+    private const float Disc = 168, Track = 140, TrackWidth = 4, SegmentWidth = 12, SegmentGap = 16, Cross = 44, CrossWidth = 4,
         Gap = 14, LabelHeight = 32, LabelPad = 14, PillHeight = 48, TextSize = 13, PillTextSize = 14, Margin = 6;
     private const int WidthDip = 640, HeightDip = (int)(Disc + Gap + LabelHeight + 2 * Margin);
 
@@ -43,13 +43,15 @@ internal static unsafe partial class RingWindow
         float d = Disc * s;
         FillEllipse(c.Surface, cx - d / 2, top, d, d);
         DrawEllipse(c.Border, c.HighContrast ? 2 * s : s, cx - d / 2 + s / 2, top + s / 2, d - s, d - s);
+        // Four arcs, clockwise from the top: each grows from the thin track to a thick colored stroke in its quarter.
         float t = Track * s, tx = cx - t / 2, ty = top + (d - t) / 2;
-        DrawEllipse(c.Track, TrackWidth * s, tx, ty, t, t);
-        if (progress > 0)
+        uint full = cancelled ? c.Cancelled : c.Ring;
+        for (int i = 0; i < EndHold.Segments; i++)
         {
-            uint ring = cancelled ? c.Cancelled : c.Ring;
-            var pen = Pen(ring, (c.HighContrast ? 8 : TrackWidth) * s, round: !c.HighContrast);
-            Native.GdipDrawArc(_graphics, pen, tx, ty, t, t, -90, (float)(360 * Math.Min(progress, 1)));
+            double f = EndHold.SegmentFill(progress, i);
+            float width = (float)(TrackWidth + (SegmentWidth - TrackWidth) * f) * s;
+            var pen = Pen(Blend(c.Track, full, f), width, round: true);
+            Native.GdipDrawArc(_graphics, pen, tx, ty, t, t, -90 + i * 90 + SegmentGap / 2, 90 - SegmentGap);
             Native.GdipDeletePen(pen);
         }
         float x = Cross * s * 0.3f, ccy = top + d / 2;
@@ -178,6 +180,18 @@ internal static unsafe partial class RingWindow
         return path;
     }
 
+    /// <summary>A color between <paramref name="from"/> and <paramref name="to"/> (ARGB, 0–1).</summary>
+    private static uint Blend(uint from, uint to, double f)
+    {
+        uint result = 0;
+        for (int shift = 0; shift < 32; shift += 8)
+        {
+            double a = (from >> shift) & 0xFF, b = (to >> shift) & 0xFF;
+            result |= (uint)Math.Round(a + (b - a) * f) << shift;
+        }
+        return result;
+    }
+
     private static IntPtr Brush(uint argb)
     {
         Native.GdipCreateSolidFill(argb, out var brush);
@@ -240,6 +254,7 @@ internal static unsafe partial class RingWindow
             if (Native.GdipCreateBitmapFromScan0(_width, _height, _width * 4, Native.PixelFormat32bppPARGB, _bits, out _bitmap) != 0 ||
                 Native.GdipGetImageGraphicsContext(_bitmap, out _graphics) != 0) { Hide(); return false; }
             Native.GdipSetSmoothingMode(_graphics, 4);   // anti-alias
+            Native.GdipSetPixelOffsetMode(_graphics, 4); // high quality: edges on half pixels, no 0.5 px shift
             Native.GdipSetTextRenderingHint(_graphics, 4); // anti-alias (grayscale: the surface has alpha)
 
             var instance = Native.GetModuleHandleW(null);
@@ -524,6 +539,9 @@ internal static unsafe partial class Native
 
     [LibraryImport("gdiplus.dll")]
     public static partial int GdipSetTextRenderingHint(IntPtr graphics, int hint);
+
+    [LibraryImport("gdiplus.dll")]
+    public static partial int GdipSetPixelOffsetMode(IntPtr graphics, int mode);
 
     [LibraryImport("gdiplus.dll")]
     public static partial int GdipGraphicsClear(IntPtr graphics, uint color);

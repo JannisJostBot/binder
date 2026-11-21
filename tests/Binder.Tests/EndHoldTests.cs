@@ -27,6 +27,11 @@ static partial class Tests
         Check(EndHold.Shown(0.6, true) == 0.6 && EndHold.Shown(0.6, false) == 0.5 && EndHold.Shown(0.99, false) == 0.75 &&
               EndHold.Shown(1.4, true) == 1, "end: smooth fill, or quarters with animations off");
         Check(EndHold.HoldMs == 2000 && EndHold.DelayMs == 300, "end: a 2 s hold after 0.3 s");
+        Check(EndHold.SegmentFill(0, 0) == 0 && EndHold.SegmentFill(0.125, 0) == 0.5 && EndHold.SegmentFill(0.125, 1) == 0 &&
+              EndHold.SegmentFill(0.625, 1) == 1 && EndHold.SegmentFill(0.625, 2) == 0.5 && EndHold.SegmentFill(1, 3) == 1,
+            "end: the four parts grow one after another");
+        Check(EndHold.SegmentFill(EndHold.Shown(0.6, false), 2) == 0 && EndHold.SegmentFill(EndHold.Shown(0.8, false), 2) == 1,
+            "end: with animations off a part lights up whole");
         // Held while the keys can't be read (a hung game's "Not responding" window, an admin game): the auto-repeat.
         Check(EndHold.RepeatTimes(1, 31) == (633, 126), "end: Windows' default keyboard: first repeat by 0.63 s, then every 0.13 s at most");
         Check(EndHold.RepeatTimes(3, 0) == (1500, 860) && EndHold.RepeatTimes(9, -4) == EndHold.RepeatTimes(3, 0),

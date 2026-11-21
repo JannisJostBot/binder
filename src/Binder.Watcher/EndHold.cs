@@ -73,6 +73,12 @@ internal static unsafe partial class EndHold
         return new Labels(lines[0], lines[1], lines[2], lines[3], lines[4], lines[5], lines[6]);
     }
 
+    /// <summary>The ring's parts, which light up in turn.</summary>
+    public const int Segments = 4;
+
+    /// <summary>How far part <paramref name="index"/> (0 at the top, clockwise) has grown at <paramref name="progress"/>: 0–1 in its quarter.</summary>
+    internal static double SegmentFill(double progress, int index) => Math.Clamp(progress * Segments - index, 0, 1);
+
     /// <summary>The ring's fill: smooth, or (Animation effects off) in quarters.</summary>
     internal static double Shown(double progress, bool animations) =>
         Math.Clamp(animations ? progress : Math.Floor(progress * 4) / 4, 0, 1);

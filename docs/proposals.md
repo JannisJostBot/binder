@@ -2280,7 +2280,8 @@ A fullscreen game hangs and Task Manager can't get in front of it. Holding Binde
 
 ### What the user does
 - During a game, hold the shortcut (Win+Shift+G by default). After 0.3 s a ring with an X appears in the middle of
-  the game's monitor and fills over **2 s**; full, the game ends. Letting go earlier drains it ("Cancelled · [game] is
+  the game's monitor; its four parts, around the circle from the top, grow thicker and take the color one after another
+  over **2 s** (owner, 2026-11-21); all four full, the game ends. Letting go earlier drains it ("Cancelled · [game] is
   still running"); a tap shows nothing.
 - Settings › When a game starts › **End a stuck game**: **When it stops responding** (default) / **Always** / **Off**.
   Second line "Hold Win+Shift+G"; "Needs a keyboard shortcut" (disabled) when the shortcut is off.
@@ -2303,7 +2304,7 @@ A fullscreen game hangs and Task Manager can't get in front of it. Holding Binde
   `WatcherNames.ReleaseKey`), and the watcher takes it again once that widget has exited. Its loop is
   `MsgWaitForMultipleObjectsEx`: no polling.
 - `WM_HOTKEY` starts a 30 ms timer that draws the ring while the shortcut is held, and stops when it's let go or the
-  ring is done. With Animation effects off, quarters and no drain. Held: its keys read as down (`GetAsyncKeyState`),
+  ring is done. With Animation effects off, each part lights up whole and no drain. Held: its keys read as down (`GetAsyncKeyState`),
   or the keyboard's auto-repeat keeps bringing `WM_HOTKEY` (registered without `MOD_NOREPEAT`), a repeat overdue
   meaning let go (from Windows' repeat delay and rate). The repeats are needed: Windows hides the key state from us
   while a process above ours has the foreground, which is DWM's "Not responding" window as soon as a hung game gets
