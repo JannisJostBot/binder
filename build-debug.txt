@@ -1,0 +1,9 @@
+  Determining projects to restore...
+  Restored D:\a\binder\binder\src\Binder\Binder.csproj (in 18.52 sec).
+  Binder -> D:\a\binder\binder\bin\Debug\Binder.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:56.24

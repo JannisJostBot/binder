@@ -1,0 +1,9 @@
+BinderSetup.exe: 35688 KB
+Setup dialog shown after 80 ms
+Disclaimer: Install disabled until confirmed
+Install took 7904 ms (to the done dialog)
+Installed: files match the published build, Start menu shortcut, Settings -> Apps entry 'Binder 0.3.0' by Jannis Jost (built with Claude), 118334 KB
+Opened after install: yes
+Silent update with the app open and a game running: exit code 0, 7753 ms
+Update: old widget quit and came back (pid 9240 -> 9004), watcher kept running on its old file, new file in place
+Uninstall: files, Start menu (and "Binder games"), Settings -> Apps entry, Run key, data, cache and setup log gone; imported shortcut back on the desktop; temp copy removed
