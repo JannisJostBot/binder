@@ -2666,4 +2666,16 @@ Ralentir : mode efficacité pendant le jeu</value>
   <data name="SessionEndedByYou" xml:space="preserve">
     <value>Arrêté par vous</value>
   </data>
+  <data name="KeyCtrl" xml:space="preserve">
+    <value>Ctrl</value>
+  </data>
+  <data name="KeyShift" xml:space="preserve">
+    <value>Maj</value>
+  </data>
+  <data name="KeyAlt" xml:space="preserve">
+    <value>Alt</value>
+  </data>
+  <data name="KeyWin" xml:space="preserve">
+    <value>Win</value>
+  </data>
 </root>

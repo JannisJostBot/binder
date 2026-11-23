@@ -1,0 +1,80 @@
+name: A game isn't found or followed
+description: A game is missing from the shelf, has the wrong cover or name, or Binder doesn't notice it running or closing.
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Binder version
+      description: Settings › About.
+      placeholder: "0.3.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: source
+    attributes:
+      label: Where the game comes from
+      options:
+        - Steam
+        - Epic Games
+        - GOG
+        - EA app
+        - Ubisoft Connect
+        - Xbox app
+        - Rockstar Games Launcher
+        - Hytale
+        - Imported desktop shortcut
+        - Added by hand
+        - Other launcher
+    validations:
+      required: true
+  - type: input
+    id: game
+    attributes:
+      label: Game
+      placeholder: "Hades II"
+    validations:
+      required: true
+  - type: dropdown
+    id: problem
+    attributes:
+      label: What goes wrong
+      options:
+        - It's missing from the shelf
+        - It's on the shelf but shouldn't be (not a game, uninstalled)
+        - Wrong cover or name
+        - It doesn't start
+        - '"Couldn''t detect the game"'
+        - Binder doesn't come back when the game closes
+        - Playtime is wrong or missing
+        - Something else
+    validations:
+      required: true
+  - type: dropdown
+    id: drive
+    attributes:
+      label: Where the game is installed
+      options:
+        - On the drive Windows is on
+        - Another internal drive
+        - External or USB drive
+        - Network drive
+        - Don't know
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: |
+        What you expected and what happened instead. If it's about detection: did setting "Process to watch" in
+        the game's details help?
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you send
+      options:
+        - label: I pressed Refresh (F5) in Binder and the problem is still there.
+          required: true
+        - label: I searched the existing issues and this isn't one of them.
+          required: true

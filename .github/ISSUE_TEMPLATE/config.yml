@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security problem
+    url: https://github.com/JannisJostBot/binder/security/advisories/new
+    about: Please don't report a vulnerability in a public issue. Report it privately so it can be fixed first.
+  - name: What Binder changes on your PC
+    url: https://jannisjostbot.github.io/binder/docs.html
+    about: Game mode's items, Start with Windows, updates, shortcut import and uninstall, explained.

@@ -3553,4 +3553,20 @@ Calm: efficiency mode while you play</value>
     <value>Ended by you</value>
     <comment>Tooltip of the mark next to a past session in Game detail: the user ended the game with the hold while it still responded.</comment>
   </data>
+  <data name="KeyCtrl" xml:space="preserve">
+    <value>Ctrl</value>
+    <comment>The Ctrl key's name in keyboard shortcuts such as "Ctrl+G" (menus, Settings' shortcut choices, game shortcut tooltips). Use the name printed on keyboards and used by Windows in your language (German: Strg). Very short, no spaces.</comment>
+  </data>
+  <data name="KeyShift" xml:space="preserve">
+    <value>Shift</value>
+    <comment>The Shift key's name in keyboard shortcuts such as "Win+Shift+G" (Settings' shortcut choices, setup, game shortcut tooltips). Use the name Windows uses in your language's shortcuts (German: Umschalt, French: Maj). Very short, no spaces.</comment>
+  </data>
+  <data name="KeyAlt" xml:space="preserve">
+    <value>Alt</value>
+    <comment>The Alt key's name in keyboard shortcuts such as "Ctrl+Alt+G" (Settings' shortcut choices). The name printed on keyboards in your language. Very short, no spaces.</comment>
+  </data>
+  <data name="KeyWin" xml:space="preserve">
+    <value>Win</value>
+    <comment>The Windows logo key's name in keyboard shortcuts such as "Win+Shift+G" (Settings' shortcut choices, setup, game shortcut tooltips). Keep it as short as Windows writes it in shortcuts. No spaces.</comment>
+  </data>
 </root>

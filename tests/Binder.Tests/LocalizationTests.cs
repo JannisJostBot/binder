@@ -72,10 +72,15 @@ static partial class Tests
                   Strings.Plural(0, Strings.GameCountOne, Strings.GameCount) == "0 Spiele", "localization: German, with its plurals");
             Check(Strings.LowerFirst(Strings.Format(Strings.WeeksAgo, 3)) == "vor 3 Wochen", "localization: lower case only at the start");
             Check(Format.Duration(TimeSpan.FromMinutes(155)) == "2 Std. 35 Min.", "localization: German durations");
+            Check(Format.HotkeyLabel(Binder.Models.Hotkey.WinShiftG) == "Win+Umschalt+G" &&
+                  Format.HotkeyLabel(Binder.Models.Hotkey.CtrlAltG) == "Strg+Alt+G" && Format.Keys(Strings.KeyCtrl, ",") == "Strg+,",
+                  "localization: German key names, as Windows writes them");
             CultureInfo.CurrentUICulture = CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
             Check(Strings.Play == "Jouer" && Strings.Plural(0, Strings.GameCountOne, Strings.GameCount) == "0 jeu" &&
                   Strings.Plural(2, Strings.GameCountOne, Strings.GameCount) == "2 jeux", "localization: French, 0 is singular");
             Check(Strings.List(["A", "B", "C"]) == "A, B et C", "localization: French lists");
+            Check(Format.HotkeyLabel(Binder.Models.Hotkey.WinShiftJ) == "Win+Maj+J" &&
+                  Format.HotkeyLabel(Binder.Models.Hotkey.CtrlAltG) == "Ctrl+Alt+G", "localization: French key names");
             CultureInfo.CurrentUICulture = CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("es-ES");
             Check(Strings.Play == "Play", "localization: other languages get English");
         }
@@ -85,6 +90,8 @@ static partial class Tests
             CultureInfo.CurrentCulture = beforeFormat;
         }
         Check(Strings.List(["A", "B"]) == "A and B" && Strings.List(["A"]) == "A" && Strings.List([]) == "", "localization: English lists");
+        Check(Format.HotkeyLabel(Binder.Models.Hotkey.WinShiftG) == "Win+Shift+G" &&
+              Format.HotkeyLabel(Binder.Models.Hotkey.CtrlAltG) == "Ctrl+Alt+G", "localization: English key names");
     }
 
     static HashSet<string> Placeholders(string text) =>

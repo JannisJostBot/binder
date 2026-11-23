@@ -140,12 +140,18 @@ public static class Format
         _ => Strings.TheLauncher,
     };
 
-    /// <summary>The global shortcut as Windows writes it: "Win+Shift+G".</summary>
+    /// <summary>
+    /// Keys pressed together, as Windows writes them in the display language: "Ctrl+G", "Strg+G" in German. The
+    /// modifiers' names come from <c>Strings</c> (KeyCtrl, KeyShift, KeyAlt, KeyWin); letters and digits stay as is.
+    /// </summary>
+    public static string Keys(params string[] keys) => string.Join("+", keys);
+
+    /// <summary>The global shortcut as Windows writes it: "Win+Shift+G" ("Win+Umschalt+G" in German).</summary>
     public static string HotkeyLabel(Models.Hotkey hotkey) => hotkey switch
     {
-        Models.Hotkey.WinShiftG => "Win+Shift+G",
-        Models.Hotkey.WinShiftJ => "Win+Shift+J",
-        Models.Hotkey.CtrlAltG => "Ctrl+Alt+G",
+        Models.Hotkey.WinShiftG => Keys(Strings.KeyWin, Strings.KeyShift, "G"),
+        Models.Hotkey.WinShiftJ => Keys(Strings.KeyWin, Strings.KeyShift, "J"),
+        Models.Hotkey.CtrlAltG => Keys(Strings.KeyCtrl, Strings.KeyAlt, "G"),
         _ => Strings.Off,
     };
 

@@ -2666,4 +2666,16 @@ Dämpfen: Effizienzmodus während des Spielens</value>
   <data name="SessionEndedByYou" xml:space="preserve">
     <value>Von Ihnen beendet</value>
   </data>
+  <data name="KeyCtrl" xml:space="preserve">
+    <value>Strg</value>
+  </data>
+  <data name="KeyShift" xml:space="preserve">
+    <value>Umschalt</value>
+  </data>
+  <data name="KeyAlt" xml:space="preserve">
+    <value>Alt</value>
+  </data>
+  <data name="KeyWin" xml:space="preserve">
+    <value>Win</value>
+  </data>
 </root>

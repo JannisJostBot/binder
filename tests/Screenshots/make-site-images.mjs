@@ -1,12 +1,17 @@
-// Turns a run of the "Website screenshots" workflow into the website's pictures: the chosen views as WebP in
-// site/screenshots/ (light and dark), and site/og-image.png, the 1200x630 picture shown when a link to the site is
-// shared. Download the run's "site-screenshots" artifact (or its ci-results/screenshots-<branch> branch), then:
+// Turns a run of the "Website screenshots" workflow into the website's pictures: the chosen views as AVIF and WebP
+// in site/screenshots/ (light and dark), and site/og-image.png, the 1200x630 picture shown when a link to the site is
+// shared. The page offers the AVIF first (about 40 % smaller than the WebP and closer to the capture) and the WebP to
+// browsers without AVIF. Download the run's "site-screenshots" artifact (or its ci-results/screenshots-<branch> branch), then:
 //
 //   node tests/Screenshots/make-site-images.mjs <folder with light-shelf.png, dark-detail.png, ...>
 //
-// Needs Node and Playwright with Chromium (any version), and the Inter Display font for the preview's text.
+// Needs Node and Playwright with Chromium (any version), the Inter Display font for the preview's text, avifenc
+// from libavif 1.0 or later on the PATH (github.com/AOMediaCodec/libavif releases; apt install libavif-bin), and
+// pngquant (pngquant.org; apt install pngquant) for the preview.
+import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -43,13 +48,27 @@ async function trimmed(file, type) {
     return c.toDataURL(type, 0.9);
   }, [dataUrl(file), type]);
 }
-for (const theme of ['light', 'dark']) {
-  for (const view of views) {
-    const webp = await trimmed(`${theme}-${view}.png`, 'image/webp');
-    const file = join(out, `${theme}-${view}.webp`);
-    writeFileSync(file, Buffer.from(webp.split(',')[1], 'base64'));
-    console.log(file);
+// AVIF: from the same trimmed window, kept lossless until avifenc. Quality 80 with full colour resolution (4:4:4,
+// so small text and the accent's edges stay sharp) and the slowest, smallest encoding: on these pictures that's
+// ~40 % below the WebP and nearer the capture (2026-11-21: 206 KB for the eight against 350 KB, PSNR 51 against 39 dB).
+const temp = mkdtempSync(join(tmpdir(), 'binder-shots-'));
+const bytes = (dataUrl) => Buffer.from(dataUrl.split(',')[1], 'base64');
+try {
+  for (const theme of ['light', 'dark']) {
+    for (const view of views) {
+      const name = `${theme}-${view}`;
+      const webp = join(out, `${name}.webp`);
+      writeFileSync(webp, bytes(await trimmed(`${name}.png`, 'image/webp')));
+      const png = join(temp, `${name}.png`);
+      writeFileSync(png, bytes(await trimmed(`${name}.png`, 'image/png')));
+      const avif = join(out, `${name}.avif`);
+      execFileSync('avifenc', ['-q', '80', '--yuv', '444', '-s', '0', '-d', '8', png, avif], { stdio: 'ignore' });
+      console.log(webp);
+      console.log(avif);
+    }
   }
+} finally {
+  rmSync(temp, { recursive: true, force: true });
 }
 
 // The preview: the website's download-panel blue, the logo and name on the left, two windows on the right.
@@ -77,6 +96,22 @@ await page.setContent(`<!doctype html><html><head><style>
   <img class="front" src="${await trimmed('dark-welcome-back.png', 'image/png')}">
 </body></html>`);
 await page.evaluate(() => Promise.all([document.fonts.ready, ...[...document.images].map((i) => i.decode())]));
-await page.screenshot({ path: join(root, 'site', 'og-image.png'), type: 'png' });
-console.log(join(root, 'site', 'og-image.png'));
+// Captured lossless, then cut to at most 256 colours by pngquant (633 KB to 113 KB, 2026-11-23): the dither hides in
+// the covers, the blue gradient stays smooth (a JPEG of the same size shows blocks there), and it stays a PNG, which
+// every link preview takes. Should pngquant not reach quality 90, the lossless capture is kept.
+const ogImage = join(root, 'site', 'og-image.png');
+const ogTemp = mkdtempSync(join(tmpdir(), 'binder-og-'));
+try {
+  const lossless = join(ogTemp, 'og-image.png');
+  await page.screenshot({ path: lossless, type: 'png' });
+  try {
+    execFileSync('pngquant', ['--quality', '90-100', '--speed', '1', '--strip', '--force', '--output', ogImage, lossless], { stdio: 'ignore' });
+  } catch {
+    console.warn('pngquant missing or below quality 90: og-image.png kept lossless');
+    writeFileSync(ogImage, readFileSync(lossless));
+  }
+} finally {
+  rmSync(ogTemp, { recursive: true, force: true });
+}
+console.log(ogImage);
 await browser.close();

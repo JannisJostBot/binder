@@ -1,0 +1,66 @@
+name: Bug report
+description: Something in Binder doesn't work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. A game that's missing, has the wrong cover or isn't followed while it runs has its own
+        form ("A game isn't found or followed"), and so does Game mode.
+  - type: input
+    id: version
+    attributes:
+      label: Binder version
+      description: Settings › About.
+      placeholder: "0.3.0"
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      description: Press Win+R, type `winver` and press Enter.
+      placeholder: "Windows 11 24H2, build 26100.2314"
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Display mode
+      options:
+        - Flyout
+        - On the desktop
+        - Don't know
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead. A screenshot helps.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the panel with Win+Shift+G
+        2. …
+  - type: textarea
+    id: log
+    attributes:
+      label: Error log
+      description: |
+        If it exists, paste the end of `%LOCALAPPDATA%\Binder\error.log`. It can contain file paths with your
+        Windows user name: replace it before posting.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you send
+      options:
+        - label: I searched the existing issues and this isn't one of them.
+          required: true
+        - label: I removed my user name and other personal details from paths, logs and screenshots.
+          required: true

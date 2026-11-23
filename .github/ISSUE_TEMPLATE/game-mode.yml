@@ -1,0 +1,62 @@
+name: Game mode problem
+description: Game mode didn't apply something, or didn't put something back after the game.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every Game mode item and what it changes is listed on [What Binder changes on your PC](https://jannisjostbot.github.io/binder/docs.html).
+  - type: input
+    id: version
+    attributes:
+      label: Binder version
+      description: Settings › About.
+      placeholder: "0.3.0"
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      description: Press Win+R, type `winver` and press Enter.
+    validations:
+      required: true
+  - type: textarea
+    id: items
+    attributes:
+      label: Items that were on
+      description: The Game mode page's items you had turned on.
+    validations:
+      required: true
+  - type: dropdown
+    id: allowed
+    attributes:
+      label: Did you use "Allow…" (the admin part)?
+      options:
+        - "Yes"
+        - "No"
+        - Don't know
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What wasn't applied or put back, and how you noticed.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Game mode log
+      description: |
+        If it exists, paste the end of `%LOCALAPPDATA%\Binder\gamemode.log`. Replace your Windows user name in
+        paths before posting.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you send
+      options:
+        - label: I searched the existing issues and this isn't one of them.
+          required: true

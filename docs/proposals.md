@@ -40,6 +40,7 @@ Every item follows the project brief: zero cost while idle or gaming, no third-p
 | 27 Game shortcuts | §26 | Built 2026-11-18 (boards 35 A, 36, 37). Tried on the real PC 2026-11-18 (Debug build, keys and mouse sent with SendInput, one 4K screen with an auto-hide taskbar): Win+Shift, G, a number on the number row shows the flash, the panel stays shut, nothing on the taskbar starts; a quick tap opens the panel at once, holding opens it after 1 s; Esc cancels ("Cancelled · Balatro didn't start", gone after about 1 s) and Esc and letters reach apps normally afterwards; the same number again plays at once (Balatro started, Binder exited, only the watcher stayed, the widget came back when it closed); another number switches; "Nothing on 4"; the switch off lets the number through and opens the panel; dragging a cover or a list row raises the numbers, the line follows the slot under the pointer ("replaces Balatro", "already there"), a drop gives the number and the toast names the game that lost it, 0 refuses, releasing elsewhere removes the row; efficiency mode back on after a flash and a cancel. Fixed: the number pad (Windows lifts Shift around a pad key while Shift is held, which ended the wait, and may hand it over as Insert, End, arrows); a game without store art showed only its name (now its generated cover); the drag's caption repeated the line above the numbers. Added (owner, 2026-11-18): held past 1 s the shortcut lists what each number plays, letting go then opens the panel; and the debug panel's "Game shortcuts" buttons. Not tried: the menu's, Game detail's and Settings' number pickers by hand (their view models are unit-tested), a real keyboard (only sent keys: the Start menu on letting go of Win and the number pad with NumLock need a person), light mode, high contrast, Animation effects off, two screens, Narrator (Windows settings Claude doesn't change), the published AOT build |
 | 29 End a stuck game | §28 | Built 2026-11-19 (board 40); to try on the real PC. The watcher's `EndHold` (shortcut, keys, checks, ending) and `RingWindow` (GDI+ layered window), the session's `EndedByUser`/`Hung`/`ErrorReport`, `GameEnding.EndedByUser` and the card's three wordings, Settings › When a game starts › End a stuck game, `WatcherKey` (the widget takes its shortcut back). Unit-tested (arguments, texts, the card's wording, restart, the setting, the repeat timing).<br>Tried on the owner's PC 2026-11-21 (build, AOT publish and check.ps1 pass; keys sent with SendInput, Balatro and a test window that hangs or crashes on demand): a tap and a posted `WM_HOTKEY` do nothing; letting go early shows "Cancelled"; "When it stops responding" on a responding game shows the pill and ends nothing; a real hang (UI thread blocked) is ended with `Hung` (a process suspended in Resource Monitor isn't hung to Windows: its thread waits for input); a real crash: WerFault (System32, child of the game, `-u -p`) holds it ~2.3 s and is ended first, `ErrorReport`; Always on Balatro: the neutral card with Play again; the game gets no G key presses while held (the shortcut takes them); Come back off: nothing opens, no card later; the countdown and Start-search handovers, the shortcut opens the panel after the game; ring and pill at 150 % in dark mode; watcher 3.3 MB and 0 % CPU while idle with it on.<br>Fixed then: (1) a hung game's keys were unreadable (DWM's "Not responding" window takes the foreground, `GetAsyncKeyState` reads nothing), so the hold cancelled at once: held now also by the shortcut's auto-repeat (also covers a game running as administrator, untried); tried with the physical keyboard on a frozen window: ended, `Hung`; (2) the panel opened with the card was closed again by the still-held shortcut's repeat: the watcher waits for it to be let go; (3) Balatro (fullscreen optimizations, reported as exclusive) was minimized and the ring showed over the desktop: never minimized now (owner); (4) the pill moved above the taskbar like the Game mode toast (owner); (5) GDI+ left the watcher at 9 MB after a hold: trimmed to 0.3 MB.<br>Still to try by hand: a hung real game (the physical-keyboard test used a test window), a game running as administrator, light theme and high contrast, 100 % and 200 % scaling, two monitors (one here), Animation effects off (quarters: unit-tested only), a truly exclusive fullscreen game. Not a bug, noted: with two games at once the second watcher doesn't get the shortcut.<br>2026-11-21: the ring is four parts lighting up in turn, and the hold has a sound (board 44, Rising hum with Top note, `HoldSound`); tried on this PC: a let-go hold sinks away and leaves the game running, a full hold ends it and the watcher exits ~2 s later once the ending has rung out; then the hold made 2.5 s and the sound moved from PlaySound to one waveOut buffer faded in place (the owner heard a click and no fade when letting go); the watcher back at 0.5 MB working set after the hold |
 | 28 Native ARM64 build | §27 | Proposed (2026-11-17), waiting for the owner's go; choices open (§27 "To decide") |
+| 30 Shortcut hints | §29 | Proposed (2026-11-21), waiting for the owner's go; choices open (§29 "To decide") |
 | Calmer pages | §18 Settings, Game detail, Game mode pill and sound | Built (boards 19, 21, 23); to try on the real PC |
 | Languages | English, German, French (`CLAUDE.md`, "Text and languages") | Built: all text in `Strings/*.resx` and the setup's `Text.cs`, wording shortened throughout; unit-tested on Linux, to try on the real PC in German and French (Windows display language) |
 | Setup: shortcuts into the logo | §6 step 2 | Built 2026-11-16 (`Views/LogoMerge`, as on the website): after Move, the moved shortcuts' rows turn into pills and fly into the logo's covers, the rest of the page fades, then step 3. At most seven fly, ~1.5 s on the compositor, no timer; skipped with Animation effects off or in high contrast. A second Move while it runs does nothing (unit test). To try on the real PC |
@@ -1929,6 +1930,7 @@ and where possible a setting or a line of text goes away instead of one being ad
 
 - The footer hint ("Hides 10 s after a game starts · comes back when it closes", shown until three sessions are
   recorded) goes once a lands: the toast's "hides when it opens" teaches the same thing at the moment it matters.
+  If §29 is approved, only the text goes: the row stays for the shortcut hints.
 - The empty-search placeholder from §22 b ("Enter plays Hades II") already teaches Enter; no extra hint is added for
   it.
 - Rule for later features: when a feature explains itself, remove the help text it replaces in the same milestone.
@@ -2501,6 +2503,106 @@ A fullscreen game hangs and Task Manager can't get in front of it. Holding Binde
 ### Not chosen (board 40)
 - The "press again" fallback for a game running as administrator (if Windows hides its key state): not needed, the
   auto-repeat covers it (see above). Event-based hang detection (shell hook, Event Log subscription): later, if wanted.
+
+## 29. Shortcut hints in the footer (milestone 30, proposed 2026-11-21, no board yet)
+
+Binder has many shortcuts (the panel's, game numbers, type to search, Enter, Space, Ctrl+G, F5), and most people
+never find them: nobody reads a list of shortcuts. Windows teaches a shortcut next to the slow way of doing the same
+thing, at the moment it would have helped. The shelf already has a quiet place for that: the footer row that teaches
+hide and return during the first three sessions, then steps aside. This keeps the row and lets it show one shortcut
+hint at a time, only to someone who keeps doing that thing the slow way.
+
+### Where and how it looks
+
+- The footer row as it is (`ShelfView.xaml`, Grid.Row 5): the divider above, a small glyph, one caption line in
+  secondary text. The glyph is the keyboard (`E765`). No new row, no new style; the grid never moves, because the
+  row is there or not when the panel opens, as today.
+- Precedence: the controller hints take the row while a pad is in use (as today); then the hide-and-return hint
+  while it's shown (until §23 f removes it); then a shortcut hint; else nothing.
+- One hint per opening at most, never a rotation. Text only: no link, no button (see "To decide" 1 and 2).
+- The row's screen-reader name is the hint ("Tip: Win+Shift+G opens Binder"). It isn't a live region: it's there
+  when the panel opens, like the greeting.
+- Animations off and high contrast change nothing: the row has no animation and uses theme brushes.
+
+### The hints, in order
+
+Each hint has a reason to show (the user did that thing the slow way) and a way to be learned (the user used the
+shortcut). The first hint in this order that has a reason and isn't learned or retired is the one shown.
+
+| Hint | Shown when | Learned when |
+|---|---|---|
+| "Win+Shift+G opens Binder" | the panel was opened from the tray icon, at least 3 times so far, and the shortcut is on and registered | the panel was opened by the shortcut |
+| "Right-click Hades II › Shortcut to start it with Win+Shift+G, 3" | a game started from the shelf (click, Enter) at least 3 times in the last 14 days has no number, game shortcuts are on and a number is free (the lowest one is named) | a game was started by its number, or the user gave any game a number |
+| "Type to search · Enter plays the top match" | the shelf has at least 20 games and the user scrolled the grid in at least 3 openings | the user typed in the search box |
+| "Space shows a game's details" | the user opened details with the (i) button at least 3 times | details opened with Space |
+| "Ctrl+G turns Game mode on or off" | Game mode was turned on or off with the mouse (header button, "…" menu) at least 3 times | Ctrl+G was used |
+| "Hold Win+Shift+G to see your game numbers" | at least two games have numbers | the list was shown once (held for 1 s) |
+
+- All key names go through `Format.HotkeyLabel` / `Format.Keys`, so they follow the user's shortcut choice and the
+  display language ("Win+Umschalt+G", "Strg+G"). With the panel shortcut off, the hints that name it don't show.
+- "Retired": a hint shown on 5 openings without being learned is not shown again. It has done what it can, and
+  the next hint gets its turn.
+- A hint learned while the panel is open goes away at the next opening, not at once: the row never changes while
+  the user looks at the shelf.
+- End a stuck game (§28) is not a footer hint: it matters only while a game hangs, and the crash card after an
+  ending already names the shortcut.
+
+### What's counted, and where
+
+- `Settings.Hints`: per hint id, `Shown` (openings it was shown on), `Learned` (bool) and the one counter its reason
+  needs (tray openings, details by button, Game mode by mouse, scrolled openings). A few small integers; unknown ids
+  are ignored, so a hint can be dropped later.
+- The counts change only on user actions that already pass through the code: `App.OnTrayClicked` /
+  `HotkeyPressed` (how the panel opened), `MainWindow.Launch` (how a game started: click, Enter, number, `--play`,
+  tray), the details button and Space, the Game mode button and `Ctrl+G`, the search box's first character, the
+  grid's first scroll per opening, `App.GameKeys` (a number used, the list shown).
+- They're kept in memory and saved with the next settings save, or when the panel closes if something changed:
+  never a save just for opening the panel.
+- The game-number hint's "3 times in 14 days" comes from the same pass over the sessions that already makes "Last
+  played" and playtime (`ShelfOrder.Stats`), with the start kind from the session (a new optional field `Via`,
+  which the widget passes to the watcher as `--via` and the watcher writes: `shelf`, `number`, `start`, `tray`; older lines without it count as `shelf`). No second
+  pass, no per-game search.
+- Picked in `ShelfViewModel.SetData` from data the panel already has. Nothing runs while idle, no timer.
+
+### Text
+
+- One entry per hint with its keys and game as `{0}`, `{1}` (word order differs) and a translator comment naming
+  each; English, German, French. Short and plain, no "Did you know", no "Tip:" in the visible text (the glyph says
+  it), no exclamation marks.
+
+### What it changes elsewhere
+
+- §23 f: the hide-and-return text still goes once §23 a lands; the row stays for these hints.
+- `site/docs.html` needs nothing: nothing new on the PC, nothing sent anywhere.
+
+### Not chosen
+
+- Coach marks, arrows or overlays pointing at controls; a "Did you know" pop-up or toast at start: web-style and
+  the first thing people dismiss unread.
+- A rotation of tips on a timer, or a new tip every opening: costs a timer and nags.
+- A tips page or tour in Settings; a reference list of every shortcut can come later as its own card if wanted.
+- Hints in the tray menu or as Windows notifications.
+
+### To decide (owner)
+
+1. A "Give it 3" link at the end of the game-number hint, which gives the game that number in one click (the same
+   call as the right-click menu), or text only.
+2. A small close button on the row that retires the hint shown, or only the 5-openings limit. No Settings toggle
+   either way (a setting for hints is help text about help text).
+3. The thresholds: 3 times before a hint shows, 5 openings before it retires, 20 games for the search hint.
+
+### Build order
+
+`Library/Hints` first (the order, reasons, learned and retired rules, pure and unit-tested), then the counters at
+their call sites and `Settings.Hints`, then the session's `Via` (the widget's `--via`, the watcher's line and the reader, old lines without it), then the
+view model and the row, then the strings in three languages.
+
+### Touches
+
+`Library/Hints` (new, tested), `Models/Settings`, `Binder.Watcher/SessionLog.cs` and `Program.cs` (`--via`, `Via`), `ShelfOrder.Stats`,
+`ViewModels/ShelfViewModel` (footer text and visibility), `Views/ShelfView.xaml` (the glyph),
+`App.xaml.cs` (how the panel opened), `MainWindow.Launch`, `MainWindow.Input`, `App.GameKeys.cs`,
+`Strings/*.resx`, `tests/Binder.Tests` (hints and view model).
 
 ## Build order (after milestone 7)
 

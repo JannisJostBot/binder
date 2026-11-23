@@ -893,4 +893,8 @@ public sealed partial class Strings
     public static string EndedStillResponding => Get(nameof(EndedStillResponding));
     public static string AlsoEndedByYou => Get(nameof(AlsoEndedByYou));
     public static string SessionEndedByYou => Get(nameof(SessionEndedByYou));
+    public static string KeyCtrl => Get(nameof(KeyCtrl));
+    public static string KeyShift => Get(nameof(KeyShift));
+    public static string KeyAlt => Get(nameof(KeyAlt));
+    public static string KeyWin => Get(nameof(KeyWin));
 }
