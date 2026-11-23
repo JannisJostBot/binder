@@ -4,6 +4,10 @@ name: CI
 # widget, clicks through it and checks the launch -> hide -> return loop. Screenshots and metrics are
 # uploaded as the "smoke-test" artifact, and (on pushes) also committed to the "ci-results/<branch>"
 # branch, so they can be read with plain git by reviewers and agents that can't download artifacts.
+#
+# A branch that changes only the website (site/), Markdown files or the website's workflow skips the Windows job:
+# the "website" job runs check.ps1 on Linux instead (the rules, and the unit tests, which read site/docs.html).
+# Pushes to main and every other change get the full Windows run.
 
 on:
   push:
@@ -18,10 +22,61 @@ permissions:
   contents: write   # only for pushing the ci-results/<branch> branch
 
 jobs:
-  windows:
+  # Whether the app needs building: "false" only when every file the branch changes since it left main is the
+  # website's (site/, a .md file, pages.yml). Anything else, main itself, or a diff it can't read: "true".
+  changes:
     # A pull request from a branch of this repository already gets the push run on the same commit (shown on the
-    # pull request too); only one from a fork runs here as a pull_request.
+    # pull request too); only one from a fork runs here as a pull_request. The jobs below follow this one.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      app: ${{ steps.files.outputs.app }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - id: files
+        shell: bash
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          app=true
+          if [ "$BRANCH" != main ] && base=$(git merge-base HEAD origin/main) && files=$(git diff --name-only "$base" HEAD) && [ -n "$files" ]; then
+            echo "Changed since $base:"; echo "$files"
+            if ! echo "$files" | grep -qvE '^site/|\.md$|^\.github/workflows/pages\.yml$'; then app=false; fi
+          fi
+          echo "app=$app" | tee -a "$GITHUB_OUTPUT"
+
+  # Website-only changes: the same rule check and unit tests as on Windows (check.ps1 skips the WinUI build on Linux).
+  website:
+    needs: changes
+    if: needs.changes.outputs.app == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0   # check.ps1 compares with where the branch left origin/main
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Rule check and unit tests
+        shell: pwsh
+        run: ./scripts/check.ps1 -Base origin/main
+
+  windows:
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
