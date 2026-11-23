@@ -3,11 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Binder for Windows</title>
-  <meta name="description" content="Binder lists the games you've installed with Steam, Epic, GOG and other launchers, and starts them with one click. For Windows 10 and 11.">
-  <meta property="og:title" content="Binder for Windows">
-  <meta property="og:description" content="Binder lists the games you've installed with Steam, Epic, GOG and other launchers, and starts them with one click. For Windows 10 and 11.">
+  <title>Binder – a lightweight game launcher for Windows</title>
+  <meta name="description" content="Binder is a free, lightweight game launcher for Windows 10 and 11. It lists the games you've installed with Steam, Epic Games, GOG, the EA app, Ubisoft Connect, the Xbox app and Rockstar, tidies their desktop shortcuts away, and closes while you play.">
+  <meta property="og:title" content="Binder – a lightweight game launcher for Windows">
+  <meta property="og:description" content="Binder is a free, lightweight game launcher for Windows 10 and 11. It lists the games you've installed with Steam, Epic Games, GOG, the EA app, Ubisoft Connect, the Xbox app and Rockstar, tidies their desktop shortcuts away, and closes while you play.">
   <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Binder">
+  <link rel="canonical" href="./">
   <meta property="og:url" content="https://jannisjostbot.github.io/binder/">
   <meta property="og:image" content="https://jannisjostbot.github.io/binder/og-image.png">
   <meta property="og:image:width" content="1200">
@@ -384,48 +386,48 @@
   </section>
 
   <!-- FAQ -->
-  <section id="faq" class="section section-alt">
+  <section id="faq" class="section section-alt" itemscope itemtype="https://schema.org/FAQPage">
     <div class="wrap faq-grid">
       <div class="section-head faq-head">
         <h2 class="h2">Frequently asked questions</h2>
         <p class="lead">What Binder changes on your PC, item by item, is in the <a href="docs.html">documentation</a>.</p>
       </div>
       <div class="faq-list">
-        <details class="faq-item" open>
-          <summary>Will it slow down my games?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>It shouldn't. Binder closes 10 seconds after the game starts. Only the helper keeps running, and it uses no processor time once it has found the game. Its memory is under <a href="#usage-title">How much it uses</a>.</p>
+        <details class="faq-item" open itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <summary itemprop="name">Will it slow down my games?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">It shouldn't. Binder closes 10 seconds after the game starts. Only the helper keeps running, and it uses no processor time once it has found the game. Its memory is under <a href="#usage-title">How much it uses</a>.</span></p>
         </details>
-        <details class="faq-item">
-          <summary>Does it delete my desktop shortcuts?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>No. The shortcuts you choose are moved into Binder's own folder, and you can put them back anytime. Uninstalling Binder puts them back too.</p>
+        <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <summary itemprop="name">Does it delete my desktop shortcuts?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">No. The shortcuts you choose are moved into Binder's own folder, and you can put them back anytime. Uninstalling Binder puts them back too.</span></p>
         </details>
-        <details class="faq-item">
-          <summary>Do I still need Steam, Epic and the others?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>Yes. Binder starts each game through the launcher it belongs to, so saves, updates and friends lists work as before.</p>
+        <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <summary itemprop="name">Do I still need Steam, Epic and the others?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Yes. Binder starts each game through the launcher it belongs to, so saves, updates and friends lists work as before.</span></p>
         </details>
-        <details class="faq-item">
-          <summary>Why does Windows warn me when I run the installer?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>The installer isn't code-signed yet, so SmartScreen may show "Windows protected your PC". If you downloaded it from this page, choose More info, then Run anyway.</p>
+        <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <summary itemprop="name">Why does Windows warn me when I run the installer?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">The installer isn't code-signed yet, so SmartScreen may show "Windows protected your PC". If you downloaded it from this page, choose More info, then Run anyway.</span></p>
         </details>
-        <details class="faq-item">
-          <summary>What if Binder doesn't notice the game?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>If the helper can't find the game within about 3 minutes, Binder opens again and tells you. You can then pick the game's process in its settings so it's found next time.</p>
+        <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <summary itemprop="name">What if Binder doesn't notice the game?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">If the helper can't find the game within about 3 minutes, Binder opens again and tells you. You can then pick the game's process in its settings so it's found next time.</span></p>
         </details>
-        <details class="faq-item">
-          <summary>Which launchers aren't supported yet?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>Battle.net, Riot, Amazon Games, itch.io, Humble and Meta are planned but not there yet. Until then, add those games yourself or import their desktop shortcuts. Xbox controllers work already; PlayStation and Switch controllers are planned.</p>
+        <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <summary itemprop="name">Which launchers aren't supported yet?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Battle.net, Riot, Amazon Games, itch.io, Humble and Meta are planned but not there yet. Until then, add those games yourself or import their desktop shortcuts. Xbox controllers work already; PlayStation and Switch controllers are planned.</span></p>
         </details>
-        <details class="faq-item">
-          <summary>Where does Binder keep my data?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>On your PC, in your user folder: your library, playtime, settings and imported shortcuts in %APPDATA%\Binder, and the cover pictures in %LOCALAPPDATA%\Binder. When you uninstall Binder, it asks whether to delete them.</p>
+        <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <summary itemprop="name">Where does Binder keep my data?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">On your PC, in your user folder: your library, playtime, settings and imported shortcuts in %APPDATA%\Binder, and the cover pictures in %LOCALAPPDATA%\Binder. When you uninstall Binder, it asks whether to delete them.</span></p>
         </details>
-        <details class="faq-item">
-          <summary>What does it cost?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>Nothing, it's free. Binder is open source under the GNU GPL, version 3: anyone can read, change and share <a href="https://github.com/JannisJostBot/binder">the code on GitHub</a>, and changed versions stay open too.</p>
+        <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <summary itemprop="name">What does it cost?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">Nothing, it's free. Binder is open source under the GNU GPL, version 3: anyone can read, change and share <a href="https://github.com/JannisJostBot/binder">the code on GitHub</a>, and changed versions stay open too.</span></p>
         </details>
-        <details class="faq-item">
-          <summary>How does it compare with Playnite, GOG GALAXY and others?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
-          <p>They do more: games you own but haven't installed, emulators, themes, add-ons, full-screen modes. Binder is smaller, closes while you play and is much younger. The <a href="compare.html">comparison</a> puts them side by side, with what Binder doesn't do.</p>
+        <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+          <summary itemprop="name">How does it compare with Playnite, GOG GALAXY and others?<svg class="faq-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></summary>
+          <p itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"><span itemprop="text">They do more: games you own but haven't installed, emulators, themes, add-ons, full-screen modes. Binder is smaller, closes while you play and is much younger. The <a href="compare.html">comparison</a> puts them side by side, with what Binder doesn't do.</span></p>
         </details>
       </div>
     </div>
@@ -454,6 +456,29 @@
       </div>
     </div>
   </section>
+
+  <!-- What Binder is, for search engines and assistants (schema.org microdata; nothing visible). Addresses as <a>, since
+       check.ps1 reads a <link> to another server as a load. No version or size:
+       release.js updates those on the page, and a copy here would go stale. -->
+  <div itemscope itemtype="https://schema.org/SoftwareApplication" hidden>
+    <meta itemprop="name" content="Binder">
+    <meta itemprop="description" content="A free, lightweight game launcher for Windows. It lists the games installed with Steam, Epic Games, GOG, the EA app, Ubisoft Connect, the Xbox app and Rockstar Games Launcher, plus desktop shortcuts, starts them with one click and closes while the game runs.">
+    <meta itemprop="applicationCategory" content="GameApplication">
+    <meta itemprop="applicationSubCategory" content="Game launcher">
+    <meta itemprop="operatingSystem" content="Windows 10, Windows 11 (64-bit)">
+    <meta itemprop="isAccessibleForFree" content="true">
+    <a itemprop="url" href="https://jannisjostbot.github.io/binder/"></a>
+    <a itemprop="downloadUrl" href="https://github.com/JannisJostBot/binder/releases/latest"></a>
+    <a itemprop="releaseNotes" href="https://jannisjostbot.github.io/binder/releases.html"></a>
+    <a itemprop="license" href="https://www.gnu.org/licenses/gpl-3.0.html"></a>
+    <a itemprop="sameAs" href="https://github.com/JannisJostBot/binder"></a>
+    <a itemprop="image" href="https://jannisjostbot.github.io/binder/og-image.png"></a>
+    <a itemprop="screenshot" href="https://jannisjostbot.github.io/binder/screenshots/dark-welcome-back.webp"></a>
+    <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+      <meta itemprop="price" content="0">
+      <meta itemprop="priceCurrency" content="USD">
+    </div>
+  </div>
 
   <!-- Download -->
   <section id="download" class="section">

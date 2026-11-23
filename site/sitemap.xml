@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The website's pages, for search engines (submitted once in Google Search Console and Bing Webmaster Tools).
+     No dates: they'd go stale; crawlers read the pages' own changes. A new page gets its line here. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://jannisjostbot.github.io/binder/</loc></url>
+  <url><loc>https://jannisjostbot.github.io/binder/compare.html</loc></url>
+  <url><loc>https://jannisjostbot.github.io/binder/docs.html</loc></url>
+  <url><loc>https://jannisjostbot.github.io/binder/releases.html</loc></url>
+</urlset>

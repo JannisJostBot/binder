@@ -1,0 +1,28 @@
+# Binder
+
+> Binder is a free, open-source (GPL 3.0) game launcher for Windows 10 and 11 (64-bit). It lists the games installed with Steam, Epic Games, GOG, the EA app, Ubisoft Connect, the Xbox app, the Rockstar Games Launcher and Hytale, plus desktop shortcuts and games added by hand, in one panel next to the clock. Clicking a cover starts the game through its own launcher. While the game runs, Binder closes itself; only a small helper stays, using no processor time once it has found the game, and Binder comes back when the game closes.
+
+Key facts:
+
+- Lightweight: Binder isn't running while you play. Measured memory use is on the website under "How much it uses".
+- Tidy desktop: the user ticks which desktop shortcuts are games; Binder moves them into its own folder and can put them back at any time (uninstalling puts them back too).
+- Still needs the stores: games start through Steam, Epic and the others, so saves, updates and friends lists work as before.
+- Also: playtime per game by week and month, "Free up space" (suggests games to uninstall, each through its own launcher), crash causes from Windows' event log, an optional Game mode (power mode, pausing a few background services, network priority; all put back after the game), keyboard, Xbox controller and screen reader support.
+- Privacy: no account, no telemetry, no analytics. It connects only for Steam cover art and a daily update check on GitHub (can be turned off).
+- Installs per user without admin rights; only Game mode's optional helper asks for them.
+- Not supported yet: Battle.net, Riot, Amazon Games, itch.io, Humble and Meta (their games can be added by hand or through their desktop shortcuts).
+- Compared with Playnite, GOG GALAXY or LaunchBox, Binder does less (no games you don't have installed, no emulators, themes or add-ons) and is smaller and younger.
+- The code is written by an AI (Claude) under its author's direction and is provided as is.
+- Not affiliated with Valve, Epic Games, GOG, Electronic Arts, Ubisoft, Rockstar Games or Microsoft.
+
+## Pages
+
+- [Home and download](https://jannisjostbot.github.io/binder/): what Binder does, screenshots, memory use, FAQ, download
+- [Comparison](https://jannisjostbot.github.io/binder/compare.html): Binder next to Playnite, GOG GALAXY, LaunchBox, the Xbox app, Steam and Windows, including what Binder doesn't do
+- [Documentation](https://jannisjostbot.github.io/binder/docs.html): everything Binder changes on the PC (Game mode item by item, Start with Windows, updates, shortcut import, uninstall)
+- [Releases](https://jannisjostbot.github.io/binder/releases.html): every version's notes and installer
+
+## Optional
+
+- [Source code](https://github.com/JannisJostBot/binder)
+- [Latest installer](https://github.com/JannisJostBot/binder/releases/latest)

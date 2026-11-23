@@ -1,6 +1,6 @@
 name: Website
 
-# Publishes site/ (index.html, docs.html, releases.html, styles.css, logo.svg, release.js, clock.js, story.js, wallpaper.js, game.js, nav.js,
+# Publishes site/ (index.html, compare.html, docs.html, releases.html, sitemap.xml, llms.txt, styles.css, logo.svg, release.js, clock.js, story.js, wallpaper.js, game.js, nav.js,
 # usage.js, download.js, screenshots/, og-image.png) to GitHub Pages: on every push to main that changes the site, when a release is published, edited or deleted, or by
 # hand (Actions › Website › Run workflow). The files go up as they are (no Jekyll), except releases.html's list of versions,
 # which scripts/site-releases.ps1 writes first from the published releases and docs/releases/*.json. If that step fails, the
