@@ -5,8 +5,9 @@
 //
 //   node tests/Screenshots/make-site-images.mjs <folder with light-shelf.png, dark-detail.png, ...>
 //
-// Needs Node and Playwright with Chromium (any version), the Inter Display font for the preview's text, and avifenc
-// from libavif 1.0 or later on the PATH (github.com/AOMediaCodec/libavif releases; apt install libavif-bin).
+// Needs Node and Playwright with Chromium (any version), the Inter Display font for the preview's text, avifenc
+// from libavif 1.0 or later on the PATH (github.com/AOMediaCodec/libavif releases; apt install libavif-bin), and
+// pngquant (pngquant.org; apt install pngquant) for the preview.
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
@@ -95,6 +96,22 @@ await page.setContent(`<!doctype html><html><head><style>
   <img class="front" src="${await trimmed('dark-welcome-back.png', 'image/png')}">
 </body></html>`);
 await page.evaluate(() => Promise.all([document.fonts.ready, ...[...document.images].map((i) => i.decode())]));
-await page.screenshot({ path: join(root, 'site', 'og-image.png'), type: 'png' });
-console.log(join(root, 'site', 'og-image.png'));
+// Captured lossless, then cut to at most 256 colours by pngquant (633 KB to 113 KB, 2026-11-23): the dither hides in
+// the covers, the blue gradient stays smooth (a JPEG of the same size shows blocks there), and it stays a PNG, which
+// every link preview takes. Should pngquant not reach quality 90, the lossless capture is kept.
+const ogImage = join(root, 'site', 'og-image.png');
+const ogTemp = mkdtempSync(join(tmpdir(), 'binder-og-'));
+try {
+  const lossless = join(ogTemp, 'og-image.png');
+  await page.screenshot({ path: lossless, type: 'png' });
+  try {
+    execFileSync('pngquant', ['--quality', '90-100', '--speed', '1', '--strip', '--force', '--output', ogImage, lossless], { stdio: 'ignore' });
+  } catch {
+    console.warn('pngquant missing or below quality 90: og-image.png kept lossless');
+    writeFileSync(ogImage, readFileSync(lossless));
+  }
+} finally {
+  rmSync(ogTemp, { recursive: true, force: true });
+}
+console.log(ogImage);
 await browser.close();

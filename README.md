@@ -158,8 +158,8 @@ Nothing else needs to be installed, not even the WebView2 Runtime.
 **Elsewhere:** the unit tests use no test framework. CI runs on GitHub Actions with these actions, each pinned to a
 commit: `actions/checkout`, `actions/setup-dotnet`, `actions/upload-artifact`, `actions/attest-build-provenance`,
 `actions/upload-pages-artifact` and `actions/deploy-pages`. The website (`site/`) loads nothing from other servers;
-only its release box asks GitHub's API for the latest release. Its pictures are made with Node, Playwright and libavif's
-`avifenc` (`tests/Screenshots/`), which aren't part of the app or the website.
+only its release box asks GitHub's API for the latest release. Its pictures are made with Node, Playwright, libavif's
+`avifenc` and `pngquant` (`tests/Screenshots/`), which aren't part of the app or the website.
 
 ## Privacy
 
