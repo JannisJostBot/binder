@@ -135,7 +135,7 @@ site/                     the website: HTML + CSS, nothing loaded from other ser
                           download.js the dialog once a download starts (Defender may warn, the VirusTotal result) and the
                           "Before you download" notes' one-time highlight when they come into view;
                           sitemap.xml (every page; a new page gets its line) and llms.txt (what Binder is, for AI assistants;
-                          kept true with the pages); the pages' <title>, description and canonical link are written for search,
+                          kept true with the pages); the pages' <title>, description and canonical link (relative: check.ps1) are written for search,
                           and index.html's FAQ and app facts carry schema.org microdata (no inline JSON-LD: no inline scripts);
                           screenshots/ and og-image.png the app's pictures ("What it looks like", the README's Screenshots, the link preview),
                           made from a site-screenshots.yml run by tests/Screenshots/make-site-images.mjs;
